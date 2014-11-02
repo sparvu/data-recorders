@@ -1,4 +1,4 @@
-#!/opt/sdr/perl/bin/perl -w
+#!/opt/kronometrix/perl/bin/perl -w
 
 ###############################################################
 # Last updated 12/22/2008
