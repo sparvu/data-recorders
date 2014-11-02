@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # chkconfig:   2345 20 88
-# description: SDR Transport Master script. Starts and stops sender
+# description: Kronometrix Data Recording, manages all message recorders
 #
 #  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
 #
@@ -23,27 +23,27 @@
 
 RETVAL=0
 OS_NAME=`uname -s`
-SDR_ROOT="/opt/sdr"
-SDR_BIN=${SDR_ROOT}/bin
-SDR_LOG=${SDR_ROOT}/log
+KRMX_PREFIX="/opt/kronometrix"
+KRMX_BIN=${KRMX_PREFIX}/bin
+KRMX_LOG=${KRMX_PREFIX}/log
 TRANSPORT="sender"
 
 # sender
-test -f ${SDR_BIN}/sender || exit 0
+test -f ${KRMX_BIN}/sender || exit 0
 
 
 start() {
-    echo "Starting SDR transport"
+    echo "Starting KRMX transport"
 
     # check uid
     if [ "X${OS_NAME}" = "XSunOS" ]; then
         if [ "`/usr/xpg4/bin/id -ur`" != '0' ]; then
-            echo 'Error: you must be root to start SDR transport'
+            echo 'Error: you must be root to start KRMX transport'
             exit 1
         fi
     else
         if [ "`id -ur`" != '0' ]; then
-            echo 'Error: you must be root to start SDR transport'
+            echo 'Error: you must be root to start KRMX transport'
             exit 1
         fi
     fi
@@ -57,10 +57,10 @@ start() {
     fi
            
     # check pid before start
-    if [ -f ${SDR_LOG}/${TRANSPORT}.pid ]; then
-        kill -0 `cat ${SDR_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
+    if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
+        kill -0 `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
         if [ $? -ne 0 ]; then
-            su - sdr -c "${SDR_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
+            su - sdr -c "${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
             RETVAL=$?
         else
             RETVAL=1
@@ -68,7 +68,7 @@ start() {
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     else
         # no pid files
-        su - sdr -c "${SDR_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
+        su - sdr -c "${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
         RETVAL=$?
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     fi
@@ -78,7 +78,7 @@ start() {
 
 
 stop() {
-    echo "Stopping SDR transport"
+    echo "Stopping KRMX transport"
 
     RETVAL=0
 
@@ -88,8 +88,8 @@ stop() {
         echo -n " ${TRANSPORT}: "
     fi
 
-    if [ -f ${SDR_LOG}/${TRANSPORT}.pid ]; then
-        kill `cat ${SDR_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
+    if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
+        kill `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
         RETVAL=$?
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     else
