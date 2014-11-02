@@ -1,4 +1,4 @@
-#!/opt/sdr/perl/bin/perl
+#!/opt/kronometrix/perl/bin/perl
 
 # COPYRIGHT: Copyright (c) 2013 System Data Recorder
 # COPYRIGHT: Copyright (c) 2005 Brendan Gregg.
