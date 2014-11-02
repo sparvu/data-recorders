@@ -615,11 +615,11 @@ sub open_conf {
     # $parser->validation(1);
 
     # we will parse now the file
-    if ( defined $ENV{'SDR_ROOT'} ) {
-        if (-e "$ENV{'SDR_ROOT'}/etc/$conf") {
-            $tree = $parser->parse_file("$ENV{'SDR_ROOT'}/etc/$conf");
+    if ( defined $ENV{'KRMX_ROOT'} ) {
+        if (-e "$ENV{'KRMX_ROOT'}/etc/$conf") {
+            $tree = $parser->parse_file("$ENV{'KRMX_ROOT'}/etc/$conf");
         } else {
-            print "Error: $! $ENV{'SDR_ROOT'}/etc/$conf \n";
+            print "Error: $! $ENV{'KRMX_ROOT'}/etc/$conf \n";
             usage();
         }
     } else {
