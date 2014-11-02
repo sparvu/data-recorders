@@ -1,0 +1,118 @@
+#!/bin/sh
+
+# chkconfig:   2345 20 88
+# description: SDR Transport Master script. Starts and stops sender
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+RETVAL=0
+OS_NAME=`uname -s`
+SDR_ROOT="/opt/sdr"
+SDR_BIN=${SDR_ROOT}/bin
+SDR_LOG=${SDR_ROOT}/log
+TRANSPORT="sender"
+
+# sender
+test -f ${SDR_BIN}/sender || exit 0
+
+
+start() {
+    echo "Starting SDR transport"
+
+    # check uid
+    if [ "X${OS_NAME}" = "XSunOS" ]; then
+        if [ "`/usr/xpg4/bin/id -ur`" != '0' ]; then
+            echo 'Error: you must be root to start SDR transport'
+            exit 1
+        fi
+    else
+        if [ "`id -ur`" != '0' ]; then
+            echo 'Error: you must be root to start SDR transport'
+            exit 1
+        fi
+    fi
+
+    RETVAL=0
+
+    if [ "X${OS_NAME}" = "XSunOS" ]; then
+        echo " ${TRANSPORT}: \c"
+    else
+        echo -n " ${TRANSPORT}: "
+    fi
+           
+    # check pid before start
+    if [ -f ${SDR_LOG}/${TRANSPORT}.pid ]; then
+        kill -0 `cat ${SDR_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            su - sdr -c "${SDR_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
+            RETVAL=$?
+        else
+            RETVAL=1
+        fi
+        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+    else
+        # no pid files
+        su - sdr -c "${SDR_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+    fi
+
+    return $RETVAL
+}
+
+
+stop() {
+    echo "Stopping SDR transport"
+
+    RETVAL=0
+
+    if [ "X${OS_NAME}" = "XSunOS" ]; then
+        echo " ${TRANSPORT}: \c"
+    else
+        echo -n " ${TRANSPORT}: "
+    fi
+
+    if [ -f ${SDR_LOG}/${TRANSPORT}.pid ]; then
+        kill `cat ${SDR_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+    else
+        RETVAL=1
+        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+    fi
+
+    return $RETVAL
+}
+
+case "$1" in
+   start)
+      start
+      ;;
+   stop)
+      stop
+      ;;
+   restart)
+      stop
+      start
+      ;;
+   *)
+      echo "Usage: $0 {start|stop|restart}"
+      exit 1
+esac
+exit $RETVAL

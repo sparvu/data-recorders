@@ -1,0 +1,109 @@
+#!/bin/ksh -p
+
+# COPYRIGHT: Copyright (c) 2013 System Data Recorder
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+# SDR VERSION: 0.75
+
+
+# FUNCTIONS #
+
+usage() {
+
+cat << END
+USAGE: ${0##*/} interval
+   eg, corerec 60        # print every 60sec core utilisation
+                         # minim 60secs
+
+END
+exit 1
+}
+
+
+platform_check() {
+
+cat << END
+Error: cannot run on this platform: $(uname -m)
+${0##*/} requires CMT: T1,T2 or SPARC64 VI/VII architecture
+
+END
+exit 1
+}
+
+
+# MAIN BODY #
+
+PWD=$(dirname $0)
+. ${PWD}/setenv
+
+if [[ ${OS_NAME} != "SunOS" ]]; then
+    print "Error: cannot run on this OS: $(uname -s)"
+    print "This collector requires Solaris 10+ sparc"
+    exit 1
+fi
+
+# check root
+if (( USER_ID != 0 )); then
+    print "Error: ${0##*/} requires root privileges"
+    exit 1        
+fi
+
+if [[ ${MT_NAME} != "sun4v" && ${MT_NAME} != "sun4u" ]]; then
+    platform_check
+    exit 1
+else
+    case "$(uname -i)" in
+     SUNW,Sun-Fire-T1*)
+         CORESTAT=corestat.t1
+     ;;
+ 
+     SUNW,Sun-Fire-T2*)
+         CORESTAT=corestat.t1
+     ;;
+
+     SUNW,SPARC-Enterprise-T5*)
+         CORESTAT=corestat.t2
+     ;;
+
+     SUNW,SPARC-Enterprise)
+         CORESTAT="corestat.sparc64 -uk"
+     ;;
+
+     *)
+        platform_check
+     ;;
+    esac
+fi
+
+if (( $# < 1 || $# > 1 )); then
+    usage
+else
+    if (( $1 < 60 )); then
+        usage
+    fi
+fi
+
+secs=0
+(( secs = $1 - 12 ))
+
+while true
+do
+    print "$(date +"%Y-%m-%d:%H:%M:%S") - $(perl -e 'print time();')"
+    print "$(${SDR_BIN}/${CORESTAT})\n"
+    sleep $secs 
+done

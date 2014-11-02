@@ -1,0 +1,88 @@
+.TH sender 1  "September 30, 2012" "USER COMMANDS"
+.SH NAME
+sender \- sdrd raw data transport utility. Uses perl
+
+.SH SYNOPSIS
+.B sender
+[\-hvV] [\-t secs] [interval]
+.SH DESCRIPTION
+sender is responsible for sending sdrd raw data updates to a backend 
+reporting system for instant monitoring: updates, plotting. It uses
+SSH2 for a secure transport between each recording host and the 
+backend reporting server.
+.PP
+During its start, sender, will look for the main SDR configuration file, 
+sdr.conf to fetch what sdrd raw data files will look after and where to 
+transport the changes. Make sure you have a single backend reporting server 
+defined currently under sdr.conf ! Currently the last definition of the
+reporting host will be used.
+.PP
+The utility uses SSH2 transport libraries to create a connection from
+each recording host to a backend reporting system and send all updates via
+this connection. In case of a temporarily failure sender will reopen the 
+SSH2 connections and start sending the updates again. If for some reasons 
+the backend system wont answer in a proper time, sender will wait until 
+the reporting will allow connections or comeback alive. In case of a fatal 
+connection failure sender will wait permanentely for the backend reporting 
+server.
+.PP
+By default, sender will output all its messages and errors under 
+prefix/log/sender.log log file.
+
+.SH OS
+Linux, Solaris
+
+.SH OPTIONS
+.SS
+\-h
+print help information
+.SS
+\-v 
+verbose mode
+.SS
+\-t
+timeout seconds, default 25 seconds
+.SS
+\-V
+print revision information
+.SS
+interval
+interval in seconds between each sample, default 60 seconds
+
+.SH EXAMPLES
+.SS sender 5
+will look for new sdrd raw data every 5 seconds
+.SS sender -t5 15
+will look every 15 seconds, forcing a timeout value at every 5 seconds to check
+for sdrd raw data updates
+
+.SH FILES
+.I /opt/sdr/etc/sdr.conf
+SDR System configuration file.
+
+.SH NOTES
+Currently sender does not cache or maintain a buffer of all sdrd raw data changes
+in case the reporting backend turns unavailable. Do make sure you have a functional
+backend reporting server up, accepting SSH2 connections.
+Currently sender does not support more than one backend reporting server.
+
+.PP
+By default sender will know to close and re-open the SSH2 channel to the reporting 
+server if the connection is terminated or the server itself terminates the connection.
+However, in certain situations, like power outages or sudden crashes sender might
+remain in established mode even if the SSH2 server has died. In such cases sender will
+wait for TCP Keepalive system to terminate the connection.
+
+.PP
+By default sender does not open the SSH2 channel using keep alive option turned ON.
+You should change under sdr.conf tcp_keepalive element to 1 in order to have 
+sender opening the TCP socket using keepalive mechanism and benefit from that.
+
+.SH DOCUMENTATION
+See SDR documentation for more details.
+
+.SH AUTHOR
+Stefan Parvu
+
+.SH SEE ALSO
+perl(1)

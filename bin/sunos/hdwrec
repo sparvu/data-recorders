@@ -1,0 +1,342 @@
+#!/opt/sdr/perl/bin/perl
+
+# COPYRIGHT: Copyright (c) 2005 Brendan Gregg
+# COPYRIGHT: Copyright (c) 2013 System Data Recorder
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+# Based on prtdevs, Brendan Gregg
+# http://www.brendangregg.com/K9Toolkit/prtdevs
+# 
+# SDR VERSION: 0.75
+
+use strict;
+use warnings;
+use 5.010;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use Sys::Hostname;
+use Sun::Solaris::Kstat;
+
+# Debug Only
+#use Data::Dumper;
+
+#
+#  Process command line args
+#
+usage()    if defined $ARGV[0] and $ARGV[0] =~ /^(-h|--help|0)$/;
+revision() if defined $ARGV[0] and $ARGV[0] =~ /^(-V|0)$/;
+
+# process [interval [count]],
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+#
+#  Variables
+#
+# Variables
+my $HZ;
+my $loop = 0;    # current loop number
+my $tp   = 0;    # time precision
+local $| = 1;
+
+
+# ######### #
+# MAIN BODY #
+# ######### #
+
+my $Kstat = Sun::Solaris::Kstat->new();
+
+# how often do we trigger
+my $first_interval = $interval;
+
+# signal handler is empty, do nothing
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer(ITIMER_REAL, $first_interval, $interval);
+
+# no need to read HZ every loop, since
+# changing hires in Solaris requires boot
+$HZ = POSIX::sysconf(&POSIX::_SC_CLK_TCK);
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+# check
+usage() if (! -e "/bin/uname");
+ 
+
+
+### Calculate Pagesize
+my $PAGESIZE;
+$ENV{PATH} = "/usr/bin";
+chomp($PAGESIZE = `pagesize`);
+my $PAGETOMB = $PAGESIZE / (1024 * 1024);
+my $BLOCKTOP = 512 / $PAGESIZE;
+
+while (1) {
+
+    # get the new updates
+    $Kstat->update();
+
+    # get hostname
+    my $host = hostname;
+    $host =~ s/\..*$// if $host =~ /\./;
+
+    # get OS, release version
+    my $osr = `/bin/uname -sr`;
+    chomp($osr);
+
+    # get platform
+    my $platform = `/bin/uname -i`;
+    chomp($platform);
+
+    # get the kernel release
+    my $kernel = `/bin/uname -v`;
+    chomp($kernel);
+
+    ### Fetch CPUs
+    my $cpus = fetch_cpu();
+
+    ### Fetch mem
+    my $mem = fetch_mem();
+
+    ### Fetch SWAP
+    my $pswap = fetch_swap();
+
+    ### Fetch disks
+    my @disks = fetch_disk();
+    my $ndisks = $#disks + 1;
+
+    ### Fetch NICs
+    my @nics = fetch_net();
+    my $nnics = $#nics + 1;
+
+    ### Fetch JVMS
+    my $njvms = `pgrep java 2>/dev/null | wc -l`;
+    chomp($njvms);
+    for ($njvms) { s/^\s+//; s/\s+/:/g; }
+    $njvms = "NA" if ($njvms == 0);
+
+
+    ### Fetch uptime
+    my $boot = $Kstat->{unix}->{0}->{system_misc}->{boot_time};
+    my $uptime = (time() - $boot) / (60 * 60 * 24);
+    $uptime = sprintf("%.f days", (time() - $boot) / (60 * 60 * 24));
+
+    # print metrics
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s\n",
+       time, $host, $platform, $osr, $cpus, $mem, $pswap, $ndisks, $nnics, $njvms, $uptime;
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+#
+#  --- Subroutines ---
+#
+
+# fetch_cpu - fetch the number of vcpus, pcpus
+#
+sub fetch_cpu {
+
+    ### Variable
+    my ($npcpus, $nvcpus);
+
+    # npcpus
+    $npcpus = `/usr/sbin/psrinfo -p`;
+    chomp($npcpus);
+
+    # nvcpus
+    $nvcpus = $Kstat->{unix}->{0}->{system_misc}->{ncpus};
+    $nvcpus = 1 if $nvcpus == 0;
+
+    my $cpus = $npcpus . ":" . $nvcpus;
+ 
+    ### Return
+    return $cpus;
+}
+
+
+# fetch_mem - fetch memory size.
+#
+sub fetch_mem {
+    ### Variable Decleration
+    my $ram_total;
+ 
+    ### RAM total
+    $ram_total = 0;
+    foreach my $i (keys(%{$Kstat->{lgrp}})) {  # instance
+        foreach my $c (keys(%{$Kstat->{lgrp}->{$i}})) {     # class
+	    $ram_total += 
+	     $Kstat->{lgrp}->{$i}->{$c}->{"pages installed"};
+	}
+    }
+
+    my $mem = sprintf("%.2f MB", $ram_total * $PAGETOMB);
+
+    ### Return
+    return $mem;
+}
+
+
+
+# fetch_swap - fetch swap details
+#
+sub fetch_swap { 
+    my $sum_total = 0;
+    my $sum_free = 0;
+    my ($total,$free);
+
+    #
+    #  This currently uses "swap -l" to fetch the values.
+    #  I'd rather use Kstat to do this, but have not found the values
+    #  I need (such as ani_free?), and limited values I had to work with
+    #  were not providing consistant results. I did consider swapctl(), 
+    #  but running that from Perl was problematic.. Until I know of a
+    #  better way, I'll use "swap -l" for this.
+    #
+
+    my @Lines = `/usr/sbin/swap -l 2> /dev/null`;
+    shift(@Lines);	# drop header
+	
+    foreach my $line (@Lines) {
+        ($total,$free) = $line =~ /(\d+)\s+(\d+)$/;
+	next unless $total;
+	$sum_total += $total;
+	$sum_free += $free;
+    }
+
+    my $dswap = sprintf("%.2f MB", $sum_total * $BLOCKTOP * $PAGETOMB);
+
+    ### Return as MB 
+    return $dswap;
+}
+
+
+# fetch_disk - fetch disk names.
+#
+sub fetch_disk {
+ 
+    ### Variable Decleration
+    my ($module,$instance);
+    my (%Names);
+    my @Disks = ();
+ 
+    ### Loop over all Disks
+    foreach $module (keys(%$Kstat)) {
+
+        my $Modules = $Kstat->{$module};
+
+	foreach $instance (keys %$Modules) {
+            my $Instances = $Modules->{$instance};
+            foreach my $name (keys %$Instances) {
+                # Check that this is a whole disk,
+		next unless ($$Instances{$name}->{"class"} eq "disk");
+                next if $name =~ /fd0/;
+                next if $name =~ /.*md.*/;
+                next if $name =~ /,/;
+         	push(@Disks,$name);
+            }
+	}
+    }
+ 
+    ### Return
+    return (sort(@Disks));
+}
+
+
+# fetch_net - Fetch a list of network interfaces.
+#
+sub fetch_net {
+ 
+    ### Variable Decleration
+    my ($module,$instance,$name);
+    my @Nets = ();
+ 
+    ### Loop over all NICs
+    foreach $module (keys(%$Kstat)) {
+        my $Modules = $Kstat->{$module};
+	foreach $instance (keys(%$Modules)) {
+            my $Instances = $Modules->{$instance};
+            foreach my $name (keys(%$Instances)) {
+                my $Names = $Instances->{$name};
+		# Check this is a network device.
+	        # Matching on ifspeed has been more reliable than "class"
+                if (defined $$Names{ifspeed}) {
+                    next if $name =~ /mac/;
+		    push(@Nets,$name);
+		}
+            }
+        }
+    }
+ 
+    ### Return
+    return (sort(@Nets));
+}
+
+
+# revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+hdwrec: 0.75, 2013-08-31
+ sdrd format: 0737 13
+END
+    exit 0;
+}
+
+# usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: hdwrec [-hV] | [interval [count]]
+ e.g. hdwrec 5       print continuously every 5 seconds
+      hdwrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 hostname   : hostname
+  #03 platform   : name of the hardware platform
+  #04 os         : name of the operating system
+  #05 kernel     : kernel version and release number
+  #06 pcpu       : number of physical installed CPUs, number
+  #07 vcpu       : number of virtual CPUs, number
+  #08 memtotal   : total physical memory installed, number
+  #09 swaptotal  : total physical swap installed, number
+  #10 disks      : total number of disks, number
+  #11 nics       : total number of NICs, number
+  #12 jvms       : total number of running JVMs, number
+  #13 uptime     : how long the system has been running, number
+
+END
+    exit 0;
+}
+

@@ -1,0 +1,232 @@
+.TH procrec 1  "$Date: 2014-04-27 #$" "USER COMMANDS"
+.SH NAME
+procrec \- Process Recorder. Uses perl
+.SH SYNOPSIS
+.B procrec
+[-hv] [-n name] [-x [-e expr]] [-p pid[,pid...]] [-u user] | [interval [count]]
+
+.SH DESCRIPTION
+procrec records per process statistics: owner, state, nice, the priority 
+of the process, number of light weight processes, number of open file 
+descriptors, number of minor and major faults the process made and many 
+other metrics. The recorder will report only certain processes if different
+filters are used: name, username or pid. To access the full command line
+arguments of each process procrec must run in extended mode. In extended
+mode an additional filter is used to extract only certain information
+from the command line arguments.
+
+.PP
+By default procrec will monitor all available processes, for all users.
+Certain metrics, like the number of file descriptors will not be available
+if the target process is not owned by the user running procrec. 
+
+.PP
+The recorder uses Sys::Statistics::Linux to fetch all metrics. 
+procrec raw data is already prepared and formatted for SDR analysis process. 
+The recorder runs continuously.
+
+.SH OS
+Linux 2.6+
+
+.SH OPTIONS
+.SS
+\-h
+print help information
+
+.SS
+\-v
+print revision information
+
+.SS
+\-n name
+monitor a list of processes with a specific name, 
+where name is a Perl regexp
+
+.SS
+\-x
+enables extended mode, where command line arguments are reported
+
+.SS
+\-e expr
+expression mode, works in extended mode only used to display the command line
+arguments only matching a specific expression
+
+.SS
+\-p pid,...
+monitor a list of processes with specified process IDs
+
+.SS
+\-u user
+monitor a list of processes with a specific username
+
+.SS
+interval
+interval in seconds between each sample
+
+.SS
+count
+number of samples
+
+.SS
+
+.PP
+.SH EXAMPLES
+
+.SS procrec 5
+monitor all running processes every 5 seconds 
+
+.SS procrec -n java -x 5 10
+monitor all java running processes, using extended mode 10 times sampled every 5 seconds
+
+.SS procrec -p 1,2,3,101 -x
+monitor the following process ids: 1,2,3,101 using extended mode
+
+
+.PP
+.SH FIELDS
+.TP
+#1 timestamp
+the time in seconds since Epoch
+
+.TP
+#2 pid
+the process id of the process
+
+.TP
+#3 cmd
+command of the process 
+
+.TP
+#4 owner 
+the owner of the process
+
+.TP
+#5 state 
+the status of the process
+
+.TP
+#6 nice
+the nice level of the process 
+
+.TP
+#7 prior 
+the priority of the process (+15)
+
+.TP
+#8 nlwp 
+number of light weight processes by this process
+
+.TP
+#9 fds 
+number of open file descriptors
+
+.TP
+#10 minflt 
+number of minor faults the process made
+
+.TP
+#11 majflt 
+number of major faults the process made
+
+.TP
+#12 utime 
+number of jiffies proc have beed in user mode
+
+.TP
+#13 stime 
+number of jiffies proc have beed in kernel mode
+
+.TP
+#14 ttime
+number of jiffies proc have beed (user + kernel)
+
+.TP
+#15 cutime
+number of jiffies proc waited for childs in user mode
+
+.TP
+#16 cstime
+number of jiffies proc waited for childs in kernel mode
+
+.TP
+#17 cpu
+the cpu number the process was last executed on
+
+.TP
+#18 size
+the total program size of the process, in bytes
+
+.TP
+#19 resident
+the resident set size(the text, data, stack), in bytes
+
+.TP
+#20 nswap
+the size of swap space of the process
+
+.TP
+#21 cnswap
+the size of swap space of the childrens of the process
+
+.TP
+#22 syscr
+number of read syscalls
+
+.TP
+#23 rchar
+bytes read from storage (might have been from pagecache)
+
+.TP
+#24 read_bytes
+bytes really fetched from storage layer
+
+.TP
+#25 syscw
+number of write syscalls
+
+.TP
+#26 wchar
+bytes written
+
+.TP
+#27 write_bytes
+bytes sent to the storage layer
+
+.TP
+#28 cmdline
+command line of the process
+
+
+.PP
+.SH NOTES
+In computing, a jiffy is the duration of one tick of the system timer interrupt. 
+It is not an absolute time interval unit, since its duration depends on the clock 
+interrupt frequency of the particular hardware platform. Within the Linux operating 
+system kernel, since release 2.6.13, on the Intel i386 platform a jiffy is by 
+default 4 ms, or 1/250 of a second. The jiffy values for other Linux versions 
+and platforms have typically varied between about 1 ms and 10 ms. [Wikipedia]
+
+.PP
+This recorder supports interval values lower than second !  Running the
+recorder  with  values  lower than second for long periods of time will
+add an overhead in terms of cpu utilization.  The  lower  the  interval
+value  the higher the cpu utilization. We do not recommend using values
+lower than second for long historical recordings !
+
+.PP
+procrec records 26 Linux OS metrics on x64 and x86 platforms !
+
+.PP
+This is a Linux only recorder.
+
+.PP
+.SH DOCUMENTATION
+See SDR documentation for more details.
+.SH EXIT
+procrec will run continuously until is stopped by the master script 
+or manually stopped. 
+
+.SH AUTHOR
+Stefan Parvu
+.SH SEE ALSO
+perl(1)

@@ -1,0 +1,337 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use Sys::Hostname;
+use BSD::Sysctl qw(sysctl);
+
+# Debug Only
+#use Data::Dumper;
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+###  Variables
+$main::opt_h = 0;  # help option
+$main::opt_V = 0;  # revision option
+my $loop = 0;      # current loop number
+my $tp   = 0;      # time precision
+my $dmesg = "/sbin/dmesg";
+local $| = 1;
+
+
+
+### MAIN BODY
+
+# Set a timer for BSD::Sysctl objects
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $bhdw     = BSD::Sysctl->new( 'hw.machine_arch' );
+my $bdisk    = BSD::Sysctl->new( 'kern.disks' );
+my $bos      = BSD::Sysctl->new( 'kern.ostype' );
+my $bcode    = BSD::Sysctl->new( 'kern.version' );
+my $bnic     = BSD::Sysctl->new( 'net.link.generic.system.ifcount' );
+my $bboot    = BSD::Sysctl->new( 'kern.boottime' );
+my $bguest   = BSD::Sysctl->new( 'kern.vm_guest' );
+my $bkernel  = BSD::Sysctl->new( 'kern.ident' );
+my $bvcpu    = BSD::Sysctl->new( 'hw.ncpu' );
+my $bphysmem = BSD::Sysctl->new( 'hw.physmem' );
+my $bswapmem = BSD::Sysctl->new( 'vm.swap_total' );
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+while (1) {
+
+    ## initial values
+    my $swapmem    = "NA";
+    my $hypervisor = "NA";
+    my $pcpu = 1;
+    my $ncores = 1;
+    my $ht = "NA";
+
+    ## get stats
+    my $arch    = $bhdw->get();
+    my $os      = $bos->get();
+    my $code    = $bcode->get();
+    my $disk    = $bdisk->get();
+    my $nic     = $bnic->get();
+    my $btime   = sprintf("%d",$bboot->get());
+    my $guest   = $bguest->get();
+    my $kernel  = $bkernel->get();
+    my $vcpu    = $bvcpu->get();
+    my $physmem = $bphysmem->get();
+    $swapmem = $bswapmem->get() if $bswapmem;
+
+
+    chop($arch);
+    chop($os);
+    chop($kernel);
+
+    # hostname# hostname
+    my $host = hostname;
+    $host =~ s/\..*$// if $host =~ /\./;
+
+    # OS Release
+    my $codename;
+    foreach my $l (split /^/ ,$code) {
+        chomp($l);
+        $l =~ s/[\h\v]+//g;
+        $l =~ s/\#.*//;
+        $l =~ s/\-/_/g;
+        $codename=$l;
+        last;
+    }
+
+    # distributor
+    my $dist = "freebsd.org";
+
+    # hypervisor type
+    $hypervisor = $guest if $guest;
+    if ($hypervisor eq "none" ) {
+        $hypervisor = "NA";
+    }
+
+    # pcpu
+    my @pcpu_stats = get_dmesg();
+
+    
+    if (@pcpu_stats) {
+
+        if ($#pcpu_stats == 2) {
+            $pcpu = $pcpu_stats[0];
+            $ncores = $pcpu_stats[1];
+            $ht = 1;
+        } else {
+            $pcpu = $pcpu_stats[0];
+            $ncores = $pcpu_stats[1];
+            $ht = 0;
+        }
+    } else {
+        $pcpu = 1;
+        $ncores="NA";
+        $ht = "NA";
+    }
+
+    # get disks
+    my $num_disk = 0;
+    foreach my $i (split / /, $disk ) {
+        $num_disk++ if $i !~ /cd0/;
+    }
+
+    # get NICs
+    my $num_nic = $nic - 1;
+
+    # uptime
+    my $u = sprintf("%d", time - $btime);
+    my $uptime = sec2human($u);
+    
+    # fetch JVMS
+    my $num_jvm = `pgrep java 2>/dev/null | wc -l`;
+    chomp($num_jvm);
+    $num_jvm = "NA" if ($num_jvm == 0);
+
+    # swapmem can be NA or value, defaults to string
+    # num_jvm can be NA or value, defaults to string
+    # HT can be NA or value, defaults to string
+
+    my $pmem = convert ("$physmem");
+    my $smem = convert ("$swapmem");
+
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s:%s\n", 
+        time, $host, $arch, $hypervisor, $os, $codename, $dist,
+        $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
+        $num_disk, $num_nic, $num_jvm, $uptime;
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+
+### SUBROUTINES
+
+## sec2human
+sub sec2human {
+    my $t = shift;
+    my ($d, $h, $m, $s);
+
+    $d = int($t / 86400);
+    $t -= ($d * 86400);
+
+    $h = int($t / 3600);
+    $t -= ($h * 3600);
+
+    $m = int($t / 60);
+
+    $s = $t % 60;
+
+    $d = $d < 1 ? '' : $d . 'd ';
+    $h = $h < 1 ? '' : $h . 'h ';
+    $m = $m < 1 ? '' : $m . 'm ';
+    $t = $d . $h . $m . $s . 's';
+
+    return $t;
+}
+
+
+## convert
+sub convert {
+    my( $size, $n ) = ( shift, 0 );
+    ++$n and $size /= 1024 until $size < 1024;
+    return sprintf "%.2f %s", $size, ( qw[ bytes KB MB GB ] )[ $n ];
+}
+
+
+## get_param
+sub get_param {
+    my ($dm) = @_;
+    my $p;
+
+    while (<$dm>) {
+        chomp;
+        next if $_ !~ /FreeBSD\/SMP\: \d+/;
+        $_ =~ s/FreeBSD\/SMP\://;
+        $p = $_; 
+    }
+
+    my @cpu_info;
+
+    # last occurance
+    if ($p) {
+
+        # HT ON
+        # 2 package(s) x 8 core(s) x 2 SMT threads
+
+        # HT OFF
+        # 2 package(s) x 8 core(s)
+        foreach my $l (split( /x/, $p )) {
+
+            if ( $l =~ /(\d+)\s*package/ ) {
+                $l =~ s/package\(s\)//;
+                $l =~ s/[\h\v]+//g;
+                push @cpu_info, $l;
+            }
+            elsif ( $l =~ /(\d+)\s*core/ ) {
+                $l =~ s/core\(s\)//;
+                $l =~ s/[\h\v]+//g;
+                push @cpu_info, $l;
+            }
+            elsif ( $l =~ /(\d+)\s*SMT threads/ ) {
+                $l =~ s/SMT threads//;
+                $l =~ s/[\h\v]+//g;
+                push @cpu_info, $l;
+            }
+        }
+
+    }
+
+    return @cpu_info;
+}
+
+
+sub get_dmesg {
+
+    my @cpu_stats;
+
+    open my $fh, "-|", "$dmesg", "-a"
+      or die "cannot execute '$dmesg -a' - $!";
+
+    @cpu_stats = get_param($fh);
+
+    close $fh;
+
+    return @cpu_stats;
+}
+
+
+## usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: hdwrec [-hV] | [interval [count]]
+ e.g. hdwrec 5       print continuously every 5 seconds
+      hdwrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 hostname   : hostname, string
+  #03 hdw        : machine hardware name, string
+  #04 hypervisor : name of the hypervisor, string
+  #05 os         : name of the operating system, string
+  #06 codename   : codename of the operating system, string
+  #07 distributor: name of the operating system distributor, string
+  #08 kernel     : kernel version and release number, string
+  #09 pcpu       : number of physical installed CPUs, number
+  #10 cores      : number of physical CPU cores , number
+  #11 vcpu       : number of virtual CPUs, number
+  #12 ht         : hyper-thgreading: 0 off, 1 on , number
+  #13 memtotal   : total physical memory installed, number
+  #14 swaptotal  : total physical swap installed, number
+  #15 disks      : total number of disks, number
+  #16 nics       : total number of NICs, number
+  #17 jvms       : total number of running JVMs, number
+  #18 uptime     : how long the system has been running, string
+END
+    exit 0;
+}
+
+
+## revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+hdwrec: 1.0.0, 2014-09-01
+END
+    exit 0;
+}

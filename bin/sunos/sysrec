@@ -1,0 +1,637 @@
+#!/opt/sdr/perl/bin/perl
+
+# COPYRIGHT: Copyright (c) 2013 System Data Recorder
+# COPYRIGHT: Copyright (c) 2005 Brendan Gregg.
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+# sysperfstat - System Performance Statistics. Solaris 8+, Perl.
+#
+# This displays utilisation and saturation for cpu, memory, disk and network.
+# This can be useful to get an overall view of system performance, the
+# "view from 20,000 feet". (Utilisation in Australia, Utilization in the USA!)
+#
+# USAGE:    sysperfstat [-h] | [interval [count]]
+#    eg,
+#           sysperfstat                 # print summary since boot only
+#           sysperfstat 5               # print continually, every 5 seconds
+#           sysperfstat 1 5             # print 5 times, every 1 second
+#           sysperfstat -h              # print help
+#
+# This program prints utilisation and saturation values from four areas
+# on one line. The first line printed is the summary since boot.
+# The values represent,
+#
+# Utilisation,
+#           cpu            # usr + sys time across all cpus
+#           Memory         # free RAM. freemem from availrmem
+#           Disk           # %busy. r+w times across all Disks
+#           Network        # throughput. r+w bytes across all NICs
+#
+# Saturation,
+#           cpu            # threads on the run queue
+#           Memory         # scan rate of the page scanner
+#           Disk           # operations on the wait queue
+#           Network        # errors due to buffer saturation
+#
+# The utilisation values for cpu and Memory have maximum values of 100%,
+# Disk and Network don't. 100% cpu means all cpus are running at 100%, however
+# 100% Disk means perhaps 1 disk is running at 100%, or 2 disks at 50%; 
+# a similar calculation is used for Network. There are some sensible
+# reasons behind this decision that I hope to document at some point.
+#
+# The saturation values have been tuned to be similar to system load averages;
+# A value of 1.00 indicates moderate saturation of the resource (usually bad),
+# a value of 4.00 would indicate heavy saturation or demand for the resource.
+# A value of 0.00 does not indicate idle or unused - rather not saturated.
+#
+# See other Solaris commands for further details on utilisation or saturation.
+#
+# NOTE: For new physical disk types, add their module name to the @Disk
+# tunable in the code below.
+#
+# SEE ALSO: http://www.brendangregg.com/k9toolkit.html
+#
+# Author: Brendan Gregg  [Sydney, Australia]
+#
+# SDR VERSION: 0.75
+
+use strict;
+use warnings;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use Sun::Solaris::Kstat;
+my $Kstat = Sun::Solaris::Kstat->new();
+
+# Tunables
+
+# Default tick rate. use 1000 if hires_tick is on
+my $HERTZ = 100;
+
+# Default NIC speed (if detection fails). 100 Mbits/sec
+my $NIC_SPEED = 100_000_000;
+
+# Disk module names
+# these are deliberatly hard-coded, so that we match physical
+# disks and not metadevices (which from kstat look like disks).
+# matching metadevices would overcount disk statistics.
+my @Disk = qw(cmdk dad sd ssd);
+
+#  Process command line args
+usage() if defined $ARGV[0] and $ARGV[0] =~ /^(-h|--help|0)$/;
+revision() if defined $ARGV[0] and $ARGV[0] =~ /^(-V|0)$/;
+
+# process [interval [count]],
+my ($interval, $loop_max);
+if (defined $ARGV[0]) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+#
+#  Variables
+#
+my $loop     = 0;         # current loop number
+my $tp       = 0;         # time precision
+my $PAGESIZE = 20;        # max lines per header
+my $lines    = $PAGESIZE; # counter for lines printed
+my $cycles   = 0;         # cpu ticks usr + sys
+my $ncycles  = 0;         # aggregate used cpu capacity > 100%
+my $hcycles  = 0;         # aggregate unused cpu capacity, headroom
+my $num_cpu  = 1;         # vcpu count
+my $usercpu  = 0;         # cpu ticks usr
+my $syscpu   = 0;         # cpu ticks sys
+my $freepct  = 0;         # Memory free
+my $busy     = 0;         # Disk busy
+my $thrput   = 0;         # Network r+w bytes
+my $runque   = 0;         # cpu total run queue length
+my $scan     = 0;         # Memory scan rate
+my $wait     = 0;         # Disk wait sum
+my $error    = 0;         # Network errors
+my $pgsize   = 0;         # Memory page size
+local $|           = 1;
+
+my ($update1, $update2, $update3, $update4);
+
+### Set Disk and Network identify hashes
+my (%Disk, %Network);
+$Disk{$_} = 1 foreach (@Disk);
+discover_net();
+
+if (defined &POSIX::_SC_PAGESIZE) {
+    ### Perl knows POSIX::_SC_PAGESIZE
+    use POSIX qw(sysconf);
+    $pgsize = sysconf(&POSIX::_SC_PAGESIZE);
+
+} else {
+    ### No POSIX::_SC_PAGESIZE information
+    $pgsize = `/usr/bin/pagesize`;
+}
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer(ITIMER_REAL, $first_interval, $interval);
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+
+#  Main
+
+while (1) {
+
+    #
+    #  Store old values
+    #
+    my $oldupdate1 = $update1;
+    my $oldupdate2 = $update2;
+    my $oldupdate3 = $update3;
+    my $oldupdate4 = $update4;
+    my $oldcycles  = $cycles;
+    my $oldncycles = $ncycles;
+    my $oldhcycles = $hcycles;
+    my $oldusercpu = $usercpu;
+    my $oldsyscpu  = $syscpu;
+    my $oldbusy    = $busy;
+    my $oldthrput  = $thrput;
+    my $oldrunque  = $runque;
+    my $oldscan    = $scan;
+    my $oldwait    = $wait;
+    my $olderror   = $error;
+
+    my ($pcount, $tcount) = 0;
+
+    #
+    #  Get new values
+    #
+    $Kstat->update();
+
+    ($cycles, $ncycles, $num_cpu, $runque, $usercpu, $syscpu, $update1) = fetch_cpu();
+    ($freepct, $scan, $update2)  = fetch_mem();
+    ($busy, $wait, $update3)     = fetch_disk();
+    ($thrput, $error, $update4)  = fetch_net();
+
+    #
+    #  Calculate utilisation
+    #
+    my $ucpu  = ratio($cycles, $oldcycles, $update1, $oldupdate1, 100);
+    my $ncpu  = ratio($ncycles, $oldncycles, $update1, $oldupdate1);
+
+    if ($num_cpu == 1) {
+        $ncpu = 100 if ($ncpu > 100);
+    } 
+
+    my $hcpu  = $num_cpu * 100 - $ncpu;
+    
+    # cpu breakdown
+    my $uscpu = ratio($usercpu, $oldusercpu, $update1, $oldupdate1, 100);
+    my $sycpu = ratio($syscpu, $oldsyscpu, $update1, $oldupdate1, 100);
+    if ($uscpu + $sycpu > 100) { $uscpu = 100 - $sycpu; }
+    my $idcpu = sprintf("%.2f", 100-$uscpu-$sycpu);
+    $idcpu = 0.00 if ($idcpu == -0.00 );
+
+    my $umem  = sprintf("%.2f", $freepct);
+    my $udisk = ratio($busy, $oldbusy, $update3, $oldupdate3);
+    my $unet  = ratio($thrput, $oldthrput, $update4, $oldupdate4);
+
+    #
+    #  Calculate saturation
+    #
+    my $runq  = ratio($runque, $oldrunque, $update1, $oldupdate1);
+    my $smem  = ratio($scan, $oldscan, $update2, $oldupdate2);
+    my $sdisk = ratio($wait, $oldwait, $update3, $oldupdate3);
+    my $snet  = ratio($error, $olderror, $update4, $oldupdate4);
+
+    # Fetch process and thread count
+
+    if (defined($Kstat->{unix}->{0}->{system_misc}->{nproc})) {
+        $pcount = defined($Kstat->{unix}->{0}->{system_misc}->{nproc}) ?
+                          $Kstat->{unix}->{0}->{system_misc}->{nproc} : 0;
+    } else {
+        $pcount = 0;
+    }
+
+    if (defined($Kstat->{unix}->{0}->{lwp_cache}->{buf_inuse})) {
+        $tcount = defined($Kstat->{unix}->{0}->{lwp_cache}->{buf_inuse}) ?
+                          $Kstat->{unix}->{0}->{lwp_cache}->{buf_inuse} : 0;
+    } else {
+        $tcount = 0;
+    }
+
+    # Fetch LA
+    my $load1  = $Kstat->{unix}->{0}->{system_misc}->{avenrun_1min};
+    my $load5  = $Kstat->{unix}->{0}->{system_misc}->{avenrun_5min};
+    my $load15 = $Kstat->{unix}->{0}->{system_misc}->{avenrun_15min};
+
+    ### Processing
+    $load1  /= 256;
+    $load5  /= 256;
+    $load15 /= 256;
+
+    #
+    #  Print utilisation and saturation
+    #
+    # sdrd 0737 19 fields
+    # timestamp %.${tp}f:
+    # cpu %.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.f:%.f:%.f:
+    # mem %.2f:%.2f:
+    # disk %.2f:%.2f:
+    # net %.2f:%.2f:
+    # oth %.2f:%.2f:%.2f
+
+    printf 
+     "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.f:%.f:%.f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+     time, $ucpu, $ncpu, $hcpu, $uscpu, $sycpu, $idcpu, $runq, $pcount, $tcount,
+     $umem, $smem, $udisk, $sdisk, $unet, $snet, $load1, $load5, $load15;
+
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+#  Subroutines
+
+# fetch_cpu - fetch current usr + sys times, and the runque length.
+sub fetch_cpu {
+
+    ### Variables
+    my ($runqueue, $time, $usr, $sys, $util, $nutil, $numcpus);
+    $usr = 0; $sys = 0;
+
+    ### Loop over all cpus
+    my $Modules = $Kstat->{cpu_stat};
+    foreach my $instance (keys(%$Modules)) {
+        my $Instances = $Modules->{$instance};
+
+        foreach my $name (keys(%$Instances)) {
+
+            ### Utilisation - usr + sys
+            my $Names = $Instances->{$name};
+            if (defined($$Names{user})) {
+                $usr += $$Names{user};
+                $sys += $$Names{kernel};
+                # use last time seen
+                $time = $$Names{snaptime};
+            }
+        }
+    }
+
+    ### Saturation - runqueue length
+    $runqueue = $Kstat->{unix}->{0}->{sysinfo}->{runque};
+
+    ### Utilisation - usr + sys
+    $numcpus = $Kstat->{unix}->{0}->{system_misc}->{ncpus};
+    $numcpus = 1 if $numcpus == 0;
+    $util = ($usr + $sys) / $numcpus;
+    $util = $util * 100/$HERTZ if $HERTZ != 100;
+
+    $nutil = $usr + $sys;
+
+    ### Return
+    return ($util, $nutil, $numcpus, $runqueue, $usr, $sys, $time);
+}
+
+
+# fetch_mem - return memory percent utilised and scanrate.
+#
+# To determine the memory utilised, we use availrmem as the limit of
+# usable RAM by the VM system, and freemem as the amount of RAM
+# currently free.
+sub fetch_mem {
+
+    ### Variables
+    my ($scan, $time, $pct, $freemem, $availrmem, $pagestotal, $zfsmem);
+    $scan = 0;
+
+    ### Loop over all cpus
+    my $Modules = $Kstat->{cpu_stat};
+    foreach my $instance (keys(%$Modules)) {
+        my $Instances = $Modules->{$instance};
+
+        foreach my $name (keys(%$Instances)) {
+            my $Names = $Instances->{$name};
+    
+            ### Saturation - scan rate
+            if (defined($$Names{scan})) {
+                $scan += $$Names{scan};
+                # use last time seen
+                $time = $$Names{snaptime};
+            }
+        }
+    }
+
+    ### Utilisation - free RAM (freemem from availrmem)
+    $availrmem   = $Kstat->{unix}->{0}->{system_pages}->{availrmem};
+    $freemem     = $Kstat->{unix}->{0}->{system_pages}->{freemem};
+    $pagestotal  = $Kstat->{unix}->{0}->{system_pages}->{pagestotal};
+
+    if (defined($Kstat->{zfs}->{0}{arcstats})) {
+        ### check for ZFS if Solaris 10+
+        $zfsmem = defined($Kstat->{zfs}->{0}{arcstats}->{size}) ?
+                           $Kstat->{zfs}->{0}{arcstats}->{size} : 0;
+    } else {
+        $zfsmem = 0;
+    }
+
+    #
+    # Process utilisation.
+    # this is a little odd, most values from kstat are incremental
+    # however these are absolute. we calculate and return the final
+    # value as a percentage. page conversion is not necessary as
+    # we divide that value away.
+    #
+    # Added here zfs consumer + CR11
+    #
+    if ($availrmem > $freemem) {
+        $pct = 100 - 100 * ($freemem / ($availrmem + ($zfsmem / $pgsize)) );
+        
+    } else {
+        $pct = 100 - 100 * ($freemem / ($pagestotal + ($zfsmem / $pgsize)) );
+    }
+
+    #
+    # Process Saturation.
+    # Divide scanrate by slowscan, to create sensible saturation values. 
+    # Eg, a consistant load of 1.00 indicates consistantly at slowscan.
+    # slowscan is usually 100.
+    #
+    $scan = $scan / $Kstat->{unix}->{0}->{system_pages}->{slowscan};
+
+    ### Return
+    return ($pct, $scan, $time); 
+}
+
+
+# fetch_disk - fetch kstat values for the disks.
+#
+# The values used are  the r+w times for utilisation, and wlentime
+# for saturation.
+sub fetch_disk {
+
+    ### Variables
+    my ($wait, $time, $rtime, $wtime, $disktime);
+    $wait = $rtime = $wtime = 0;
+
+    ### Loop over all Disks
+    foreach my $module (keys(%$Kstat)) {
+
+        # Check that this is a physical disk
+        next unless $Disk{$module};
+        my $Modules = $Kstat->{$module};
+
+        foreach my $instance (keys(%$Modules)) {
+            my $Instances = $Modules->{$instance};
+
+            foreach my $name (keys(%$Instances)) {
+        
+                # Check that this isn't a slice
+                next if $name =~ /,/;
+
+                my $Names = $Instances->{$name};
+
+                ### Utilisation - r+w times
+                if (defined($$Names{rtime}) or defined($$Names{rtime64})) {
+                    # this is designed to be future safe
+                    if (defined($$Names{rtime64})) {
+                        $rtime += $$Names{rtime64};
+                        $wtime += $$Names{wtime64};
+                    }
+                    else {
+                        $rtime += $$Names{rtime};
+                        $wtime += $$Names{wtime};
+                    }
+                }
+
+                ### Saturation - wait queue
+                if (defined($$Names{wlentime})) {
+                    $wait += $$Names{wlentime};
+                    $time = $$Names{snaptime};
+                }
+            }
+        }
+    }
+
+    ### Process Utilisation
+    $disktime = 100 * ($rtime + $wtime);
+
+    ### Return
+    return ($disktime, $wait, $time);
+}
+
+
+# fetch_net - fetch kstat values for the network interfaces.
+#
+# The values used are r+w bytes, defer, nocanput, norcvbuf and noxmtbuf. 
+# These error statistics aren't ideal, as they are not always triggered
+# for network satruation. Future versions may pull this from the new tcp
+# mib2 or net class kstats in Solaris 10.
+sub fetch_net {
+
+    ### Variables
+    my ($err, $time, $speed, $util, $rbytes, $wbytes);
+    $err = $util = 0;
+
+    ### Loop over all NICs
+    foreach my $module (keys(%$Kstat)) {
+
+        # Check this is a network device
+        next unless $Network{$module};
+        my $Modules = $Kstat->{$module};
+
+        foreach my $instance (keys(%$Modules)) {
+            my $Instances = $Modules->{$instance};
+
+            foreach my $name (keys(%$Instances)) {
+                my $Names = $Instances->{$name};
+
+                # Check that this is a network device
+                next unless defined($$Names{ifspeed});
+
+                ### Utilisation - r+w bytes
+                if (defined($$Names{obytes}) or defined($$Names{obytes64})) {
+                    if (defined($$Names{obytes64})) {
+                        $rbytes = $$Names{rbytes64};
+                        $wbytes = $$Names{obytes64};
+                    }
+                    else {
+                        $rbytes = $$Names{rbytes};
+                        $wbytes = $$Names{obytes};
+                    }
+
+                    if (defined$$Names{ifspeed} and $$Names{ifspeed}) {
+                        $speed = $$Names{ifspeed};
+                    }
+                    else {
+                        $speed = $NIC_SPEED;
+                    }
+
+                    #
+                    # Process Utilisation.
+                    # the following has a mysterious "800", it is 100 
+                    # for the % conversion, and 8 for bytes2bits.
+                    # $util is cumulative, and needs further processing.
+                    #
+                    $util += 800 * ($rbytes + $wbytes) / $speed;
+                }
+
+                ### Saturation - errors
+                if (defined($$Names{nocanput}) or defined($$Names{norcvbuf})) {
+                    $err += defined($$Names{defer}) ? $$Names{defer} : 0;
+                    $err += defined($$Names{nocanput}) ? $$Names{nocanput} : 0;
+                    $err += defined($$Names{norcvbuf}) ? $$Names{norcvbuf} : 0;
+                    $err += defined($$Names{noxmtbuf}) ? $$Names{noxmtbuf} : 0;
+                    $time = $$Names{snaptime};
+                }
+            }
+        }
+    }
+
+    #
+    # Process Saturation.
+    # Divide errors by 200. This gives more sensible load averages,
+    # such as 4.00 meaning heavily saturated rather than 800.00.
+    #
+    $err = $err / 200;
+
+    ### if no NICS, return 0 for time
+    $time = defined($time) ? $time : 0;
+
+    ### Return
+    return ($util, $err, $time);
+}
+
+
+# discover_net - discover network modules, populate %Network.
+#
+# This could return an array of pointers to Kstat objects, but for
+# now I've kept things simple.
+sub discover_net {
+
+    ### Loop over all NICs
+    foreach my $module (keys(%$Kstat)) {
+
+        my $Modules = $Kstat->{$module};
+        foreach my $instance (keys(%$Modules)) {
+
+            my $Instances = $Modules->{$instance};
+            foreach my $name (keys(%$Instances)) {
+
+                my $Names = $Instances->{$name};
+
+                # Check this is a network device.
+                # Matching on ifspeed has been more reliable than "class"
+                if (defined($$Names{ifspeed})) {
+                    $Network{$module} = 1;
+                }
+            }
+        }
+    }
+
+return;
+}
+
+# ratio - calculate the ratio of a count delta over time delta.
+#
+# Takes count and oldcount, time and oldtime. Returns a string
+# of the value, or a null string if not enough data was provided.
+sub ratio {
+
+    my ($count, $oldcount, $time, $oldtime, $max) = @_;
+   
+    # Calculate delta
+    my $countd = $count - (defined($oldcount) ? $oldcount : 0);
+    my $timed = $time - (defined($oldtime) ? $oldtime : 0);
+
+    # Calculate ratio
+    my $ratio = $timed > 0 ? $countd / $timed : 0;
+
+    # Maximum cap
+    if (defined($max)) {
+        $ratio = $max if $ratio > $max;
+    }
+
+    # Return as rounded string
+    return sprintf "%.2f", $ratio;
+}
+
+
+# usage - print usage and exit.
+sub usage {
+        print STDERR <<END;
+USAGE: sysrec [-hv] | [interval [count]]
+   eg, sysrec               # print summary since boot only
+       sysrec 5             # print continually every 5 seconds
+       sysrec 1 5           # print 5 times, every 1 second
+
+ FIELDS:
+  cpu
+   #01 timestamp  : seconds since Epoch, time
+   #02 cpupct     : cpu utilization, across all cpus, number
+   #03 sumpct     : sum of all cpus utilization, number
+   #04 headpct    : headroom cpu available, all cpus, number
+   #05 userpct    : cpu utilization user space, all cpus, number
+   #06 syspct     : cpu utilization system space, all cpus, number
+   #07 idlepct    : cpu utilization Idle state, all cpus, number
+   #08 runqlen    : threads on the run queue, number
+   #09 pcount     : current process count on the system, number
+   #10 tcount     : current lwp count on the system, number
+
+  MEM
+   #11 memusedpct : size of used memory in percent, number
+   #12 pscanner   : scan rate of the page scanner, number
+ 
+  DISK
+   #13 sumrw diskpct    : sum read+write across disks, number
+   #14 diskerrs   : operations on the wait queue, number
+
+  NET
+   #15 sumrxtxbs  : throughput, read+write bytes across NICs, number
+   #16 neterr     : errors due to buffer saturation, number
+
+   #17 avg1       : LA of the last minute, number
+   #18 avg5       : LA of the last 5 minutes, number
+   #19 avg15      : LA of the last 15 minutes, number
+END
+        exit 0;
+}
+
+
+# revision - print revision and exit
+sub revision {
+       print STDERR <<END;
+sysrec: 0.75, 2013-08-31
+ sdrd format: 0737 19
+END
+       exit 0;
+}
+

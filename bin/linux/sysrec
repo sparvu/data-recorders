@@ -1,0 +1,387 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use Sys::Statistics::Linux;
+use POSIX qw(pause);
+
+###  Process command line args
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# process [interval [count]],
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+###  Variables
+my $sb   = "/sys/block";
+my $loop = 0;    # current loop number
+my $tp   = 0;    # time precision
+$main::opt_h = 0;    # help option
+$main::opt_V = 0;    # revision option
+local $| = 1;
+
+
+
+### MAIN BODY
+
+# Set a timer for S::S::L object
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $lxs = Sys::Statistics::Linux->new(
+    cpustats  => 1,
+    memstats  => 1,
+    diskstats => 1,
+    netstats  => 1,
+    loadavg   => 1
+);
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+while (1) {
+
+    my ( $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt ) = 0;
+
+    # net stats
+    my ( $rxByt, $txByt, $ntByt, $rxerr, $txerr, $rxdrp, $txdrp ) = 0;
+
+    # runq size and task count
+    my ( $rqsz, $tcount ) = 0;
+
+    ### Get Stats
+    my $stat    = $lxs->get;
+
+    # Dump $lx variable
+    # use Data::Dumper;
+    # print Dumper($stat);
+
+    my $cpu     = $stat->cpustats->{cpu};
+    my $mem     = $stat->memstats;
+    my $disk    = $stat->diskstats;
+    my $nic     = $stat->netstats;
+    my $la      = $stat->loadavg;
+
+    ### sum(cpus)
+    my $scpus = $stat->cpustats;
+    my @cpus = sort $stat->cpustats;
+    my ($ncpu, $numcpus) = 0;
+
+    foreach (@cpus) {
+        next if ( $_ eq "cpu" );
+        $ncpu += $scpus->{$_}{total};
+        $numcpus++;
+    }
+
+    ### headroom cpu
+    my $hcpu = ($numcpus * 100) - $ncpu;
+
+
+    ### get disks
+    my $rdisks = get_disks();
+
+    ### loop over all disks
+    foreach (@$rdisks) {
+
+        # print "\nDisk: $_ \n";
+
+        if ( defined( $disk->{$_}{rdreq} ) ) {
+            $readReq += $disk->{$_}{rdreq};
+        }
+
+        if ( defined( $disk->{$_}{wrtreq} ) ) {
+            $writeReq += $disk->{$_}{wrtreq};
+        }
+
+        if ( defined( $disk->{$_}{ttreq} ) ) {
+            $totReq += $disk->{$_}{ttreq};
+        }
+
+        if ( defined( $disk->{$_}{rdbyt} ) ) {
+            $readByt += ( $disk->{$_}{rdbyt} / 1024 );
+        }
+
+        if ( defined( $disk->{$_}{wrtbyt} ) ) {
+            $writeByt += ( $disk->{$_}{wrtbyt} / 1024 );
+        }
+
+        if ( defined( $disk->{$_}{ttbyt} ) ) {
+            $totByt += ( $disk->{$_}{ttbyt} / 1024 );
+        }
+
+        ### Debug
+        #print "readReq = $readReq \n";
+        #print "writeReq = $writeReq \n";
+        #print "totReq = $totReq \n";
+        #print "readBytes = $readByt\n";
+        #print "writeReq = $writeByt \n";
+        #print "totByt = $totByt \n";
+    }
+
+    ### Get NICS
+    my @nics = sort $stat->netstats;
+
+    # loop over all NICS
+    foreach (@nics) {
+
+        # skip here the non eth NICs
+        next if $_ !~ /^eth.*/;
+
+        #
+        # print "NIC: $_ \n";
+        if ( defined( $nic->{$_}{rxbyt} ) ) {
+            $rxByt += ( $nic->{$_}{rxbyt} / 1024 );
+        }
+
+        if ( defined( $nic->{$_}{txbyt} ) ) {
+            $txByt += ( $nic->{$_}{txbyt} / 1024 );
+        }
+
+        if ( defined( $nic->{$_}{ttbyt} ) ) {
+            $ntByt += ( $nic->{$_}{ttbyt} / 1024 );
+        }
+
+        if ( defined( $nic->{$_}{rxerrs} ) ) {
+            $rxerr += ( $nic->{$_}{rxerrs} );
+        }
+
+        if ( defined( $nic->{$_}{txerrs} ) ) {
+            $txerr += ( $nic->{$_}{txerrs} );
+        }
+
+        if ( defined( $nic->{$_}{rxdrop} ) ) {
+            $rxdrp += ( $nic->{$_}{rxdrop} );
+        }
+
+        if ( defined( $nic->{$_}{txdrop} ) ) {
+            $txdrp += ( $nic->{$_}{txdrop} );
+        }
+
+    }
+
+    # get runq_sz and process count from /proc/loadavg
+    open my $plavg, '<', '/proc/loadavg'
+      or die "Error: Cannot find proc partitions file: $!\n";
+
+    ($rqsz, $tcount) = (split m@/@, (split /\s+/, <$plavg>)[3]);
+
+    close $plavg;
+
+    # exclude from runqa_sz current process
+    $rqsz--;
+
+    # print metrics
+    # sdrd 0737 43 fields
+    # timestamp %.${tp}f:
+    # cpu %.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:
+    # mem %.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:
+    # disk %d:%d:%d:%.2f:%.2f:%.2f:
+    # net %.2f:%.2f:%.2f:%d:%d:%d:%d:
+    # oth %.2f:%.2f:%.2f
+
+    printf
+         "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f\n",
+          time,
+          $cpu->{total},  $ncpu,        $hcpu, 
+          $cpu->{user},   $cpu->{nice}, $cpu->{system},  $cpu->{idle},
+          $cpu->{iowait}, $cpu->{irq},  $cpu->{softirq}, $cpu->{steal},
+          $rqsz,       $tcount,
+          $mem->{memusedper},  $mem->{memused},
+          $mem->{memfree},     $mem->{memtotal},
+          $mem->{buffers},     $mem->{cached},
+          $mem->{realfree},    $mem->{realfreeper},
+          $mem->{swapusedper}, $mem->{swapused},
+          $mem->{swapfree},    $mem->{swaptotal},
+          $mem->{swapcached},
+
+          $readReq, $readByt, 
+          $writeReq, $writeByt,
+          $totReq, $totByt,
+
+          $rxByt,   $txByt,    $ntByt,
+          $rxerr, $txerr, $rxdrp, $txdrp,
+
+          $la->{avg_1}, $la->{avg_5}, $la->{avg_15};
+
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+
+### SUBROUTINES
+
+# get_disks - return the attached disks on the system.
+#
+sub get_disks {
+
+    my @d;
+
+    # get disks
+    opendir(my $dh, $sb) 
+        or die "Error: Cannot find block directory: $!\n";
+
+    while(readdir $dh) {
+        # discard parent dir
+        next if ($_ =~ m/^\./);
+
+        # exceptions
+        next if ($_ =~ m/^loop|^ram/);
+        next if ($_ =~ m/^fd0|^hdc/);
+        next if ($_ =~ m/^md(?:[0-9])/);
+        next if ($_ =~ m/^sr(?:[0-9])$/);
+        
+        # print disks
+        # print "Disk: $_\n";
+        push @d, "$_";
+    }
+    closedir $dh;
+
+    # return array ref
+    return \@d;
+}
+
+
+sub get_part {
+    my ($entry) = @_;
+    my ( $s, $maj, $min, $bks, $name );
+
+    chomp $entry;
+    return if $entry =~ /^major/;
+    return if $entry =~ /^$/;
+   
+    # we return any valid partition number, we skip entire disk
+    if ($entry =~ /(?:[0-9])$/) {
+        ( $s, $maj, $min, $bks, $name ) = split /\s+/, $entry;
+        return $name;
+    }
+
+    return;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: sysrec [-hV] | [interval [count]]
+ e.g. sysrec 5        print continuously, every 5 seconds
+      sysrec 1 5      print 5 times, every 1 second
+      sysrec .5       print continuously, every 0.5 seconds
+
+ FIELDS:
+  CPU
+   #01 timestamp  : seconds since Epoch, time
+   #02 cpupct     : cpu utilization, across all cpus, number
+   #03 sumpct     : sum of all cpus utilization, number
+   #04 headpct    : headroom cpu available, all cpus, number
+   #05 userpct    : cpu utilization, user space in percent, number
+   #06 nicepct    : cpu utilization, user space with nice priority, number
+   #07 sysct      : cpu utilization, system space, number
+   #08 idlepct    : cpu utilization, idle state, number
+   #09 iowaitcpt  : cpu percentage in idle state because an I/O operation 
+                     is waiting to complete, number
+   #10 irqpct     : cpu percentage servicing interrupts, number
+   #11 softirqpct : cpu percentage servicing softirqs, number
+   #12 stealpct   : cpu percentage of time spent in other operating systems
+                    when running in a virtualized environment, number
+   #13 runqsz     : run queue length, tasks waiting for run time, number
+   #14 plistsz    : tasks in the task list, number
+
+  MEM
+   #15 memusedpct : size of used memory in percent, number
+   #16 memused    : size of used memory in kilobytes, number
+   #17 memfree    : size of free memory in kilobytes, number
+   #18 memtotal   : size of memory in kilobytes, number
+   #19 buffers    : size of buffers used from memory in kilobytes, number
+   #20 cached     : size of cached memory in kilobytes, number
+   #21 realfree   : size of memory is real free, number
+                     (memfree+buffers+cached)
+   #22 realfreepct: size of memory real free in percent of total memory, number
+   #23 swapusedpct: size of used swap space in percent, number
+   #24 swapused   : size of swap space is used is kilobytes, number
+   #25 swapfree   : size of swap space is free in kilobytes, number
+   #26 swaptotal  : size of swap space in kilobytes, number
+   #27 swapcached : memory that once was swapped out, is swapped back in 
+                     but still also is in the swapfile, number
+
+  DISK
+   #28 reads      : disk read requests per second, rate
+   #29 rkbytes    : read bytes per second, in KB, rate
+   #30 writes     : disk write requests per second, rate
+   #31 wkbytes    : write bytes per second, in KB, rate
+   #32 sumrws     : disk read+write requests per second, rate
+   #33 sumrwkbs   : read+write Kbytes per second, rate
+
+  NET
+   #34 rxkbytes   : received bytes per seccond, in KB, rate
+   #35 txkbytes   : transmitted bytes per second, in KB, rate 
+   #36 sumrxtxkbs : received + transmitted bytes per second, in KB, rate
+   #37 rxerr      : number of errors while received pkt per second, rate
+   #38 txerr      : number of errors while transmitting pkt per second, rate
+   #39 rxdrop     : number of rx packets that were dropped per second, rate
+   #40 txdrop     : number of tx packets that were dropped per second, rate
+ 
+   #41 avg1       : LA of the last minute, number
+   #42 avg5       : LA of the last 5 minutes, number
+   #43 avg15      : LA of the last 15 minutes, number
+END
+    exit 0;
+}
+
+
+# revision - print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+sysrec: 1.0.0, 2014-05-04
+END
+    exit 0;
+}

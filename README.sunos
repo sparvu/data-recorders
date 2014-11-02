@@ -1,0 +1,218 @@
+
+================
+README SDR SunOS
+================
+
+SDR Recording Module
+
+Operating Systems    : Solaris 10 x64
+                       Solaris 10 sparcv9
+
+
+1.Prerequisites
+===============
+
+KSH:
+
+ Make sure you have installed ksh on your Solaris OE, part of
+ SUNWcsu package.
+
+
+JAVA:
+
+ If you would like to use webrec, make sure you have downloaded
+ from your vendor, Oracle JDK 1.5 or 1.6 versions. webrec will
+ require at least Java 5. 
+
+ * Example, Solaris 10 x86:
+  # mkdir /opt/java
+  # cd java
+  # sh jdk-6u23-solaris-i586.sh
+  # sh jdk-6u23-solaris-x64.sh
+  # ln -s jdk1.6.0_23 current
+
+
+
+2.Install SDR package
+=====================
+
+ 2.1 User/Group
+     
+     SDR software should be configured to run as sdr user. 
+     Create a specific username/group for SDR. Select 'sdr'
+     for a default installation:
+
+      # groupadd sdr
+      # useradd -d /export/home/sdr -g sdr -m sdr
+
+     
+ 2.2 Package installation
+     
+     SDR ships as a standard tar archive. Place the
+     installation somewhere under /opt !
+     
+      # cd /opt
+      # bzcat sdr.073.solaris10x64.tar.bz2 | tar xvf -
+
+
+
+3.Startup Services
+==================
+
+ 3.1 SMF Manifests
+     One very useful feature of SDR under Solaris 10 is 
+     SMF: the service management facility, a simple way 
+     to restart your service in case of a failure, maintenance
+     automatically. SDR uses SMF under Solaris 10 by default 
+     but requires its activation. Below there are the steps used 
+     to enable SDR under SMF:
+
+     Check recorders and all SDR manifests
+
+      # svcs -a | grep rec
+
+      # svcadm disable sysrec
+      # svcadm disable cpurec
+      # svcadm disable netrec 
+      # svcadm disable nicrec
+      # svcadm disable zonerec
+      # svcadm disable jvmrec
+
+ 3.2 Validate and import all SDR smf manifests
+
+      # svccfg validate sysrec.xml 
+      # svccfg validate cpurec.xml                       
+      # svccfg validate nicrec.xml       
+      # svccfg validate netrec.xml                       
+      # svccfg validate zonerec.xml
+
+      # svccfg  import sysrec.xml
+      # svccfg  import cpurec.xml                        
+      # svccfg  import nicrec.xml                        
+      # svccfg  import netrec.xml                        
+      # svccfg  import zonerec.xml
+
+ 3.3 Enable each service
+
+      # svcadm enable sysrec
+      # svcadm enable cpurec
+      # svcadm enable nicrec                             
+      # svcadm enable netrec                             
+      # svcadm enable zonerec
+
+     Check all recorders are online
+
+      # svcs -a | grep rec
+      online         16:36:07 svc:/application/sysrec:default
+      online         16:37:43 svc:/application/cpurec:default
+      online         16:37:47 svc:/application/nicrec:default
+      online         16:37:52 svc:/application/netrec:default
+      online         16:37:56 svc:/application/zonerec:default
+
+      # ptree
+      [...]
+      3958  /usr/bin/perl -w /opt/sdr/bin/sysrec 60
+      3972  /bin/perl -w /opt/sdr/bin/cpurec 60
+      3980  /usr/bin/perl -w /opt/sdr/bin/nicrec 60
+      3989  /bin/perl -w /opt/sdr/bin/netrec 60
+      4000  /bin/ksh -p /opt/sdr/bin/zonerec 60
+        4022  sleep 60
+
+   
+
+
+4.Logrotate
+===========
+
+ 4.1 Log Rotation - Enable logadm
+
+     Enable for each raw file, a entry for logadm to rotate the file 
+     at midnight and to compress the file. For this make sure you are 
+     superuser and modify the /etc/logadm.conf file or use logadm 
+     utility to add the entries.
+
+     # SDR Monitoring
+     /opt/sdr/log/current/sysrec.sdrd -c -p 1d -z 0
+     /opt/sdr/log/current/cpurec.sdrd -c -p 1d -z 0
+     /opt/sdr/log/current/nicrec.sdrd -c -p 1d -z 0
+     /opt/sdr/log/current/netrec.sdrd -c -p 1d -z 0
+     /opt/sdr/log/current/zonerec.sdrd -c -p 1d -z 0
+
+     At the end make sure you check the consistency of the logadm.conf by running: 
+
+     # logadm -V 
+
+     root crontab
+     # crontab -e
+
+     Add here logadm to be done at 00:05, everyday instead of 3AM
+     and move the raw data compressed into daily directories.
+
+     #
+     05 00 * * * /usr/sbin/logadm
+     10 00 * * * /opt/sdr/bin/raw2day
+
+    Note: We can try to rotate logs as close as possible to midnight. 
+    See below example:
+
+     59 23 * * * /usr/bin/sleep 59 && /usr/sbin/logadm
+     00 00 * * * /usr/bin/sleep 30 && /opt/sdr/bin/raw2day -t sftp
+     
+    The previous example does rotate sdrd files every 23:59:59 and will
+    transport them via SFTP to a reporting backend at 00:00:30, every night !
+
+     raw2day is an optional script which simple copies over the previous 
+     data into its own dir. If you consider needed to simple upload the 
+     data into RRD skip this entirely.  
+
+
+5.Uninstalling SDR
+==================
+
+ 5.1 In order to remove SDR from your system make sure you login in 
+     the global zone of the physical machine where you have installed 
+     the software. Become root and disable all SDR recorders from smf 
+     and delete all its manifests. Make sure as well you delete the log 
+     directory, where SDR keeps its recorded data to make room for other 
+     applications.
+
+
+ 5.2 Stop all recorders
+
+      # svcadm disable sysrec
+      # svcadm disable cpurec                            
+      # svcadm disable nicrec                            
+      # svcadm disable netrec                            
+      # svcadm disable zonerec
+
+      # svcs -a | grep rec
+      disabled       16:43:55 svc:/application/sysrec:default
+      disabled       16:44:02 svc:/application/cpurec:default
+      disabled       16:44:05 svc:/application/nicrec:default
+      disabled       16:44:08 svc:/application/netrec:default
+      disabled       16:44:11 svc:/application/zonerec:default
+
+ 5.3 Delete all SDR manifests
+
+      # svccfg delete application/sysrec
+      # svccfg delete application/cpurec                 
+      # svccfg delete application/nicrec                 
+      # svccfg delete application/netrec                 
+      # svccfg delete application/zonerec
+
+     At this moment SMF does not know anymore about SDR
+
+      # svcs -a | grep rec
+
+
+Notes
+=====
+
+The above example enables and starts the main SDR recorders. If you
+need to use additional ones just follow the example and enable
+and start your set of recorders.
+
+raw2day as well is called after the logrotation has taken place ! 
+If your installation requires to copy every night the raw data to 
+the reporting system, make sure you configure raw2day and check the 
+SDR Manual for more information.    

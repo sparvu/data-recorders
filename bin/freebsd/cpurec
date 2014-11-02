@@ -1,0 +1,234 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use BSD::Sysctl qw(sysctl);
+use POSIX qw(pause);
+
+# Debug Only
+# use Data::Dumper;
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**64;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+### Variables
+my %old_cpudata;   # cpu_stats data
+my $loop = 0;      # current loop number
+$main::opt_h = 0;  # help option
+$main::opt_V = 0;  # revision option
+my $tp = 0;        # time precision
+local $| = 1;      # autoflush
+
+
+
+### MAIN BODY
+
+# Set a timer for BSD::Sysctl object
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $bcpu = BSD::Sysctl->new( 'kern.cp_times' );
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+# check interval input
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+while (1) {
+
+    my @cpudata = getcpu();
+
+    ## debug
+    # print @cpudata;
+    # print $#cpudata;
+
+    foreach my $values (@cpudata) {
+
+        $values =~ s/\:$//;
+
+        my ($cid, $u, $n, $s, $r, $i ) = split /:/, $values;
+
+        ## debug
+        # print "new: $cid, $u, $n, $s, $r, $i\n";
+
+        # old values
+        my ($old_u, $old_n, $old_s, $old_r, $old_i);
+
+        if (defined $old_cpudata{$cid}) {
+            ($old_u, $old_n, $old_s, $old_r, $old_i) = 
+                split /:/, $old_cpudata{$cid};
+            ## debug
+            # print "old: $old_u, $old_n, $old_s, $old_r, $old_i\n";
+
+        } else {
+            $old_u = $old_n = $old_s = $old_r = $old_i = 0;
+        }
+
+
+        my $ticks = cpu_ticks($old_u, $u);
+        $ticks = $ticks + cpu_ticks($old_n, $n);
+        $ticks = $ticks + cpu_ticks($old_s, $s);
+        $ticks = $ticks + cpu_ticks($old_r, $r);
+        $ticks = $ticks + cpu_ticks($old_i, $i);
+
+        my $percent = 100 / $ticks;
+      
+        my $user  = delta($old_u, $u) * $percent;
+        my $nice  = delta($old_n, $n) * $percent;
+        my $sys   = delta($old_s, $s) * $percent;
+        my $intr  = delta($old_r, $r) * $percent;
+        my $idle  = delta($old_i, $i) * $percent;
+        my $total = $user + $nice + $sys + $intr;
+
+        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+                time, "cpu$cid", $user, $nice, $sys, $intr, $idle, $total;
+
+        # save old data
+        $old_cpudata{$cid} = "$u:$n:$s:$r:$i";
+
+    }
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+### SUBROUTINES
+
+## getcpu
+sub getcpu {
+
+    my @cdata = ();
+    my $cpu_times;
+
+    ### Get Stats
+    $cpu_times = $bcpu->get();
+
+    my $len = $#{ $cpu_times };
+
+    my $count = 0;
+    my $cpuid = 0;
+    my $cpusem = 0;
+    my ($payload, $cid);
+    for (my $i=0; $i<$len+1; $i++) {
+         ## debug
+         #print "cpu$cpuid:${ $ cpu_times}[$i]:";
+
+         if ($cpusem == 0) {
+             $cid = "$cpuid:";
+             $cpusem=1;
+         }
+
+         $payload = $payload . "${ $ cpu_times}[$i]:";
+
+         $count++;
+         if ($count == 5) {
+             my $rec = $cid . $payload;
+             push @cdata, $rec;
+             $count=0;
+             $cpuid++;
+             $cpusem=0;
+             $payload = "";
+             $cid = "";
+         }
+    }
+
+    return @cdata;
+}
+
+
+sub cpu_ticks {
+    my ($old, $new) = @_;
+    my $lticks = 0;
+
+    my $d = delta($old, $new);
+    $lticks += $d;
+
+    return $lticks;
+}
+
+
+sub delta {
+    my ($old, $new) = @_;
+    return $new - $old;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: cpurec [-hV] | [interval [count]]
+ e.g. cpurec 5       print continuously, every 5 seconds
+      cpurec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 cpuid      : cpuid, number
+  #03 userpct    : cpu utilization, user space, number
+  #04 nicepct    : cpu utilization, user space nice priority, number
+  #05 syspct     : cpu utilization, system space, number
+  #06 irqpct     : cpu percentage servicing interrupts, number
+  #07 idlepct    : cpu utilization, idle state, number
+  #08 totalpct   : total cpu utilization, number
+END
+    exit 0;
+}
+
+
+## revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+cpurec: 1.0.0, 2014-09-01
+END
+    exit 0;
+}

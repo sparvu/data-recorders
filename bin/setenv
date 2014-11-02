@@ -1,0 +1,89 @@
+#!/bin/sh
+
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+### Platform and OS
+OS_NAME=`uname -s | tr '[A-Z]' '[a-z]'`
+PT_NAME=`uname -p | tr '[A-Z]' '[a-z]'`
+MT_NAME=`uname -m | tr '[A-Z]' '[a-z]'`
+HOSTNAME=`uname -n | sed 's/\..*//'`
+
+### USER ID
+case "$OS_NAME" in
+ sunos)
+ USER_ID=`/usr/xpg4/bin/id -u`
+ ;;
+
+ linux)
+ USER_ID=`/usr/bin/id -u`
+ ;;
+
+ freebsd)
+ USER_ID=`/usr/bin/id -u`
+ ;;
+
+ *)
+ echo "Not supported OS !"
+esac
+
+### JDK_PATH
+JDK_PATH=
+
+SDR_PREFIX=/opt/sdr
+SDR_BIN=${SDR_PREFIX}/bin
+SDR_ETC=${SDR_PREFIX}/etc
+SDR_LIB=${SDR_PREFIX}/lib
+SDR_LOG=${SDR_PREFIX}/log
+SDR_CURRENT=${SDR_LOG}/current
+SDR_DAILY=${SDR_LOG}/daily
+
+
+### RAW SDRD DATA FILES
+SYSREC_CUR=${SDR_CURRENT}/sysrec.sdrd
+CPUREC_CUR=${SDR_CURRENT}/cpurec.sdrd
+DISKREC_CUR=${SDR_CURRENT}/diskrec.sdrd
+NICREC_CUR=${SDR_CURRENT}/nicrec.sdrd
+NETREC_CUR=${SDR_CURRENT}/netrec.sdrd
+JVMREC_CUR=${SDR_CURRENT}/jvmrec.sdrd
+HDWREC_CUR=${SDR_CURRENT}/hdwrec.sdrd
+PROCREC_CUR=${SDR_CURRENT}/procrec.sdrd
+XENREC_CUR=${SDR_CURRENT}/xenrec.sdrd
+
+
+### RECORDER LOG
+SYSREC_LOG=${SDR_LOG}/sysrec.log
+CPUREC_LOG=${SDR_LOG}/cpurec.log
+NETREC_LOG=${SDR_LOG}/netrec.log
+DISKREC_LOG=${SDR_LOG}/diskrec.log
+NICREC_LOG=${SDR_LOG}/nicrec.log
+JVMREC_LOG=${SDR_LOG}/jvmrec.log
+HDWREC_LOG=${SDR_LOG}/hdwrec.log
+PROCREC_LOG=${SDR_LOG}/procrec.log
+WEBREC_LOG=${SDR_LOG}/webrec.log
+XENREC_LOG=${SDR_LOG}/xenrec.log
+
+
+PERL_BIN=${SDR_PREFIX}/perl/bin/perl
+
+
+### umask setting
+#  
+# umask 022
+
+export JDK_PATH HOSTNAME SDR_PREFIX SDR_BIN SDR_LOG SDR_RAW SDR_DAILY PERL_BIN MPSTAT_BIN

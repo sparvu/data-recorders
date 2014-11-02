@@ -1,0 +1,149 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+
+# Debug Only
+# use Data::Dumper;
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+### Variables
+my $loop = 0;      # current loop number
+$main::opt_h = 0;  # help option
+$main::opt_V = 0;  # revision option
+my $tp = 0;        # time precision
+local $| = 1;      # autoflush
+
+
+### MAIN BODY
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+# check interval input
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+while (1) {
+
+    # get new devstats
+
+    my $ts = sprintf("%.2f", $interval / 3);
+ 
+    get_diskstat($ts);
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+### SUBROUTINES
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: diskrec [-hV] | [interval [count]]
+ e.g. diskrec 5       print continuously, every 5 seconds
+      diskrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 name       : disk name, string
+  #03 reads      : read requests per second, rate
+  #04 rkbytes    : read KBytes per seconds, rate 
+  #05 writes     : write requests per second, rate
+  #06 wkbytes    : write KBytes per seconds, rate 
+  #08 queue      : the number of not yet completed transactions, rate
+  #07 service    : service time per transaction in miliseconds, number
+  #09 busy       : the percentage of time the device had one or more 
+                   transactions outstanding, number
+END
+    exit 0;
+}
+
+
+## revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+diskrec: 1.0.0, 2014-09-01
+END
+    exit 0;
+}
+
+
+sub get_diskstat {
+    
+    my ($t) = @_;
+
+    my $iostat = "/usr/sbin/iostat";
+    my $pt     = time;
+
+    open my $fh, "-|", "$iostat", "-x", "$t", "2"
+      or die "cannot execute '$iostat' - $!";
+
+    my @ds = <$fh>;
+    
+    close $fh;
+
+    foreach ( @ds ) {
+
+        # filter out
+        next if /extended/ ... /extended/;
+        next if /^device|pass|cd/;
+
+        my ($name,$xr,$xw,$xbr,$xbw,$q,$s,$b) = split /\s+/, $_;
+
+        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+               $pt, $name, $xr, $xbr, $xw, $xbw, $q, $s, $b;
+    }    
+}

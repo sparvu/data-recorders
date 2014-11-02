@@ -1,0 +1,430 @@
+% LaTeX document produced by pod2latex from "rotatelog.pod".
+% The followings need be defined in the preamble of this document:
+%\def\C++{{\rm C\kern-.05em\raise.3ex\hbox{\footnotesize ++}}}
+%\def\underscore{\leavevmode\kern.04em\vbox{\hrule width 0.4em height 0.3pt}}
+%\setlength{\parindent}{0pt}
+
+\documentclass{article}
+
+\begin{document}
+
+\section{ROTATELOG}%
+\index{ROTATELOG}
+
+\subsection*{NAME}
+rotatelog --- rotates files when they reach a certain trigger size.
+
+\subsection*{SYNOPSIS}
+rotatelog {\tt [}-cdht{\tt ]}
+
+\subsection*{DESCRIPTION}
+This is a program to rotate log files.  It can rotate any file listed in
+its configuration file.  The file does not necessarily need to be log
+file.  This program imitates the {\tt logrotate} and {\tt newsyslog} programs
+found on Linux and FreeBSD respectively.  I originally wrote this to
+make life easier in Solaris.
+
+\subsection*{OPTIONS}%
+\index{OPTIONS}
+
+\begin{description}
+
+\item[{\bf -c}]%
+\index{-c@{\bf -c}}%
+
+Specify the location of the configuration file.  Multiple configuration
+files can be separated by commas with no spaces.
+
+\item[{\bf -d}]%
+\index{-d@{\bf -d}}%
+
+Turn on debug output.  This is verbose output that shows most of what
+{\tt rotatelog} does.
+
+\item[{\bf -h}]%
+\index{-h@{\bf -h}}%
+
+Print the help information.
+
+\item[{\bf -t}]%
+\index{-t@{\bf -t}}%
+
+Turn on the test flag.  This causes {\tt rotatelog} to run as if all files
+need rotation, but disallows the actual rotation.  This is most useful
+in combination with the {\bf -d} flag.
+
+\end{description}
+
+\subsection*{ERRORS}%
+\index{ERRORS}
+
+This program will exit if it cannot open its configuration {\em file\/}(s) and if
+any of the system calls fail.  This program will also exit if the there
+are any syntax errors in the actions section.  Any other configuration
+file errors are ignored and a warning is issued.  All error messages are
+printed to {\tt STDERR}.  This program is meant to be run as a cron job so
+error messages such as these will be mailed to the owner of the cron
+job.  Many times {\tt rotatelog} is run in the {\tt root} crontab.
+
+\subsection*{FILES}
+The {\tt rotatelog} program depends upon its configuration file for
+information concerning what files to rotate and when to rotate them.
+The {\tt rotatelog.conf} file is located in the {\tt /usr/local/etc} directory
+by default.  This location is set in the configuration section of the
+source code along with the paths to certain system utility functions.
+It is possible to specify a new configuration file via the {\tt -c} command
+line option, and it is also possible to specify multiple configuration
+files in this manner as well using the form {\tt -c file1,file2,file3}.
+Note that configuration files that appear later in a multiple
+configuration specification can override settings in previous
+configuration files.  When installing this program it will be necessary
+to check this section of the source code.  Along with specifying the the
+files to rotate there is also the ability to specify ownership and mode
+of the files after rotation, the number of rotated files to keep, the
+compression used or not used on the rotated files, and an auxiliary
+action in the form of a shell command to take place when certain files
+are rotated.  The {\tt rotatelog} program is normally run as {\tt root}.  It
+is important that the config file is only writable by {\tt root} due to the
+ability to execute shell commands!
+
+There are three sections in the configuration file.  They can appear in
+any order.  Each section is identified by a keyword.  Configuration
+information follows the keyword and extends until the next keyword.
+Keywords can come in any order and repeat, but it would be best to
+follow a simple format such as:
+\begin{verbatim}
+ FILES:
+\end{verbatim}
+\begin{verbatim}
+ # File  Trigger  Owner:Group  Mode  Compress  Archive_Limit
+ # =========================================================
+\end{verbatim}
+\begin{verbatim}
+ /var/log/wtmp      1M   root:wheel  664  none  4
+ /var/log/wtmpx     4M   root:wheel  644  none  4
+ /var/log/messages  74K  root:wheel  664  Z     5
+ /var/log/maillog   60K  root:wheel  664  gz    7
+\end{verbatim}
+\begin{verbatim}
+ ACTIONS:
+\end{verbatim}
+\begin{verbatim}
+ # Shell Command :file1,file2,file3 ... fileN
+ # ==========================================
+\end{verbatim}
+\begin{verbatim}
+ rotate1                             : /var/log/wtmp,/var/log/wtmpx
+ kill -HUP `cat /var/run/syslog.pid` : /var/log/messages,/var/log/maillog
+\end{verbatim}
+\begin{verbatim}
+ NOTIFY:
+\end{verbatim}
+\begin{verbatim}
+ # Person to email rotation notification
+ # =====================================
+\end{verbatim}
+\begin{verbatim}
+ root@localhost
+\end{verbatim}
+
+Comment lines must contain a pound sign at the start of the line.  These
+comment lines are ignored along with blank lines and lines containing
+only whitespace.  In general there can be no leading whitespace on
+configuration lines while there can be any amount of whitespace between
+elements.
+
+\subsubsection*{Files}%
+\index{Files}
+
+The files section specifies which files are to be rotated, when they are
+to be rotated, what their ownership and modes are to be post rotation,
+how many rotated copies are to be retained, and the compression used on
+the files once rotated.  The beginning of the files section is noted by
+the occurrence of the {\tt FILES:} keyword.
+
+This information must adhere to the following syntax:
+\begin{verbatim}
+ File  Trigger  Owner:Group  Mode  Compress  Archive_Limit
+\end{verbatim}
+
+For example:
+\begin{verbatim}
+ /var/log/wtmp      1M   root:wheel  664  none  4
+ /var/log/wtmpx     4M   root:wheel  644  none  4
+ /var/log/messages  74K  root:wheel  664  Z     5
+ /var/log/maillog   60K  root:wheel  664  gz    7
+\end{verbatim}
+
+The fields above can be separated by any amount of whitespace.  The
+first field is the full path to the file that requires rotation.  The
+second field is the {\tt trigger}.  The {\tt trigger} specifies when rotation
+is to occur.  The {\tt trigger} is the maximum size of a file in bytes,
+kilobytes, or megabytes.  Bytes can be specified with B or b, kilobytes
+with K or k, or megabytes can be specified with M or m.  If a file
+listed is found to be larger than the {\tt trigger} it is rotated.  The
+{\tt owner:group} field specifies who is to own the file once it is
+rotated.  The {\tt mode} is the file permission mode in octal notation of
+the rotated file as specified in the {\em chmod\/}(1) manual page.  The mode
+does not include the optional first digit of the four digit {\em chmod\/}(1)
+octal mode.  The mode is only the simple three digit format shown above.
+The {\tt compression} field specifies the type of compression to use on the
+rotated file.  A file can be compressed with {\tt gzip} (gz), {\tt compress}
+(Z), or not at all (none).  The {\tt archive limit} field specifies how
+many copies of a rotated file to keep.  This number is the highest count
+in the rotation scheme.  The rotation count starts at 0 so this is
+actually one higher then the total number of files kept.  If the
+{\tt archive limit} were set to 4 for the file {\tt /var/log/wtmp} the maximum
+number of archived {\tt wtmp} files would be 5.  The files would appear in
+the {\tt /var/log/} directory as:
+\begin{verbatim}
+ wtmp    <-- the current wtmp file.
+ wtmp.0  <-- the first archive of wtmp.
+ .
+ .
+ .
+ wtmp.4  <-- the last archive of wtmp.
+\end{verbatim}
+
+If the last file of an archive exists, wtmp.4 in the above example, it
+is removed during the rotation and the previous archive file wtmp.3 is
+renamed accordingly.  All other files are rotated in the same manner
+until the current file is reached and rotated.
+
+\subsubsection*{Actions}%
+\index{Actions}
+
+The actions section specifies if any actions are to occur for any of the
+rotated files.  The actions section is denoted by the {\tt ACTIONS:}
+keyword.  Sometimes a process must be notified that it must close its
+file descriptors and open new ones due to something like a file
+rotation.  Many processes will handle this action when the receive a
+{\tt SIGHUP} signal.  Most of the time a {\tt kill -HUP} on the process will
+accomplish this.  One example is {\tt syslogd}.  We can see that {\tt syslogd}
+has certain files open all of the time by using {\tt lsof} to inquire about
+the status of one of its log files:
+\begin{verbatim}
+ [rowland@darkstar rowland]$ sudo lsof /var/log/messages
+ COMMAND PID USER   FD   TYPE   DEVICE SIZE/OFF NODE NAME
+ syslogd  99 root    8w  VREG 4,131076     3119  232 /var/log/messages
+\end{verbatim}
+
+It is not enough to just move the current file into the archive and
+touch a new one for writing.  The {\tt syslogd} process must be told that a
+new file exists and that it is to close the current file descriptor and
+open a new one on the same file name (not to keep writing to the file
+pointed to by the current file descriptor).  This is what the actions
+section does.  The actions section has the following syntax:
+\begin{verbatim}
+ Shell Command : file1, file2, file3, ... fileN
+ - or -
+ Shell Command : rotate1, rotate2, ... rotateN
+\end{verbatim}
+
+For example:
+\begin{verbatim}
+ rotate1                             : /var/log/wtwp, /var/log/wtmpx
+ - or -
+ kill -HUP `cat /var/run/syslog.pid` : rotate1
+ - or -
+ kill -HUP `cat /var/run/syslog.pid` : /var/log/messages,/var/log/maillog
+\end{verbatim}
+
+You are free to add whitespace around the {\tt :} and {\tt ,} characters.
+This extra whitespace will be ignored.  When the {\tt /var/log/messages}
+file is to be rotated it is first moved to a new name, but not
+compressed.  The {\tt syslogd} program will still be writing to this file
+even though the name has changed because its file descriptor points to
+this location on the filesystem and the file descriptor is still open at
+this point.  A new file is touched and its permissions and ownership are
+set to the values specified in the files section.  Then the {\tt SIGHUP}
+signal is the sent to {\tt syslogd}, and it closes the rotated file and
+opens the new file that replaces it.  After this is done it is safe to
+compress the old file if compression was specified in the files section.
+
+There is also a special action called {\tt rotate} which allows you to bind
+multiple files together for rotation.  All of the files must be present
+in the files section so that {\tt rotatelog} knows how to rotate them.
+When one file is rotated then the other files bound with it are rotated
+immediately.  The format of {\tt rotate} is:
+\begin{verbatim}
+ rotateN : file1, file2, ... fileN
+\end{verbatim}
+
+The {\tt rotate} command must be followed by an integer.  This allows for
+more than one binding but only for different groups of files.  You may
+not leave the integer off.  The {\tt wtmp} file is a good candidate for
+this type of rotation.  When the {\tt wtmp} file is rotated it is a good
+idea to also rotate the {\tt wtmpx} file.  A binding of:
+\begin{verbatim}
+ rotate1 : /var/adm/wtmp, /var/adm/wtmpx
+\end{verbatim}
+
+will rotate both files whenever one of them needs rotation.  When
+binding files for rotation in this manner, there is only one way to
+associate another action (a normal shell command) to the rotation of the
+bound files.  Using the {\tt rotate} action indicates that all files are to
+be rotated at the same time.  If an action is also to occur, we must be
+certain that all of the files have begun rotation before executing that
+action.  An action on the group of bound files in the {\tt rotate} group is
+specified by using that {\tt rotate} action as the bound file for the
+normal shell command action.  The {\tt syslogd} example is perfect for
+this.  In the {\tt syslogd} case one would probably want to send {\tt syslogd}
+a {\tt SIGHUP} signal once all {\tt syslogd} files have been rotated.  This is
+how that is accomplished:
+\begin{verbatim}
+ rotate2                             : /var/log/messages,/var/log/maillog
+ kill -HUP `cat /var/run/syslog.pid` : rotate2
+\end{verbatim}
+
+This ensures the following steps occur during file rotation:
+\begin{verbatim}
+ 1.  Begin rotation on a file.
+          - Figure out the archive count of the current file.
+          - Rotate old logs up one count, removing the last if necessary.
+          - Rotate the current file up one count.
+          - Touch a new version of the file.
+\end{verbatim}
+\begin{verbatim}
+ 2.  Perform any actions on the file.
+          - Check rotateN bound files.
+                 [if file is in a rotateN group]
+                 - Begin any file rotation on the other files in the
+                   rotateN bound group.  All other files are put
+                   through step #1 at this point.
+                 - Perform any normal shell command action associated
+                   with this group of rotateN bound files.
+                 - Finish rotation of all other files bound in the
+                   rotateN group.  This is step #3.
+                 - Return.  This causes the original file that triggered
+                   this recursion to finish its rotation.
+          - Check normal shell command actions.
+                 [in this case the file was not in a rotateN group]
+                 - Perform the shell command action.
+                 - Return.  This moves the file into step #3.
+\end{verbatim}
+\begin{verbatim}
+ 3.  Finish rotating a file.
+          - Compress the previous log file if the file has been specified
+            for compression in the files section.
+          - Add the file to the list of files which have been rotated.
+\end{verbatim}
+
+This process ensures that any files bound together are in the beginning
+of file rotation before any shell commands are executed as a result of
+this rotation.  Once the shell command action occurs, if there is one,
+all of the files finish their rotation.  Due to this flexibility in file
+rotation actions, the following rules apply to the actions section:
+\begin{verbatim}
+ 1.  A file may appear in only one rotateN group.
+\end{verbatim}
+\begin{verbatim}
+ 2.  A file may appear in only one normal shell command group.
+\end{verbatim}
+\begin{verbatim}
+ 3.  A file may not appear in both a rotateN group and a normal shell
+     command action.
+\end{verbatim}
+\begin{verbatim}
+ 4.  A normal shell command may be bound explicitly to a file that is
+     not in a rotateN group.
+\end{verbatim}
+\begin{verbatim}
+ 5.  A normal shell command cannot be bound to a file in a rotateN
+     group explicitly.  To bind a shell command to files in a rotateN
+     group one must implicitly bind the command to the rotateN action.
+\end{verbatim}
+
+If there are no actions to perform when any of the files are rotated
+this section may be omitted from the configuration file.  If you rotate
+log files written to by {\tt syslogd} then you will most certainly require
+one of the examples above with the appropriate path to your
+{\tt syslogd.pid} file.  If you leave out this step and rotate {\tt syslogd}
+files, {\tt syslogd} will most certainly NOT be your friend.  If you choose
+to bind {\tt syslogd} files together in a rotateN group, all of the files
+will be rotated when one file is rotated.  If you want to define the
+action for each file, only when that file is rotated, do not use the
+rotateN form of the action.  It all depends on what you wish to do.
+
+\subsubsection*{Notify}%
+\index{Notify}
+
+The notify section specifies who is to receive notification in the event
+that any files are rotated.  The notify section is started with the
+{\tt NOTIFY:} keyword.  The notification is sent out via email to the full
+email address specified in this section.  This is the simplest section.
+The email address is simply listed as in the following example:
+\begin{verbatim}
+ # Person to receive email rotation notification
+ # =============================================
+\end{verbatim}
+\begin{verbatim}
+ root@localhost
+\end{verbatim}
+
+If there is to be no notification this section may be omitted or a value
+of "none" may be used.  There can only be one email address in this
+section.
+
+\subsection*{RESTRICTIONS}%
+\index{RESTRICTIONS}
+
+There can be no leading whitespace on config file lines.  Someday I may
+fix that.  The files must be specified with their full paths in all
+sections.  This is true in the actions section where you can list an
+action for multiple files.  If there are any syntax errors in the
+configuration file those lines will be ignored and a warning will be
+printed to {\tt STDERR}.  If this program is run as a cron job this will
+result in an email message to the owner of the cron job.  In most cases
+this will be {\tt root}.
+
+\subsection*{AUTHOR}
+This piece of code was written by Shaun Rowland (rowland@interhack.net)
+mostly during the early hours of the morning.  In my world that is
+considered "day" while afternoon is considered "night".  Go figure.
+
+Copyright 1999, 2000, 2001 Interhack Corporation.  All rights reserved.
+
+\subsection*{HISTORY}%
+\index{HISTORY}
+
+\$Log: rotatelog,v \$
+Revision 1.7  2001/05/27 18:21:21  rowland
+Added hostname information.
+
+Revision 1.6  2001/05/23 15:10:48  rowland
+Removed history stuff that killed pod2latex.
+
+Revision 1.5  2001/05/23 15:04:47  rowland
+Fixed a bug where extra whitespace at the end of an ACTIONS line would cause
+the file eq check file at the end of do {\em action()\/} to fail.  Doh!  Now we
+are good to go.
+
+Revision 1.4  2001/05/19 21:23:32  rowland
+Updated the following in logrotate 1.3:
+\begin{verbatim}
+        * Added the -c and -h command line options.
+        * Added the B and b trigger size specification.
+        * Changed the release Makefile to create installation directories if
+          they do not already exist.
+\end{verbatim}
+
+Revision 1.3  2001/04/22 23:01:36  rowland
+Updated perldoc and config file to better reflect reality in rotating
+syslogd files.  You wouldn not normally put these files in a rotateN group
+and then define an action for that group because this would cause all of
+the files to be rotated when just one of them is rotated.  You could do
+this if you wanted, but it makes a perfect example.  Better examples will
+follow later, but the examples here should better reflect reality.
+
+Revision 1.2  2001/04/22 22:45:25  rowland
+Added more actions section error checking and cleaned up the default settings.
+
+Revision 1.1.1.1  2001/04/22 21:58:26  rowland
+The rotatelog program was designed to rotate files and perform actions on
+those files once rotated if desired.  This program began its life as
+logrotate.  I changed the name so it would not be confused with the GNU
+logrotate program.  This version includes improved code for handling
+rotateN bound files and actions on those bound files (in other words it
+now works properly).
+
+\end{document}

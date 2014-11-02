@@ -1,0 +1,127 @@
+.TH nicrec 1  "$Date: 2012-05-23 #$" "USER COMMANDS"
+.SH NAME
+nicrec \- Network Interface Card Recorder. Uses perl
+.SH SYNOPSIS
+.B nicrec
+[-hsz] 
+[-i int[,int...]] |
+[interval [count]]
+.SH DESCRIPTION
+nicrec is responsible for collecting network interface 
+card statistics. Network Interface Card recorder, used 
+to measure the Kb/s transferred for all the network cards 
+(NICs), including packet counts and average sizes. 
+The first line is the summary data since boot. Nicrec 
+raw data is already prepared and formatted for SDR
+analysis process. The recorder runs continuously.
+
+.SH OS
+Solaris 8+
+.SH OPTIONS
+.TP
+\-s
+summary report
+
+.TP
+\-z
+skip zero value lines
+
+.TP
+\-h
+print help information
+
+.TP
+\-v
+print revision information
+
+.TP
+interval
+interval in seconds between each sample
+
+.TP
+count
+number of samples
+
+.PP
+.SH EXAMPLES
+.TP
+Example 1: executes every 5 seconds 
+.B $ nicrec 5
+
+.TP
+Example 2: executes 10 times sampled every 5 seconds
+.B $ nicrec 5 10
+
+.TP
+Example 3: executes every 1 minute for nge0 interface
+.B $ nicrec -i nge0 60
+
+
+
+.PP
+.SH FIELDS
+
+.TP
+#01 timestamp
+seconds since Epoch
+
+.TP
+#02 int
+interface
+
+.TP
+#03 rKB/s
+read KB/s, gauge
+
+.TP
+#04 wKB/s
+write KB/s, gauge
+
+.TP
+#05 rPk/s
+read Packets/s, gauge
+
+.TP
+#06 wPk/s
+write Packets/s, gauge
+
+.TP
+#07 rAvs
+read Average size, bytes
+
+.TP
+#08 wAvs
+write Average size, bytes
+
+.TP
+#09 %Util
+utilization (read+write)/nic speed, gauge
+
+.TP
+#10 Sat
+Saturation: defer, nocanput, norecvbuf, noxmtbuf, gauge
+
+
+.PP
+Utilisation is based on bytes transferred divided 
+by speed of the interface. It should be impossible 
+to reach 100% as there are overheads due to bus
+negotiation and timing. Saturation is determined by 
+counting read and write errors caused by the interface 
+running at saturation. This approach is not ideal, and the value
+reported is often lower than it should be (eg, 0.0). 
+Reading the rKb/s and wKb/s fields may be more useful.
+
+.PP
+.SH DOCUMENTATION
+See SDR documentation for more details.
+.SH EXIT
+nicrec will run forever until is stopped by the SMF or
+manually stopped using svcadm. Remember nicrec in Solaris
+operates via SMF so if you dont shutdown properly the SMF 
+service the SMF will automatically restart the recorder !
+ 
+.SH AUTHOR
+Brendan Gregg, Stefan Parvu
+.SH SEE ALSO
+perl(1)

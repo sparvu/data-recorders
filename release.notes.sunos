@@ -1,0 +1,181 @@
+
+================
+SDR version 0.75
+================
+
+Release Date
+2013-08-31
+
+Platforms
+ Solaris 10+ x64, sparcv9 64bit
+ 
+Compiled by: sparvu
+
+
+Recording
+=========
+
+
+0.75
+====
+    Bug 224 - sender use of uninitialized value $@ in concatenation
+    Bug 225 - sysrec performance metrics type definition
+    Bug 226 - cpurec performance metrics type definition
+    Bug 227 - nicrec performance metrics type definition
+    Bug 228 - netrec performance metrics type definition
+    Bug 229 - jvmrec performance metrics type definition
+    Bug 230 - webrec performance metrics type definition
+    Bug 240 - webrec output results to stdout
+    Bug 262 - sender support for http transport
+    Bug 271 - sender should be able to select a specific reporting server
+    Bug 274 - sender should check for a subscription id
+    Bug 276 - sender sendssh2 routine not aware of subscription id
+    Bug 277 - sender HTTP message digest improvements
+    Bug 278 - sdr.conf clean-up and restructuring recording side
+    Bug 281 - perl modules clean-up
+    Bug 282 - raw2day should support the new sdr.conf format
+    Bug 286 - raw2day should not ask for a host reporting
+    Update perl-5.16.3
+    Update libssh2-1.4.3
+    Update curl-7.30.0
+    Update libidn-1.27
+    Update Net-SSH2-0.48
+    Update libxml2-2.9.1
+    Update XML-LibXML-2.0018
+
+
+0.74.1
+======
+    Bug 209 - stuck established connections
+    Bug 213 - sender should support ssh2 connections using different 
+              custom ports
+    Bug 214 - raw2day should support ssh2 connections using different
+              custom ports
+    Bug 216 - sender should have its startup script
+    Bug 217 - port hdwrec from ksh to perl
+    Update perl-5.16.1
+    Update curl-7.27.0
+    Update XML-LibXML-2.0004
+
+
+0.74
+====
+    Bug 196 - sender specifications
+    Bug 197 - Email::Send not supported
+    Bug 198 - add File::Tail, Proc::Daemon, Proc::PID::File to 
+              SDR Perl distro
+    Bug 200 - sender libssh2 error channel unknown
+    Bug 201 - better logging if ssh2 connections are failing
+    Bug 202 - sender missing manual page
+    Bug 204 - sender.pid should relocate under sdr prefix
+    Update perl-5.16.0
+    Update Net-SSH2-0.45
+    Update curl-7.26.0
+    Update idn-1.25
+    Update XML-LibXML-1.99
+
+
+0.73.7
+======
+    Bug 175 - remove -w from shebang, just use warnings
+    Bug 179 - SDR Data File Extension .sdrd
+    Bug 182 - Normalization of Metrics CPU Utilization Solaris
+    Bug 185 - port raw2day form ksh to perl5
+    Bug 177 - separate raw2day log rotation from transport mode
+    Bug 193 - sysrec solaris sdrd 0737 data format changes
+    Bug 194 - jvmrec should output timestamp as first field in raw data
+    Update Net-SSH2-0.44
+    Update curl-7.25.0
+    Update libssh2-1.4.2
+    Update sysstat-10.0.5
+    Security Update: openssl-1.0.0j
+
+
+0.73.6
+======
+    Bug 171 - zonerec format raw data
+    Bug 169 - netrec on Solaris should recorder tcpOutRs
+    Bug 168 - master sdr startup script kills other interactive sdr sessions
+    Bug 148 - openssl vulnerabilities and other libs available
+    Bug 150 - sysrec help usage field counter
+    Bug 151 - revision should answer to -V
+    Bug 152 - make sysrec perlcritic level 4 compliant
+    Bug 153 - make cpurec perlcritic level 4 compliant
+    Bug 154 - make nicrec perlcritic level 4 compliant
+    Bug 155 - make netrec perlcritic level 4 compliant
+    Bug 159 - cpurec help usage field counter
+    Bug 160 - nicrec help usage field counter
+    Bug 161 - netrec help usage field counter
+    Security Update: openssl-1.0.0g
+    Update libssh2-1.4.0
+    Update curl-7.24.0
+    Update libidn-1.24
+
+
+0.73.4
+======
+    Bug 119 - cleaner shipped with SDR recorders
+    Bug 135 - sysrec sub-second interval support
+    Bug 136 - cpurec sub-second interval support
+    Bug 137 - netrec sub-second interval support
+    Bug 138 - timestamp should be the first field in the raw data
+    Bug 139 - nicrec sub-second interval support
+    Security Update: openssl-1.0.0e
+    Update curl-7.22.0
+    Update libidn-1.22
+    Update sysstat-10.0.2
+    Update libssh2-1.3.0
+    Remove nicrec-1.22, unmaintained
+
+
+0.73.1
+======
+    Update perl-5.12.3
+    Update openssl-1.0.0d
+    Update curl-7.21.5
+    
+
+0.73
+====
+    Bug 92 - recording startup scripts do not redirect stderr
+    Bug 78 - add CPU User/System/Idle and LA information to the raw data
+    Bug 66 - make sysrec more resilient when time drifts
+    Bug 46 - dont load all POSIX module inside cpurec, conserve memory
+    Bug 67 - zonerec is a ksh script, why dont you deliver them all as perl
+    Bug 71 - convert zonerec from ksh to perl
+    Bug 48 - error when running as non root
+    Bug 21 - specs for webrec
+    Bug 57 - webrec: response time should be a float
+    Bug 61 - webrec raw data in case of timeout, slow links
+    Bug 56 - raw data inconsistent
+    Bug 58 - log proper starting message on stdout
+    Bug 89 - webrec build.xml cannot run with Java 5 !
+    Update perl-5.12.2
+    Update openssl-1.0.0c
+    Update curl-7.21.3
+
+
+Known issues
+============
+
+    Bug xx - jvmrec will stay a KSH implementation for this time on Solaris
+    based systems. The recorder is not designed to operate on lower intervals 
+    than 60 seconds due the overhead from jstat utility. Future releases will 
+    consider moving from KSH to Perl and enhance the recording mechanism.
+
+    Bug 87 - negative values in webrec raw data
+    We have detected during our internal tests that webrec, sometimes, will 
+    report negative values for certain HTTP actions. We are investigating this 
+    and will be fixed in a future release. It has been reported that this defect 
+    happens sometimes, it is not a permanent issue.
+            
+
+Notes
+=====
+            
+For Solaris OS 8,9 releases make sure you download the package specific for
+those releases. Please beware certain features wont be available ! 
+
+Bugzilla:
+ http://www.systemdatarecorder.org:9009/bugzilla/query.cgi
+ Product: sdr

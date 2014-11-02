@@ -1,0 +1,407 @@
+#!/opt/sdr/perl/bin/perl -w
+
+###############################################################
+# Last updated 12/22/2008
+#
+#  CDDL HEADER START
+#
+#  The contents of this file are subject to the terms
+#  of the Common Development and Distribution License
+#  (the "License").  You may not use this file except
+#  in compliance with the License.
+#
+#  You can obtain a copy of the license at
+#  src/OPENSOLARIS.LICENSE
+#  or http://www.opensolaris.org/os/licensing.
+#  See the License for the specific language governing
+#  permissions and limitations under the License.
+#
+#  When distributing Covered Code, include this CDDL
+#  HEADER in each file and include the License file at
+#  usr/src/OPENSOLARIS.LICENSE.  If applicable,
+#  add the following below this CDDL HEADER, with the
+#  fields enclosed by brackets "[]" replaced with your
+#  own identifying information: Portions Copyright [yyyy]
+#  [name of copyright owner]
+#
+#  CDDL HEADER END
+#
+#  Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#  Use is subject to license terms.
+#
+###############################################################
+$SIG{__WARN__} = sub{ print "$_[0]"; };
+
+use Getopt::Long;
+###############################################################
+#
+# Post processed data needs to be collected using cpustat piclines of:
+# OlyC
+# For user / sys breakdowns
+# cpustat -n -t -c pic1=act_thread_suspend,pic3=active_cycle_count \
+#               -c pic1=act_thread_suspend,pic3=active_cycle_count,nouser,sys
+#
+# for only total
+# cpustat -n -t -c pic1=act_thread_suspend,pic3=active_cycle_count,sys \
+#               -c pic1=act_thread_suspend,pic3=active_cycle_count,sys
+#-note- needs to repeat or there will be no pic labels.
+#
+# Jupiter
+# For user / sys breakdowns
+# cpustat -n -t -c pic0=both_threads_active,pic1=only_this_thread_active \
+#               -c pic0=both_threads_active,pic1=only_this_thread_active,nouser,sys
+#
+# for only total
+# cpustat -n -t -c pic0=both_threads_active,pic1=only_this_thread_active,sys \
+#               -c pic0=both_threads_active,pic1=only_this_thread_active, sys
+#-note- needs to repeat or there will be no pic labels.
+#
+###############################################################
+# Defaults
+$DEFAULT_INTERVAL = 10;
+$VERSION = "0.96";
+$MAX_CPU_THRESHOLD = 256;
+%CPU_NAME = (
+    '6'   => 'SPARC64-VI',
+    '7'   => 'SPARC64-VII',
+    );
+
+my $rc = GetOptions (
+    'i=i'      => \$interval, 
+    'n=i'      => \$iterations,
+    'v'        => \$version,
+    'p'        => \$print_conf,
+    'uk'       => \$uk_breakout,
+    # SDR 0.70 
+    # remove log option
+    #'l=s'      => \$logfile,
+    'F'        => \$force_max,
+    'h'        => \$help,
+    );
+
+&print_usage() if ($help || !$rc);
+&print_version() if ($version);
+# Running on target machine as root?
+&print_usage("Permission denied, need root access to run.") if ($< != 0);
+
+# SDR 0.70
+# remove log option
+#
+#if ($logfile) {
+#    if (!open(LOG, ">$logfile")) {
+#	warn "Cannot open $logfile: $!";
+#	undef($logfile);
+#    }
+#}
+
+$interval = ($interval) ? $interval : $DEFAULT_INTERVAL;
+$interval = ($interval < 2) ? 2 : $interval;
+$iterations = ($iterations) ? $iterations : -1;
+
+$print_cnt = 1;
+$sample_cnt = 0;
+
+$| = 1;
+
+&get_system_config();
+
+if ($cpu_count > $MAX_CPU_THRESHOLD) { # workaround bug: 6711871
+    if ($force_max) {
+	print "** Warning: Exceeded Safe CPU measurement threshold, data may be suspect **\n";
+    }
+    else {
+	print "Exceeded Safe CPU measurement threshold, please scale back cpu count.\n";
+	exit(1);
+    }
+}
+
+# exit if run on a mixed CPU system
+if (keys(%chk_cpu_type) > 1) {
+    print "Error: $0 does not support mixed cpu architectures...\n";
+    exit(1);
+}
+
+if ($cpu_type eq 'SPARC64-VI') {
+    $pic_list = "pic1=act_thread_suspend,pic3=active_cycle_count";
+} 
+if ($cpu_type eq 'SPARC64-VII') {
+    $pic_list = "pic0=both_threads_active,pic1=only_this_thread_active";
+}
+if ($uk_breakout) {
+    $cpustat_command = "-n -t -c $pic_list -c $pic_list,nouser,sys";
+}
+else {
+    $cpustat_command = "-n -t -c $pic_list,sys -c $pic_list,sys";
+}
+
+open(IN, "priocntl -e -c RT cpustat $cpustat_command 1 2>&1  |") || 
+    die "Can't fork: $!\n";
+
+# house keeping / setups for later
+$print_cnt = $interval * $cpu_count;
+&clear_stats();
+
+while(<IN>) {
+    next unless (s/ tick //);
+
+    #print LOG $_ if ($logfile);
+
+    chomp();
+    # Detect mode for which data is collected
+    $mode = 0;	                                       # default user mode
+    $mode = 1 if ($_ =~ s/,nouser,sys|,sys,nouser//s); # sys mode
+    $mode = 2 if ($_ =~ s/,sys//);                     # total mode
+    $mode_map{$mode} = 1;
+    
+    my ($tm, $thd, $tick, @cntr, @rest) = split(" ", $_);
+
+    my $tmp = ($cpu_type eq 'SPARC64-VI') ?
+ 	# SPARC64-VI
+        # (pic[3] active_cycle_count - pic[1] act_thread_suspend) / $tick 
+	($cntr[1] - $cntr[0]) / $tick :
+ 	# SPARC64-VII
+ 	# (pic[0] both_threads_active/2 + pic[1] only_this_thread_active)/$tick
+ 	($cntr[0] / 2 + $cntr[1]) / $tick ;
+    
+    $thd_active[$thd][$mode] += $tmp;
+    $thd_active_cnt[$thd][$mode]++;
+    $sample_cnt++;
+    
+    if ($sample_cnt == $print_cnt) {
+	&print_stats();
+        exit(0);
+	&clear_stats();
+    }
+
+}
+
+exit(1);
+
+sub clear_stats() {
+    # Clear statistics
+    $sample_cnt = 0;
+    undef(%mode_map);
+    @thd_active = ();	
+    @thd_active_cnt = ();
+}
+
+sub print_stats {
+    my @mode_name = ('%Usr', '%Sys', '%Usr+Sys');
+    # if data was not gathered using usr+sys, but both usr/sys
+    # are available, calculate usr+sys
+    if (defined($mode_map{'0'}) && defined($mode_map{'1'}) && 
+	!defined($mode_map{'2'})) {
+	$fake_total = 1;
+    }
+
+    # Clear Average and Per-CPU aggregations
+    @avg_active = ();
+    @cpu_active = ();
+    
+    # Aggregate the per-cpu / total / average
+    @thd_num = ();
+    foreach my $mode (keys(%mode_map)) {
+	foreach my $thd (@thread_list) {
+	    my $cpu_id = $cpu_map[$thd];
+	    push(@{$thd_num[$cpu_id]}, $thd);
+	    $cpu_list{$cpu_id} = 1;
+	    # Need to average over the # of samples in the interval
+	    my $tmp = $thd_active[$thd][$mode] / $thd_active_cnt[$thd][$mode];
+	    $cpu_active[$cpu_id][$mode] += $tmp;
+	    $avg_active[$mode] += $tmp;
+	    if ($fake_total) {
+		$cpu_active[$cpu_id][2] += $tmp;
+		$avg_active[2] += $tmp;
+	    }
+	}
+    }
+    $mode_map{'2'} = 1 if ($fake_total);
+    @mode_list = sort {$a <=> $b} (keys(%mode_map));
+    
+    
+    # print header
+    # my $time = localtime(time());
+    # print "\nCPU Utilization $time\n";
+    print $header_label;
+    foreach my $mode (@mode_list) {
+	printf("%11s    ", $mode_name[$mode]);
+    }
+    #print "\n";
+    
+    #printf("%21s    ", "-"x21); 
+    #foreach my $mode (@mode_list) {
+    #	printf("%11s    ", "-"x11);
+    #}
+    print "\n";
+
+    $cpu_cnt = 0;
+    foreach my $cpu (sort {$a <=> $b} (keys(%cpu_list))) {
+	my @list = keys %{{map {$_ => 1} @{$thd_num[$cpu]}}};
+	$per_thd_label = join(",", sort (@list));
+	$label = ($prtdiag_label) ? 
+	    sprintf("%11s %9s", $thd_label[$cpu], "($per_thd_label)") :
+	    sprintf("%-11s %9s", $cpu, "($per_thd_label)");
+	print "$label    ";
+	foreach my $mode (@mode_list) {
+	    my $tmp = $cpu_active[$cpu][$mode] * 100; 
+	    $tmp = ($tmp > 100) ? 100 : $tmp;
+	    printf("%11.2f    ", $tmp);
+	}
+	print "\n";
+	$cpu_cnt++;
+    }
+    printf("%21s    ", 'Avg');
+    foreach $mode (@mode_list) {
+	my $tmp = $avg_active[$mode] / $cpu_cnt * 100;
+	$tmp = ($tmp > 100) ? 100 : $tmp;
+	printf("%11.2f    ", $tmp);
+    }
+    print "\n";
+
+    if ($iterations != -1) {
+	exit(1) if (--$iterations == 0);
+    }
+}
+
+sub get_system_config() {
+
+open(IN, "/usr/sbin/psrinfo |") || die "Cannot run psrinfo: $!\n";
+# Determine number of on-line cpus, and assign to default processor set
+# total_cpu_count - number of cpus online
+# $pset{$thd} = processor set #
+while(<IN>) {
+    next if (/off-line/);
+    $_ =~ /^(\d+)/;
+    $pset{$1} = 0;	# default to proceset '0'
+    $total_cpu_count++;
+}
+
+# Determine system config via psrinfo, do not get extended config
+# $cpu_type - CPU architecture
+# $cpu_map[$thd] = thread to CPU mapping
+# $thd_label[$thd] - Thread label name used for printing
+# $thd_num[$cpu] - list of threads belonging to a core
+if (!$print_conf) {
+    open(IN, "/usr/sbin/psrinfo -vp |") || 
+	die "Cannot run psrinfo: $!\n";
+    while(<IN>) {
+	if (/virtual processors \((\d+)-(\d+)\)/) {
+	    $cpu_low = $1;
+	    $cpu_high = $2;
+	    next;
+	}
+	if (/SPARC64.*\(portid (\d+) impl 0x(\d+) .* (\d+) MHz/) {
+	    $cpu_num = $1 - 1024;
+	    $chk_cpu_type{$2} = 1;
+	    $cpu_type = $CPU_NAME{$2};
+	    $chk_mhz{$3} = 1;
+	    $frequency = $3;
+	    foreach my $i ($cpu_low .. $cpu_high) {
+		$cpu_id = int($i/2);
+		$cpu_map[$i] = $cpu_id;
+#		push(@{$thd_num[$cpu_id]}, $i);
+		$thd_label[$i] = $cpu_num;
+	    }
+	}
+    }
+    close(IN);
+    
+    $header_label = sprintf("%-11s %9s   ", "CPU", "(Thd)");
+}
+else {	# determine extended config including logical board mappings
+    print "Determining system configuration...\n";
+    open (IN, "/usr/sbin/prtdiag |") || die "Cannot run prtdiag: $!\n";
+    $prtdiag_label = 1;
+    
+    while(<IN>) {
+	last if (/= CPUs =/);
+    }
+    while(<IN>) {		# inside CPU section
+	last if (/^=/);
+	next unless (/^\s*\d+/);
+	$_ =~ s/,//g;
+	$_ =~ s/^\s+//;
+	($lsb, $chip, @rest) = split(" ", $_);
+	$toss = pop(@rest);	# CPU mask
+	$cpu_imp = pop(@rest);
+	$toss = pop(@rest); # L2 MB
+	$frequency = pop(@rest);
+	
+	$chk_cpu_type{$cpu_imp} = 1;
+	$chk_mhz{$frequency} = 1;
+	$cpu_type = $CPU_NAME{$cpu_imp};
+       	
+	foreach my $i (@rest) {
+	    $cpu_map[$i] = int($i/2);
+	    $thd_label[$cpu_map[$i]] = 
+		sprintf("%3s/%3s/%3s", $lsb,$chip,$cpu_map[$i]);
+	}
+    }
+    close(IN);
+    print "Completed determining system configuration...\n";
+    $header_label = sprintf("%11s %9s   ", "LSB/Soc/CPU", "(Thd)");
+}
+
+# Determine if there are active processor sets 
+$pset_cnt{'0'} = $total_cpu_count;	# Assume all cpus in base group
+# Determine Processor set configuration
+if (open(IN, "/usr/sbin/psrset|")) {
+    while(<IN>) {
+	if (/user processor set (\d+): processors* (.*)/) {
+	    $set = $1;
+	    @list = split(" ", $2);
+	    $pset_cnt{$set} = 0;
+	    @{$pset_map{$set}} = @list;
+	    foreach $cpu (@list) {
+		$pset{$cpu} = $1;
+		$pset_cnt{$set}++;
+	    }
+	    # remove procsessor set cpu count from base group
+	    $pset_cnt{'0'} -= $pset_cnt{$set};
+	    
+	}
+    }
+}
+close(IN);
+
+# setup list of cpus in the default processor set (0)
+foreach $cpu (sort {$a <=> $b} keys(%pset)) {
+    next unless ($pset{$cpu} == 0);
+    push (@{$pset_map{'0'}}, $cpu);
+}
+
+# Check to see if PID has been bound to a processor set
+$current_set = 0;
+$line = `/usr/sbin/psrset -q $$`;
+if ($line =~ /\d+:\s+(\d+)/) {
+    $current_set = $1;
+}
+
+# set cpu_count to be how many cpus are active in current processor set
+$cpu_count = $pset_cnt{$current_set};
+@thread_list = @{$pset_map{$current_set}};
+
+}
+
+
+sub print_version() {
+    printf("OPL Corestat : Version %s \n", $VERSION);
+    exit(1);
+}
+
+sub print_usage() {
+    print "Error: $_[0]\n" if ($_[0]);
+    print "\n";
+    print "Usage: $0 [-v] [-p] [-uk] [-i interval] [-n iterations] [-l file]\n\n" ;
+    print "     -v            : Report version number \n";
+    print "     -i interval   : Reporting interval in sec (default: $DEFAULT_INTERVAL sec)\n";
+    print "     -n iterations : Report n iterations\n";
+    print "     -uk           : Breakout user / system specific utilizations.\n";
+    print "     -p            : Print Board / Socket / CPU labels\n";
+    print "                     (May incur long startup times on large/busy systems)\n";
+    print "     -F            : Force running on large systems (> $MAX_CPU_THRESHOLD)\n";
+    print "                      Data can be erratic due to bug 6711871\n";
+    #print "     -l            : log raw counter output into a file [logfile]\n";
+    print "\n";
+    exit(1);
+}

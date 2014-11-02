@@ -1,0 +1,118 @@
+.TH cpurec 1  "$Date: 2012-05-23 #$" "USER COMMANDS"
+.SH NAME
+cpurec \- Cpu Recorder. Uses perl
+.SH SYNOPSIS
+.B cpurec
+[-hv]
+[interval [count]]
+.SH DESCRIPTION
+cpurec is responsible for collecting per-cpu statistics. 
+In a multiprocessor environment it is very useful to 
+record per processor metrics in order to observe, 
+detect and isolate problems: the user and system
+time, the rate of multiprocessor cross calls, for instance.
+Cpurec raw data is already prepared and formatted for 
+SDR analysis process. The recorder runs continuously.
+
+.SH OS
+Solaris 10+
+.SH OPTIONS
+.TP
+\-h
+print help information
+.TP
+\-v
+print revision information
+.TP
+interval
+interval in seconds between each sample
+.TP
+count
+number of samples
+
+.PP
+.SH EXAMPLES
+.TP
+Example 1: executes every 5 seconds 
+.B $ cpurec 5
+
+.TP
+Example 2: executes 10 times sampled every 5 seconds
+.B $ cpurec 5 10
+
+.PP
+.SH FIELDS
+
+.TP
+#01 timestamp
+seconds since Epoch
+
+.TP
+#02 Xcalls
+rate of multiprocessor cross calls, gauge
+
+.TP
+#03 Intr
+rate of intrerrupts, gauge
+
+.TP 
+#04 iThr
+rate of interrupts threads, gauge
+
+.TP
+#05 Csw
+rate of context switches, gauge
+
+.TP
+#06 Icsw
+rate of involuntary context switches, gauge
+
+.TP
+#07 Migr
+rate of migrations, gauge
+
+.TP
+#08 Smtx
+rate of kernel mutexes, gauge
+
+.TP
+#09 Syscalls
+rate of system calls, gauge
+
+.TP
+#10 User
+percentage of time spent in user mode, gauge
+
+.TP
+#11 Sys
+percentage of time spent in sys mode, gauge
+
+.TP
+#12 Idle
+percentage of time spent in idle mode, gauge
+
+.PP
+.SH NOTES
+cpurec might report from time to time bogus data, regarding
+User, System and Idle time, User+Sys+Idle=100. This issue 
+comes from the fact that any consumer of the cpu sys kstats 
+will seem the same thing. As a general note all measurement 
+contains errors. The question is always how much error? 
+The bogus data can easily be explained by rounding errors. 
+This has been recorded as well on different operating systems:
+Linux, for instance.
+
+
+.PP
+.SH DOCUMENTATION
+See SDR documentation for more details.
+.SH EXIT
+cpurec will run forever until is stopped by the SMF or
+manually stopped using svcadm. Remember cpurec in Solaris
+operates via SMF so if you dont shutdown properly the SMF 
+service the SMF will automatically restart the recorder !
+
+.SH AUTHOR
+Stefan Parvu
+.SH SEE ALSO
+perl(1)

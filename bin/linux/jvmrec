@@ -1,0 +1,467 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('df:hVx') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# extended mode: 0,1
+my $extended = defined $main::opt_x ? $main::opt_x : 0;
+
+# set debug log
+my $debugmsg = defined $main::opt_d ? $main::opt_d : 0;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+# Variables
+my $HZ;
+my $loop = 0;    # current loop number
+$main::opt_h = 0;    # help option
+$main::opt_V = 0;    # revision option
+my $tp     = 0;      # time precision
+my $search = 0;      # search flag: 0,0
+my $format = '';     # input target process format
+my $jstat;           # jstat utility path
+local $| = 1;        # autoflush
+
+
+
+### MAIN BODY
+
+# Set a timer for S::S::L object
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $lxs = Sys::Statistics::Linux->new( processes => 1 );
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+#
+# check for JDK path
+if ( defined $ENV{'JDK_PATH'} ) {
+    $jstat = $ENV{'JDK_PATH'} . '/bin/jstat';
+    usage() if ( !-f $jstat );
+}
+else { usage(); }
+
+#
+# check for format flag
+if ( defined $main::opt_f ) {
+    $search = 1;
+    $format = $main::opt_f;
+
+    # format process target
+    if ( $main::opt_f =~ /weblogic/ ) {
+        $format = '-Dweblogic.Name=';
+    }
+    elsif ( $main::opt_f =~ /tomcat/ ) {
+        $format = 'catalina';
+    }
+    else {
+        $format = $main::opt_f;
+    }
+}
+else { $search = 0; }
+
+### check for extended mode
+if ($extended) {
+    use Sys::Statistics::Linux qw(Processes);
+    $extended                                          = 1;
+    $Sys::Statistics::Linux::Processes::PAGES_TO_BYTES = 4;
+    my $pagesize = $Sys::Statistics::Linux::Processes::PAGES_TO_BYTES;
+
+    # Debug
+    if ($debugmsg) { printf "[debug pagesize=%d]\n", $pagesize; }
+}
+
+# Debug
+if ($debugmsg) {
+    printf "[debug format=%s search=%d extended=%d]\n",
+      $format, $search, $extended;
+}
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+while (1) {
+
+    ### Get Stats
+    my $stat = $lxs->get;
+
+    # Dump $lx variable
+    # use Data::Dumper;
+    # print Dumper($stat);
+
+    my $proc = $stat->processes;
+
+    # get the pids
+    my @pids = sort $stat->processes;
+
+    # loop over all pids
+    foreach (@pids) {
+
+        my $jvmstats;
+        my $name;
+
+        # filter anything else than java
+        next if $proc->{$_}{cmdline} !~ /java/;
+
+        # Debug
+        # if ($debugmsg) { printf "%s:%d\n", "pid", $_; }
+
+        # Debug
+        # $jvmstats = get_jstat($_);
+        # if (defined $jvmstats) {
+        #    printf "%s:%d%s\n", time, $_, $jvmstats;
+        # }
+
+        # fetch the jvm pids based on search criteria
+        # format: weblogic, tomcat, regex
+        #  weblogic: will automatically look for name
+        #  tomcat: n/a
+        #  regex: check if -DxxxName is available
+        if ( $search == 1 ) {
+            if ( $proc->{$_}{cmdline} =~ m/$format/i ) {
+
+                # get jvm name
+                if ( $format =~ m/\-D(.*?)\.name\=/i ) {
+                    $name = $2
+                      if ( $proc->{$_}{cmdline} =~
+                        m/\-D(.*?)\.name\=(.*?)(\-|\s)/i );
+                }
+                
+                $jvmstats = get_jstat($_);
+
+                if ( $extended == 0 ) {
+                    if ( defined $jvmstats ) {
+                        if ( defined $name ) {
+
+                            # name, pid, gcstats 3args
+                            print_gcstats(
+                                $_,    $name, $jvmstats, undef,
+                                undef, undef, undef,     undef,
+                                undef, undef, undef,     undef,
+                                undef, undef
+                            );
+                        }
+                        else {
+
+                            # pid, gcstats 2args
+                            print_gcstats(
+                                $_,    undef, $jvmstats, undef,
+                                undef, undef, undef,     undef,
+                                undef, undef, undef,     undef,
+                                undef, undef
+                            );
+                        }
+                    }
+                }
+                else {
+                    if ( defined $jvmstats ) {
+                        if ( defined $name ) {
+
+                   # name, pid, gcstats, utime, stime, size, resident, nswap,
+                   # syscr, rchar, read_bytes, syscw, wchar, write_bytes 14 args
+                            print_gcstats(
+                                $_,
+                                $name,
+                                $jvmstats,
+                                $proc->{$_}{utime},
+                                $proc->{$_}{stime},
+                                $proc->{$_}{size},
+                                $proc->{$_}{resident},
+                                $proc->{$_}{nswap},
+                                $proc->{$_}{io}{syscr},
+                                $proc->{$_}{io}{rchar},
+                                $proc->{$_}{io}{read_bytes},
+                                $proc->{$_}{io}{syscw},
+                                $proc->{$_}{io}{wchar},
+                                $proc->{$_}{io}{write_bytes}
+                            );
+
+                        }
+                        else {
+
+                   # pid, gcstats, utime, stime, size, resident, nswap,
+                   # syscr, rchar, read_bytes, syscw, wchar, write_bytes 13 args
+                            print_gcstats(
+                                $_,
+                                undef,
+                                $jvmstats,
+                                $proc->{$_}{utime},
+                                $proc->{$_}{stime},
+                                $proc->{$_}{size},
+                                $proc->{$_}{resident},
+                                $proc->{$_}{nswap},
+                                $proc->{$_}{io}{syscr},
+                                $proc->{$_}{io}{rchar},
+                                $proc->{$_}{io}{read_bytes},
+                                $proc->{$_}{io}{syscw},
+                                $proc->{$_}{io}{wchar},
+                                $proc->{$_}{io}{write_bytes}
+                            );
+                        }
+                    }
+                }
+            }
+
+        }
+        else {
+
+            #
+            # no format, search option
+            # jvm name will not be present on the raw data
+            $jvmstats = get_jstat($_);
+            if ( $extended == 0 ) {
+                if ( defined $jvmstats ) {
+                    print_gcstats( $_, undef, $jvmstats,
+                                   undef, undef, undef,
+                                   undef, undef, undef,
+                                   undef, undef, undef,
+                                   undef, undef
+                                   );
+
+                }
+            }
+            else {
+                if ( defined $jvmstats ) {
+
+                   # pid, gcstats, utime, stime, size, resident, nswap,
+                   # syscr, rchar, read_bytes, syscw, wchar, write_bytes 13 args
+                    print_gcstats(
+                        $_,
+                        undef,
+                        $jvmstats,
+                        $proc->{$_}{utime},
+                        $proc->{$_}{stime},
+                        $proc->{$_}{size},
+                        $proc->{$_}{resident},
+                        $proc->{$_}{nswap},
+                        $proc->{$_}{io}{syscr},
+                        $proc->{$_}{io}{rchar},
+                        $proc->{$_}{io}{read_bytes},
+                        $proc->{$_}{io}{syscw},
+                        $proc->{$_}{io}{wchar},
+                        $proc->{$_}{io}{write_bytes}
+                    );
+                }
+            }
+        }
+    }    # for
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+
+### SUBROUTINES
+
+# get_jstat - get all JVM GC stats from a running process target
+#
+sub get_jstat {
+    my $stat;
+
+    open my $fh, "-|", "$jstat", "-gcutil", "$_[0]"
+      or die "Cannot execute '$jstat': $!";
+
+    while ( defined( my $line = <$fh> ) ) {
+        chomp($line);
+        next if $line =~ /S0/;
+        for ($line) { s/^\s+//; s/\s+/:/g; }
+        $stat = $line;
+    }
+    close $fh;
+
+    if ( defined $stat ) {
+        return $stat;
+    }
+    else {
+        return;
+    }
+
+}
+
+
+# print_gcstats - prints JVM GC stats
+#
+sub print_gcstats {
+
+    my (
+        $pid,        $name,     $gcstats, $utime, $stime,
+        $size,       $resident, $nswap,   $syscr, $rchar,
+        $read_bytes, $syscw,    $wchar,   $write_bytes
+    ) = @_;
+
+    # 14 args
+    if (    defined($pid)
+        and defined($name)
+        and defined($gcstats)
+        and defined($utime)
+        and defined($stime)
+        and defined($size)
+        and defined($resident)
+        and defined($nswap)
+        and defined($syscr)
+        and defined($rchar)
+        and defined($read_bytes)
+        and defined($syscw)
+        and defined($wchar)
+        and defined($write_bytes) )
+    {
+
+        printf "%.${tp}f:%s.%d:%s:%s:%s:%s:%s:%s:%.f:%.f:%.f:%.f:%.f:%.f\n",
+          time, $name, $pid, $gcstats, $utime, $stime, $size, $resident, $nswap,
+          $syscr, $rchar, $read_bytes, $syscw, $wchar, $write_bytes;
+    }
+
+    # 13 args
+    elsif ( defined($pid)
+        and defined($gcstats)
+        and defined($utime)
+        and defined($stime)
+        and defined($size)
+        and defined($resident)
+        and defined($nswap)
+        and defined($syscr)
+        and defined($rchar)
+        and defined($read_bytes)
+        and defined($syscw)
+        and defined($wchar)
+        and defined($write_bytes) )
+    {
+        printf "%.${tp}f:%d:%s:%s:%s:%s:%s:%s:%.f:%.f:%.f:%.f:%.f:%.f\n",
+          time, $pid, $gcstats, $utime, $stime, $size, $resident, $nswap,
+          $syscr, $rchar, $read_bytes, $syscw, $wchar, $write_bytes;
+
+    }
+
+    # 3 args
+    elsif ( defined($pid)
+        and defined($name)
+        and defined($gcstats) )
+    {
+        printf "%.${tp}f:%s.%d:%s\n", time, $name, $pid, $gcstats;
+
+    }
+
+    # 2 args
+    elsif ( defined($pid) and defined($gcstats) ) {
+        printf "%.${tp}f:%d:%s\n", time, $pid, $gcstats;
+
+    }
+
+    return;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+
+    print STDERR <<END;
+USAGE: jvmrec [-hxV] [-f format] [interval [count]]
+OPTIONS:
+  -h        : help information
+  -V        : release version
+  -x        : extended mode, enables process statistics
+  -f format : weblogic, tomcat, regex
+
+ e.g. jvmrec 60                      print every 60secs stats all JVMs
+      jvmrec -f weblogic 60          print every 60secs Weblogic stats
+      jvmrec -xf 'com*' 360          print every 360secs all com JVMs,
+                                     including extended statistics
+      jvmrec -f '-Dmyapp.Name' 60    print every 60secs all Dmyapp.Name JVMs
+      jvmrec -f '^(?!.*?esite).*' 60 print every 60secs all non esite JVMs
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 name.pid   : jvm name and process id
+  #03 s0pct      : survivor S0 utilization, number
+  #04 s1pct      : survivor S1 utilization, number
+  #05 edenpct    : eden space utilization, number
+  #06 oldpct     : old space utilization, number
+  #07 permpct    : permanent space utilization, number
+  #08 mGC        : number of young generation GC events, number
+  #09 tmGC       : young generation garbage collection time, time
+  #10 MGC        : number of full GC events, number
+  #11 tMGC       : full garbage collection time, time
+  #12 totalGC    : total garbage collection time, time
+  #13 utime      : number of jiffies scheduled in user mode, number
+  #14 stime      : number of jiffies scheduled in kernel mode, number
+  #15 size       : total program size of the process, number
+  #16 resident   : resident set size, the text, data and stack space, number
+  #17 nswap      : size of swap space of the process, number
+  #18 syscr      : number of read syscalls, number
+  #19 rchar      : bytes read from storage (might have been from pagecache)
+                   number
+  #20 read_bytes : bytes really fetched from storage layer, number
+  #21 syscw      : number of write syscalls, number
+  #22 wchar      : bytes written, number
+  #23 write_bytes: bytes sent to the storage layer, number
+
+NOTES:
+ JDK_PATH: Make sure you have defined JDK_PATH variable to point
+ where your JDK has been installed !
+END
+    exit 0;
+}
+
+
+# revision - print revision and exit
+#
+sub revision {
+
+    print STDERR <<END;
+jvmrec: 1.0.0, 2014-05-04
+END
+    exit 0;
+}

@@ -1,0 +1,183 @@
+#!/opt/sdr/perl/bin/perl
+
+# COPYRIGHT: Copyright (c) 2013 System Data Recorder
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+# SDR VERSION: 0.75
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::Local;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+
+#
+# Command line arguments
+#
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hV') or usage();
+usage() if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# process [[interval [count]]
+my ($interval, $loop_max);
+if (defined $ARGV[0]) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1; 
+}
+
+# globals
+local $|     = 1;      # autoflush
+my $tp       = 0;      # time precision
+my $loop     = 0;      # current loop number
+$main::opt_h = 0;
+$main::opt_V = 0;
+
+# Constants
+my $K=1024**1;
+my $M=1024**2;
+my $G=1024**3;
+my $T=1024**4;
+my $P=1024**5;
+my $E=1024**6;
+
+
+
+# SUBROUTINES
+
+# print usage description
+sub usage {
+       print STDERR <<END;
+USAGE: zonerec [-hV] | [interval [count]]
+   eg, zonerec 60     # print every 60sec ZONE stats
+       zonerec -h      # print help information
+       zonerec -v      # print revision information
+       man zonerec    # see man page for more details
+
+ FIELDS:
+  #01 timestamp: seconds since Epoch, time
+  #02 zonename : zone name
+  #03 zid      : zone id
+  #04 cpu      : zone cpu utilization, number
+  #05 mem      : zone mem utilization, number
+  #06 nproc    : number of processes used by zoneid, number
+  #07 swap     : swap used by zoneid, includes tmpfs mounts, in bytes, number
+  #08 rss      : resident set size, in bytes, number
+
+ NOTES:
+  Make sure you have correctly exported the following
+  environment variables: ZONEADM_BIN PRSTAT_BIN 
+END
+exit 0;
+}
+
+
+# print revision
+sub revision {
+       print STDERR <<END;
+zonerec: 0.75, 2013-08-31
+END
+       exit 0;
+}
+
+
+sub in_bytes {
+
+    my ($value) = @_;
+
+    my $s = chop($value);
+
+    if ($s eq 'K' || $s eq 'k') {$value *= $K};
+    if ($s eq 'M' || $s eq 'm') {$value *= $M};
+    if ($s eq 'G' || $s eq 'g') {$value *= $G};
+    if ($s eq 'T' || $s eq 't') {$value *= $T};
+    if ($s eq 'P' || $s eq 'p') {$value *= $P};
+    if ($s eq 'E' || $s eq 'e') {$value *= $E};
+
+    return $value;
+}
+
+
+# print zone stats
+sub print_zstats {
+    my ($zid, $nproc, $swap, $rss, $mem, $cpu, $zname) = @_;
+    $swap = in_bytes($swap);
+    $rss = in_bytes($rss);
+    printf "%.${tp}f:%s:%d:%.2f:%.2f:%d:%d:%d\n", 
+     time,$zname,$zid,$cpu,$mem,$nproc,$swap,$rss;
+
+    return;
+}
+
+
+# get each zone stats
+sub get_zstats {
+
+    my ($zoneid, $nproc, $swap, $rss, $mem, undef, $cpu, $zone);
+    open my $zones, "-|", "$ENV{PRSTAT_BIN} -cZ -n10\,20 1 1" or 
+     die "cannot execute '$ENV{PRSTAT_BIN}' - $!";
+    do { $_ = <$zones>; } until $_ =~ "^ZONEID";
+    while(<$zones>) {
+        chomp; next if $_ =~ /^Total/;
+	 /\s+(\d+)\s+(\d+)\s+(\S+)\s+(\S+)\s+([0-9\.]+)%\s+\S+\s+([0-9\.]+)% (\S+)/;
+        print_zstats($1,$2,$3,$4,$5,$6,$7);
+    }
+
+    close $zones;
+
+    return;
+}
+
+
+# ######### #
+# MAIN BODY #
+# ######### #
+
+usage if (! defined $ENV{'PRSTAT_BIN'});
+
+# how often do we trigger
+my $first_interval = $interval;
+
+# signal handler is empty, do nothing
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer(ITIMER_REAL, $first_interval, $interval);
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+
+while (1) {
+   
+    get_zstats;
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+}
+

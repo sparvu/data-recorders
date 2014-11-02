@@ -1,3 +1,6 @@
+#!/bin/sh
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -14,4 +17,19 @@
 #  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 #  (http://www.gnu.org/copyleft/gpl.html)
-#
+
+
+# ######### #
+# MAIN BODY #
+# ######### #
+
+PWD=`dirname $0`
+if [ "$PWD" = "." ]; then
+    . ../bin/setenv
+else
+    PWD=`echo $PWD | sed 's/etc.*//'`
+    . ${PWD}bin/setenv
+fi
+
+${SDR_BIN}/netrec 60 >> ${NETREC_CUR} 2>> ${NETREC_LOG} &
+echo "$!" > ${SDR_LOG}/netrec.pid

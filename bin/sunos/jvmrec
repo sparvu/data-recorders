@@ -1,0 +1,320 @@
+#!/bin/ksh -p
+
+# COPYRIGHT: Copyright (c) 2013 System Data Recorder
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+# SDR VERSION: 0.75
+
+
+# SUBROUTINES
+
+revision() {
+
+cat << END
+${0##*/}: 0.75, 2013-08-31
+END
+
+exit 0;
+}
+
+usage() {
+
+cat << END
+USAGE: ${0##*/} [-l] [-f weblogic] interval
+   eg, jvmrec 60              # print every 60sec JVM stats 
+   eg, jvmrec -l 60           # print every 60sec local JVM stats
+   eg, jvmrec -f weblogic 60  # print every 60sec JVM stats of a
+                              # Weblogic process
+ FIELDS:
+  #01 timestamp : seconds since Epoch, time
+  #02 zone.pid  : zone name and process id
+  #03 s0pct     : survivor S0 utilization, number
+  #04 s1pct     : survivor S1 utilization, number
+  #05 eden      : eden space utilization, number
+  #06 oldpct    : old space utilization, number 
+  #07 permpct   : permanent space utilization, number
+  #08 mGC       : number of young generation GC events, number
+  #09 tmGC      : young generation garbage collection time, time
+  #10 MGC       : number of full GC events, number
+  #11 tMGC      : full garbage collection time, time
+  #12 totalGC   : total garbage collection time, time
+END
+exit 0
+}
+
+
+print_gc_data() {
+
+# $1 zone: global 0, local 1
+# $2 print mode: 1 name included, 0 name skipped
+# $3 pid
+
+#print "zone: $1, name: $2, pid: $3"
+
+if (( $1 == 0 )); then
+    if (( $2 == 1 )); then
+        ${JSTAT} -gcutil $3 2>/dev/null | tail +2 |\
+        ${PERL_BIN} -wnla -e '
+        ($s0,$s1,$e,$o,$p,$ygc,$ygct,$fgc,$fgct,$gct) = @F;
+        print time . ":$ENV{z}.$ENV{name}.$ENV{lpid}" . ":$s0:$s1:$e:$o:$p:$ygc:$ygct:$fgc:$fgct:$gct";'
+    else
+        ${JSTAT} -gcutil $3 2>/dev/null | tail +2 |\
+        ${PERL_BIN} -wnla -e '
+            ($s0,$s1,$e,$o,$p,$ygc,$ygct,$fgc,$fgct,$gct) = @F;
+            print time . ":$ENV{z}.$ENV{lpid}" . ":$s0:$s1:$e:$o:$p:$ygc:$ygct:$fgc:$fgct:$gct";'
+    fi    
+else
+    if (( $2 == 1 )); then
+        zlogin -S $z \
+         ${JSTAT} -gcutil $3 2>/dev/null | tail +2 |\
+         ${PERL_BIN} -wnla -e '
+         ($s0,$s1,$e,$o,$p,$ygc,$ygct,$fgc,$fgct,$gct) = @F;
+         print time . ":$ENV{z}.$ENV{name}.$ENV{lpid}" . ":$s0:$s1:$e:$o:$p:$ygc:$ygct:$fgc:$fgct:$gct";'
+    else
+        zlogin -S $z  \
+        ${JSTAT} -gcutil $3 2>/dev/null | tail +2 |\
+        ${PERL_BIN} -wnla -e '
+            ($s0,$s1,$e,$o,$p,$ygc,$ygct,$fgc,$fgct,$gct) = @F;
+            print time . ":$ENV{z}.$ENV{lpid}" . ":$s0:$s1:$e:$o:$p:$ygc:$ygct:$fgc:$fgct:$gct";'
+    fi 
+fi
+
+}
+
+
+get_jvm() {
+
+lpid=$1
+
+if (( $# > 1 )); then
+    # we have search string on
+    lsearch="$2"
+
+    pargs $lpid 2>/dev/null | grep "$lsearch" > /dev/null 2>&1
+    if (( $? != 0)); then
+        continue
+    else
+        pargs -c $lpid 2>/dev/null | grep "$lsearch" |\
+                sed 's/^.*\=//;s/\D//' | read name
+ 
+        export z name lpid
+        # DEBUG
+        # print "\n$z.$name $pid"
+
+        # get the jstat from each zone
+        if [[ $z == "global" ]]; then
+            print_gc_data 0 1 $lpid
+        elif (( local_zone == 1 )); then
+            print_gc_data 0 1 $lpid
+        else
+            print_gc_data 1 1 $lpid
+        fi
+    fi
+else
+    export z lpid
+    if [[ $z == "global" ]]; then
+        print_gc_data 0 0 $lpid
+    elif (( local_zone == 1 )); then
+        print_gc_data 0 0 $lpid
+    else
+        print_gc_data 1 0 $lpid
+    fi
+fi
+
+}
+
+get_pids() {
+# $1 zonename
+
+    if [[ $1 == "global" ]]; then
+        for pid in `pgrep -x java -z 0`
+        do
+            # print "get_pid, pid: $pid"
+            if (( weblogic_sem == 1 )); then
+                get_jvm $pid "\: \-Dweblogic.Name\="
+            else
+                get_jvm $pid
+            fi
+        done
+    else
+        for pid in `pgrep -x java -z $1`
+        do
+            if (( weblogic_sem == 1 )); then
+                get_jvm $pid "\: \-Dweblogic.Name\="
+            else
+                get_jvm $pid
+            fi
+        done
+
+    fi 
+
+}
+
+
+
+
+# MAIN BODY
+
+local_zone=0
+interval=60
+
+# Source Global SDR Settings
+PWD=$(dirname $0)
+. ${PWD}/setenv
+
+
+if [[ ${OS_NAME} != "SunOS" ]]; then
+    print "Error: cannot run on this OS: $(uname -s)"
+    print "This collector requires Solaris 10 x86, sparc"
+    exit 1
+fi
+
+
+case "$PT_NAME" in
+    sparc)
+     prefix64=sparcv9
+    ;;
+
+    i386)
+     prefix64=amd64
+    ;;
+
+    *)
+     usage
+    ;;
+esac
+
+if [[ ! -z $JDK_PATH ]]; then
+    # we have JDK set in setenv, use it
+    if [[ ! -f ${JDK_PATH}/bin/${prefix64}/jstat ]]; then
+        JSTAT=${JDK_PATH}/bin/jstat
+    else
+        JSTAT=${JDK_PATH}/bin/${prefix64}/jstat
+    fi
+
+    if [[ ! -f $JSTAT ]]; then
+        print "Error: Check your setenv settings, JDK_PATH"
+        exit 1
+    fi
+else
+    if [[ ! -f /usr/java/bin/${prefix64}/jstat ]]; then
+        if [[ -f /usr/jdk/latest/bin/${prefix64}/jstat ]]; then
+            JSTAT=/usr/jdk/latest/bin/${prefix64}/jstat
+        else
+            print "Error: cannot find a valid jstat utility"
+            exit 1
+        fi
+    else
+       JSTAT=/usr/java/bin/${prefix64}/jstat
+    fi
+fi
+
+# Debug
+# print "JSTAT: $JSTAT"
+
+weblogic_sem=0
+
+while getopts ":f:hlv" arg
+do
+    case "${arg}" in
+        f) 
+            format=$OPTARG
+            case "$format" in
+                weblogic)
+                    weblogic_sem=1
+                    ;;
+
+                *)
+                    print "Not supported format !"
+                    usage
+                    ;;
+            esac
+            ;;
+
+        l)
+            local_zone=1
+            ;;
+
+        v)
+            revision
+            ;;
+
+        h|*)
+            usage
+            ;;
+
+        \?)
+            usage
+            ;;
+
+    esac
+done
+
+shift $(($OPTIND - 1))
+
+# check arguments
+if (( $# < 1 || $# > 1 ))
+then
+    usage
+fi
+
+# check root
+if (( USER_ID != 0 )); then
+    print "Error: ${0##*/} requires root privileges"
+    exit 1  
+fi
+
+# check bogus input
+case "$1" in
+    +([1-9])*([0-9]))
+        interval=$1
+        ;;
+
+    +([-0-9]))
+        print "Error: Negative interval, check input"
+        usage
+        ;;
+
+    +([a-z]|[A-Z]))
+        print "Error: Wrong interval format, check input"
+        usage
+        ;;
+
+    *)
+        usage
+        ;;
+esac
+
+
+while true
+do
+if [[ ! -f /usr/sbin/zoneadm ]]; then
+    z=global
+    get_pids $z
+elif (( local_zone == 1 )); then
+    z="$(/usr/bin/zonename)"
+    get_pids $z
+else
+    for z in `$ZONEADM_BIN list`
+    do
+        get_pids $z
+    done
+fi
+
+sleep $((interval))
+done

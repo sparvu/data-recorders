@@ -1,0 +1,298 @@
+#!/opt/sdr/perl/bin/perl
+
+# COPYRIGHT: Copyright (c) 2013 System Data Recorder
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+# SDR VERSION: 0.75
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+
+# Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('nshV') or usage();
+usage() if defined $main::opt_h;
+revision() if defined $main::opt_V;
+my $shared  = defined $main::opt_s ? $main::opt_s : 0;
+my $nozones = defined $main::opt_n ? $main::opt_n : 0;
+
+# process [[interval [count]]
+my ($interval, $loop_max);
+if (defined $ARGV[0]) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1; 
+}
+
+# globals
+local $|     = 1;   # autoflush
+my $loop     = 0;   # current loop number
+my $tp       = 0;   # time precision
+$main::opt_h = 0;
+$main::opt_V = 0;
+$main::opt_n = 0;
+my $currz;
+my $netstat  = "/bin/netstat";
+my $zlogin   = "/usr/sbin/zlogin";
+
+my $zonename = "/usr/bin/zonename";
+my $hostname = "/usr/bin/hostname";
+my $zonelist = "/usr/sbin/zoneadm list";
+my @zones;
+
+
+
+# SUBROUTINES #
+
+# print usage description and exit
+sub usage {
+       print STDERR <<END;
+USAGE: netrec [-nshV] | [interval [count]]
+   eg, netrec	      # print one time network stats in RRD format
+       netrec -s 60   # print all zones net stats using a single TCP/IP stack
+       netrec -n      # print global zone net stats; applicable to Solaris 8,9
+       netrec -h      # print help information
+       netrec -V      # print revision information
+       man netrec     # see man page for more details
+
+ FIELDS:
+  #01 timestamp       : seconds since Epoch, time
+  #02 zonename        : zone name
+  #03 udpInDatagrams  : number of UDP input datagrams, number
+  #04 udpInErr        : number of UDP input errors, number
+  #05 udpOutDatagrams : number of UDP output datagrams, number
+  #06 udpOutErrors    : number of UDP output errors, number
+  #07 tcpActiveOpens  : number of outgoing connections since boot, number
+  #08 tcpPassiveOpens : number of incoming connections since boot, number
+  #09 tcpAttemptFails : number of outgoing failures since boot, number
+  #10 tcpEstabResets  : number of resets to terminate est connections, number
+  #11 tcpCurrEstab    : number of current established connections, number
+  #12 tcpOutSegs      : total no. of segments sent, number
+  #13 tcpOutDataSegs  : sender total no. of data segments sent, number
+  #14 tcpOutDataBytes : sender total no. of bytes in data segments sent, number
+  #15 tcpRetransSegs  : total no. of segments retransmitted, number
+  #16 tcpRetransBytes : sender total no. of bytes in segments retrans, number
+  #17 tcpOutRsts      : number of segments sent with RST flag, number
+  #18 tcpListenDrop   : connections refused, number
+  #19 tcpListenDropQ0 : connections refused, half-open, number
+  #20 tcpHalfOpenDrop : connections dropped, full half-open, number
+  #21 tcpOutSackRetrs : retransmitted segments by SACK retrans, number
+  #22 ipInHdrErr      : dg discards for iph error, number
+  #23 ipInAddrErr     : dg discards for bad addr, number
+  #24 ipInCksumErr    : bad IP header checksum, number
+  #25 tcpInErr        : segments recv with error, number
+  #26 udpInCksumErr   : UDP packets with bad UDP checksum, number
+END
+exit 0;
+}
+
+
+# print revision and exit
+sub revision {
+       print STDERR <<END;
+netrec: 0.75, 2013-08-31
+END
+       exit 0;
+}
+
+sub get_destination {
+
+    my ($dest) = @_;
+    my @values;
+
+    open my $netstat, "-|", "$dest"
+     or die "cannot execute '$dest' - $!";
+
+    while(<$netstat>) {
+        chomp($_);
+        next if $_ =~ /^$/; $_ =~ s/^RAWIP|UDP|TCP|IPv4|IPv6//; $_ =~ s/^\s+//; last if $_ =~ /ICMPv4/;
+        push @values, split /\w+\s*\=\s*/ , $_;
+    }
+
+    close $netstat;
+
+    return @values;
+}
+
+
+
+# get netstat stats from each zone
+sub get_netstat {
+
+    my ($mode, $location) = @_;
+    my (@net,@temp);
+
+    if ($mode == 0) {
+        @temp = get_destination("$netstat -s");
+    } else {
+        @temp = get_destination("$zlogin -S $location $netstat -s 2>/dev/null");
+    }
+
+    # --- debug ---
+    #print "@temp";
+
+    # remove here the empty lines, and load the final array
+    # but it can be done much easier in one for loop
+    foreach (@temp) {
+        next if $_ =~ /^$/;
+        $_ =~ s/\s+$//;
+        push @net, $_;
+    }
+
+    # --- debug ---
+    # print "total elements: $#net\n";
+    # foreach my $x (@net) {
+    #     print "$x\n";
+    # }
+
+    return @net;
+}
+
+
+# MAIN BODY
+
+# how often do we trigger
+my $first_interval = $interval;
+
+# signal handler is empty, do nothing
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer(ITIMER_REAL, $first_interval, $interval);
+
+# build currz, keeps current zone name
+# will be passed to get_netstats
+
+### default option, with zone support
+if ($nozones == 0) {
+
+    ### check zonename availability
+    if (-e $zonename) {
+        $currz = `$zonename`;
+        chomp($currz);
+
+    } else {
+        ### fallback to hostname
+	$currz = `$hostname`;
+	chomp($currz);
+    }
+}   else {
+    ### no zones option, -n is on
+  
+    ### check zonename availability 
+    if (-e $zonename) {
+        $currz = `$zonename`;
+        chomp($currz);
+
+    ### fallback to hostname
+    } else {
+        $currz = `$hostname`;
+        chomp($currz);
+    }
+}
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+# --- debug ---
+#print "Zone support: $nozones (0-yes; 1-no)\n";
+#print "Name: $currz\n";
+
+while (1) {
+    my (@res,@netdata);
+
+    ### get stats for S10(global,local) or S8,9
+    if ($nozones == 1) {
+        
+        # we have no zones, -n
+        @res = get_netstat(0,"global");
+        next if ! defined $res[0];
+
+        printf "%.${tp}f:%s:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f\n",
+                time, $currz, $res[5], $res[6], $res[7], $res[8], $res[13], $res[14], $res[15], $res[16],
+                $res[17], $res[18], $res[19], $res[20], $res[21], $res[22], $res[29], $res[56], $res[57],
+                $res[58], $res[59], $res[63], $res[64], $res[65], $res[84], $res[86];
+
+    } else {
+
+        ### we have zone support, default run
+        if ( $currz !~ /global/ ) {
+            # call get_netstat for this localzone only
+            @res = get_netstat(0,"$currz");
+            next if ! defined $res[0];
+
+            printf "%.${tp}f:%s:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f\n",
+                time, $currz, $res[5], $res[6], $res[7], $res[8], $res[13], $res[14], $res[15], $res[16],
+                $res[17], $res[18], $res[19], $res[20], $res[21], $res[22], $res[29], $res[56], $res[57],
+                $res[58], $res[59], $res[63], $res[64], $res[65], $res[84], $res[86];
+        } else {
+            @zones   = `$zonelist`;
+            foreach my $z (@zones) {
+                chomp($z);
+                if ( $z =~ /global/ ) {
+
+                    @res = get_netstat(0,"global");
+                    next if ! defined $res[0];
+
+                    printf "%.${tp}f:%s:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f\n",
+                            time, $z, $res[5], $res[6], $res[7], $res[8], $res[13], $res[14], $res[15], $res[16],
+                            $res[17], $res[18], $res[19], $res[20], $res[21], $res[22], $res[29], $res[56], $res[57], 
+                            $res[58], $res[59], $res[63], $res[64], $res[65], $res[84], $res[86];
+                
+                    # --- debug ---
+                    # print "Total elements: $#res\n";
+                    next;
+                }
+
+                # we need to zlogin each zone
+                @res = get_netstat(1,"$z");
+                next if ! defined $res[0];
+
+                if ( $shared == 0 ) {
+
+                    printf "%.${tp}f:%s:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f\n",
+                     time, $z, $res[5], $res[6], $res[7], $res[8], $res[13], $res[14], $res[15], $res[16],
+                     $res[17], $res[18], $res[19], $res[20], $res[21], $res[22], $res[29], $res[56], $res[57], 
+                     $res[58], $res[59], $res[63], $res[64], $res[65], $res[84], $res[86];
+
+                } else {
+                    printf "%.${tp}f:%s:%.f\n", time, $z, $res[17];
+                }
+
+                # --- debug --- 
+                # print "Total elements: $#res\n";
+
+            }
+            ### for loop end
+        } 
+    }
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+}
+

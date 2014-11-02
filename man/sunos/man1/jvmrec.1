@@ -1,0 +1,142 @@
+.TH jvmrec 1  "$Date:: 2013-04-30 #$" "USER COMMANDS"
+.SH NAME
+jvmrec \- Java Virtual Machine GC collector. Uses ksh, jstat, perl
+.SH SYNOPSIS
+.B jvmrec
+[-l] [-f weblogic] interval
+
+.SH DESCRIPTION
+jvmrec is responsible for collecting Java virtual machine statistics.
+On Solaris systems, the recorder connects to each zone, global or non-global,
+fetches all running JVMs and extracts the garbage collection statistics
+from each target process using
+.I
+jstat
+, standard utility of the JDK. Jvmrec raw data is already prepared
+and formatted for SDR analysis process. The recorder runs continuously.
+
+.SH OS
+Solaris
+
+.SH OPTIONS
+
+.TP
+\-l
+matches the JVMs only from a local Solaris zone
+
+.TP
+\-f weblogic
+matches the JVM based on a weblogic name
+
+.TP
+interval
+interval in seconds between each samples. Default 300
+seconds. Make sure to dont use values lower than 1 minute since 
+under busy environments to gather JVM data might take longer
+than 1 minute. For Solaris environments, the recorder outputs 
+the data to standard output, a line per each zone.
+
+.PP
+.SH EXAMPLES
+
+.TP
+Example 1: executes every 60 seconds 
+.B # jvmrec 60 
+
+.TP
+Example 2: executes every 300 seconds 
+.B # jvmrec -f weblogic 300
+
+.PP
+.SH FIELDS
+
+.TP
+#01 timestamp
+seconds since Epoch
+
+.TP
+#02 zone.pid
+name of the zone and process ID
+
+.TP
+#03 s0pct
+Survivor S0 utilisation, percentage, gauge
+
+.TP
+#04 s1pct
+Survivor S1 utilisation, percentage, gauge
+
+.TP
+#05 edenpct
+Eden space utilisation, percentage, gauge
+
+.TP
+#06 oldpct
+Old space utilisation, percentage, gauge
+
+.TP
+#07 permpct
+Permanent space utilisation, percentage, gauge
+
+.TP
+#08 mGC
+Number of young generation GC events
+
+.TP
+#09 tmGC
+Young generation garbage collection time, secs
+
+.TP
+#10 MGC
+Number of full GC events
+
+.TP
+#11 tMGC
+Full garbage collection time, secs
+
+.TP
+#12 totalGC   : Total garbage collection time, secs
+
+
+.PP
+.SH NOTES
+jvmrec uses jstat utility, found under Java Development Kit
+release. You must have a valid and operational jstat 
+utility on your system. On FreeBSD you should install a JDK
+from the FreeBSD foundation and its additional package 
+dependencies. On RedHat or other Linux based operating system 
+you must be sure you use Sun's HotSpot VM. Currently jvmrec 
+operates on Sun's HotSpot VM. Future versions of SDR will 
+add support for Oracle JRockit and IBM J9 VMs.
+
+.PP
+Make sure if running G1 garbage collector the main jdk
+utilities: jmap, jstat work before running jvmrec. G1 is 
+not fully supported on Java 6 therefore jvmrec might not be able 
+to record GC activity if G1 collector will be in use. There are 
+several issues with jstat and G1 on Java 6: 
+
+.TP
+6946385 : G1: jstat does not support G1 GC
+
+.TP
+7075646 : G1: fix inconsistencies in the monitoring data
+
+.TP
+6946417 : G1: Java VisualVM does not support G1 properly
+
+.PP
+.SH DOCUMENTATION
+See SDR documentation for more details.
+
+.SH EXIT
+jvmrec will run forever until is stopped by the SMF or
+manually stopped using svcadm. Remember jvmrec in Solaris
+operates via SMF so if you dont shutdown properly the SMF 
+service the SMF will automatically restart the recorder !
+
+.SH AUTHOR
+Stefan Parvu
+
+.SH SEE ALSO
+ksh(1), perl(1), jstat(1)

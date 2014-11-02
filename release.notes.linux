@@ -1,0 +1,57 @@
+
+Kronometrix Data Recording
+
+Platforms
+  Linux i386,x86_64,armv6
+ 
+
+1.00
+====
+    Bug 298 - xenrec reports incorrect domain state information
+    Bug 297 - missing diskrec manual page
+    Bug 296 - remove extended mode from sysrec manual page
+    Bug 295 - procrec smart match operator warnings
+    Bug 294 - crash in Digest::SHA methods
+    Bug 293 - Xen hypervisor specifications
+    Bug 292 - cleanup manual pages
+    Bug 291 - nicrec smart match operator warnings
+    Bug 289 - sender host, group and subscription-id configuration
+    Bug 288 - remove SSH2 transport
+    Bug 286 - raw2day should not ask for a host reporting
+    Bug 282 - raw2day should support the new sdr.conf format
+    Bug 281 - perl modules clean-up
+    Bug 280 - sysrec LA recording warnings
+    Bug 279 - hdwrec does not correctly return the number of physical NICs
+    Bug 278 - sdr.xml clean-up and restructuring recording side
+    Bug 277 - sender HTTP message digest improvements
+    Bug 274 - sender should check for a subscription id
+    Bug 273 - support for sdr recording as a RPM package
+    Bug 272 - support for sdr recording as a Debian package
+    Bug 271 - sender should be able to select a specific reporting server
+    Bug 268 - jvmrec not able to report GC data
+    Bug 262 - sender support for http transport
+    Bug 255 - hdwrec should report hypervisor type
+    Bug 253 - hdwrec does not correctly return the number of physical disks
+    Bug 251 - sysrec disk io metrics not available on certain systems
+    Bug 234 - sysrec should default to extended mode
+    Bug 230 - webrec performance metrics type definition
+    Bug 229 - jvmrec performance metrics type definition
+    Bug 228 - netrec performance metrics type definition
+    Bug 227 - nicrec performance metrics type definition
+    Bug 226 - cpurec performance metrics type definition
+    Bug 225 - sysrec performance metrics type definition
+    Bug 224 - sender use of uninitialized value $@ in concatenation
+    Bug 192 - sysrec linux sdrd 0737 data format changes
+    Bug 188 - Multiple sysrec extensions
+    Bug 81  - specs for diskrec
+    Update perl-5.18.2
+    Update openssl-1.0.0g
+    Update libssh2-1.4.3
+    Update curl-7.36.0
+    Update libidn-1.28
+    Update sysstat-10.2.1
+    Update Net-SSH2-0.53
+    Update libxml2-2.9.1
+    Update XML-LibXML-2.0116
+
+

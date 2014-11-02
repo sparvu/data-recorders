@@ -1,0 +1,102 @@
+.TH hdwrec 1  "$Date: 2014-04-27 #$" "USER COMMANDS"
+.SH NAME
+hdwrec \- Hardware and Software Inventory Recorder.
+.SH SYNOPSIS
+.B hdwrec
+.SH DESCRIPTION
+hdwrec is responsible for collecting server physical specification.
+This is the hardware inventory recorder responsible to gather
+several information about the current server being used: operating
+system, number of physical CPUs, virtual CPUs, disks, network cards,
+virtualization, applications. The recorder does not run continuously.
+
+.SH OS
+Linux 2.6+
+
+.PP
+.SH EXAMPLES
+.TP
+Example 1: collect hardware specification
+.B # hdwrec 
+
+.PP
+.SH FIELDS
+hdwrec outputs server details, separated by the character \:
+
+.TP
+#1 timestamp
+the time in seconds since Epoch
+
+.TP
+#2 hostname 
+the server hostname
+
+.TP
+#3 hdw
+machine hardware name
+
+.TP
+#4 hypervisor
+name of the hypervisor, if present
+
+.TP
+#5 os
+operating system version
+
+.TP
+#6 codename
+codename of the operating system
+
+.TP
+#7 distributor
+name of the operating system distributor
+
+.TP
+#8 kernel
+kernel version and release number
+
+.TP
+#9 pcpu
+number of physical cpus
+
+.TP
+#10 vcpu
+number of virtual processing units, vcpus
+
+.TP
+#11 memtotal
+total physical memory installed
+
+.TP
+#12 swaptotal 
+total physical swap installed
+
+.TP
+#13 disks
+total number of disks, might include USB devices
+
+.TP
+#14 nics
+total number of NICs
+
+.TP
+#15 jvms
+total number of running JVMs
+
+.TP
+#16 uptime
+how long the system has been running
+
+.PP
+.SH DOCUMENTATION
+See SDR documentation for more details.
+
+.SH EXIT
+hdwrec will run continuously until is stopped by the master script or
+manually stopped.
+ 
+.SH AUTHOR
+Stefan Parvu
+
+.SH SEE ALSO
+uname(1)

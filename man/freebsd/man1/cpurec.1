@@ -1,0 +1,120 @@
+.TH cpurec 1  "$Date: 2014-04-27 #$" "USER COMMANDS"
+.SH NAME
+cpurec \- cpu Recorder. Uses perl
+.SH SYNOPSIS
+.B cpurec
+[-hv] | [interval [count]]
+
+.SH DESCRIPTION
+cpurec records per-cpu statistics. In a multiprocessor environment it is 
+very useful to record per processor metrics in order to observe, 
+detect and isolate problems: the user and system time, 
+the cpu Percentage in idle state caused by an I/O operation which 
+is waiting to complete.
+
+.PP
+The recorder uses Sys::Statistics::Linux to fetch all metrics. 
+The raw data is already prepared and formatted for SDR analysis process. 
+The recorder runs continuously.
+
+
+.SH OS
+Linux 2.6+
+
+.SH OPTIONS
+.SS
+\-h
+print help information
+
+.SS
+\-v
+print revision information
+
+.SS
+interval
+interval in seconds between each sample
+
+.SS
+count
+number of samples
+
+.PP
+.SH EXAMPLES
+
+.SS cpurec 5 
+executes every 5 seconds 
+
+.SS cpurec 5 10
+executes 10 times sampled every 5 seconds
+
+.PP
+.SH FIELDS
+.TP
+#1 timestamp
+the time in seconds since Epoch
+
+.TP
+#2 cpuid
+the cpuid in a multiprocessor machine
+
+.TP
+#3 user
+cpu utilization user space, in percentage
+
+.TP
+#4 nice
+cpu utilization user space with nice priority, in percentage
+
+.TP
+#5 system
+cpu utilization system space, in percentage
+
+.TP
+#6 idle
+cpu utilization idle state, in percentage
+
+.TP
+#7 total
+Total cpu utilization percentage, in percentage
+
+.TP
+#8 irq
+cpu Percentage servicing interrupts
+
+.TP
+#9 softirq
+cpu Percentage servicing softirqs
+
+.TP
+#10 iowait
+cpu Percentage in idle state because an I/O
+operation is waiting to complete
+
+.TP
+#11 steal
+cpu Percentage of time spent in other operating systems
+when running in a virtualized environment
+
+
+.PP
+.SH NOTES
+This recorder supports interval values lower than second !  Running the
+recorder  with  values  lower than second for long periods of time will
+add an overhead in terms of cpu utilization.  The  lower  the  interval
+value  the higher the cpu utilization. We do not recommend using values
+lower than second for long historical recordings !
+
+.PP
+cpurec records 9 Linux OS metrics on x64 and x86 platforms !
+
+.PP
+.SH DOCUMENTATION
+See SDR documentation for more details.
+.SH EXIT
+cpurec will run continuously until is stopped by the master script 
+or manually stopped. 
+
+.SH AUTHOR
+Stefan Parvu
+.SH SEE ALSO
+perl(1)

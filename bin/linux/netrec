@@ -1,0 +1,198 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+
+#
+# Command line arguments
+#
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+# globals
+local $| = 1;    # autoflush
+my $loop = 0;    # current loop number
+my $tp   = 0;    # time precision
+$main::opt_h = 0;
+$main::opt_V = 0;
+my $netstat = "/bin/netstat";
+
+
+# ######### #
+# MAIN BODY #
+# ######### #
+
+# how often do we trigger
+my $first_interval = $interval;
+
+# signal handler is empty, do nothing
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+while (1) {
+
+    # load current stats
+    my @stats = get_netstat();
+
+    printf "%.${tp}f:%s\n", time, @stats;
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+}
+
+
+# ########### #
+# SUBROUTINES #
+# ########### #
+
+# usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: netrec [-hV] | [interval [count]]
+ e.g. netrec 5       print continuously, every 5 seconds
+      netrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 active     : TCP active connections, number
+  #03 passive    : TCP passive connections, number
+  #04 failed     : TCP failed connection attempts, number
+  #05 recv_rst   : TCP connection resets received, number
+  #06 est        : TCP connections established, number
+  #07 sent_rst   : TCP resets sent, number
+  #08 upks_recv  : UDP packets received, number
+  #09 upks_sent  : UDP packets sent, number
+  #10 fast_retr  : fast retransmits, number
+  #11 fwd_retr   : forward retransmits, number
+  #12 slow_retr  : retransmits in slow start, number
+END
+    exit 0;
+}
+
+
+sub get_param {
+    my ($entry) = @_;
+    my $param;
+
+    if ( $entry =~ /(\d+)\s*active connections openings/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*passive connection openings/ ) {
+
+        #push @params, $1;
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*failed connection attempts/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*connection resets received/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*connections established/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*resets sent/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*packets received/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*packets sent/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*fast retransmits/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*forward retransmits/ ) {
+        $param = $1;
+    }
+    elsif ( $entry =~ /(\d+)\s*retransmits in slow start/ ) {
+        $param = $1;
+    }
+
+    return $param;
+}
+
+# Name: get_netstat                               #
+# Description: get netstat stats from netstat     #
+# Returns: @stat                                  #
+#  active    = Active connections                 #
+#  passive   = Passive connections                #
+#  failed    = Failed connections attempts        #
+#  recv_rst  = Resets received                    #
+#  est       = Connections established            #
+#  sent_rst  = Resets sent                        #
+#  upks_recv = UDP packets received               #
+#  upks_sent = UDP packets sent                   #
+#  fast_retr = Fast retransmits                   #
+#  fwd_retr  = Forward retransmits                #
+#  slow_retr = Retransmits in slow start          #
+
+sub get_netstat {
+
+    my @stat = ();
+
+    open my $fh, "-|", "$netstat", "-s"
+      or die "cannot execute '$netstat -s' - $!";
+
+    while (<$fh>) {
+        push @stat, get_param($_) if ( defined( get_param($_) ) );
+    }
+    close $fh;
+
+    @stat = join( ":", @stat );
+    return @stat;
+}
+
+
+# revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+netrec: 1.0.0, 2014-05-04
+END
+    exit 0;
+}

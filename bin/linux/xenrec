@@ -1,0 +1,212 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use List::Util qw(all);
+
+# Command line arguments
+#
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hd:V') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval <= 1;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+# globals
+local $|     = 1;  # autoflush
+my $loop     = 0;  # current loop number
+my $dom_sem  = 0;  # doms mode
+my @def_doms = (); # default NICs
+my $tp       = 0;  # time precision
+$main::opt_h = 0;
+$main::opt_V = 0;
+my $xentop   = "/usr/sbin/xentop";
+
+
+
+### MAIN BODY
+
+# how often do we trigger
+my $first_interval = $interval;
+
+# signal handler is empty, do nothing
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+### check for doms list
+if ( defined $main::opt_d ) {
+    $dom_sem = 1;
+    @def_doms = split( /,/, $main::opt_d );
+}
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+### check superuser
+if ( $< != 0 ) {
+    print "Error: xenrec must be run as root\n"; 
+    exit (0);
+}
+
+
+### check for xentop
+if ( ! -f $xentop ) {
+    print "Error: Cannot find xentop, make sure you have XEN installed \n";
+    exit (1);
+}
+
+
+while (1) {
+
+    ### dom stats
+    get_stat();
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+}
+
+
+### SUBROUTINES
+sub print_stat {
+    my ($entry, $timestamp) = @_;
+    my $domname;
+
+    # do we have filter on
+    if ( $dom_sem ) {
+        $domname = $1 if ($_ =~ /([a-zA-Z_][\w-]*)\s*/);
+        return if ( all { $_ ne $domname } @def_doms);
+    }
+
+    $entry =~ s/Domain\-0/dom0/;
+    $entry =~ s/n\/a/NA/g;
+    $entry =~ s/no limit/NA/g;
+    my $size = (scalar(@{[$entry =~ /-/g]}));
+    if ($size == 5 ) {
+        # remove state leading char
+        for ($entry) { s/(\-)+//g; s/\///; }
+    } elsif ($size == 6) {
+        for ($entry) { s/(\-)+/NA/g; s/\///; } 
+    }
+    for ($entry) { s/^\s+//; s/\s+/:/g; }
+    
+    printf "%.${tp}f:%s\n", $timestamp, $entry;
+
+    return;
+}
+
+
+sub get_stat {
+
+    my @stat = ();
+    my $domname;
+
+    open my $fh, "-|", "$xentop", "-b", "-d1", "-i2" or usage();
+    my $ptime = time();
+
+    while ( <$fh> ) {
+        chomp; 
+        next if  /NAME/ ... /NAME/;
+        print_stat($_,$ptime);
+    }
+
+    close $fh;
+
+    return;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: xenrec [-hV] [-d dom[,dom...]] | [interval [count]]
+OPTIONS:
+  -h         : help information
+  -V         : release version
+  -d dom,... : filter based on a list of domain names
+  interval   : interval of time to sleep between samples, min 2 secs
+
+ e.g. xenrec 5                  print continuously, every 5 seconds
+      xenrec 2 5                print 5 times, every 2 seconds
+      xenrec -d c5964           print c5964 domain statistics
+      xenrec -d sdrcom,sdrorg   print sdrcom and sdrorg domains statistics
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 name       : domain name, the guest name
+  #03 state      : domain state: blocked (b), dying (d), shutdown (s)
+                    crashed (c), paused (p), running (r)
+  #04 cputime    : displays cpu usage in seconds
+  #05 cpupct     : displays cpu usage in percentage
+  #06 mem        : current memory
+  #07 mempct     : current memory in percentage
+  #08 maxmem     : maximum domain memory stats, in KB
+  #09 maxmempct  : memory stats in percentage, ratio of current domain 
+                     memory to total node memory
+  #10 vpus       : number of virtual processing units, vCPUs
+  #11 nets       : number of virtual networks
+  #12 nettx      : number of total network transmits bytes statistic
+  #13 netrx      : number of total network received bytes statistic
+  #14 vbds       : number of virtual block devices
+  #15 vbdoo      : number of total VBD OO requests
+  #16 vbdrd      : number of VBD read requests
+  #17 vbdwr      : number of VBD write requests
+  #18 vbdrsect   : number of VBD read sectors
+  #19 vbdwsect   : number of VBD write sectors
+  #20 ssid       : security id
+
+NOTES:
+  VBD, Virtual Block Device
+  Interval must be min 2 seconds, by default xenrec requires 1 second 
+  to obtain the data from Xen.
+END
+    exit (0);
+}
+
+
+# revision - print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+xenrec: 1.0.0, 2014-04-27
+END
+    exit (0);
+}

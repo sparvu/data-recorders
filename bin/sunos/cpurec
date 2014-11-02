@@ -1,0 +1,296 @@
+#!/opt/sdr/perl/bin/perl
+
+# COPYRIGHT: Copyright (c) 2013 System Data Recorder
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+# SDR VERSION: 0.75
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Sun::Solaris::Kstat;
+use POSIX qw(sysconf pause);
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+
+
+#
+# Command line arguments
+#
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hV') or usage();
+usage() if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# process [[interval [count]]
+my ($interval, $loop_max);
+if (defined $ARGV[0]) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1; 
+}
+
+# Variables
+my $HZ;
+my $loop     = 0;   # current loop number
+my $tp       = 0;   # time precision
+$main::opt_h = 0;   #elp option
+$main::opt_V = 0;   # revision option
+my $update;         # used for deltas
+my %cpudataOld;     # cpu_stats data
+local $| = 1;       # autoflush
+
+
+# ######### #
+# MAIN BODY #
+# ######### #
+
+my $kstat = Sun::Solaris::Kstat->new();
+
+# how often do we trigger
+my $first_interval = $interval;
+
+# signal handler is empty, do nothing
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer(ITIMER_REAL, $first_interval, $interval);
+
+# no need to read HZ every loop, since
+# changing hires in Solaris requires boot
+$HZ = POSIX::sysconf(&POSIX::_SC_CLK_TCK);
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+
+while (1) {
+
+    # get cpu stats
+    my(@cpudata) = get_cpu();
+    foreach my $values (@cpudata) {
+        my ($c, $x, $ir, $irt,
+            $cs, $ics, $mi, $sm,
+            $sysc, $u, $s, $i, $time) =
+            split /:/, $values;
+
+        # old values
+        my ($old_x, $old_ir, $old_irt, 
+            $old_cs, $old_ics, $old_mi, $old_sm,
+            $old_sysc, $old_u, $old_s, $old_i, $old_time);
+
+        if (defined $cpudataOld{$c}) {
+            ($old_x, $old_ir, $old_irt,
+            $old_cs, $old_ics, $old_mi, $old_sm,
+            $old_sysc, $old_u, $old_s, $old_i, $old_time) =
+                 split /:/, $cpudataOld{$c};
+        }
+        else {
+            $old_x = $old_ir = $old_irt =
+            $old_cs = $old_ics = $old_mi = $old_sm =
+            $old_sysc = $old_u = $old_s = $old_i = $old_time = 0;
+        }
+
+        # get the delta
+        my $tdelta = $time - $old_time;
+
+        # check mpstat.c for more details
+        # used to report btter numbers for
+        # usr, sys, idle
+        my $ticks = cpu_ticks($old_u, $u);
+        $ticks = $ticks + cpu_ticks($old_s, $s);
+        $ticks = $ticks + cpu_ticks($old_i, $i);
+
+        my $etime = $ticks / $HZ;
+        if ( $etime == 0 ) {
+            $etime = 1;
+        }
+
+        my $percent = 100 / $etime / $HZ;
+      
+        my $xcal     = ($x - $old_x) / $tdelta;
+        my $intr     = ($ir - $old_ir) / $tdelta;
+        my $ithr     = ($irt - $old_irt) / $tdelta;
+        my $csw      = ($cs - $old_cs) / $tdelta;
+        my $icsw     = ($ics - $old_ics) / $tdelta;
+        my $migr     = ($mi - $old_mi) / $tdelta;
+        my $smtx     = ($sm - $old_sm) / $tdelta;
+        my $syscall  = ($sysc - $old_sysc) / $tdelta;
+        my $user     = kstat_delta($old_u, $u) * $percent;
+        my $sys      = kstat_delta($old_s, $s) * $percent;
+        my $idle     = kstat_delta($old_i, $i) * $percent;
+
+
+	printf "%.${tp}f:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+                time,$c,$xcal,$intr,$ithr,$csw,$icsw,$migr,$smtx,$syscall,$user,$sys,$idle;
+
+        $cpudataOld{$c} =
+            "$x:$ir:$irt:$cs:$ics:$mi:$sm:$sysc:$u:$s:$i:$time";
+
+    } # for end
+
+    
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+}
+
+
+sub cpu_ticks {
+    my ($old, $new) = @_;
+    my $lticks = 0;
+
+    my $d = kstat_delta($old, $new);
+    $lticks += $d;
+
+    return $lticks;
+}
+
+
+sub kstat_delta {
+    my ($old, $new) = @_;
+    return $new - $old;
+}
+
+
+sub get_cpu {
+
+    # vars
+    my ($lx, $lintr, $lithr, $lcsw, $licsw, $lmigr, $lsmtx, $lsy, $lu, $ls, $li, $lt);
+    my @cpu_data = ();
+
+    # get the kstat updates
+    $kstat->update();
+     
+    ### Loop over all CPUs
+    my $Modules = $kstat->{cpu_stat};
+    foreach my $instance (keys(%$Modules)) {
+        my $Instances = $Modules->{$instance};
+
+        foreach my $name (keys(%$Instances)) {
+
+            my $Names = $Instances->{$name};
+
+            # xcalls
+            if (defined $$Names{xcalls}) {
+                $lx = $$Names{xcalls};
+            }
+
+            # intr
+            if (defined $$Names{intr}) {
+                $lintr = $$Names{intr};
+            }
+
+            # ithr
+            if (defined $$Names{intrthread}) {
+                $lithr = $$Names{intrthread};
+            }
+            
+            # csw
+            if (defined $$Names{pswitch}) {
+                $lcsw = $$Names{pswitch};
+            }
+
+            # icsw
+            if (defined $$Names{inv_swtch}) {
+                $licsw = $$Names{inv_swtch};
+            }
+
+            # migr
+            if (defined $$Names{cpumigrate}) {
+                $lmigr = $$Names{cpumigrate};
+            }
+
+            # smtx
+            if (defined $$Names{mutex_adenters}) {
+                $lsmtx = $$Names{mutex_adenters};
+            }
+
+            # syscl
+            if (defined $$Names{syscall}) {
+                 $lsy = $$Names{syscall};
+            }
+
+            if (defined $$Names{kernel}) {
+                $ls = $$Names{kernel};
+            }
+
+            if (defined $$Names{user}) {
+                $lu = $$Names{user};
+            }
+
+            if (defined $$Names{idle}) {
+                $li = $$Names{idle};
+            }
+
+            # use last time seen
+            $lt = $$Names{snaptime};
+
+            push @cpu_data,
+                "$instance:$lx:$lintr:$lithr:$lcsw:
+                 $licsw:$lmigr:$lsmtx:$lsy:$lu:$ls:$li:$lt";
+        }
+    }
+
+    # return
+    return @cpu_data;
+}
+
+#
+# usage - print usage and exit.
+#
+sub usage {
+        print STDERR <<END;
+USAGE: cpurec [-hv] | [interval [count]]
+   eg, cpurec               # print summary since boot only
+       cpurec 5             # print continually every 5 seconds
+       cpurec 1 5           # print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp: seconds since Epoch, time
+  #02 cpuid    : cpuid, number
+  #03 xcalls   : rate of multiprocessor cross calls, rate
+  #04 intr     : rate of intrerrupts, rate
+  #05 ithr     : rate of interrupts threads, rate
+  #06 csw      : rate of context switches, rate
+  #07 icsw     : rate of involuntary context switches, rate
+  #08 migr     : rate of migrations, rate
+  #09 smtx     : rate of kernel mutexes, rate
+  #10 syscalls : rate of system calls, rate
+  #11 userpct  : percentage of time spent in user mode, number
+  #12 syspct   : percentage of time spent in sys mode, number
+  #13 idlepct  : percentage of time spent in idle mode, number
+END
+        exit 0;
+}
+
+# revision - print revision and exit
+#
+sub revision {
+       print STDERR <<END;
+cpurec: 0.75, 2013-08-31
+END
+       exit 0;
+}
+

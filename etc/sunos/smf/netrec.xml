@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+
+<service_bundle type='manifest' name='netrec'>
+
+<service
+    name='application/netrec'
+    type='service'
+    version='1'>
+
+    <create_default_instance enabled='false' />
+
+    <single_instance />
+
+    <!--
+        Wait for network interfaces to be initialized.
+    -->
+    <dependency
+            name='network'
+            grouping='require_all'
+            restart_on='none'
+            type='service'>
+            <service_fmri value='svc:/milestone/network:default' />
+    </dependency> 
+
+    <!--
+        Wait for all local filesystems to be mounted.
+    -->
+    <dependency
+            name='filesystem-local'
+            grouping='require_all'
+            restart_on='none'
+            type='service'>
+            <service_fmri value='svc:/system/filesystem/local:default' />
+    </dependency> 
+
+
+    <exec_method
+        type='method'
+        name='start'
+        exec='/opt/sdr/etc/netrec.start'
+        timeout_seconds='0'>
+    </exec_method>
+
+    <exec_method
+        type='method'
+        name='stop'
+        exec=':kill -15'
+        timeout_seconds='5'>
+    </exec_method>
+</service>
+</service_bundle>

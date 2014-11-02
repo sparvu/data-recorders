@@ -1,0 +1,233 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use Sys::Statistics::Linux qw(DiskStats);
+use POSIX qw(pause);
+use List::Util qw(all);
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hd:vV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# set debug log
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+
+###  Variables
+my $sb   = "/sys/block";
+my $loop = 0;        # current loop number
+$main::opt_h = 0;    # help option
+$main::opt_V = 0;    # revision option
+my $disk_sem  = 0;   # disk mode
+my @def_disks = ();  # default disks
+my $tp       = 0;    # time precision
+$| = 1;
+
+
+
+### MAIN BODY
+
+# Set a timer for S::S::L object
+$SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $lxs = Sys::Statistics::Linux->new(
+    diskstats => 1
+);
+
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+#
+# check for disk list
+if ( defined $main::opt_d ) {
+    $disk_sem = 1;
+    @def_disks = split( /,/, $main::opt_d );
+}
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+while ( 1 ) {
+
+    ### get disks
+    my $rdisks = get_disks();
+
+    ### loop over all disks
+    foreach my $d (@$rdisks) {
+        my ( $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt ) = 0;
+
+
+        # filter by disk
+        if ( $disk_sem == 1 ) {
+            next if ( all { $_ ne $d } @def_disks);
+        }
+
+        my $print_time = time();
+
+        ### Get Stats
+        my $stat    = $lxs->get;
+        my $disk    = $stat->diskstats;
+
+        ### verbose
+        if ($verbose) {
+            print "time: $print_time, disk: $d \n";
+        }
+
+        if ( defined( $disk->{$d}{rdreq} ) ) {
+            $readReq += $disk->{$d}{rdreq};
+        }
+
+        if ( defined( $disk->{$d}{wrtreq} ) ) {
+            $writeReq += $disk->{$d}{wrtreq};
+        }
+
+        if ( defined( $disk->{$d}{ttreq} ) ) {
+            $totReq += $disk->{$d}{ttreq};
+        }
+
+        if ( defined( $disk->{$d}{rdbyt} ) ) {
+            $readByt += ( $disk->{$d}{rdbyt} / 1024 );
+        }
+
+        if ( defined( $disk->{$d}{wrtbyt} ) ) {
+            $writeByt += ( $disk->{$d}{wrtbyt} / 1024 );
+        }
+
+        if ( defined( $disk->{$d}{ttbyt} ) ) {
+            $totByt += ( $disk->{$d}{ttbyt} / 1024 );
+        }
+
+        ### verbose
+        if ($verbose) {
+            print "  total requests: $totReq ( reads: $readReq writes: $writeReq) \n";
+            print "  total bytes:  $totByt ( reads: $readByt writes: $writeByt) \n";
+        }
+
+        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+            $print_time, $d, $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt;
+
+    }
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+
+    ### Interval
+    pause;
+
+}
+
+
+# get_disks - return the attached disks on the system.
+#
+sub get_disks {
+
+    my @d;
+
+    # get disks
+    opendir(my $dh, $sb) 
+        or die "Error: Cannot find block directory: $!\n";
+
+    while(readdir $dh) {
+        # discard parent dir
+        next if ($_ =~ m/^\./);
+
+        # exceptions
+        next if ($_ =~ m/^loop|^ram/);
+        next if ($_ =~ m/^fd0|^hdc/);
+        next if ($_ =~ m/^md(?:[0-9])/);
+        next if ($_ =~ m/^sr(?:[0-9])$/);
+        
+        # print disks
+        # print "Disk: $_\n";
+        push @d, "$_";
+    }
+    closedir $dh;
+
+    # return array ref
+    return \@d;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+
+    print STDERR <<END;
+USAGE: diskrec [-hvV] [-d disk[,disk...]] | [interval [count]]
+OPTIONS:
+  -h          : help information
+  -v          : verbose mode
+  -V          : release version
+  -d disk,... : monitor a list of disks only
+
+ e.g. diskrec 60             print every 60secs all found disks
+      diskrec -d sda1 120    print every 120sec sda1 disk only
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 name       : disk name, LUN name
+  #03 reads      : read requests per second, rate
+  #04 rkbytes    : read KBytes per second, rate
+  #05 writes     : write requests per second, rate
+  #06 wkbytes    : write KBytes per second, rate
+  #07 sumrws     : total read + write requests per second, rate
+  #08 sumrwkbs   : total read + write bytes per second, in KB, rate
+END
+    exit 0;
+}
+
+
+# revision - print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+diskrec: 1.0.0, 2014-05-04
+END
+    exit 0;
+}

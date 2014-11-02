@@ -1,0 +1,9 @@
+/opt/sdr/log/current/*.sdrd {
+        daily
+        start 0
+        rotate 1
+	compress
+	copytruncate
+	missingok
+}
+

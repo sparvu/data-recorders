@@ -1,0 +1,411 @@
+#!/opt/sdr/perl/bin/perl
+#
+#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use Sys::Statistics::Linux qw(Processes);
+use POSIX qw(pause);
+use List::Util qw(all);
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('de:hn:p:u:Vx') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# extended mode: 0,1
+my $extended = defined $main::opt_x ? $main::opt_x : 0;
+
+# set debug log
+my $debugmsg = defined $main::opt_d ? $main::opt_d : 0;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+### Variables
+my $loop = 0;    # current loop number
+$main::opt_h = 0;    # help option
+$main::opt_V = 0;    # revision option
+my $tp       = 0;    # time precision
+my $name     = '';   # process name
+my $user     = '';   # username
+my $expr     = '';   # expression
+my @optpids  = ();   # process ids
+my $name_sem = 0;    # process name sem
+my $user_sem = 0;    # process user sem
+my $pids_sem = 0;    # process ids sem
+my $expr_sem = 0;    # expr sem
+my $format   = '';   # input target process format
+my $pgsize   = 0;    # Memory page size
+local $| = 1;        # autoflush
+
+
+
+### MAIN BODY #
+
+# Set a timer for S::S::L object
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $lxs = Sys::Statistics::Linux->new( processes => 1 );
+### 1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+# check for name flag
+if ( defined $main::opt_n ) {
+    $name_sem = 1;
+    $name     = $main::opt_n;
+}
+
+# check for pid list
+if ( defined $main::opt_p ) {
+
+    # check comma separator
+    usage() if $main::opt_p !~ /^(\d|,)*\d*$/;
+    $pids_sem = 1;
+    @optpids = split( /,/, $main::opt_p );
+}
+
+# check for username
+if ( defined $main::opt_u ) {
+    $user_sem = 1;
+    $user     = $main::opt_u;
+}
+
+# check for expression
+if ( defined $main::opt_e ) {
+    $expr_sem = 1;
+    $expr     = $main::opt_e;
+}
+
+# Debug
+if ($debugmsg) {
+    printf "[debug PIDs:" . ( " %d" x @optpids ) . "]\n", @optpids;
+}
+
+# get pagesize
+if ( defined &POSIX::_SC_PAGESIZE ) {
+    ### Perl knows POSIX::_SC_PAGESIZE
+    use POSIX qw(sysconf);
+    $pgsize = sysconf(&POSIX::_SC_PAGESIZE);
+    $Sys::Statistics::Linux::Processes::PAGES_TO_BYTES = $pgsize;
+}
+else {
+    ### No POSIX::_SC_PAGESIZE information
+    $pgsize = `/usr/bin/getconf PAGESIZE`;
+    $Sys::Statistics::Linux::Processes::PAGES_TO_BYTES = $pgsize;
+}
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+while (1) {
+
+    ### Get Stats
+    my $stat = $lxs->get;
+
+    # Dump $lx variable
+    # use Data::Dumper;
+    # print Dumper($stat);
+
+    my $proc = $stat->processes;
+
+    # get the pids
+    my @pids = sort $stat->processes;
+
+    # loop over all pids
+    foreach my $p (@pids) {
+
+        # $p is holding each PID
+
+        # filter by name
+        if ( $name_sem == 1 ) {
+            next if $proc->{$p}{cmd} !~ /\($name\)/;
+        }
+
+        # filter by pid
+        if ( $pids_sem == 1 ) {
+            next if ( all { $_ ne $p } @optpids);
+        }
+
+        # filter by username
+        if ( $user_sem == 1 ) {
+            next if $proc->{$p}{owner} !~ /$user/;
+        }
+
+        # extended mode
+        if ( $extended == 1 ) {
+
+            # we look for expression check in ext mode
+            if ( $expr_sem == 1 ) {
+
+                # fetch cmdline against expression
+                if ( $proc->{$p}{cmdline} =~ /$expr/ ) {
+                    if (defined($proc->{$p}{io}{syscr}) and
+                        defined($proc->{$p}{io}{rchar}) and
+                        defined($proc->{$p}{io}{read_bytes}) and
+                        defined($proc->{$p}{io}{syscw}) and
+                        defined($proc->{$p}{io}{wchar}) and
+                        defined($proc->{$p}{io}{write_bytes})) {
+
+                        print_pstats(
+                            $p,
+                            $proc->{$p}{cmd},
+                            $proc->{$p}{owner},
+                            $proc->{$p}{state},
+                            $proc->{$p}{nice},
+                            scalar keys %{ $proc->{$p}{fd} },
+                            $proc->{$p}{prior},
+                            $proc->{$p}{nlwp},
+                            $proc->{$p}{minflt},
+                            $proc->{$p}{mayflt},
+                            $proc->{$p}{utime},
+                            $proc->{$p}{stime},
+                            $proc->{$p}{ttime},
+                            $proc->{$p}{cutime},
+                            $proc->{$p}{cstime},
+                            $proc->{$p}{cpu},
+                            $proc->{$p}{size},
+                            $proc->{$p}{resident},
+                            $proc->{$p}{nswap},
+                            $proc->{$p}{cnswap},
+                            $proc->{$p}{io}{syscr},
+                            $proc->{$p}{io}{rchar},
+                            $proc->{$p}{io}{read_bytes},
+                            $proc->{$p}{io}{syscw},
+                            $proc->{$p}{io}{wchar},
+                            $proc->{$p}{io}{write_bytes},
+                            $proc->{$p}{cmdline});
+                    }
+                }
+            }
+            else {
+                if (defined($proc->{$p}{io}{syscr}) and 
+                    defined($proc->{$p}{io}{rchar}) and 
+                    defined($proc->{$p}{io}{read_bytes}) and 
+                    defined($proc->{$p}{io}{syscw}) and 
+                    defined($proc->{$p}{io}{wchar}) and 
+                    defined($proc->{$p}{io}{write_bytes})) {
+
+                        print_pstats(
+                            $_,
+                            $proc->{$p}{cmd},
+                            $proc->{$p}{owner},
+                            $proc->{$p}{state},
+                            $proc->{$p}{nice},
+                            $proc->{$p}{prior},
+                            $proc->{$p}{nlwp},
+                            scalar keys %{ $proc->{$p}{fd} },
+                            $proc->{$p}{minflt},
+                            $proc->{$p}{mayflt},
+                            $proc->{$p}{utime},
+                            $proc->{$p}{stime},
+                            $proc->{$p}{ttime},
+                            $proc->{$p}{cutime},
+                            $proc->{$p}{cstime},
+                            $proc->{$p}{cpu},
+                            $proc->{$p}{size},
+                            $proc->{$p}{resident},
+                            $proc->{$p}{nswap},
+                            $proc->{$p}{cnswap},
+                            $proc->{$p}{io}{syscr},
+                            $proc->{$p}{io}{rchar},
+                            $proc->{$p}{io}{read_bytes},
+                            $proc->{$p}{io}{syscw},
+                            $proc->{$p}{io}{wchar},
+                            $proc->{$p}{io}{write_bytes},
+                            $proc->{$p}{cmdline}
+                        );
+                }
+            }
+
+            # no extended mode
+        }
+        else {
+
+            if (defined($proc->{$p}{io}{syscr}) and
+                defined($proc->{$p}{io}{rchar}) and
+                defined($proc->{$p}{io}{read_bytes}) and
+                defined($proc->{$p}{io}{syscw}) and
+                defined($proc->{$p}{io}{wchar}) and
+                defined($proc->{$p}{io}{write_bytes})) {
+
+            # print proc stats
+            print_pstats(
+                $p,                          $proc->{$p}{cmd},
+                $proc->{$p}{owner},          $proc->{$p}{state},
+                $proc->{$p}{nice},           $proc->{$p}{prior},
+                $proc->{$p}{nlwp},           scalar keys %{ $proc->{$p}{fd} },
+                $proc->{$p}{minflt},         $proc->{$p}{mayflt},
+                $proc->{$p}{utime},          $proc->{$p}{stime},
+                $proc->{$p}{ttime},          $proc->{$p}{cutime},
+                $proc->{$p}{cstime},         $proc->{$p}{cpu},
+                $proc->{$p}{size},           $proc->{$p}{resident},
+                $proc->{$p}{nswap},          $proc->{$p}{cnswap},
+                $proc->{$p}{io}{syscr},      $proc->{$p}{io}{rchar},
+                $proc->{$p}{io}{read_bytes}, $proc->{$p}{io}{syscw},
+                $proc->{$p}{io}{wchar},      $proc->{$p}{io}{write_bytes},
+                undef
+            );
+            }
+
+        }
+
+    }    # for
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+
+### SUBROUTINES
+
+# print_pstats - prints PROC stats
+#
+sub print_pstats {
+
+    my (
+        $pid,         $cmd,   $owner,      $state,  $nice,
+        $prior,       $nlwp,  $fd,         $minflt, $mayflt,
+        $utime,       $stime, $ttime,      $cutime, $cstime,
+        $cpu,         $size,  $resident,   $nswap,  $cnswap,
+        $syscr,       $rchar, $read_bytes, $syscw,  $wchar,
+        $write_bytes, $cmdline
+    ) = @_;
+
+    if ( defined($cmdline) ) {
+        printf
+"%.${tp}f:%d:%s:%s:%s:%s:%s:%d:%.f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%s\n",
+          time, $pid, $cmd, $owner, $state, $nice, $prior, $nlwp, $fd, $minflt,
+          $mayflt, $utime, $stime, $ttime, $cutime, $cstime, $cpu, $size,
+          $resident, $nswap, $cnswap, $syscr, $rchar, $read_bytes, $syscw,
+          $wchar, $write_bytes, $cmdline;
+    }
+    else {
+        printf
+"%.${tp}f:%d:%s:%s:%s:%s:%s:%d:%.f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f\n",
+          time, $pid, $cmd, $owner, $state, $nice, $prior, $nlwp, $fd, $minflt,
+          $mayflt, $utime, $stime, $ttime, $cutime, $cstime, $cpu, $size,
+          $resident, $nswap, $cnswap, $syscr, $rchar, $read_bytes, $syscw,
+          $wchar, $write_bytes;
+
+    }
+    return;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+
+    print STDERR <<END;
+USAGE: procrec [-hV] [-n name] [-p pid[,pid...]] [-u user]
+               [-x [-e expr]] | [interval [count]]
+OPTIONS:
+  -h         : help information
+  -V         : release version
+  -x         : extended mode, enables command line arguments
+  -n name    : monitor a list of processes with a specific name, 
+               where name is a Perl regex
+  -p pid,... : monitor a list of processes with specified process IDs
+  -x         : extended mode, enables command line arguments
+  -e expr    : expr, a Perl regex used to extract and display all 
+               processes matching the regex expression against cmdline
+
+ e.g. procrec 60             print every 60secs all process stats
+      procrec -n java 120    print every 120sec all java processes stats
+      procrec -xn java 120   print every 120sec all java processes ext stats
+      procrec -xn 'com*' 360 print every 360secs all com JVMs
+                               including extended statistics
+      procrec -u sdr -x 
+         -e 'pts.[0-2]' 5    print every 5sec all processes which belong to
+                             sdr user, in extended mode, but only those 
+                             which contain regex 'pts.[0-2]'
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 pid        : the process id of the process, number
+  #03 cmd        : command of the process
+  #04 owner      : the owner of the process
+  #05 state      : the status of the process
+  #06 nice       : the nice level of the process, number
+  #07 prior      : the priority of the process (+15), number
+  #08 nlwp       : light weight processes by this process, number
+  #09 fds        : open file descriptors, number
+  #10 minflt     : minor faults the process made, number
+  #11 mayflt     : major faults the process made, number
+  #12 utime      : jiffies proc have beed in user mode, number
+  #13 stime      : jiffies proc have beed in kernel mode, number
+  #14 ttime      : jiffies proc have beed (user + kernel), number
+  #15 cutime     : jiffies proc waited for childs in user mode, number
+  #16 cstime     : jiffies proc waited for childs in kernel mode, number
+  #17 cpu        : the cpuid the process was last executed on, number
+  #18 size       : the total program size of the process, bytes, number
+  #19 resident   : the resident set size(the text, data, stack), 
+                   bytes, number
+  #20 nswap      : the size of swap space of the process, number
+  #21 cnswap     : the size of swap space of the childrens of the 
+                   process, number
+  #22 syscr      : read syscalls, number
+  #23 rchar      : bytes read from storage (might have been from pagecache),
+                   number
+  #24 read_bytes : bytes really fetched from storage layer, number
+  #25 syscw      : number of write syscalls, number
+  #26 wchar      : bytes written, number
+  #27 write_bytes: bytes sent to the storage layer, number
+  #28 cmdline    : command line of the process (ext)
+END
+    exit 0;
+}
+
+
+# revision - print revision and exit
+sub revision {
+
+    print STDERR <<END;
+procrec: 1.0.0, 2014-05-04
+END
+    exit 0;
+}

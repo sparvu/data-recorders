@@ -1,0 +1,91 @@
+.TH hdwrec 1  "$Date: 2012-05-23 #$" "USER COMMANDS"
+.SH NAME
+hdwrec \- Hardware Recorder.
+.SH SYNOPSIS
+.B hdwrec
+.SH DESCRIPTION
+hdwrec is responsible for collecting server physical specification.
+This is the hardware inventory recorder responsible to gather
+several information about the current server being used: operating
+system, number of physical CPUs, virtual CPUs, disks, network cards,
+virtualization, applications. The recorder does not run continuously.
+
+.SH OS
+Solaris 8+
+
+.PP
+.SH EXAMPLES
+.TP
+Example 1: collect hardware specification
+.B # hdwrec 
+
+.PP
+.SH FIELDS
+hdwrec outputs server details, separated by the character \:
+
+.TP
+field1 timestamp
+the time in seconds since Epoch
+
+.TP
+field2 hostname 
+the server hostname
+
+.TP
+field3 server type
+server type: x86, M3000, T2000
+
+.TP
+field4 osver
+operating system version
+
+.TP
+field5 no.pcpus
+number of physical cpus
+
+.TP
+field7 pcpuid 
+physical cpu id
+
+.TP
+field6 no.vcpus
+number of virtual cpus
+
+.TP
+field8 pmem
+physical memory
+
+.TP
+field9 disks
+number of disk
+
+.TP
+field9 nics
+number of nics
+
+.TP
+field10 zones
+number of zones
+
+.TP
+field11 jvm
+number of running JVMs
+
+.TP
+field10 uptime
+server uptime
+
+
+.PP
+.SH DOCUMENTATION
+See SDR documentation for more details.
+
+.SH EXIT
+hdwrec is executed periodically.
+
+ 
+.SH AUTHOR
+Stefan Parvu
+
+.SH SEE ALSO
+prtdiag(1M)

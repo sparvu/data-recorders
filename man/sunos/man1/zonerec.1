@@ -1,0 +1,90 @@
+.TH zonerec 1  "$Date: 2012-05-23 #$" "USER COMMANDS"
+.SH NAME
+zonerec \- Zone Recorder. Uses zoneadm, perl
+.SH SYNOPSIS
+.B zonerec
+interval count
+.SH DESCRIPTION
+zonerec is responsible for collecting Solaris container 
+or zone statistics. The recorders goes over all deployed Solaris 
+zones and extracts the processes and zone statistics using
+.I
+prstat
+utility. zonerec raw data is not prepared and formatted for 
+SDR analysis process. A reporting process is needed to 
+filter and pre-process the raw data. The recorder runs continuously.
+
+.SH OS
+Solaris 10+
+
+.SH OPTIONS
+.TP
+\-h
+print help information
+.TP
+\-v
+print revision information
+.TP
+interval
+interval in seconds between each sample
+.TP
+count
+number of samples
+
+
+.PP
+.SH EXAMPLES
+.TP
+Example 1: executes every 60 seconds 
+.B $ zonerec 60
+
+
+.PP
+.SH FIELDS
+
+.TP
+#01 timestamp
+seconds since Epoch
+
+.TP
+#02 zonename
+Solaris zone name
+
+.TP
+#03 zid
+Solaris zone id
+
+.TP
+#04 cpu
+CPU utilisation, percentage, gauge
+
+.TP
+#05 mem
+Mem utilisation, percentage, gauge
+
+.TP
+#06 nproc
+no. of processes used by zoneid
+
+.TP
+#07 swap
+total swap used by zoneid, includes tmpfs mounts, in bytes
+
+.TP
+#08 rss
+resident set size, the amount of physical memory, in bytes
+
+
+.PP
+.SH DOCUMENTATION
+See SDR documentation for more details.
+.SH EXIT
+zonerec will run forever until is stopped by the SMF or
+manually killed. Remember zonerec operates via SMF
+so if you dont shutdown properly the SMF service 
+the SMF will automatically restart the zonerec recorder !
+ 
+.SH AUTHOR
+Stefan Parvu
+.SH SEE ALSO
+zoneadm(1M), prstat(1M), perl(1)
