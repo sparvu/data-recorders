@@ -60,7 +60,7 @@ start() {
     if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
         kill -0 `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
         if [ $? -ne 0 ]; then
-            su - sdr -c "${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
+            su - krmx -c "${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
             RETVAL=$?
         else
             RETVAL=1
@@ -68,7 +68,7 @@ start() {
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     else
         # no pid files
-        su - sdr -c "${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
+        su - krmx -c "${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
         RETVAL=$?
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     fi
