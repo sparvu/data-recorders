@@ -136,7 +136,7 @@ if ( Proc::PID::File->running( { dir => "$baselog" } ) ) {
 
 # cd sdrd raw data directory
 chdir("$curlog")
-  or die "error: main - cannot open SDR sdrd raw data directory, $!\n";
+  or die "error: main - cannot open raw data directory, $!\n";
 
 foreach (@dbs) {
     my $n = $_ . "rec.sdrd";
@@ -268,14 +268,14 @@ sub open_config {
         local $/;
 
         # we will parse now the file
-        if ( defined $ENV{'SDR_PREFIX'} ) {
-            if ( -e "$ENV{'SDR_PREFIX'}/etc/$conf" ) {
-                open my $fh, "<", "$ENV{'SDR_PREFIX'}/etc/$conf";
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
                 $json_data = <$fh>;
                 close $fh;
             }
             else {
-                print "error: open_conf - $! $ENV{'SDR_PREFIX'}/etc/$conf \n";
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
                 usage();
             }
         }
@@ -306,21 +306,21 @@ sub write_config {
     my $json_data = JSON->new->utf8->pretty->encode($perl_data);
 
     # we will parse now the file
-    if ( defined $ENV{'SDR_PREFIX'} ) {
-        if ( -e "$ENV{'SDR_PREFIX'}/etc/$conf" ) {
-            open my $fh, ">", "$ENV{'SDR_PREFIX'}/etc/$conf.tmp";
+    if ( defined $ENV{'KRMX_PREFIX'} ) {
+        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
 
             # print $fh encode_json($data);
             print $fh $json_data;
             close $fh;
             move(
-                "$ENV{'SDR_PREFIX'}/etc/$conf.tmp",
-                "$ENV{'SDR_PREFIX'}/etc/$conf"
+                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
+                "$ENV{'KRMX_PREFIX'}/etc/$conf"
             ) or die "Error: cannot update $conf: $!";
 
         }
         else {
-            print "error: write_config - $! $ENV{'SDR_PREFIX'}/etc/$conf \n";
+            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
             usage();
         }
     }

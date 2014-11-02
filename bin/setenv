@@ -45,45 +45,45 @@ esac
 ### JDK_PATH
 JDK_PATH=
 
-SDR_PREFIX=/opt/sdr
-SDR_BIN=${SDR_PREFIX}/bin
-SDR_ETC=${SDR_PREFIX}/etc
-SDR_LIB=${SDR_PREFIX}/lib
-SDR_LOG=${SDR_PREFIX}/log
-SDR_CURRENT=${SDR_LOG}/current
-SDR_DAILY=${SDR_LOG}/daily
+KRMX_PREFIX=/opt/kronometrix
+KRMX_BIN=${KRMX_PREFIX}/bin
+KRMX_ETC=${KRMX_PREFIX}/etc
+KRMX_LIB=${KRMX_PREFIX}/lib
+KRMX_LOG=${KRMX_PREFIX}/log
+KRMX_CURRENT=${KRMX_LOG}/current
+KRMX_DAILY=${KRMX_LOG}/daily
 
 
-### RAW SDRD DATA FILES
-SYSREC_CUR=${SDR_CURRENT}/sysrec.sdrd
-CPUREC_CUR=${SDR_CURRENT}/cpurec.sdrd
-DISKREC_CUR=${SDR_CURRENT}/diskrec.sdrd
-NICREC_CUR=${SDR_CURRENT}/nicrec.sdrd
-NETREC_CUR=${SDR_CURRENT}/netrec.sdrd
-JVMREC_CUR=${SDR_CURRENT}/jvmrec.sdrd
-HDWREC_CUR=${SDR_CURRENT}/hdwrec.sdrd
-PROCREC_CUR=${SDR_CURRENT}/procrec.sdrd
-XENREC_CUR=${SDR_CURRENT}/xenrec.sdrd
+### RAW DATA FILES
+SYSREC_CUR=${KRMX_CURRENT}/sysrec.krd
+CPUREC_CUR=${KRMX_CURRENT}/cpurec.krd
+DISKREC_CUR=${KRMX_CURRENT}/diskrec.krd
+NICREC_CUR=${KRMX_CURRENT}/nicrec.krd
+NETREC_CUR=${KRMX_CURRENT}/netrec.krd
+JVMREC_CUR=${KRMX_CURRENT}/jvmrec.krd
+HDWREC_CUR=${KRMX_CURRENT}/hdwrec.krd
+PROCREC_CUR=${KRMX_CURRENT}/procrec.krd
+XENREC_CUR=${KRMX_CURRENT}/xenrec.krd
 
 
 ### RECORDER LOG
-SYSREC_LOG=${SDR_LOG}/sysrec.log
-CPUREC_LOG=${SDR_LOG}/cpurec.log
-NETREC_LOG=${SDR_LOG}/netrec.log
-DISKREC_LOG=${SDR_LOG}/diskrec.log
-NICREC_LOG=${SDR_LOG}/nicrec.log
-JVMREC_LOG=${SDR_LOG}/jvmrec.log
-HDWREC_LOG=${SDR_LOG}/hdwrec.log
-PROCREC_LOG=${SDR_LOG}/procrec.log
-WEBREC_LOG=${SDR_LOG}/webrec.log
-XENREC_LOG=${SDR_LOG}/xenrec.log
+SYSREC_LOG=${KRMX_LOG}/sysrec.log
+CPUREC_LOG=${KRMX_LOG}/cpurec.log
+NETREC_LOG=${KRMX_LOG}/netrec.log
+DISKREC_LOG=${KRMX_LOG}/diskrec.log
+NICREC_LOG=${KRMX_LOG}/nicrec.log
+JVMREC_LOG=${KRMX_LOG}/jvmrec.log
+HDWREC_LOG=${KRMX_LOG}/hdwrec.log
+PROCREC_LOG=${KRMX_LOG}/procrec.log
+WEBREC_LOG=${KRMX_LOG}/webrec.log
+XENREC_LOG=${KRMX_LOG}/xenrec.log
 
 
-PERL_BIN=${SDR_PREFIX}/perl/bin/perl
+PERL_BIN=${KRMX_PREFIX}/perl/bin/perl
 
 
 ### umask setting
 #  
 # umask 022
 
-export JDK_PATH HOSTNAME SDR_PREFIX SDR_BIN SDR_LOG SDR_RAW SDR_DAILY PERL_BIN MPSTAT_BIN
+export JDK_PATH HOSTNAME KRMX_PREFIX KRMX_BIN KRMX_LOG KRMX_RAW KRMX_DAILY PERL_BIN MPSTAT_BIN
