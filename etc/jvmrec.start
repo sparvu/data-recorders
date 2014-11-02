@@ -32,5 +32,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${SDR_BIN}/jvmrec 300 >> ${JVMREC_CUR} 2>> ${JVMREC_LOG} &
+${KRMX_BIN}/jvmrec 300 >> ${JVMREC_CUR} 2>> ${JVMREC_LOG} &
 echo "$!" > ${SDR_LOG}/jvmrec.pid

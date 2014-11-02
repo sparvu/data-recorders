@@ -31,5 +31,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${SDR_BIN}/cpurec 60 >> ${CPUREC_CUR} 2>> ${CPUREC_LOG} &
-echo "$!" > ${SDR_LOG}/cpurec.pid
+${KRMX_BIN}/cpurec 60 >> ${CPUREC_CUR} 2>> ${CPUREC_LOG} &
+echo "$!" > ${KRMX_LOG}/cpurec.pid

@@ -30,5 +30,5 @@ else
     . ${PWD%%etc*}bin/setenv
 fi
 
-${SDR_BIN}/zonerec 60 >> ${ZONEREC_CUR} 2>> ${ZONEREC_LOG} &
+${KRMX_BIN}/zonerec 60 >> ${ZONEREC_CUR} 2>> ${ZONEREC_LOG} &
 print "$!" > ${SDR_LOG}/zonerec.pid

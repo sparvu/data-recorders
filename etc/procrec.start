@@ -31,5 +31,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${SDR_BIN}/procrec 60 >> ${PROCREC_CUR} 2>> ${PROCREC_LOG} &
+${KRMX_BIN}/procrec 60 >> ${PROCREC_CUR} 2>> ${PROCREC_LOG} &
 echo "$!" > ${SDR_LOG}/procrec.pid

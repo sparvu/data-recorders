@@ -31,5 +31,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${SDR_BIN}/netrec 60 >> ${NETREC_CUR} 2>> ${NETREC_LOG} &
+${KRMX_BIN}/netrec 60 >> ${NETREC_CUR} 2>> ${NETREC_LOG} &
 echo "$!" > ${SDR_LOG}/netrec.pid

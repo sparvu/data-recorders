@@ -32,5 +32,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${SDR_BIN}/xenrec 120 >> ${XENREC_CUR} 2>> ${XENREC_LOG} &
+${KRMX_BIN}/xenrec 120 >> ${XENREC_CUR} 2>> ${XENREC_LOG} &
 print "$!" > ${SDR_LOG}/xenrec.pid

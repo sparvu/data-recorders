@@ -31,5 +31,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${SDR_BIN}/nicrec 60 >> ${NICREC_CUR} 2>> ${NICREC_LOG} &
+${KRMX_BIN}/nicrec 60 >> ${NICREC_CUR} 2>> ${NICREC_LOG} &
 echo "$!" > ${SDR_LOG}/nicrec.pid

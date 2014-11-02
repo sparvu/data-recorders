@@ -1,31 +1,55 @@
 {
     "host_id": "",
     "log": {
-        "base_path": "/opt/sdr/log",
-        "current_path": "/opt/sdr/log/current",
-        "daily_path": "/opt/sdr/log/daily"
+        "base_path": "/opt/kronometrix/log",
+        "current_path": "/opt/kronometrix/log/current",
+        "daily_path": "/opt/kronometrix/log/daily"
     },
     "transport": {
         "data_file": [
             {
 		"name": "sys",
-		"file": "sysrec.sdrd"
+		"file": "sysrec.krd"
             },
             {
                 "name": "cpu",
-                "file": "cpurec.sdrd"
+                "file": "cpurec.krd"
             },
             {
                 "name": "disk",
-                "file": "diskrec.sdrd"
+                "file": "diskrec.krd"
             },
             {
                 "name": "nic",
-                "file": "nicrec.sdrd"
+                "file": "nicrec.krd"
             },
             {
                 "name": "hdw",
-                "file": "hdwrec.sdrd"
+                "file": "hdwrec.krd"
+            },
+            {
+                "name": "net",
+                "file": "netrec.krd"
+            },
+            {
+                "name": "proc",
+                "file": "procrec.krd"
+            },
+            {
+                "name": "jvm",
+                "file": "jvmrec.krd"
+            },
+            {
+                "name": "xen",
+                "file": "xenrec.krd"
+            },
+            {
+                "name": "zone",
+                "file": "zonerec.krd"
+            },
+            {
+                "name": "ws",
+                "file": "wsrec.krd"
             }
 	],
 	"appliance": [

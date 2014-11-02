@@ -31,5 +31,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${SDR_BIN}/diskrec 60 >> ${DISKREC_CUR} 2>> ${DISKREC_LOG} &
+${KRMX_BIN}/diskrec 60 >> ${DISKREC_CUR} 2>> ${DISKREC_LOG} &
 echo "$!" > ${SDR_LOG}/diskrec.pid
