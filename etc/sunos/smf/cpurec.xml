@@ -27,7 +27,7 @@
     <exec_method
         type='method'
         name='start'
-        exec='/opt/sdr/etc/cpurec.start'
+        exec='/opt/kronometrix/etc/cpurec.start'
         timeout_seconds='0'>
     </exec_method>
 

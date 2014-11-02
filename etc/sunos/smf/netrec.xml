@@ -38,7 +38,7 @@
     <exec_method
         type='method'
         name='start'
-        exec='/opt/sdr/etc/netrec.start'
+        exec='/opt/kronometrix/etc/netrec.start'
         timeout_seconds='0'>
     </exec_method>
 

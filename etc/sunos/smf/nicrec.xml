@@ -38,7 +38,7 @@
     <exec_method
         type='method'
         name='start'
-        exec='/opt/sdr/etc/nicrec.start'
+        exec='/opt/kronometrix/etc/nicrec.start'
         timeout_seconds='0'>
     </exec_method>
 

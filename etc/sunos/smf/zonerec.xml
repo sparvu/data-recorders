@@ -27,7 +27,7 @@
     <exec_method
         type='method'
         name='start'
-        exec='/opt/sdr/etc/zonerec.start'
+        exec='/opt/kronometrix/etc/zonerec.start'
         timeout_seconds='0'>
     </exec_method>
 

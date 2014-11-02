@@ -37,7 +37,7 @@
     <exec_method
         type='method'
         name='start'
-        exec='/opt/sdr/etc/webrec.start'
+        exec='/opt/kronometrix/etc/webrec.start'
         timeout_seconds='0'>
     </exec_method>
 

@@ -37,7 +37,7 @@
     <exec_method
         type='method'
         name='start'
-        exec='/opt/sdr/etc/jvmrec.start'
+        exec='/opt/kronometrix/etc/jvmrec.start'
         timeout_seconds='0'>
     </exec_method>
 
