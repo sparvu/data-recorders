@@ -1,0 +1,196 @@
+#%define        __spec_install_post %{nil}
+#%define          debug_package %{nil}
+#%define        __os_install_post %{_dbpath}/brp-compress
+
+%ifarch x86_64
+ 
+%define _arch x86_64
+ 
+%endif
+
+%ifarch i686
+ 
+%define _arch i686
+ 
+%endif
+
+%ifarch i386
+ 
+%define _arch i386
+ 
+%endif
+
+
+Summary: Kronometrix Linux Data Recorder
+Name: kronometrix
+Version: 1.0.0
+Release: b10
+Group: System/Monitoring/Tools
+License: GPL
+URL: http://www.systemdatarecorder.org/
+Source: %{name}-%{version}-%{_arch}.tar.bz2
+BuildRoot: %{_tmppath}/%{name}-%{version}-root-%(%{__id_u} -n)
+AutoReqProv: no
+# Requires: ksh
+BuildArch: %{_arch}
+
+%description
+Tactical approach to meet today's demanding capacity challenges. 
+Monitoring and analysing the IT infrastructure is an important key 
+to ensure your business continuity and prepare for future grow. 
+SDR is simple to use for performance analysis, system sizing
+and capacity planning in today's challenging business environments.
+
+
+%prep
+%setup -n kronometrix
+# In the prep section the tar.gz file gets unpacked to a directory.
+# the directory is
+
+%build
+# Normally this part would be full of fancy compile stuff. Make this, make that.
+# We simple folks, we just want to copy some files out of a tar.gz.
+# so we pass this section with nothing done...
+
+%install
+# Installing happens here, normally using the “make install”
+# command, it normally places the files
+# where they need to go. You can also copy the files, as we do here...
+
+# First we make sure we start clean
+rm -rf $RPM_BUILD_ROOT
+
+# Then we create the directories where the files go
+# don't worry if the directories exist on your target systems, rpm
+# creates if necessary
+mkdir -p $RPM_BUILD_ROOT/opt/kronometrix
+
+# The actual moving
+cp -a * $RPM_BUILD_ROOT/opt/kronometrix
+
+
+%clean
+rm -rf "$RPM_BUILD_ROOT"
+
+
+%files
+%defattr(755,krmx,krmx)
+/opt/kronometrix/*
+
+# before install
+%pre
+if [ $1 -eq 1 ]; then
+    # initial installation
+    if [ -f /etc/init.d/kronometrix ]; then
+        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+    fi
+
+    # check for old installs
+    if [ -f /etc/init.d/kronometrix.transport ]; then
+        /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
+    fi
+
+    if [ -f /etc/init.d/kronometrix.transport ]; then
+        /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
+    fi
+
+    if ! getent group krmx >/dev/null; then
+        groupadd krmx || :
+    fi
+
+    if ! getent passwd krmx >/dev/null; then
+        useradd -g krmx -d /home/krmx -m krmx || :
+    fi
+
+    if [ ! -d /opt/kronometrix ]; then
+        mkdir -p /opt/kronometrix || :
+    fi
+elif [ $1 -eq 2 ]; then
+    # upgrade
+    if [ -f /etc/init.d/kronometrix ]; then
+        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+    fi
+
+    # check for old installs
+    if [ -f /etc/init.d/kronometrix.transport ]; then
+        /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
+    fi
+
+    if [ -f /etc/init.d/kronometrix.transport ]; then
+        /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
+    fi
+
+    if ! getent group krmx >/dev/null; then
+        groupadd krmx || :
+    fi
+
+    if ! getent passwd krmx >/dev/null; then
+        useradd -g krmx -d /home/krmx -m krmx || :
+    fi
+
+fi
+# echo krmx123|passwd --stdin krmx
+
+
+# after install
+%post
+if [ $1 -eq 1 ]; then
+    # initial installation, after tasks
+    chown -R krmx:krmx /opt/kronometrix || :
+    if [ ! -L /etc/init.d/kronometrix ]; then
+        ln -s /opt/kronometrix/etc/kronometrix /etc/init.d/kronometrix || :
+    fi
+
+    if [ ! -L /etc/init.d/kronometrix.transport ]; then
+        ln -s /opt/kronometrix/etc/kronometrix.transport /etc/init.d/kronometrix.transport || :
+    fi
+    chkconfig --add kronometrix || :
+    chkconfig --add kronometrix.transport || :
+    /etc/init.d/kronometrix start || :
+    # /etc/init.d/kronometrix.transport start || :
+    chown -R krmx:krmx /opt/kronometrix/log || :
+
+    # cronjobs
+    echo "krmx" >> /etc/cron.allow || :
+    crontab -u krmx -l > /var/tmp/cronkrmx 2>/dev/null || :
+    echo "59 23 * * *  /bin/sleep 59 && /usr/sbin/logrotate -f -s /opt/kronometrix/log/logkrmx.status /opt/kronometrix/etc/logrotate.krmx" >> /var/tmp/cronkrmx || :
+    echo "00 00 * * *  /bin/sleep 30 && /opt/kronometrix/bin/raw2day" >> /var/tmp/cronkrmx || :
+    crontab -u krmx /var/tmp/cronkrmx 2>/dev/null || :
+elif [ $1 -eq 2 ]; then
+    # upgrade
+    chown -R krmx:krmx /opt/kronometrix || :
+    /etc/init.d/kronometrix start || :
+    # /etc/init.d/kronometrix.transport start || :
+    chown -R krmx:krmx /opt/kronometrix || :
+fi
+
+# before removal
+%preun
+if [ $1 -eq 0 ]; then
+    chkconfig kronometrix off || :
+    chkconfig kronometrix.transport off || :
+    chkconfig --del kronometrix || :
+    chkconfig --del kronometrix.transport || :
+
+    # check for old installs
+    if [ -f /etc/init.d/kronometrix.transport ]; then
+        /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
+        chkconfig kronometrix.transport off || :
+        chkconfig --del kronometrix.transport || :
+        rm -f /etc/init.d/kronometrix.transport || :
+    fi
+
+    # uinstall
+    if [ -f /etc/init.d/kronometrix ]; then
+        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+        rm -f /etc/init.d/kronometrix || :
+    fi
+
+    if [ -f /etc/init.d/kronometrix.transport ]; then
+        /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
+        rm -f /etc/init.d/kronometrix.transport || :
+    fi
+
+    # wipeout krmx crontab
+    crontab -u krmx -r  2>/dev/null || :
+fi
