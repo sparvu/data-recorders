@@ -4,11 +4,11 @@
 chown -R krmx:krmx /opt/kronometrix || :
 
 if [ ! -f /etc/init.d/kronometrix ]; then
-    ln -s /opt/kronometrix/etc/sdr /etc/init.d/kronometrix || :
+    ln -s /opt/kronometrix/etc/kronometrix /etc/init.d/kronometrix || :
 fi
 
 if [ ! -f /etc/init.d/kronometrix.transport ]; then
-    ln -s /opt/sdr/etc/kronometrix.transport /etc/init.d/kronometrix.transport || :
+    ln -s /opt/kronometrix/etc/kronometrix.transport /etc/init.d/kronometrix.transport || :
 fi
 
 # link here kronometrix
