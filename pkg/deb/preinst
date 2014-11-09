@@ -15,8 +15,8 @@ if ! getent group krmx >/dev/null; then
         groupadd krmx || :
 fi
 
-if ! getent passwd sdr >/dev/null; then
-    useradd -g krmx -d /home/sdr -m sdr || :
+if ! getent passwd krmx >/dev/null; then
+    useradd -g krmx -d /home/krmx -m krmx || :
 fi
 
 if [ ! -d /opt/kronometrix ]; then
