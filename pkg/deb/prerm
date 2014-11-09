@@ -1,0 +1,25 @@
+#!/bin/sh
+
+update-rc.d -f kronometrix remove >/dev/null 2>&1 || : 
+update-rc.d -f kronometrix.transport remove >/dev/null 2>&1 || :
+
+# check for old installs
+if [ -f /etc/init.d/kronometrix.transport ]; then
+    /etc/init.d/kronometrix.transport stop || :
+    update-rc.d -f kronometrix.transport remove >/dev/null 2>&1 || :
+    rm -f /etc/init.d/kronometrix.transport || :
+fi
+
+# uinstall
+if [ -f /etc/init.d/kronometrix ]; then
+    /etc/init.d/kronometrix stop || :
+    rm -f /etc/init.d/kronometrix || :
+fi
+
+if [ -f /etc/init.d/kronometrix.transport ]; then
+    /etc/init.d/kronometrix.transport stop || :
+    rm -f /etc/init.d/kronometrix.transport || :
+fi
+
+# wipeout krmx crontab
+crontab -u krmx -r  2>/dev/null || :

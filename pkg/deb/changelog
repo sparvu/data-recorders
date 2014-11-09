@@ -1,0 +1,36 @@
+sdr (0.75.0) stable; urgency=low
+
+  * Bug 224 - sender use of uninitialized value $@ in concatenation
+  * Bug 225 - sysrec performance metrics type definition
+  * Bug 226 - cpurec performance metrics type definition
+  * Bug 227 - nicrec performance metrics type definition
+  * Bug 228 - netrec performance metrics type definition
+  * Bug 229 - jvmrec performance metrics type definition
+  * Bug 230 - webrec performance metrics type definition
+  * Bug 234 - sysrec should default to extended mode
+  * Bug 240 - webrec output results to stdout
+  * Bug 251 - sysrec disk io metrics not available on certain systems
+  * Bug 253 - hdwrec does not correctly return the number of physical disks
+  * Bug 255 - hdwrec should report hypervisor type
+  * Bug 262 - sender support for http transport
+  * Bug 268 - jvmrec not able to report GC data
+  * Bug 271 - sender should be able to select a specific reporting server
+  * Bug 272 - support for sdr recording as a Debian package
+  * Bug 273 - support for sdr recording as a RPM package
+  * Bug 274 - sender should check for a subscription id
+  * Bug 276 - sender sendssh2 routine not aware of subscription id
+  * Bug 277 - sender HTTP message digest improvements
+  * Bug 278 - sdr.conf clean-up and restructuring recording side
+  * Bug 279 - hdwrec does not correctly return the number of physical NICs
+  * Bug 280 - sysrec LA recording warnings
+  * Bug 281 - perl modules clean-up
+  * Update perl-5.16.3
+  * Update libssh2-1.4.3
+  * Update curl-7.30.0
+  * Update libidn-1.27
+  * Update sysstat-10.1.6
+  * Update Net-SSH2-0.48
+  * Update libxml2-2.9.1
+  * Update XML-LibXML-2.0018
+
+ -- sdr support <support@systemdatarecorder.org>  Fri, 21 Jun 2013 21:10:25 +0300

@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# echo "preinst: preparing to install package"
+# initial installation
+if [ -f /etc/init.d/kronometrix ]; then
+    # echo "preinst: stopping kronometrix..."
+    /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+fi
+
+if [ -f /etc/init.d/kronometrix.transport ]; then
+        /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
+fi
+
+if ! getent group krmx >/dev/null; then
+        groupadd krmx || :
+fi
+
+if ! getent passwd sdr >/dev/null; then
+    useradd -g krmx -d /home/sdr -m sdr || :
+fi
+
+if [ ! -d /opt/kronometrix ]; then
+    mkdir /opt/kronometrix || :
+fi
+
