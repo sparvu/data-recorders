@@ -1,15 +1,10 @@
-Source: kronometrix
-Section: utils
-Priority: extra
-Maintainer: support@systemdatarecorder.org
-Homepage: http://www.systemdatarecorder.org/
-
 Package: kronometrix
 Architecture: i386
 Section: utils
 Priority: extra
 Version:1.0.0-b10
-Depends: ksh, ${misc:Depends}, ${shlibs:Depends}
+Maintainer: support@systemdatarecorder.org
+Homepage: http://www.systemdatarecorder.org/
 Description: Performance Analysis and Capacity Planning
  Tactical approach to meet today's demanding capacity challenges. 
  Monitoring and analysing the IT infrastructure is an important key 
