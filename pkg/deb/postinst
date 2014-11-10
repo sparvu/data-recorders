@@ -17,8 +17,10 @@ update-rc.d kronometrix start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || :
 # link here kronometrix.transport
 update-rc.d kronometrix.transport start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || :
 
-/etc/init.d/kronometrix start || :
-chown -R krmx:krmx /opt/kronometrix/log || :
+if [ -d /opt/kronometrix ]; then
+    chown -R krmx:krmx /opt/kronometrix/log || :
+fi
+su - krmx -c "/etc/init.d/kronometrix start" || :
 
 # cronjobs
 echo "krmx" >> /etc/cron.allow || :
