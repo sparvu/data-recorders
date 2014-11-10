@@ -23,9 +23,8 @@
 # MAIN BODY #
 # ######### #
 
-PWD=$(dirname $0)
-if [[ $PWD == "." ]]
-then
+PWD=`dirname $0`
+if [ "$PWD" = "." ]; then
     . ../bin/setenv
 else
     PWD=`echo $PWD | sed 's/etc.*//'`
@@ -33,4 +32,4 @@ else
 fi
 
 ${KRMX_BIN}/xenrec 120 >> ${XENREC_CUR} 2>> ${XENREC_LOG} &
-print "$!" > ${SDR_LOG}/xenrec.pid
+print "$!" > ${KRMX_LOG}/xenrec.pid

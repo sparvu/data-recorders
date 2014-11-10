@@ -1,4 +1,4 @@
-#!/bin/ksh -p
+#!/bin/sh
 
 # COPYRIGHT: Copyright (c) 2013 System Data Recorder
 #
@@ -22,13 +22,13 @@
 # MAIN BODY #
 # ######### #
 
-PWD=$(dirname $0)
-if [[ $PWD == "." ]]
-then
+PWD=`dirname $0`
+if [ "$PWD" = "." ]; then
     . ../bin/setenv
 else
-    . ${PWD%%etc*}bin/setenv
+    PWD=`echo $PWD | sed 's/etc.*//'`
+    . ${PWD}bin/setenv
 fi
 
 ${KRMX_BIN}/zonerec 60 >> ${ZONEREC_CUR} 2>> ${ZONEREC_LOG} &
-print "$!" > ${SDR_LOG}/zonerec.pid
+print "$!" > ${KRMX_LOG}/zonerec.pid

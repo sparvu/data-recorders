@@ -25,7 +25,6 @@
 
 PWD=`dirname $0`
 if [ "$PWD" = "." ]; then
-then
     . ../bin/setenv
 else
     PWD=`echo $PWD | sed 's/etc.*//'`
@@ -33,4 +32,4 @@ else
 fi
 
 ${KRMX_BIN}/jvmrec 300 >> ${JVMREC_CUR} 2>> ${JVMREC_LOG} &
-echo "$!" > ${SDR_LOG}/jvmrec.pid
+echo "$!" > ${KRMX_LOG}/jvmrec.pid

@@ -32,4 +32,4 @@ else
 fi
 
 ${KRMX_BIN}/sysrec 60 >> ${SYSREC_CUR} 2>> ${SYSREC_LOG} &
-echo "$!" > ${SDR_LOG}/sysrec.pid
+echo "$!" > ${KRMX_LOG}/sysrec.pid

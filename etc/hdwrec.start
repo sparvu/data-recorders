@@ -32,4 +32,4 @@ else
 fi
 
 ${KRMX_BIN}/hdwrec 86400 >> ${HDWREC_CUR} 2>> ${HDWREC_LOG} &
-echo "$!" > ${SDR_LOG}/hdwrec.pid
+echo "$!" > ${KRMX_LOG}/hdwrec.pid

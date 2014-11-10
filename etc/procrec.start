@@ -32,4 +32,4 @@ else
 fi
 
 ${KRMX_BIN}/procrec 60 >> ${PROCREC_CUR} 2>> ${PROCREC_LOG} &
-echo "$!" > ${SDR_LOG}/procrec.pid
+echo "$!" > ${KRMX_LOG}/procrec.pid

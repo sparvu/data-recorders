@@ -32,4 +32,4 @@ else
 fi
 
 ${KRMX_BIN}/nicrec 60 >> ${NICREC_CUR} 2>> ${NICREC_LOG} &
-echo "$!" > ${SDR_LOG}/nicrec.pid
+echo "$!" > ${KRMX_LOG}/nicrec.pid
