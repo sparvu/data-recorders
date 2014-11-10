@@ -82,7 +82,7 @@ rm -rf "$RPM_BUILD_ROOT"
 if [ $1 -eq 1 ]; then
     # initial installation
     if [ -f /etc/init.d/kronometrix ]; then
-        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+        su - krmx -c "/etc/init.d/kronometrix stop >/dev/null 2>&1" || :
     fi
 
     # check for old installs
@@ -108,7 +108,7 @@ if [ $1 -eq 1 ]; then
 elif [ $1 -eq 2 ]; then
     # upgrade
     if [ -f /etc/init.d/kronometrix ]; then
-        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+        su - krmx -c "/etc/init.d/kronometrix stop >/dev/null 2>&1" || :
     fi
 
     # check for old installs
@@ -146,7 +146,7 @@ if [ $1 -eq 1 ]; then
     fi
     chkconfig --add kronometrix || :
     chkconfig --add kronometrix.transport || :
-    /etc/init.d/kronometrix start || :
+    su - krmx -c "/etc/init.d/kronometrix start >/dev/null 2>&1" || :
     # /etc/init.d/kronometrix.transport start || :
     chown -R krmx:krmx /opt/kronometrix/log || :
 
@@ -159,7 +159,7 @@ if [ $1 -eq 1 ]; then
 elif [ $1 -eq 2 ]; then
     # upgrade
     chown -R krmx:krmx /opt/kronometrix || :
-    /etc/init.d/kronometrix start || :
+    su - krmx -c "/etc/init.d/kronometrix start >/dev/null 2>&1" || :
     # /etc/init.d/kronometrix.transport start || :
     chown -R krmx:krmx /opt/kronometrix || :
 fi
@@ -182,7 +182,7 @@ if [ $1 -eq 0 ]; then
 
     # uinstall
     if [ -f /etc/init.d/kronometrix ]; then
-        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+        su - krmx -c "/etc/init.d/kronometrix stop >/dev/null 2>&1" || :
         rm -f /etc/init.d/kronometrix || :
     fi
 
