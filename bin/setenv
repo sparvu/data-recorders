@@ -20,8 +20,7 @@
 
 ### Platform and OS
 OS_NAME=`uname -s | tr '[A-Z]' '[a-z]'`
-PT_NAME=`uname -p | tr '[A-Z]' '[a-z]'`
-MT_NAME=`uname -m | tr '[A-Z]' '[a-z]'`
+PT_NAME=`uname -m | tr '[A-Z]' '[a-z]'`
 HOSTNAME=`uname -n | sed 's/\..*//'`
 
 ### USER ID
