@@ -5,7 +5,7 @@ update-rc.d -f kronometrix.transport remove >/dev/null 2>&1 || :
 
 # check for old installs
 if [ -f /etc/init.d/kronometrix.transport ]; then
-    /etc/init.d/kronometrix.transport stop || :
+    /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
     update-rc.d -f kronometrix.transport remove >/dev/null 2>&1 || :
     rm -f /etc/init.d/kronometrix.transport || :
 fi
@@ -17,7 +17,7 @@ if [ -f /etc/init.d/kronometrix ]; then
 fi
 
 if [ -f /etc/init.d/kronometrix.transport ]; then
-    /etc/init.d/kronometrix.transport stop || :
+    /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
     rm -f /etc/init.d/kronometrix.transport || :
 fi
 
