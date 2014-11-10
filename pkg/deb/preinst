@@ -4,7 +4,7 @@
 # initial installation
 if [ -f /etc/init.d/kronometrix ]; then
     # echo "preinst: stopping kronometrix..."
-    /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+    su - krmx -c "/etc/init.d/kronometrix stop >/dev/null 2>&1" || :
 fi
 
 if [ -f /etc/init.d/kronometrix.transport ]; then

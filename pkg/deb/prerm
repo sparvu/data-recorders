@@ -12,7 +12,7 @@ fi
 
 # uinstall
 if [ -f /etc/init.d/kronometrix ]; then
-    /etc/init.d/kronometrix stop || :
+    su - krmx -c "/etc/init.d/kronometrix stop >/dev/null 2>&1" || :
     rm -f /etc/init.d/kronometrix || :
 fi
 
