@@ -182,47 +182,51 @@ while (1) {
 
             if ( $_->{"input"} =~ /sysrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-sysrec";
+                $msgid  = "$osname-sysrec";
             }
             elsif ( $_->{"input"} =~ /cpurec/ ) {
                 $devid = get_devid( 1, $delta );
-                $msgid = "cpd-$osname-cpurec";
+                $msgid = "$osname-cpurec";
             }
             elsif ( $_->{"input"} =~ /diskrec/ ) {
                 $devid = get_devid( 1, $delta );
-                $msgid = "cpd-$osname-diskrec";
+                $msgid = "$osname-diskrec";
             }
             elsif ( $_->{"input"} =~ /nicrec/ ) {
                 $devid = get_devid( 1, $delta );
-                $msgid = "cpd-$osname-nicrec";
+                $msgid = "$osname-nicrec";
             }
             elsif ( $_->{"input"} =~ /netrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-netrec";
+                $msgid  = $osname-netrec";
             }
             elsif ( $_->{"input"} =~ /jvmrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-jvmrec";
+                $msgid  = "$osname-jvmrec";
             }
             elsif ( $_->{"input"} =~ /procrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-procrec";
+                $msgid  = "$osname-procrec";
             }
             elsif ( $_->{"input"} =~ /zonerec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-zonerec";
+                $msgid  = "$osname-zonerec";
             }
             elsif ( $_->{"input"} =~ /webrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-webrec";
+                $msgid  = "$osname-webrec";
             }
             elsif ( $_->{"input"} =~ /hdwrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-hdwrec";
+                $msgid  = "$osname-hdwrec";
             }
             elsif ( $_->{"input"} =~ /xenrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-xenrec";
+                $msgid  = "$osname-xenrec";
+            }
+            elsif ( $_->{"input"} =~ /wsrec/ ) {
+                $devid = 'system';
+                $msgid  = "$osname-wsrec";
             }
 
             # each appliance
