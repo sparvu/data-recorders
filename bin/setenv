@@ -63,6 +63,7 @@ JVMREC_CUR=${KRMX_CURRENT}/jvmrec.krd
 HDWREC_CUR=${KRMX_CURRENT}/hdwrec.krd
 PROCREC_CUR=${KRMX_CURRENT}/procrec.krd
 XENREC_CUR=${KRMX_CURRENT}/xenrec.krd
+WSREC_CUR=${KRMX_CURRENT}/wsrec.krd
 
 
 ### RECORDER LOG
@@ -74,7 +75,7 @@ NICREC_LOG=${KRMX_LOG}/nicrec.log
 JVMREC_LOG=${KRMX_LOG}/jvmrec.log
 HDWREC_LOG=${KRMX_LOG}/hdwrec.log
 PROCREC_LOG=${KRMX_LOG}/procrec.log
-WEBREC_LOG=${KRMX_LOG}/webrec.log
+WSREC_LOG=${KRMX_LOG}/wsrec.log
 XENREC_LOG=${KRMX_LOG}/xenrec.log
 
 
