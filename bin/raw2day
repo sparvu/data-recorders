@@ -1,4 +1,4 @@
-#!/opt/sdr/perl/bin/perl
+#!/opt/kronometrix/perl/bin/perl
 #
 #  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
 #
@@ -28,8 +28,6 @@ use Sys::Hostname;
 use File::Basename;
 use Digest::SHA;
 use WWW::Curl::Easy;
-use XML::LibXML;
-use XML::LibXML::XPathContext;
 
 
 # Debug Only
@@ -45,15 +43,14 @@ my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
 my $quiet_flag = defined $main::opt_q ? $main::opt_q : 0;
 
 # Global Vars
-my $hport      = 80;          # HTTP default port
-my $sport      = 22;          # SSH2 default port
-my $osname     = $^O;         # OS name via Perl
-my $tcpka      = 0;           # TCP KA flag
-my $trans_flag = 0;           # Transport flag, default false
-my $ttype;                    # Transport mode
-my $xmlcnf     = 'sdr.conf';  # sdr configuration name
-$main::opt_h   = 0;           # help option
-$main::opt_V   = 0;           # revision option
+my $hport      = 80;                  # HTTP default port
+my $osname     = $^O;                 # OS name via Perl
+my $tcpka      = 0;                   # TCP KA flag
+my $trans_flag = 0;                   # Transport flag, default false
+my $ttype;                            # Transport mode
+my $krmx_conf  = 'kronometrix.json';  # Main configuration name
+$main::opt_h   = 0;                   # help option
+$main::opt_V   = 0;                   # revision option
 my ($hproxy, $hproxyport);
 
 my $conf;
@@ -79,7 +76,7 @@ $argv_flag = 1 if (($#ARGV+1) > 0);
 # check for transport mode
 if (defined $main::opt_t) {
     # check for separator
-    usage() if $main::opt_t !~ /(http|ftp|scp|sftp)/i;
+    usage() if $main::opt_t !~ /(http|ftp)/i;
     $ttype = $main::opt_t;
     $trans_flag = 1;
 }
@@ -87,9 +84,8 @@ if (defined $main::opt_t) {
 my $host = hostname;
 $host =~ s/\..*$// if $host =~ /\./;
 
-# get sdr.conf config
 # validate and open configuration xml
-$conf = open_conf($xmlcnf);
+$conf = open_conf($krmx_conf);
 
 my $rchilds = 0;
 my @sdrdlog = $conf->findnodes("/sdr/recording/logs/*");
@@ -453,112 +449,6 @@ sub trans2ftp {
 }
 
 
-
-# transport mode: SFTP
-sub trans2sftp {
-
-    my ($sdir, $ddir, $prevday, $dest, $port, $user, $pass) = @_;
-
-    my $sftp;
-
-    require Net::SFTP::Foreign;
-
-    if ($pass eq "") {
-        $sftp = Net::SFTP::Foreign->new($dest, port => $port, key_path => $pkey,
-                                more => [qw(-o PreferredAuthentications=publickey)]);
-    } else { 
-        
-        $sftp = Net::SFTP::Foreign->new($dest,
-                                         port => $port,
-                                         user => $user,
-                                         password => $pass);
-    }
-
-    $sftp->error and die $sftp->error;
-    $sftp->status or $sftp->error;
-
-    $sftp->rput("$sdir/$prevday","$ddir/$prevday") or
-        die "error: trans2sftp - rput failed: " . $sftp->error;
-
-    return;
-}
-
-
-# transport mode: SCP
-sub trans2scp {
-
-    my ($sdir, $ddir, $prevday, $dest, $port, $user, $pass) = @_;
-
-    require Net::SSH2;
-
-    my $ssh2 = Net::SSH2->new();
-
-    if( $ssh2->connect($dest, $port) ) {
-
-        if ($pass eq "") {
-
-            # authentication using private key
-            my $pubkey = "$pkey" . ".pub";
-
-            eval { $ssh2->auth_publickey($user, $pubkey, $pkey); 1 }
-            or do {
-                warn "error: trans2scp - authkey failed $@ \n", $ssh2->error;
-            };
-
-        } else {
-
-            # authentication using private key
-            eval { $ssh2->auth(username => "$user",
-                                password => "$pass"); 1 }
-            or do {
-                warn "error: trans2scp - auth failed $@ \n", $ssh2->error;
-            };
-
-        }
-
-        if ($verbose_flag == 1) {
-            printf "info: trans2scp - auth OK: %s\n", $ssh2->auth_ok; 
-        }
-
-        my $chan = $ssh2->channel();
-        $chan->shell();
-
-        print $chan "cd $ddir\n";
-        print $chan "ls -ld $prevday\n";
-        my $dir_flag = 0;
-        while (<$chan>) { $dir_flag = 1 if $_ =~ /$prevday/ ;}
-
-        if($dir_flag == 0) {
-            if ($verbose_flag == 1) {
-                print "info: trans2scp - generating $prevday on: $dest\n";
-            }
-            print $chan "mkdir $prevday\n";
-        }
-
-        # copy now all raw files into prevdir
-        opendir(PREVDAY, "$sdir/$prevday") or 
-            die "error: trans2scp - can't open $sdir/$prevday: $!";
-        my @sdrdf = grep {!/^\.+$/} readdir(PREVDAY);
-        close(PREVDAY);
-
-        foreach my $sdrd (@sdrdf) {
-            next if $sdrd !~ /.*\.sdrd\.0\.gz$/;
-            $ssh2->scp_put("$sdir/$prevday/$sdrd", "$ddir/$prevday/$sdrd") or 
-                die "error: trans2scp - cannot copy daily data: " , $ssh2->error;
-        }
-
-        # close the ssh2 channel for shell 
-        $chan->close;
-
-    } else {
-        warn "error: trans2scp - connect failed $@ \n", $ssh2->error;
-    }
-
-    return;
-
-}
-
-
 sub rotate {
 
     my($rawdir, $dailydir, $pdir) = @_;
@@ -570,34 +460,34 @@ sub rotate {
 
     my $dest = "$dailydir/$pdir";
 
-    my @sdrd_files;
+    my @krd_files;
 
-    foreach my $sdrd (@files) {
-        next if $sdrd !~ /.*\.sdrd\.0\.gz$/;
-        push @sdrd_files, $sdrd;
+    foreach my $krd (@files) {
+        next if $krd !~ /.*\.krd\.0\.gz$/;
+        push @krd_files, $krd;
     }
 
     if ($verbose_flag == 1) {
-        printf "%s %d\n", "info: rotate - copying sdrd data files:", $#sdrd_files +1;
+        printf "%s %d\n", "info: rotate - copying krd data files:", $#krd_files +1;
     }
 
     my $cnt = 0;
     # check if we have anything to move to daily
-    if (($#sdrd_files+1) > 0) {
+    if (($#krd_files+1) > 0) {
    
         # make daily target dir
         unless(mkdir $dest) {
             die "error: rotate - cannot create destination $pdir, already exists\n";
         }
 
-        foreach my $dir (@sdrd_files) {
+        foreach my $dir (@krd_files) {
             move("$rawdir/$dir","$dest") or
                 die "error: rotate - copying previous daily data, $!\n";
             $cnt++;
         }
     }
 
-    # return number of raw sdrd files moved to daily
+    # return number of raw krd files moved to daily
     return $cnt;
 }
 
@@ -711,8 +601,8 @@ sub trans2http {
 }
 
 
-# tar sdrd raw data directory
-sub tarsdrd {
+# tar raw data directory
+sub tarkrd {
 
     my ($dir) = @_;
 
@@ -721,28 +611,28 @@ sub tarsdrd {
     # Create a new tar object:
     my $tar = Archive::Tar->new();
 
-    my $sdrdp = opensdrd("$dir");
+    my $krdp = opensdrd("$dir");
 
     $dir = dirname($dir);
     chdir "$dir" or
         die "error: tarsdrd - cannot change local directory: $!\n";
 
-    foreach my $sdrd (@$sdrdp) {
-        next if $sdrd !~ /.*\.sdrd\.0\.gz$/;
-        my $sdrdf = $dprev . '/' . $sdrd;
-        $tar->add_files($sdrdf);
+    foreach my $krd (@$krdp) {
+        next if $krd !~ /.*\.krd\.0\.gz$/;
+        my $krdf = $dprev . '/' . $krd;
+        $tar->add_files($krdf);
     }
 
     # Tar sdrd files
-    my $sdrdtar = '/var/tmp/sdrd.' . $sdrid . '.' . $host . '.tar';
+    my $krdtar = '/var/tmp/krd.' . $sdrid . '.' . $host . '.tar';
 
-    $tar->write($sdrdtar);
+    $tar->write($krdtar);
 
-    return $sdrdtar;
+    return $krdtar;
 }
 
 
-sub rmsdrd {
+sub rmkrd {
     my ($file) = @_;
 
     if ( -e $file ) {
@@ -753,26 +643,26 @@ sub rmsdrd {
 }
 
 
-# opensdrd raw data directory
-sub opensdrd {
+# openkrd raw data directory
+sub openkrd {
 
     my ($dir) = @_ ;
 
     # copy now all raw files into prevdir
     opendir(PREVDAY, "$dir") or
-        die "error: opensdrd - can't open $dir: $!\n";
+        die "error: openkrd - can't open $dir: $!\n";
 
-    my @sdrdf = grep {!/^\.+$/} readdir(PREVDAY);
+    my @krdf = grep {!/^\.+$/} readdir(PREVDAY);
     close(PREVDAY);
 
-    return \@sdrdf;
+    return \@krdf;
 }
 
 
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-raw2day: 1.0.0, 2014-05-04
+raw2day: 1.0.0, 2014-11-19
 END
     exit 0;
 }
