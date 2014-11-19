@@ -25,20 +25,20 @@ HOSTNAME=`uname -n | sed 's/\..*//'`
 
 ### USER ID
 case "$OS_NAME" in
- sunos)
- USER_ID=`/usr/xpg4/bin/id -u`
- ;;
+  sunos)
+  USER_ID=`/usr/xpg4/bin/id -u`
+  ;;
 
- linux)
- USER_ID=`/usr/bin/id -u`
- ;;
+  linux)
+  USER_ID=`/usr/bin/id -u`
+  ;;
 
- freebsd)
- USER_ID=`/usr/bin/id -u`
- ;;
+  freebsd)
+  USER_ID=`/usr/bin/id -u`
+  ;;
 
- *)
- echo "Not supported OS !"
+  *)
+  echo "Not supported OS !"
 esac
 
 ### JDK_PATH
