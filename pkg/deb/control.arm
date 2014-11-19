@@ -1,5 +1,5 @@
 Package: kronometrix
-Architecture: armv6l
+Architecture: armhf
 Section: utils
 Priority: extra
 Version:1.0.0-b10
