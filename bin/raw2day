@@ -377,12 +377,10 @@ sub get_yesterday {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: raw2day [-hV] [-t http|ftp|scp|sftp]
+USAGE: raw2day [-hV] [-t ftp|http]
   e.g. raw2day               rotate raw data to daily log
        raw2day -t http       transport sdrd files over HTTP
        raw2day -t ftp        transport sdrd files over FTP
-       raw2day -t sftp       transport sdrd files over SFTP
-       raw2day -t scp        transport sdrd files over SCP
 END
     exit 0;
 }
