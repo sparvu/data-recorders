@@ -120,6 +120,8 @@ sub open_ws {
 	my $namebuf = "\0" x 256;
 	my $dev = $usb->find_device($VENDOR, $PRODUCT);
 
+        return if (! $dev);
+
     	$dev->open();
 	if ($dev->get_driver_np(0, $namebuf, 256) == 0) {
         	$dev->detach_kernel_driver_np(0);
@@ -139,9 +141,11 @@ sub open_ws {
 ##
 
 sub close_ws {
-	$dev->release_interface(0);
-	undef $dev;
-	exit;
+    if ($dev) {
+        $dev->release_interface(0);
+    }
+
+    exit 0;
 }
 
 ##
@@ -248,7 +252,7 @@ $SIG{'INT'} = 'close_ws';
 $SIG{'TERM'} = 'close_ws';
 
 my $usb = Device::USB->new();
-our $dev = open_ws($usb);
+my $dev = open_ws($usb);
 if ($dev ==  0) {
 	printf "Couldn't connect to the Weather Station\n";
 	exit 1;
@@ -257,6 +261,7 @@ if ($dev ==  0) {
 # Loop forever polling the Weather Station
 
 while (1) {
+        if (! $dev) { $dev = open_ws($usb); sleep 5; next; }
 
 	# Get the first 32 bytes of the fixed block
 	my $fixed_block = read_block($dev, 0);
@@ -265,10 +270,10 @@ while (1) {
         }
 
         if (unpack('C', $fixed_block) != 0x55) {
-                printf("Got a dud fixed block - reconnecting\n");
+                printf (STDERR "Error: Got a dud fixed block - reconnecting\n");
                 $dev->release_interface(0);
 		undef $dev;
-                sleep 10;
+                sleep 5;
                 $dev = open_ws($usb);
                 next;
         }
