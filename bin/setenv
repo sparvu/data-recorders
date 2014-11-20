@@ -41,9 +41,6 @@ case "$OS_NAME" in
   echo "Not supported OS !"
 esac
 
-### JDK_PATH
-JDK_PATH=
-
 KRMX_PREFIX=/opt/kronometrix
 KRMX_BIN=${KRMX_PREFIX}/bin
 KRMX_ETC=${KRMX_PREFIX}/etc
@@ -62,6 +59,8 @@ NETREC_CUR=${KRMX_CURRENT}/netrec.krd
 JVMREC_CUR=${KRMX_CURRENT}/jvmrec.krd
 HDWREC_CUR=${KRMX_CURRENT}/hdwrec.krd
 PROCREC_CUR=${KRMX_CURRENT}/procrec.krd
+VWSREC_CUR=${KRMX_CURRENT}/vwsrec.krd
+VMWREC_CUR=${KRMX_CURRENT}/vmwrec.krd
 XENREC_CUR=${KRMX_CURRENT}/xenrec.krd
 WSREC_CUR=${KRMX_CURRENT}/wsrec.krd
 
@@ -75,8 +74,10 @@ NICREC_LOG=${KRMX_LOG}/nicrec.log
 JVMREC_LOG=${KRMX_LOG}/jvmrec.log
 HDWREC_LOG=${KRMX_LOG}/hdwrec.log
 PROCREC_LOG=${KRMX_LOG}/procrec.log
-WSREC_LOG=${KRMX_LOG}/wsrec.log
+VMWREC_LOG=${KRMX_LOG}/vmwrec.log
+VWSREC_LOG=${KRMX_LOG}/vwsrec.log
 XENREC_LOG=${KRMX_LOG}/xenrec.log
+WSREC_LOG=${KRMX_LOG}/wsrec.log
 
 
 PERL_BIN=${KRMX_PREFIX}/perl/bin/perl
@@ -86,4 +87,4 @@ PERL_BIN=${KRMX_PREFIX}/perl/bin/perl
 #  
 # umask 022
 
-export JDK_PATH HOSTNAME KRMX_PREFIX KRMX_BIN KRMX_LOG KRMX_RAW KRMX_DAILY PERL_BIN MPSTAT_BIN
+export HOSTNAME KRMX_PREFIX KRMX_BIN KRMX_LOG KRMX_RAW KRMX_DAILY PERL_BIN MPSTAT_BIN
