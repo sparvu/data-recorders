@@ -48,7 +48,7 @@ my $osname     = $^O;                 # OS name via Perl
 my $tcpka      = 0;                   # TCP KA flag
 my $trans_flag = 0;                   # Transport flag, default false
 my $ttype;                            # Transport mode
-my $krmx_conf  = 'kronometrix.json';  # Main configuration name
+my $krmxcnf    = 'kronometrix.json';  # Main configuration name
 $main::opt_h   = 0;                   # help option
 $main::opt_V   = 0;                   # revision option
 my ($hproxy, $hproxyport);
@@ -84,215 +84,31 @@ if (defined $main::opt_t) {
 my $host = hostname;
 $host =~ s/\..*$// if $host =~ /\./;
 
-# validate and open configuration xml
-$conf = open_conf($krmx_conf);
+# read configuration
+my $kjson = open_config($krmxcnf);
 
-my $rchilds = 0;
-my @sdrdlog = $conf->findnodes("/sdr/recording/logs/*");
+## hostid
+$hostid = get_hostid($cdata);
 
-foreach my $node (@sdrdlog) {
-
-    next if $node -> nodeName() !~ /base|current|daily/;
-
-    # current log
-    if ( $node->nodeName() =~ /current/ ) {
-        $sdr_current = $node->getAttribute('path');
-    }
-
-    # daily log
-    if ( $node->nodeName() =~ /daily/ ) {
-        $sdr_daily = $node->getAttribute('path');
-    }
-
-    $rchilds++;
-}
-
-# check errors
-if ($rchilds == 0) {
-    die "error: main - wrong configuration file: $xmlcnf, " ,
-          "$rchilds recording elements found \n";
-}
-
-if (!($sdr_current)) {
-    die "error: main - wrong configuration file: $xmlcnf, ",
-          "current path not found\n";
-}
-
-if (!($sdr_daily)) {
-    die "error: main - wrong configuration file: $xmlcnf, ",
-          "daily path not found\n";
-}
+## logs
+( $curlog, $pastlog ) = get_log($kjson);
 
 # Verbose Messages
 if ( $verbose_flag == 1 ) {
     print "info: main - recording hostname: $host \n";
-    print "info: main - current log dir: $sdr_current \n";
-    print "info: main - daily log dir: $sdr_daily \n";
+    print "info: main - current log dir: $curlog \n";
+    print "info: main - daily log dir: $pastlog \n";
 }
 
-my $dprev = get_yesterday();
+my $yesterday = get_yesterday();
 
 if ( $verbose_flag == 1 ) {
-    printf "%s %s\n", "info: main - sdrd data dir:", $dprev;
+    printf "%s %s\n", "info: main - krd data dir:", $yesterday;
 }
 
 # Current to Daily
-my $dsdrd = rotate($sdr_current, $sdr_daily, $dprev);
+my $numkrd = rotate($curlog, $pastlog, $yesterday);
 
-
-## Transport Mode
-
-if ( $trans_flag ) {
-
-    # Verbose Messages
-    if ( $verbose_flag == 1 ) {
-        print "info: main - transport mode ON\n";
-    }
-
-    # key, subscription, destination, tcpka
-    my @transcfg = $conf->findnodes("/sdr/recording/transport/*");
-    foreach my $node (@transcfg) {
-
-        # private_key
-        if ( $node->nodeName() =~ /private_key/ ) {
-            $pkey = $node->getAttribute('path');
-        }
-
-        # subscription
-        if ( $node->nodeName() =~ /subscription/ ) {
-            $sdrid = $node->textContent();
-        }
-
-        # destination
-        if ( $node->nodeName() =~ /destination/ ) {
-            $dr = $node->textContent();
-        }
-
-        # keepalive
-        if ( $node->nodeName() =~ /tcp_keepalive/ ) {
-            $tcpka = $node->textContent();
-        }
-    }
-
-    die "error: main - no subscription defined, check sdr.conf\n"
-        if ( ! $sdrid );
-
-    ## Reporting Config XML
-    my ($db_path, $dc_path, $dest, $user, $pass);
-
-    # Reporting XML Configuration
-    # XPATH Method
-    my @res = $conf->findnodes('//host');
-
-    foreach my $node (@res) {
-
-        # destination
-        $dest = $node->getAttribute('name');
-
-        # username, password
-        $user = $node->getElementsByTagName('username');
-        $pass = $node->getElementsByTagName('password');
-
-        # Verbose Messages
-        if ( $verbose_flag == 1 ) {
-            printf "%s\n", "info: main - transport destination: $dr";
-        }
-
-        if ( $dr eq $dest ) {
-            if ( $node->getElementsByTagName('http') ) {
-                my @http_transport =
-                  get_transport( $conf,
-                    "/sdr/reporting/host[\@name=\"$dest\"]/http/*" );
-
-
-            if ( $#http_transport == 0 ) { $hport      = $http_transport[0]; }
-         elsif ( $#http_transport == 1 ) { $hport      = $http_transport[0];
-                                           $hproxy     = $http_transport[1]; }
-         elsif ( $#http_transport == 2 ) { $hport      = $http_transport[0];
-                                           $hproxy     = $http_transport[1];
-                                           $hproxyport = $http_transport[2]; }
-
-            }
-
-            if ( $node->getElementsByTagName('ssh2') ) {
-                my @ssh2_transport =
-                  get_transport( $conf,
-                    "/sdr/reporting/host[\@name=\"$dest\"]/ssh2/*" );
-
-
-                if ( $#ssh2_transport == 0 ) {
-                    $sport = $ssh2_transport[0];
-                }
-
-            }
-
-            ## we found a match
-            last;
-        }
-
-    } # for loop
-
-    my $destdir = '/' . $sdrid . "/content/hosts/" . $host . "/raw";
-
-    # FTP Transport
-    if ( $ttype =~ /^ftp$/i ) {
-
-        if ($verbose_flag == 1) {
-            printf "%s\n", "info: main - transport protocol: FTP";
-        }
-        trans2ftp($sdr_daily, $destdir, $dprev, $dest, $user, $pass);
-
-    # SCP Transport
-    } elsif ( $ttype =~ /^scp$/i ) {        
-
-        if ($verbose_flag == 1) {
-            printf "%s\n", "info: main - transport protocol: SCP";
-        }
-        trans2scp($sdr_daily, $destdir, $dprev, $dest, $sport, $user, $pass);
-
-    # SFTP Transport
-    } elsif ( $ttype =~ /^sftp$/i ) {
-        if ($verbose_flag == 1) {
-            printf "%s\n", "info: main - transport protocol: SFTP";
-        }
-        trans2sftp($sdr_daily, $destdir, $dprev, $dest, $sport, $user, $pass);
-
-    # HTTP Transport
-    } elsif ( $ttype =~ /^http$/i ) {
-        if ( $verbose_flag == 1 ) {
-            printf "%s\n", "info: main - transport protocol: HTTP";
-        }
-        my $sdrd_dir = $sdr_daily . '/' . $dprev;
-        my $shipment = tarsdrd($sdrd_dir);
-
-        if ( $verbose_flag == 1 ) {
-            printf "%s\n", "info: main - sdrd tar shipment: $shipment";
-        }
-
-        # init HTTP transport
-        my $http = WWW::Curl::Easy->new;
-
-        if ( $tcpka ) {
-            $http->setopt( WWW::Curl::Easy::CURLOPT_TCP_KEEPALIVE(), 1 );
-        }
-
-        trans2http($http, $dest, $sdrid, $destdir, $shipment, $hport, $hproxy);
-
-        my $rmship = rmsdrd($shipment);
-            
-        if ($verbose_flag == 1) {
-            if ( $rmship == 0 ) {
-                printf "%s\n",
-                    "info: main - sdrd tar shipment clean-up: done";
-            } elsif ( $rmship == 1 ) {
-                printf "%s\n",
-                    "info: main - sdrd tar shipment clean-up: failed, $rmship"; 
-            }
-        }
-    }
-}
-#}
-#}
 
 ## Mark End of Time
 my $tend = gettimeofday();
@@ -315,49 +131,60 @@ if ($quiet_flag == 0) {
 
 ## Subroutines
 
-sub get_transport {
 
-    my ( $conf, $path ) = @_;
-    my ( $port, $proxy, $proxyport );
-    my @result;
+## open JSON configuration file
+sub open_config {
 
-    #XPath Walking
-    my @childs = $conf->findnodes($path);
+    my ($conf) = @_;
 
-    foreach my $node (@childs) {
+    my $json_data;
 
-        if ( $node->nodeName() =~ /^port$/ ) {
-            $port = $node->textContent(); 
-        } elsif ( $node->nodeName() =~ /^proxy$/ ) {
-            $proxy = $node->textContent(); 
-        } elsif ( $node->nodeName() =~ /^proxyport$/ ) {
-            $proxyport = $node->textContent(); 
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
         }
-
-        # given ( $node->nodeName() ) {
-        #     when (/^port$/)      { $port      = $node->textContent(); }
-        #     when (/^proxy$/)     { $proxy     = $node->textContent(); }
-        #     when (/^proxyport$/) { $proxyport = $node->textContent(); }
-        #}
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
     }
 
-    if ( defined($proxy) and defined($proxyport) ) {
-        push @result, ( $port, $proxy, $proxyport );
-    }
-    else {
-        push @result, $port;
-    }
+    my $perl_data = JSON->new->utf8->decode($json_data);
 
-    ## debug
-    # print "port=$port proxy=$proxy proxyport=$proxyport \n";
-
-    # return array of coordinates for http or ssh2
-    return @result;
+    return $perl_data;
 }
 
 
+sub get_log {
 
-# get yesterday
+    my ($data) = @_;
+
+    my $cpath = $data->{'log'}->{'current_path'};
+    my $ppath = $data->{'log'}->{'daily_path'};
+
+    return ( $cpath, $ppath );
+}
+
+
+## get yesterday
 sub get_yesterday {
 
     my ( $yy, $mm, $dd ) = Today();
@@ -373,80 +200,7 @@ sub get_yesterday {
 }
 
 
-
-# usage - print usage and exit.
-sub usage {
-    print STDERR <<END;
-USAGE: raw2day [-hV] [-t ftp|http]
-  e.g. raw2day               rotate raw data to daily log
-       raw2day -t http       transport sdrd files over HTTP
-       raw2day -t ftp        transport sdrd files over FTP
-END
-    exit 0;
-}
-
-
-sub ftp_mput { 
-    my($ftp, $pattern) = @_; 
-    foreach my $file (glob($pattern)) {
-        $ftp->put($file) or warn $ftp->message; 
-    }
-    return;
-}
-
-
-sub ftp_mget { 
-    my($ftp, $pattern) = @_; 
-    foreach my $file ($ftp->ls($pattern)) { 
-        $ftp->get($file) or warn $ftp->message; 
-    }
-    return;
-}
-
-
-# transport mode: ftp
-sub trans2ftp {
-
-    my ($sdir, $ddir, $prevday, $dest, $user, $pass) = @_;
-
-    require Net::FTP;
-
-    my $ftp = Net::FTP->new($dest, Debug => 0, Timeout=>60)
-      or die "error: trans2ftp - cannot connect to $dest: $@\n";
-
-    $ftp->login($user,$pass)
-     or die "error: trans2ftp - cannot login ", $ftp->message;
-
-    if (! $ftp->cwd("$ddir/$prevday")) {
-        $ftp->mkdir("$ddir/$prevday") or
-            die "error: trans2ftp - cannot create daily directory\n";
-
-        $ftp->cwd("$ddir/$prevday");
-    }
-
-
-    # copy now all raw files into prevdir
-    opendir(PREVDAY, "$sdir/$prevday") or
-        die "error: trans2ftp - can't open $sdir/$prevday: $!\n";
-    my @sdrdf = grep {!/^\.+$/} readdir(PREVDAY);
-    close(PREVDAY);
-
-    chdir "$sdir/$prevday" or 
-        die "error: trans2ftp - cannot change local directory: $!\n";
-
-    my $tftp = 0;
-    foreach my $sdrd (@sdrdf) {
-        next if $sdrd !~ /.*\.sdrd\.0\.gz$/;
-        $ftp->put("$sdrd") or warn $ftp->message; 
-        $tftp++;
-    }
-
-    $ftp->quit;
-
-    return;
-}
-
-
+## rotate raw data
 sub rotate {
 
     my($rawdir, $dailydir, $pdir) = @_;
@@ -490,117 +244,36 @@ sub rotate {
 }
 
 
-# Open XML configuration file
-sub open_conf {
+## 
+sub rmkrd {
+    my ($file) = @_;
 
-    my ($conf) = @_;
-    my $tree;
-
-    my $parser = XML::LibXML->new();
-    $parser -> keep_blanks(0);
-
-    # we will validate sdr.conf later releases
-    # $parser->validation(1);
-
-    # we will parse now the file
-    if ( defined $ENV{'KRMX_ROOT'} ) {
-        if (-e "$ENV{'KRMX_ROOT'}/etc/$conf") {
-            $tree = $parser->parse_file("$ENV{'KRMX_ROOT'}/etc/$conf");
-        } else {
-            print "Error: $! $ENV{'KRMX_ROOT'}/etc/$conf \n";
-            usage();
-        }
-    } else {
-        if (-e "/opt/sdr/etc/$conf") {
-            $tree = $parser->parse_file("/opt/sdr/etc/$conf");
-        } else {
-            print "Error: $! /opt/sdr/etc/$conf \n";
-            usage();
-        }
+    if ( -e $file ) {
+        if (unlink($file) > 0) { return 0; } else { return 1; }
     }
 
-    # return the tree configuration
-    return $tree;
-}
-
-
-# return an array of hashes
-sub get_values {
-    my ($conf, $path, $id) = @_;
-
-    my @result;
-
-    #XPath Walking
-    my @childs = $conf -> findnodes ($path);
-    foreach my $node (@childs) {
-        push @result, {
-            $node->getAttribute('name') .
-            ":" .
-            $node->getAttribute('ver') ,
-            $node->getAttribute('site') };
-    }
-
-
-    return @result;
-}
-
-
-sub trans2http {
-
-    my ( $curl, $dest, $sdrid, $destdir, $shipment, $hport, $hproxy, $hproxyport) = @_;
-
-    my $response;
-
-    if ( $verbose_flag == 1 ) {
-        printf "%s\n", "info: trans2http - dest:$dest, destdir=$destdir, ship=$shipment"; 
-    }
-    ## uri
-    # my $uri = "http://" . $dest . ":" . $hport . "/cgi-bin/trans.cgi";
-
-    ## payload
-    #my $payload = sha256sdrd($delta);
-    #addlog("info: sendhttp - id=$sdrid&h=$host&db=$dbid&$payload")
-    #  if ( $verbose_flag == 1 );
-
-    ## test for HTTP proxy
-    ## CURLOPT_PROXY CURLOPT_PROXYPORT
-    #if ($hproxy) {
-    #    $curl->setopt( WWW::Curl::Easy::CURLOPT_PROXY(),     $hproxy );
-    #    $curl->setopt( WWW::Curl::Easy::CURLOPT_PROXYPORT(), $hproxyport );
-    #}
-    #else {
-    #    $curl->setopt( WWW::Curl::Easy::CURLOPT_PROXY(), '' );
-    #}
-
-    #$curl->setopt( WWW::Curl::Easy::CURLOPT_HEADER(), 1 );
-    #$curl->setopt( WWW::Curl::Easy::CURLOPT_URL(),    $uri );
-    #$curl->setopt( WWW::Curl::Easy::CURLOPT_HTTPHEADER(),
-    #    ['Content-Type: text/plain'] );
-    #$curl->setopt( WWW::Curl::Easy::CURLOPT_POST(), 1 );
-    #$curl->setopt( WWW::Curl::Easy::CURLOPT_POSTFIELDS(),
-    #    "id=$sdrid&h=$host&db=$dbid&$payload" );
-    #$curl->setopt( WWW::Curl::Easy::CURLOPT_WRITEDATA(), $response );
-
-    #my $retcode = $curl->perform;
-
-    #if ( $retcode == 0 ) {
-    #    if ( $verbose_flag == 1 ) {
-    #        addlog("info: sendhttp - HTTP response");
-            #$response = HTTP::Response->parse($response);
-            #my $xml = $response->decoded_content;
-    #    }
-    #}
-    #else {
-    #    addlog("error: sendhttp - cant send $dbid sdrd data, transport error");
-    #}
-
-    #return $retcode;
     return;
 }
 
 
-# tar raw data directory
-sub tarkrd {
+## openkrd raw data directory
+sub open_krd {
+
+    my ($dir) = @_ ;
+
+    # copy now all raw files into prevdir
+    opendir(PREVDAY, "$dir") or
+        die "error: openkrd - can't open $dir: $!\n";
+
+    my @krdf = grep {!/^\.+$/} readdir(PREVDAY);
+    close(PREVDAY);
+
+    return \@krdf;
+}
+
+
+## tar raw data directory
+sub tar_krd {
 
     my ($dir) = @_;
 
@@ -609,7 +282,7 @@ sub tarkrd {
     # Create a new tar object:
     my $tar = Archive::Tar->new();
 
-    my $krdp = opensdrd("$dir");
+    my $krdp = open_krd("$dir");
 
     $dir = dirname($dir);
     chdir "$dir" or
@@ -630,34 +303,19 @@ sub tarkrd {
 }
 
 
-sub rmkrd {
-    my ($file) = @_;
-
-    if ( -e $file ) {
-        if (unlink($file) > 0) { return 0; } else { return 1; }
-    }
-
-    return;
+## usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: raw2day [-hV] [-t ftp|http]
+  e.g. raw2day               rotate raw data to daily log
+       raw2day -t http       transport sdrd files over HTTP
+       raw2day -t ftp        transport sdrd files over FTP
+END
+    exit 0;
 }
 
 
-# openkrd raw data directory
-sub openkrd {
-
-    my ($dir) = @_ ;
-
-    # copy now all raw files into prevdir
-    opendir(PREVDAY, "$dir") or
-        die "error: openkrd - can't open $dir: $!\n";
-
-    my @krdf = grep {!/^\.+$/} readdir(PREVDAY);
-    close(PREVDAY);
-
-    return \@krdf;
-}
-
-
-# revision - print revision and exit
+## revision - print revision and exit
 sub revision {
     print STDERR <<END;
 raw2day: 1.0.0, 2014-11-19
