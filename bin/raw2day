@@ -20,6 +20,7 @@
 
 use strict;
 use warnings;
+use JSON;
 use Getopt::Std;
 use Date::Calc qw{:all};
 use Time::HiRes qw(gettimeofday);
@@ -88,10 +89,10 @@ $host =~ s/\..*$// if $host =~ /\./;
 my $kjson = open_config($krmxcnf);
 
 ## hostid
-$hostid = get_hostid($cdata);
+# my $hostid = get_hostid($cdata);
 
 ## logs
-( $curlog, $pastlog ) = get_log($kjson);
+my ( $curlog, $pastlog ) = get_log($kjson);
 
 # Verbose Messages
 if ( $verbose_flag == 1 ) {
@@ -290,7 +291,7 @@ sub tar_krd {
 
     foreach my $krd (@$krdp) {
         next if $krd !~ /.*\.krd\.0\.gz$/;
-        my $krdf = $dprev . '/' . $krd;
+        my $krdf = $yesterday . '/' . $krd;
         $tar->add_files($krdf);
     }
 
