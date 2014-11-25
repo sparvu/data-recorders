@@ -86,11 +86,12 @@ USAGE: wsrec [-dp] | [interval [count]]
    #06 dpa        : outdoor dew point air temperature Celsius , number
    #07 wca        : outdoor wind chill temperature, Celsius, number
    #08 wind       : wind speed m/s, rate
-   #09 wgust      : Wind gust m/s, rate
-   #10 rain1      : rain 1 hours, number
-   #11 rain24     : rain 24 hours, number
-   #12 totalrain  : total rain, number
-   #13 pres       : absolute air pressure, number
+   #09 wgust      : wind gust m/s, rate
+   #10 windir     : wind Direction
+   #11 rain1      : rain 1 hours, number
+   #12 rain24     : rain 24 hours, number
+   #13 totalrain  : total rain, number
+   #14 pres       : absolute air pressure, number
 
  NOTES: Retrieves and logs the weather stats from the following weather 
         stations: WH-1080/1081
