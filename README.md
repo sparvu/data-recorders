@@ -27,7 +27,7 @@ A host can have attached different types of sensors, or a host can be the sensor
 It is important to understand that we process data based on a host, linked to a TCP/IP newtork. A host can have one or many types of data messages, all messages being described and defined under LMO.
 
 
-## Industries
+### Industries
 We plan to support and record data from different types of industries. For some we have already developed data recorderds, like IT, Meteorology and we need help to enhance it. Each data recorder describe a message which can be found under the [LMO](https://github.com/kronometrix/lmo). 
 
  * Business Analytics (BA)
@@ -39,7 +39,7 @@ We plan to support and record data from different types of industries. For some 
  * Meteorology
 
 
-### Information Technology
+#### Information Technology
 
  * sysrec overall system CPU, MEM, DISK, NIC utilization
  * cpurec per-CPU statistics
@@ -48,7 +48,7 @@ We plan to support and record data from different types of industries. For some 
  * hdwrec hardware, software inventory 
 
 
-### Meteorology / Climatology
+#### Meteorology / Climatology
 
  * wsrec: WH1080, WH1081, WH1090, WH20xx
  * vwsrec: Vaisala Weather Station recorder
