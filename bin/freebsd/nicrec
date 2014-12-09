@@ -109,8 +109,8 @@ while (1) {
         my $cols  = delta($old_col, $col);
         my $drops = delta($old_drop, $drop);
 
-        printf "%.${tp}f:%s:%d:%s:%d:%d:%d:%d:%d:%d:%d:%d:%d\n",
-               time, $n, $m, $mac, 
+        printf "%.${tp}f:%s:%d:%d:%d:%d:%d:%d:%d:%d:%d\n",
+               time, $n,
                $rpkt, $rbyte, $rerr, $rdrop,
                $tpkt, $tbyte, $terr,
                $cols, $drops;
@@ -179,8 +179,6 @@ USAGE: diskrec [-hV] | [interval [count]]
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
   #02 name       : NIC name, string
-  #03 mtu        : NIC MTU, string
-  #04 mac        : MAC address, string
   #05 rxpkt      : rx packets, rate
   #06 rxbytes    : rx bytes, rate
   #07 rxerr      : rx errors, rate 
