@@ -28,7 +28,6 @@ use File::Basename;
 use Digest::SHA;
 use WWW::Curl::Easy;
 use Getopt::Std;
-use BSD::Sysctl qw(sysctl);
 use Proc::Daemon;
 use Proc::PID::File;
 use Time::HiRes;
@@ -60,7 +59,7 @@ else {
 ###  Variables
 $main::opt_h = 0;    # help option
 $main::opt_V = 0;    # revision option
-my $cfile = 'sdr.json';    # configuration file
+my $cfile = 'kronometrix.json';    # configuration file
 my $cdata;                 # configuration data
 my $tcpka = 0;             # transport TCP keepalive settings
 my $sid   = "";            # subscription id
@@ -79,7 +78,7 @@ local $| = 1;
 
 ### MAIN BODY #
 
-# Default sdrd
+# Default krd
 my @recs = qw(sys cpu disk nic hdw);
 
 # daemon name
@@ -135,12 +134,12 @@ if ( Proc::PID::File->running( { dir => "$baselog" } ) ) {
     exit(0);
 }
 
-# cd sdrd raw data directory
+# cd krd raw data directory
 chdir("$curlog")
-  or die "error: main - cannot open SDR sdrd raw data directory, $!\n";
+  or die "error: main - cannot open raw data directory, $!\n";
 
 foreach (@dbs) {
-    my $n = $_ . "rec.sdrd";
+    my $n = $_ . "rec.krd";
     push(
         @files,
         File::Tail->new(
@@ -163,13 +162,13 @@ while (1) {
 
     # timeout - do something else here, if you need to
     unless ($nfound) {
-        writelog("info: main - no sdrd raw data found, checking...")
+        writelog("info: main - no krd raw data found, checking...")
           if ( $verbose_flag == 1 );
     }
     else {
 
         ## raw data arrival
-        writelog("info: main - sdrd raw data found")
+        writelog("info: main - krd raw data found")
           if ( $verbose_flag == 1 );
 
         my $rcode = 0;
@@ -183,53 +182,56 @@ while (1) {
 
             if ( $_->{"input"} =~ /sysrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-sysrec";
+                $msgid  = "$osname-sysrec";
             }
             elsif ( $_->{"input"} =~ /cpurec/ ) {
                 $devid = get_devid( 1, $delta );
-                $msgid = "cpd-$osname-cpurec";
+                $msgid = "$osname-cpurec";
             }
             elsif ( $_->{"input"} =~ /diskrec/ ) {
                 $devid = get_devid( 1, $delta );
-                $msgid = "cpd-$osname-diskrec";
+                $msgid = "$osname-diskrec";
             }
             elsif ( $_->{"input"} =~ /nicrec/ ) {
                 $devid = get_devid( 1, $delta );
-                $msgid = "cpd-$osname-nicrec";
+                $msgid = "$osname-nicrec";
             }
             elsif ( $_->{"input"} =~ /netrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-netrec";
+                $msgid  = "$osname-netrec";
             }
             elsif ( $_->{"input"} =~ /jvmrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-jvmrec";
+                $msgid  = "$osname-jvmrec";
             }
             elsif ( $_->{"input"} =~ /procrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-procrec";
+                $msgid  = "$osname-procrec";
             }
             elsif ( $_->{"input"} =~ /zonerec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-zonerec";
+                $msgid  = "$osname-zonerec";
             }
             elsif ( $_->{"input"} =~ /webrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-webrec";
+                $msgid  = "$osname-webrec";
             }
             elsif ( $_->{"input"} =~ /hdwrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-hdwrec";
+                $msgid  = "$osname-hdwrec";
             }
             elsif ( $_->{"input"} =~ /xenrec/ ) {
                 $devid = 'system';
-                $msgid  = "cpd-$osname-xenrec";
+                $msgid  = "$osname-xenrec";
+            }
+            elsif ( $_->{"input"} =~ /wsrec/ ) {
+                $devid = 'system';
+                $msgid  = "$osname-wsrec";
             }
 
             # each appliance
             for my $key ( keys %appliance ) {
                 my $value = $appliance{$key};
-
 
                 ## value format
                 # $url => $sid:$token:$proto:$port:$ka
@@ -270,25 +272,25 @@ sub open_config {
         local $/;
 
         # we will parse now the file
-        if ( defined $ENV{'SDR_PREFIX'} ) {
-            if ( -e "$ENV{'SDR_PREFIX'}/etc/$conf" ) {
-                open my $fh, "<", "$ENV{'SDR_PREFIX'}/etc/$conf";
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
                 $json_data = <$fh>;
                 close $fh;
             }
             else {
-                print "error: open_conf - $! $ENV{'SDR_PREFIX'}/etc/$conf \n";
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
                 usage();
             }
         }
         else {
-            if ( -e "/opt/sdr/etc/$conf" ) {
-                open my $fh, "<", "/opt/sdr/etc/$conf";
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
                 $json_data = <$fh>;
                 close $fh;
             }
             else {
-                print "error: open_conf - $! /opt/sdr/etc/$conf \n";
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
                 usage();
             }
         }
@@ -308,34 +310,34 @@ sub write_config {
     my $json_data = JSON->new->utf8->pretty->encode($perl_data);
 
     # we will parse now the file
-    if ( defined $ENV{'SDR_PREFIX'} ) {
-        if ( -e "$ENV{'SDR_PREFIX'}/etc/$conf" ) {
-            open my $fh, ">", "$ENV{'SDR_PREFIX'}/etc/$conf.tmp";
+    if ( defined $ENV{'KRMX_PREFIX'} ) {
+        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
 
             # print $fh encode_json($data);
             print $fh $json_data;
             close $fh;
             move(
-                "$ENV{'SDR_PREFIX'}/etc/$conf.tmp",
-                "$ENV{'SDR_PREFIX'}/etc/$conf"
+                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
+                "$ENV{'KRMX_PREFIX'}/etc/$conf"
             ) or die "Error: cannot update $conf: $!";
 
         }
         else {
-            print "error: write_config - $! $ENV{'SDR_PREFIX'}/etc/$conf \n";
+            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
             usage();
         }
     }
     else {
-        if ( -e "/opt/sdr/etc/$conf" ) {
-            open my $fh, ">", "/opt/sdr/etc/$conf.tmp";
+        if ( -e "/opt/kronometrix/etc/$conf" ) {
+            open my $fh, ">", "/opt/kronometrix/etc/$conf.tmp";
             print $fh $json_data;
             close $fh;
-            move( "/opt/sdr/etc/$conf.tmp", "/opt/sdr/etc/$conf" )
+            move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
               or die "Error: cannot update $conf: $!";
         }
         else {
-            print "error: write_config - $! /opt/sdr/etc/$conf \n";
+            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
             usage();
         }
     }
@@ -363,12 +365,12 @@ sub reload_config {
 # get_devid, returns device_id
 sub get_devid {
 
-    my ( $pos, $sdrd ) = @_;
+    my ( $pos, $krd ) = @_;
     my $device_id;
 
-    my @sdrd = split( /:/, $sdrd );
+    my @krd = split( /:/, $krd );
 
-    $device_id = $sdrd[$pos];
+    $device_id = $krd[$pos];
 
     writelog("info: get_devid - devid=$device_id")
       if ( $verbose_flag == 1 );
@@ -470,9 +472,9 @@ sub get_appliance {
     return %appl;
 }
 
-### auxiliares
+## auxiliares
 
-## write log message
+# write log message
 sub writelog {
 
     my ($logbuf) = @_;
@@ -493,20 +495,18 @@ sub send_data {
         $curl,  $dest,   $sid,   $token, $hid,
         $msg_id, $dev_id, $proto, $port,  $delta
     ) = @_;
-
     my $response;
 
     ## http://server:port/api/private/send_data
     my $url = "$proto://" . $dest . ":" . $port . "/api/private/send_data";
 
-    #my $th = "Token: $token";
     my ($hash, $post);
 
     if ( $msg_id =~ /cpurec|diskrec|nicrec/ ) {
-        $hash   = sha256sdrd("$msg_id:$sid:$hid:$delta");
+        $hash   = sha256krd("$msg_id:$sid:$hid:$delta");
         $post   = "$msg_id:$sid:$hid:$delta:$hash";
     } else {
-        $hash   = sha256sdrd("$msg_id:$sid:$hid:$dev_id:$delta");
+        $hash   = sha256krd("$msg_id:$sid:$hid:$dev_id:$delta");
         $post   = "$msg_id:$sid:$hid:$dev_id:$delta:$hash";
     }
     writelog("info: send_data - $post data to be delivered")
@@ -532,19 +532,19 @@ sub send_data {
 
     if ( $retcode == 0 ) {
         if ( $verbose_flag == 1 ) {
-            writelog("info: send_data - $msg_id sdrd data delivered");
+            writelog("info: send_data - $msg_id krd data delivered");
         }
     }
     else {
         writelog(
-            "error: send_data - cant send $msg_id sdrd data, transport error");
+            "error: send_data - cant send $msg_id krd data, transport error");
     }
 
     return $retcode;
 }
 
-## NIST SHA-256 message digest for sdrd raw data
-sub sha256sdrd {
+# NIST SHA-256 message digest for krd raw data
+sub sha256krd {
     my ($message) = @_;
 
     # compute SHA-256
@@ -556,7 +556,7 @@ sub sha256sdrd {
     return $digest;
 }
 
-## usage - print usage and exit.
+# usage - print usage and exit.
 sub usage {
     print STDERR <<END;
 USAGE: sender [-t secs] [-hvV] | [interval]
@@ -568,14 +568,13 @@ OPTIONS:
   interval  : maximum number of seconds between samples, default 60, will 
               never spend more than that without checking data
 
- e.g. sender     check and send sdrd raw data, every 60 secs
-      sender 10  check and send sdrd raw data, every 10 secs
+ e.g. sender     check and send krd raw data, every 60 secs
+      sender 10  check and send krd raw data, every 10 secs
 END
     exit 0;
 }
 
 # revision - print revision and exit
-#
 sub revision {
     print STDERR <<END;
 sender: 1.0.0, 2014-05-04
