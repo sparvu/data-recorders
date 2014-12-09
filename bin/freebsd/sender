@@ -28,6 +28,7 @@ use File::Basename;
 use Digest::SHA;
 use WWW::Curl::Easy;
 use Getopt::Std;
+use BSD::Sysctl qw(sysctl);
 use Proc::Daemon;
 use Proc::PID::File;
 use Time::HiRes;
