@@ -64,20 +64,21 @@ local $| = 1;      # autoflush
 # Set a timer for BSD::Sysctl objects
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
-my $bcpu     = BSD::Sysctl->new( 'kern.cp_time' );
-my $bhdw     = BSD::Sysctl->new( 'hw.ncpu' );
-my $bpage    = BSD::Sysctl->new( 'hw.pagesize' );
-my $bvma     = BSD::Sysctl->new( 'vm.stats.vm.v_active_count' );
-my $bvmi     = BSD::Sysctl->new( 'vm.stats.vm.v_inactive_count' );
-my $bvmw     = BSD::Sysctl->new( 'vm.stats.vm.v_wire_count' );
-my $bvmc     = BSD::Sysctl->new( 'vm.stats.vm.v_cache_count' );
-my $bvmf     = BSD::Sysctl->new( 'vm.stats.vm.v_free_count' );
-my $bvmt     = BSD::Sysctl->new( 'vm.vmtotal' );
-my $bla      = BSD::Sysctl->new( 'vm.loadavg' );
-my $bswapi   = BSD::Sysctl->new( 'vm.stats.vm.v_swapin' );
-my $bswappi  = BSD::Sysctl->new( 'vm.stats.vm.v_swappgsin' );
-my $bswapo   = BSD::Sysctl->new( 'vm.stats.vm.v_swapout' );
-my $bswappo  = BSD::Sysctl->new( 'vm.stats.vm.v_swappgsout' );
+my $bsd_cputime     = BSD::Sysctl->new( 'kern.cp_time' );
+my $bsd_ncpu        = BSD::Sysctl->new( 'hw.ncpu' );
+my $bsd_pgsize      = BSD::Sysctl->new( 'hw.pagesize' );
+my $bsd_memphys     = BSD::Sysctl->new( 'hw.physmem' );
+my $bsd_memactive   = BSD::Sysctl->new( 'vm.stats.vm.v_active_count' );
+my $bsd_meminactive = BSD::Sysctl->new( 'vm.stats.vm.v_inactive_count' );
+my $bsd_memwire     = BSD::Sysctl->new( 'vm.stats.vm.v_wire_count' );
+my $bsd_memcache    = BSD::Sysctl->new( 'vm.stats.vm.v_cache_count' );
+my $bsd_memfree     = BSD::Sysctl->new( 'vm.stats.vm.v_free_count' );
+my $bsd_vmtotal     = BSD::Sysctl->new( 'vm.vmtotal' );
+my $bsd_la          = BSD::Sysctl->new( 'vm.loadavg' );
+my $bsd_swapin      = BSD::Sysctl->new( 'vm.stats.vm.v_swapin' );
+my $bsd_swappgsin   = BSD::Sysctl->new( 'vm.stats.vm.v_swappgsin' );
+my $bsd_swapout     = BSD::Sysctl->new( 'vm.stats.vm.v_swapout' );
+my $bsd_swappgsout  = BSD::Sysctl->new( 'vm.stats.vm.v_swappgsout' );
 ### 0.1sec sleep using a timer
 pause;
 
@@ -98,14 +99,15 @@ if ( $interval =~ /\./ ) {
 while (1) {
 
     # fetch new values 
-    my $la       = $bla->get();
-    my $nproc    = $bhdw->get();
-    my $pagesize = $bpage->get();
+    my $la       = $bsd_la->get();
+    my $nproc    = $bsd_ncpu->get();
+    my $pagesize = $bsd_pgsize->get();
 
     # Get pagesize factor
-    if ($pagesize) {
-        $pgfactor = $pagesize / 1024;
-    }
+    #if ($pagesize) {
+    #    $pgfactor = $pagesize / 1024;
+    #}
+
     ## debug
     # print "pagesize=$pagesize, factor=$pgfactor\n";
 
@@ -172,7 +174,7 @@ while (1) {
     }
 
     ## memory stats
-    my @vm = get_vmstat($pgfactor);
+    my @vm = get_vmstat($pagesize);
 
     ## disk stats
     my $ts = sprintf ("%.2f", $interval / 3);
@@ -243,7 +245,7 @@ while (1) {
 sub get_cpustat {
 
     ### Get Stats
-    my $cpu_time = $bcpu->get();
+    my $cpu_time = $bsd_cputime->get();
 
     my @cdata = ();
     my $len = $#{ $cpu_time };
@@ -316,16 +318,17 @@ sub get_vmstat {
     my $factor = shift;
 
     ### get mem stats
-    my $vmtotal  = $bvmt->get();
-    my $active   = $bvma->get();
-    my $inactive = $bvmi->get();
-    my $wired    = $bvmw->get();
-    my $cache    = $bvmc->get();
-    my $free     = $bvmf->get();
-    my $swapin   = $bswapi->get();
-    my $swappin  = $bswappi->get();
-    my $swapout  = $bswapo->get();
-    my $swappout = $bswappo->get();
+    my $vmtotal  = $bsd_vmtotal->get();
+    my $memphys  = $bsd_memphys->get();
+    my $active   = $bsd_memactive->get() * $factor;
+    my $inactive = $bsd_meminactive->get() * $factor;
+    my $wired    = $bsd_memwire->get() * $factor;
+    my $cache    = $bsd_memcache->get() * $factor;
+    my $free     = $bsd_memfree->get() * $factor;
+    my $swapin   = $bsd_swapin->get();
+    my $swappin  = $bsd_swappgsin->get();
+    my $swapout  = $bsd_swapout->get();
+    my $swappout = $bsd_swappgsout->get();
 
     # vmtotal keys
     # my @keys = keys % { $vmtotal };
@@ -345,15 +348,21 @@ sub get_vmstat {
     my $sp = $vmtotal->{sleeping};
 
     # vm stats
-    $active   = $active   * $factor;
-    $inactive = $inactive * $factor;
-    $wired    = $wired    * $factor;
-    $cache    = $cache    * $factor;
-    $free     = $free     * $factor;
-    my $rfree = $inactive + $cache + $free;
+    my $mem_total = $memphys;
+    my $mem_avail = $inactive + $cache + $free;
+    my $mem_used = $mem_total - $mem_avail;
+
+    my $memusedpct  = sprintf ("%.2f", ($mem_used  / $mem_total) * 100);
+    my $memavailpct = sprintf ("%.2f", ($mem_avail  / $mem_total) * 100);
+    my $memtotalkb = sprintf ("%d", ($mem_total  / 1024));
+
+    print "memusedpct=$memusedpct\n";
+    print "memavailpct=$memavailpct\n";
+    print "memtotal=$memtotalkb\n";
+    exit 0;
 
     my @stats;
-    push(@stats, $rq, $bl, $pw, $dw, $sp, $active, $inactive, $wired, $cache, $free, $rfree, $swapin, $swappin, $swapout, $swappout);
+    push(@stats, $rq, $bl, $pw, $dw, $sp, $active, $inactive, $wired, $cache, $free, $mem_avail, $swapin, $swappin, $swapout, $swappout);
 
     # print "@stats";
     # print "len=$#stats+1";
