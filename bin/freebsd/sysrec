@@ -78,7 +78,7 @@ my $bswapi   = BSD::Sysctl->new( 'vm.stats.vm.v_swapin' );
 my $bswappi  = BSD::Sysctl->new( 'vm.stats.vm.v_swappgsin' );
 my $bswapo   = BSD::Sysctl->new( 'vm.stats.vm.v_swapout' );
 my $bswappo  = BSD::Sysctl->new( 'vm.stats.vm.v_swappgsout' );
-### 0.2sec sleep using a timer
+### 0.1sec sleep using a timer
 pause;
 
 # how often do we trigger (seconds)?
@@ -181,7 +181,7 @@ while (1) {
     ## nic stats
     my @ns = get_nicstat();
 
-    my ($rxpkt,$rxerr,$rxdrop,$rxbyte,$txpkt,$txerr,$txbyte,$cols,$drops);
+    my ($rxpkt,$rxerr,$rxdrop,$rxkbyte,$txpkt,$txerr,$txkbyte,$cols,$drops);
 
     foreach (@ns) {
  
@@ -202,11 +202,11 @@ while (1) {
         $rxpkt  = delta($old_ipkt, $ipkt);
         $rxerr  = delta($old_ierr, $ierr);
         $rxdrop = delta($old_idrop, $idrop);
-        $rxbyte = delta($old_ibyt, $ibyt);
+        $rxkbyte = delta($old_ibyt, $ibyt);
 
         $txpkt  = delta($old_opkt, $opkt);
         $txerr  = delta($old_oerr, $oerr);
-        $txbyte = delta($old_obyt, $obyt);
+        $txkbyte = delta($old_obyt, $obyt);
 
         $cols  = delta($old_col, $col);
         $drops = delta($old_drop, $drop);
@@ -216,15 +216,15 @@ while (1) {
 
     }
 
-    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%.2f\n",
+    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f\n",
             time, $cpupct, $sumpct, $headpct,
             $user, $nice, $sys, $intr, $idle,
             $vm[0], $vm[1], $vm[2], $vm[3], $vm[4],
             $vm[5], $vm[6], $vm[7], $vm[8], $vm[9], $vm[10],
             $vm[11], $vm[12], $vm[13], $vm[14],
             $ds[0], $ds[1], $ds[2], $ds[3], $ds[4], $ds[5], 
-            $ds[6], $rxpkt, $rxbyte, $rxerr, $rxdrop,
-            $txpkt, $txbyte, $txerr, $cols, $drops,
+            $ds[6], $rxpkt, $rxkbyte, $rxerr, $rxdrop,
+            $txpkt, $txkbyte, $txerr, $cols, $drops,
             $la->[0], $la->[1], $la->[2];
 
 
@@ -480,6 +480,10 @@ sub get_nicstat {
     $cols   /= $nicount;
     $drops  /= $nicount;
 
+    # turn to KB
+    my $rxkbyte = sprintf("%.2f", $rxbyte / 1024);
+    my $txkbyte = sprintf("%.2f", $txbyte / 1024); 
+ 
     ## debug 
     # printf "%.${tp}f:%d:%d:%d:%d:%d:%d:%d:%d:%d\n",
     #           time,
@@ -488,7 +492,7 @@ sub get_nicstat {
     #           $cols, $drops;
 
     my @stats;
-    my $payload = "$rxpkt:$rxerr:$rxdrop:$rxbyte:$txpkt:$txerr:$txbyte:$cols:$drops";
+    my $payload = "$rxpkt:$rxerr:$rxdrop:$rxkbyte:$txpkt:$txerr:$txkbyte:$cols:$drops";
     push @stats, $payload;
 
     return @stats;
