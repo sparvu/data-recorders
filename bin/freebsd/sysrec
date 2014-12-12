@@ -103,11 +103,6 @@ while (1) {
     my $nproc    = $bsd_ncpu->get();
     my $pagesize = $bsd_pgsize->get();
 
-    # Get pagesize factor
-    #if ($pagesize) {
-    #    $pgfactor = $pagesize / 1024;
-    #}
-
     ## debug
     # print "pagesize=$pagesize, factor=$pgfactor\n";
 
@@ -218,12 +213,13 @@ while (1) {
 
     }
 
-    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f\n",
+    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f\n",
             time, $cpupct, $sumpct, $headpct,
             $user, $nice, $sys, $intr, $idle,
             $vm[0], $vm[1], $vm[2], $vm[3], $vm[4],
             $vm[5], $vm[6], $vm[7], $vm[8], $vm[9], $vm[10],
-            $vm[11], $vm[12], $vm[13], $vm[14],
+            $vm[11], $vm[12], $vm[13], $vm[14], $vm[15],
+            $vm[16], $vm[17], $vm[18], $vm[19],
             $ds[0], $ds[1], $ds[2], $ds[3], $ds[4], $ds[5], 
             $ds[6], $rxpkt, $rxkbyte, $rxerr, $rxdrop,
             $txpkt, $txkbyte, $txerr, $cols, $drops,
@@ -348,21 +344,28 @@ sub get_vmstat {
     my $sp = $vmtotal->{sleeping};
 
     # vm stats
-    my $mem_total = $memphys;
-    my $mem_avail = $inactive + $cache + $free;
-    my $mem_used = $mem_total - $mem_avail;
+    my $mt = $memphys;
+    my $realfree = $inactive + $cache + $free;
+    my $mu = $mt - $realfree;
 
-    my $memusedpct  = sprintf ("%.2f", ($mem_used  / $mem_total) * 100);
-    my $memavailpct = sprintf ("%.2f", ($mem_avail  / $mem_total) * 100);
-    my $memtotalkb = sprintf ("%d", ($mem_total  / 1024));
+    # format stats
+    my $memusedpct  = sprintf ("%.2f", ($mu / $mt) * 100);
+    my $memused  = sprintf ("%.2f", $mu / 1024);
+    my $memavailpct = sprintf ("%.2f", ($realfree  / $mt) * 100);
+    my $memavail = sprintf ("%.2f", $realfree  / 1024);
+    my $memtotal = sprintf ("%.2f", ($mt / 1024));
 
-    print "memusedpct=$memusedpct\n";
-    print "memavailpct=$memavailpct\n";
-    print "memtotal=$memtotalkb\n";
-    exit 0;
+    my $memactive = sprintf("%.2f", $active / 1024);
+    my $meminactive = sprintf("%.2f", $inactive / 1024);
+    my $memwired = sprintf("%.2f", $wired / 1024);
+    my $memcache = sprintf("%.2f", $cache / 1024);
+    my $memfree = sprintf("%.2f", $free / 1024);
+    my $memrealfree = sprintf("%.2f", $realfree / 1024);
 
     my @stats;
-    push(@stats, $rq, $bl, $pw, $dw, $sp, $active, $inactive, $wired, $cache, $free, $mem_avail, $swapin, $swappin, $swapout, $swappout);
+    push(@stats, $rq, $bl, $pw, $dw, $sp, $memusedpct, $memused, $memavailpct, $memavail, 
+         $memtotal, $memactive, $meminactive, $memwired, $memcache, $memfree, $memrealfree, 
+         $swapin, $swappin, $swapout, $swappout);
 
     # print "@stats";
     # print "len=$#stats+1";
@@ -534,42 +537,47 @@ USAGE: sysrec [-hV] | [interval [count]]
    #14 sleeping   : processes sleeping, number
 
   MEM
-   #15 active     : size of active memory pages in kilobytes, number
-   #16 inactive   : size of inactive memory pages in kilobytes, number
-   #17 wired      : size of wired memory pages in kilobytes, number
-   #18 cache      : size of memory pages on cache queue in kilobytes, number
-   #19 free       : size of free memory pages in kilobytes, number
-   #20 realfree   : size of real free memory in kilobytes, number
+   #15 memusedpct : size of used memory in percent, number
+   #16 memused    : size of used memory in kilobytes, number
+   #17 memavailpct: size of available memory in kilobytes, number
+   #18 memavail   : size of available memory in kilobytes, number
+   #19 memtotal   : size of memory in kilobytes, number
+   #20 active     : size of active memory pages in kilobytes, number
+   #21 inactive   : size of inactive memory pages in kilobytes, number
+   #22 wired      : size of wired memory pages in kilobytes, number
+   #23 cache      : size of memory pages on cache queue in kilobytes, number
+   #24 free       : size of free memory pages in kilobytes, number
+   #25 realfree   : size of real free memory in kilobytes, number
                      (inactive + cache + free)
-   #21 swapin     : swap pager pageins, rate
-   #22 swappgsin  : swap pager pages paged in, rate 
-   #23 swapout    : swap pager pageouts, rate
-   #24 swappgsout : swap pager pages paged out, rate
+   #26 swapin     : swap pager pageins, rate
+   #27 swappgsin  : swap pager pages paged in, rate 
+   #28 swapout    : swap pager pageouts, rate
+   #29 swappgsout : swap pager pages paged out, rate
 
   DISK
-   #25 reads      : read requests per second, rate
-   #26 rkbytes    : read KBytes per second,rate
-   #27 writes     : write requests per second, rate
-   #28 wkbytes    : write KBytes per second, rate
-   #29 queue      : the number of not yet completed transactions, rate
-   #30 service    : service time per transaction in miliseconds, number 
-   #31 busy       : the percentage of time the device had one or more 
+   #30 reads      : read requests per second, rate
+   #31 rkbytes    : read KBytes per second,rate
+   #32 writes     : write requests per second, rate
+   #33 wkbytes    : write KBytes per second, rate
+   #34 queue      : the number of not yet completed transactions, rate
+   #35 service    : service time per transaction in miliseconds, number 
+   #36 busy       : the percentage of time the device had one or more 
                      transactions outstanding, number
 
   NET
-   #32 rxpkt      : received packets per second, rate
-   #33 rxkbytes   : received Kbytes per seccond, rate
-   #34 rxerr      : number of errors while received pkt per second, rate
-   #35 rxdrop     : number of rx packets that were dropped per second, rate
-   #36 txpkt      : transmitted packets per second, rate
-   #37 txkbytes   : transmitted Kbytes per second, rate 
-   #38 txerr      : number of errors while transmitting pkt per second, rate
-   #39 cols       : number of collisions, rate
-   #40 drops      : number of dropped packets per second, rate
+   #37 rxpkt      : received packets per second, rate
+   #38 rxkbytes   : received Kbytes per seccond, rate
+   #39 rxerr      : number of errors while received pkt per second, rate
+   #40 rxdrop     : number of rx packets that were dropped per second, rate
+   #41 txpkt      : transmitted packets per second, rate
+   #42 txkbytes   : transmitted Kbytes per second, rate 
+   #43 txerr      : number of errors while transmitting pkt per second, rate
+   #44 cols       : number of collisions, rate
+   #45 drops      : number of dropped packets per second, rate
 
-   #41 avg1       : LA of the last minute, number
-   #42 avg5       : LA of the last 5 minutes, number
-   #43 avg15      : LA of the last 15 minutes, number
+   #46 avg1       : LA of the last minute, number
+   #47 avg5       : LA of the last 5 minutes, number
+   #48 avg15      : LA of the last 15 minutes, number
 END
     exit 0;
 }
