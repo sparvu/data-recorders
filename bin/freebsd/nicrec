@@ -97,22 +97,24 @@ while (1) {
             $old_opkt = $old_oerr = $old_obyt = $old_col = $old_drop = 0;
         }
 
-        my $rpkt  = delta($old_ipkt, $ipkt);
-        my $rerr  = delta($old_ierr, $ierr);
-        my $rdrop = delta($old_idrop, $idrop);
-        my $rbyte = delta($old_ibyt, $ibyt);
+        my $rpkt   = delta($old_ipkt, $ipkt);
+        my $rerr   = delta($old_ierr, $ierr);
+        my $rdrop  = delta($old_idrop, $idrop);
+        my $rkbyte = delta($old_ibyt, $ibyt);
+        $rkbyte = sprintf ("%.2f", $rkbyte / 1024);
 
-        my $tpkt  = delta($old_opkt, $opkt);
-        my $terr  = delta($old_oerr, $oerr);
-        my $tbyte = delta($old_obyt, $obyt);
+        my $tpkt   = delta($old_opkt, $opkt);
+        my $terr   = delta($old_oerr, $oerr);
+        my $tkbyte = delta($old_obyt, $obyt);
+        $tkbyte = sprintf ("%.2f", $tkbyte / 1024);
 
-        my $cols  = delta($old_col, $col);
-        my $drops = delta($old_drop, $drop);
+        my $cols   = delta($old_col, $col);
+        my $drops  = delta($old_drop, $drop);
 
-        printf "%.${tp}f:%s:%d:%d:%d:%d:%d:%d:%d:%d:%d\n",
+        printf "%.${tp}f:%s:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d\n",
                time, $n,
-               $rpkt, $rbyte, $rerr, $rdrop,
-               $tpkt, $tbyte, $terr,
+               $rpkt, $rkbyte, $rerr, $rdrop,
+               $tpkt, $tkbyte, $terr,
                $cols, $drops;
 
         # save old data
@@ -180,11 +182,11 @@ USAGE: diskrec [-hV] | [interval [count]]
   #01 timestamp  : seconds since Epoch, time
   #02 name       : NIC name, string
   #05 rxpkt      : rx packets, rate
-  #06 rxbytes    : rx bytes, rate
+  #06 rxkbytes   : rx bytes, rate
   #07 rxerr      : rx errors, rate 
   #08 rxdrop     : the number of rx drop packets, rate
   #09 txpkt      : tx packets, rate
-  #10 txbytes    : tx bytes, rate
+  #10 txkbytes   : tx bytes, rate
   #11 txerr      : tx errors, rate 
   #12 cols       : packets collision, rate 
   #13 drops      : packets drop, rate
