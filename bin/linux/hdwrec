@@ -116,26 +116,18 @@ while (1) {
     $num_disk =  scalar(@$rdisks);
 
     # fetch dist_id, os, codename
-    my ($distid, $os, $codename) = "NA";
+    my ($distid, $os, $relos) = "NA";
 
     if (-e "$lsb") {
-
-        # safe open pipe
-        # my $pid = open my $LSBINFO, "-|";
-        # die "error: cannot fork: $!" unless defined $pid;
-
-        # if ($pid == 0) {
-        #     open STDERR, ">", "/dev/null" or die "$0: open: $!";
-        #     exec "$lsb", "-a" or exit 1;
-        #}
 
         open my $LSBINFO, "-|", "$lsb", "-a"
             or die "error: cannot execute lsb_release - $!";
 
         while (<$LSBINFO>) {
             chomp;
-            $distid = $1 if $_ =~ /^Distributor ID\:\s+(.*)/; $os = $1 if $_ =~ /^Description\:\s+(.*)/; $codename = $1 if $_ =~ /^Codename\:\s+(.*)/;
+            $distid = $1 if $_ =~ /^Distributor ID\:\s+(.*)/; $relos = $1 if $_ =~ /^Release\:\s+(.*)/;
         }
+        $os = $distid;
 
         close $LSBINFO;
 
@@ -148,17 +140,17 @@ while (1) {
                 or die "error: cannot find redhat-release: $!\n";
             while (<$rhelrel>) {
                 chomp;
-                $distid = "RedHatEnterpriseServer"; $os = $_; $codename = $1 if $_ =~ /.*\s+(.*)$/;
+                $distid = "RedHatEnterpriseServer"; $os = $_; $relos = $1 if $_ =~ /.*\s+(.*)$/;
             }
             close $rhelrel;
-            $codename =~ s/^\(//;
-            $codename =~ s/\)$//; 
+            $relos =~ s/^\(//;
+            $relos  =~ s/\)$//; 
         } elsif ( -e "/etc/debian_version" ) {
             open my $debrel, "<", "/etc/debian_version"
                 or die "error: cannot find debian_version: $!\n";
             while (<$debrel>) {
                 chomp;
-                $os="Debian $_"; $distid="Debian"; $codename="NA";
+                $os="Debian"; $distid="Debian"; $relos="$_";
             }
             close $debrel;
         }
@@ -180,7 +172,7 @@ while (1) {
 
     # print metrics
     printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s:%s\n",
-      time, $host, $si->{arch}, $hypervisor, $os, $codename, $distid, 
+      time, $host, $si->{arch}, $hypervisor, $os, $relos, $distid, 
       $si->{kernel} . " " . $si->{release},
       $si->{pcpucount}, $si->{tcpucount},
       $si->{memtotal}, $si->{swaptotal}, 
@@ -239,9 +231,9 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #01 timestamp  : seconds since Epoch, time
   #02 hostname   : hostname
   #03 hdw        : machine hardware name
-  #04 hypervisor : name of the hypervisor
-  #05 os         : name of the operating system
-  #06 codename   : codename of the operating system
+  #04 hypervisor : name of the hypervisor, string
+  #05 os         : name of the operating system, string
+  #06 relos      : release number of operating system, string
   #07 distributor: name of the operating system distributor
   #08 kernel     : kernel version and release number
   #09 pcpu       : number of physical installed CPUs, number
