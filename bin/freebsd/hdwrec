@@ -65,7 +65,7 @@ setitimer( ITIMER_REAL, .1, .1 );
 my $bhdw     = BSD::Sysctl->new( 'hw.machine_arch' );
 my $bdisk    = BSD::Sysctl->new( 'kern.disks' );
 my $bos      = BSD::Sysctl->new( 'kern.ostype' );
-my $bcode    = BSD::Sysctl->new( 'kern.version' );
+my $brelos   = BSD::Sysctl->new( 'kern.osrelease' );
 my $bnic     = BSD::Sysctl->new( 'net.link.generic.system.ifcount' );
 my $bboot    = BSD::Sysctl->new( 'kern.boottime' );
 my $bguest   = BSD::Sysctl->new( 'kern.vm_guest' );
@@ -101,35 +101,26 @@ while (1) {
     ## get stats
     my $arch    = $bhdw->get();
     my $os      = $bos->get();
-    my $code    = $bcode->get();
+    my $relos   = $brelos->get();
     my $disk    = $bdisk->get();
     my $nic     = $bnic->get();
     my $btime   = sprintf("%d",$bboot->get());
     my $guest   = $bguest->get();
     my $kernel  = $bkernel->get();
     my $vcpu    = $bvcpu->get();
-    my $physmem = $bphysmem->get();
-    $swapmem = $bswapmem->get() if $bswapmem;
+    my $pmem    = sprintf ("%.2f", $bphysmem->get() / 1024);
+    my $smem    = sprintf ("%.2f", $bswapmem->get() / 1024);
 
 
     chop($arch);
     chop($os);
+    chop($relos);
+    $relos =~ s/\-.*$//;
     chop($kernel);
 
     # hostname# hostname
     my $host = hostname;
     $host =~ s/\..*$// if $host =~ /\./;
-
-    # OS Release
-    my $codename;
-    foreach my $l (split /^/ ,$code) {
-        chomp($l);
-        $l =~ s/[\h\v]+//g;
-        $l =~ s/\#.*//;
-        $l =~ s/\-/_/g;
-        $codename=$l;
-        last;
-    }
 
     # distributor
     my $dist = "freebsd.org";
@@ -183,11 +174,8 @@ while (1) {
     # num_jvm can be NA or value, defaults to string
     # HT can be NA or value, defaults to string
 
-    my $pmem = convert ("$physmem");
-    my $smem = convert ("$swapmem");
-
     printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s:%s\n", 
-        time, $host, $arch, $hypervisor, $os, $codename, $dist,
+        time, $host, $arch, $hypervisor, $os, $relos, $dist,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
         $num_disk, $num_nic, $num_jvm, $uptime;
 
@@ -310,7 +298,7 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #03 hdw        : machine hardware name, string
   #04 hypervisor : name of the hypervisor, string
   #05 os         : name of the operating system, string
-  #06 codename   : codename of the operating system, string
+  #06 relos      : release number of operating system, string
   #07 distributor: name of the operating system distributor, string
   #08 kernel     : kernel version and release number, string
   #09 pcpu       : number of physical installed CPUs, number
