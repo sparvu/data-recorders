@@ -70,7 +70,7 @@
 		"protocol": "http",
 		"sid": [
                     { "cpd": "2ff9851ecfa8f07d39b367a70c1c4f34" },
-                    { "wcd   "09923093239203902390239029302932" }
+                    { "wcd": "09923093239203902390239029302932" }
                 ],
 		"token": "the_new_API_token",
 		"keepalive": 0
