@@ -170,12 +170,17 @@ while (1) {
 
     $num_jvm = "NA" if ($num_jvm == 0);
 
+    my $memtotal = $si->{memtotal};
+    my $swaptotal = $si->{swaptotal};
+    $memtotal =~ s/\s+[kK]B$//;
+    $swaptotal =~ s/\s+[kK]B$//;
+
     # print metrics
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s:%s\n",
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%d:%d:%.2f:%.2f:%d:%d:%s:%s\n",
       time, $host, $si->{arch}, $hypervisor, $os, $relos, $distid, 
       $si->{kernel} . " " . $si->{release},
       $si->{pcpucount}, $si->{tcpucount},
-      $si->{memtotal}, $si->{swaptotal}, 
+      $memtotal, $swaptotal, 
       $num_disk, $num_nic, $num_jvm, $si->{uptime};
 
     ### Check for end
