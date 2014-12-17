@@ -86,8 +86,6 @@
                 ],
 		"token": "the_new_API_token",
 		"keepalive": 0
-	    },
-
 	    }
 	]
     }
