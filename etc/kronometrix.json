@@ -6,7 +6,7 @@
         "daily_path": "/opt/kronometrix/log/daily"
     },
     "transport": {
-        "data_file": [
+        "cpd": [
             {
 		"name": "sys",
 		"file": "sysrec.krd"
@@ -46,12 +46,21 @@
             {
                 "name": "zone",
                 "file": "zonerec.krd"
-            },
+            }
+        ],
+        "amd": [
+
             {
                 "name": "ws",
                 "file": "wsrec.krd"
             }
-	],
+        ],
+        "wcd": [
+            {
+                "name": "ws",
+                "file": "wsrec.krd"
+            }
+        ],
 	"appliance": [
 	    {
 		"name": "Appliance 1",
@@ -59,7 +68,10 @@
 		"url": "destination",
 		"port": 80,
 		"protocol": "http",
-		"sid": "2ff9851ecfa8f07d39b367a70c1c4f34",
+		"sid": [
+                    { "cpd": "2ff9851ecfa8f07d39b367a70c1c4f34" },
+                    { "wcd": "09923093239203902390239029302932" }
+                ],
 		"token": "the_new_API_token",
 		"keepalive": 0
 	    },
@@ -69,8 +81,10 @@
 		"url": "destination",
 		"port": 443,
 		"protocol": "https",
-		"sid": "00f9851ecfa8f07d39b367a70c1c4f34",
-		"token": "the_new_API_token_2",
+		"sid": [
+                    { "cpd": "2ff9851ecfa8f07d39b367a70c1c4f34" }
+                ],
+		"token": "the_new_API_token",
 		"keepalive": 0
 	    }
 	]
