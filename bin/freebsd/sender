@@ -448,6 +448,8 @@ sub get_appliance {
     my ($data) = @_;
     my %appl;
 
+    my @lmo = ('cpd', 'amd', 'wcd', 'bad');
+
     my @temp = @{ $data->{'transport'}->{'appliance'} };
 
     foreach my $f (@temp) {
@@ -459,13 +461,19 @@ sub get_appliance {
         my $port  = $f->{'port'};
 
         # last call, look for subscription
-        my @sub   = @{ $f->{'cpd'} };
 
-        foreach my $sd (@sub) {
+        foreach my $mo (@lmo) {
 
-            # get sid, tid
-            $sid = $sd ->{'sid'};
-            $tid = $sd ->{'tid'};
+            if ($f->{"$mo"}) {
+
+            my @sub = @{ $f->{"$mo"} };
+            
+
+            foreach my $sd (@sub) {
+
+                # get sid, tid
+                $sid = $sd ->{'sid'};
+                $tid = $sd ->{'tid'};
 
                 if ( defined($host)
                      and defined($sid)
@@ -477,7 +485,8 @@ sub get_appliance {
                      $appl{$keyapp} = "$tid:$proto:$ka";
                 }
 
-            print "sid=$sid, tid=$tid\n";
+                print "sid=$sid, tid=$tid\n";
+            } }
         }
 
     }

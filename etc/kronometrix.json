@@ -1,4 +1,10 @@
 {
+   "host_id" : "",
+   "log" : {
+      "current_path" : "/opt/kronometrix/log/current",
+      "base_path" : "/opt/kronometrix/log",
+      "daily_path" : "/opt/kronometrix/log/daily"
+   },
    "transport" : {
       "data_file" : [
          {
@@ -10,24 +16,24 @@
             "name" : "cpu"
          },
          {
-            "file" : "diskrec.krd",
-            "name" : "disk"
+            "name" : "disk",
+            "file" : "diskrec.krd"
          },
          {
             "name" : "nic",
             "file" : "nicrec.krd"
          },
          {
-            "file" : "hdwrec.krd",
-            "name" : "hdw"
+            "name" : "hdw",
+            "file" : "hdwrec.krd"
          },
          {
-            "name" : "net",
-            "file" : "netrec.krd"
+            "file" : "netrec.krd",
+            "name" : "net"
          },
          {
-            "name" : "proc",
-            "file" : "procrec.krd"
+            "file" : "procrec.krd",
+            "name" : "proc"
          },
          {
             "name" : "jvm",
@@ -38,20 +44,20 @@
             "name" : "xen"
          },
          {
-            "file" : "zonerec.krd",
-            "name" : "zone"
+            "name" : "zone",
+            "file" : "zonerec.krd"
          },
          {
-            "name" : "ws",
-            "file" : "wsrec.krd"
+            "file" : "wsrec.krd",
+            "name" : "ws"
          }
       ],
       "appliance" : [
          {
-            "host" : "destination",
             "port" : 80,
-            "name" : "Appliance 1",
             "keepalive" : 0,
+            "name" : "Appliance 1",
+            "host" : "hostname1",
             "description" : "Appliance Analytics 1 details",
             "cpd" : [
                {
@@ -59,18 +65,36 @@
                   "tid" : "4563931ecfa8f07d39b367a70c1c4f34"
                },
                {
-                  "sid" : "0129851ecfa8f07d39b367a70c1c4f34",
-                  "tid" : "3453931ecfa8f07d39b367a70c1c4f34"
+                  "tid" : "3453931ecfa8f07d39b367a70c1c4f34",
+                  "sid" : "0129851ecfa8f07d39b367a70c1c4f34"
                }
             ],
-            "protocol" : "http"
+            "protocol" : "http",
+            "wcd" : [
+               {
+                  "sid" : "00000000cfa8f07d39b367a70c1c4f34",
+                  "tid" : "00000001cfa8f07d39b367a70c1c4f34"
+               }
+            ]
+         },
+         {
+            "name" : "Appliance 2",
+            "keepalive" : 0,
+            "port" : 443,
+            "cpd" : [
+               {
+                  "sid" : "11111111111111111111111111111111",
+                  "tid" : "44444444444444444444444444444444"
+               },
+               {
+                  "sid" : "00000000000000000000000000000000",
+                  "tid" : "33333333333333333333333333333333"
+               }
+            ],
+            "protocol" : "https",
+            "description" : "Appliance Analytics 2 details",
+            "host" : "hostname2"
          }
       ]
-   },
-   "log" : {
-      "current_path" : "/opt/kronometrix/log/current",
-      "base_path" : "/opt/kronometrix/log",
-      "daily_path" : "/opt/kronometrix/log/daily"
-   },
-   "host_id" : "f32f6dcc-38e0-42ff-99da-2a092aaddef5"
+   }
 }
