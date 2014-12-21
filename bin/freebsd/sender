@@ -110,8 +110,6 @@ for my $key ( keys %appliance ) {
     print "$key => $value\n";
 }
 
-exit 0;
-
 ## SIGHUP handler
 $SIG{HUP} = \&reload_config;
 
@@ -182,54 +180,67 @@ while (1) {
             # parse id
             my $msgid;
             my $devid;
+            my $lmoid;
 
             if ( $_->{"input"} =~ /sysrec/ ) {
+                $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-sysrec";
+                $msgid = "$osname-sysrec";
             }
             elsif ( $_->{"input"} =~ /cpurec/ ) {
+                $lmoid = 'cpd';
                 $devid = get_devid( 1, $delta );
                 $msgid = "$osname-cpurec";
             }
             elsif ( $_->{"input"} =~ /diskrec/ ) {
+                $lmoid = 'cpd';
                 $devid = get_devid( 1, $delta );
                 $msgid = "$osname-diskrec";
             }
             elsif ( $_->{"input"} =~ /nicrec/ ) {
+                $lmoid = 'cpd';
                 $devid = get_devid( 1, $delta );
                 $msgid = "$osname-nicrec";
             }
             elsif ( $_->{"input"} =~ /netrec/ ) {
+                $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-netrec";
+                $msgid = "$osname-netrec";
             }
             elsif ( $_->{"input"} =~ /jvmrec/ ) {
+                $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-jvmrec";
+                $msgid = "$osname-jvmrec";
             }
             elsif ( $_->{"input"} =~ /procrec/ ) {
+                $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-procrec";
+                $msgid = "$osname-procrec";
             }
             elsif ( $_->{"input"} =~ /zonerec/ ) {
+                $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-zonerec";
+                $msgid = "$osname-zonerec";
             }
             elsif ( $_->{"input"} =~ /webrec/ ) {
+                $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-webrec";
+                $msgid = "$osname-webrec";
             }
             elsif ( $_->{"input"} =~ /hdwrec/ ) {
+                $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-hdwrec";
+                $msgid = "$osname-hdwrec";
             }
             elsif ( $_->{"input"} =~ /xenrec/ ) {
+                $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-xenrec";
+                $msgid = "$osname-xenrec";
             }
             elsif ( $_->{"input"} =~ /wsrec/ ) {
+                $lmoid = 'wcd';
                 $devid = 'system';
-                $msgid  = "$osname-wsrec";
+                $msgid = "$osname-wsrec";
             }
 
             # each appliance
@@ -237,18 +248,20 @@ while (1) {
                 my $value = $appliance{$key};
 
                 ## value format
-                # $url => $sid:$token:$proto:$port:$ka
-                my ( $da, $dp ) = split ( /:/, $key );
-                my ( $s, $t, $proto, $ka ) = split( /:/, $value );
+                # cpd:hostname2:443:00000000000000000000000000000000
+                # lmo:host:port:sid => $token:$proto:$ka
+                my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
+                my ( $tid, $proto, $ka ) = split( /:/, $value );
 
-                writelog(
-"info: main - $da sid=$s token=$t protocol=$proto port=$dp"
+                writelog("info: main - $lid => $hname:$port:$sid  value=$tid:$proto:$ka"
                 ) if ( $verbose_flag == 1 );
 
-                send_data(
-                    $http, $da,   $s,     $t,    $hostid,
-                    $msgid, $devid, $proto, $dp, $delta
-                );
+                if ($lid eq $lmoid ) {
+                    
+                    # writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
+                    send_data( $http, $hname, $sid, $tid, $hostid,
+                        $msgid, $devid, $proto, $port, $delta );
+                }
 
             }
             print "\n" . $_->{"input"} . " payload[" . $delta . "]"
@@ -466,29 +479,26 @@ sub get_appliance {
 
             if ($f->{"$mo"}) {
 
-            my @sub = @{ $f->{"$mo"} };
-            
+                my @sub = @{ $f->{"$mo"} };
 
-            foreach my $sd (@sub) {
+                foreach my $sd (@sub) {
 
-                # get sid, tid
-                $sid = $sd ->{'sid'};
-                $tid = $sd ->{'tid'};
+                    # get sid, tid
+                    $sid = $sd ->{'sid'};
+                    $tid = $sd ->{'tid'};
 
-                if ( defined($host)
-                     and defined($sid)
-                     and defined($tid)
-                     and defined($proto)
-                     and defined($port)
-                     and defined($ka) ) {
-                    my $keyapp = $host . ":" . $port . ":" . $sid;
-                     $appl{$keyapp} = "$tid:$proto:$ka";
+                    if ( defined($host)
+                         and defined($sid)
+                         and defined($tid)
+                         and defined($proto)
+                         and defined($port)
+                         and defined($ka) ) {
+                        my $keyapp = $mo . ":" . $host . ":" . $port . ":" . $sid;
+                        $appl{$keyapp} = "$tid:$proto:$ka";
+                    }
                 }
-
-                print "sid=$sid, tid=$tid\n";
-            } }
+            }
         }
-
     }
 
     return %appl;
