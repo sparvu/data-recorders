@@ -1,95 +1,72 @@
 {
-    "host_id": "",
-    "log": {
-        "base_path": "/opt/kronometrix/log",
-        "current_path": "/opt/kronometrix/log/current",
-        "daily_path": "/opt/kronometrix/log/daily"
-    },
-    "transport": {
-        "data_file": [
-            {
-		"name": "sys",
-		"file": "sysrec.krd"
-            },
-            {
-                "name": "cpu",
-                "file": "cpurec.krd"
-            },
-            {
-                "name": "disk",
-                "file": "diskrec.krd"
-            },
-            {
-                "name": "nic",
-                "file": "nicrec.krd"
-            },
-            {
-                "name": "hdw",
-                "file": "hdwrec.krd"
-            },
-            {
-                "name": "net",
-                "file": "netrec.krd"
-            },
-            {
-                "name": "proc",
-                "file": "procrec.krd"
-            },
-            {
-                "name": "jvm",
-                "file": "jvmrec.krd"
-            },
-            {
-                "name": "xen",
-                "file": "xenrec.krd"
-            },
-            {
-                "name": "zone",
-                "file": "zonerec.krd"
-            },
-            {
-                "name": "ws",
-                "file": "wsrec.krd"
-            }
-	],
-	"appliance": [
-	    {
-		"name": "Appliance 1",
-		"description": "Appliance Analytics 1 details",
-		"host": "destination",
-		"port": 80,
-		"protocol": "http",
-                "subscription": {
-                    "cpd": [ 
-                               { "sid": "2ff9851ecfa8f07d39b367a70c1c4f34" },
-                               { "tid": "2903931ecfa8f07d39b367a70c1c4f34" }
-
-                           ],
-                    "wcd": [ 
-                               { "sid": "2ff9851ecfa8f07d39b367a70c1c4f34" },
-                               { "tid": "2903931ecfa8f07d39b367a70c1c4f34" }
-
-                           ]
-                },
-		"keepalive": 0
-	    },
-	    {
-		"name": "Appliance 2",
-		"description": "Appliance Analytics 2 details",
-		"host": "destination",
-		"port": 443,
-		"protocol": "https",
-                "subscription": {
-                    "cpd": [ 
-                               { "sid": "2ff9851ecfa8f07d39b367a70c1c4f34" },
-                               { "tid": "2903931ecfa8f07d39b367a70c1c4f34" },
-                               { "sid": "0000001ecfa8f07d39b367a70c1c4f34" },
-                               { "tid": "abcd131ecfa8f07d39b367a70c1c4f34" }
-
-                           ]
-                },
-		"keepalive": 0
-	    }
-	]
-    }
+   "transport" : {
+      "data_file" : [
+         {
+            "name" : "sys",
+            "file" : "sysrec.krd"
+         },
+         {
+            "file" : "cpurec.krd",
+            "name" : "cpu"
+         },
+         {
+            "file" : "diskrec.krd",
+            "name" : "disk"
+         },
+         {
+            "name" : "nic",
+            "file" : "nicrec.krd"
+         },
+         {
+            "file" : "hdwrec.krd",
+            "name" : "hdw"
+         },
+         {
+            "name" : "net",
+            "file" : "netrec.krd"
+         },
+         {
+            "name" : "proc",
+            "file" : "procrec.krd"
+         },
+         {
+            "name" : "jvm",
+            "file" : "jvmrec.krd"
+         },
+         {
+            "file" : "xenrec.krd",
+            "name" : "xen"
+         },
+         {
+            "file" : "zonerec.krd",
+            "name" : "zone"
+         },
+         {
+            "name" : "ws",
+            "file" : "wsrec.krd"
+         }
+      ],
+      "appliance" : [
+         {
+            "host" : "destination",
+            "port" : 80,
+            "name" : "Appliance 1",
+            "keepalive" : 0,
+            "description" : "Appliance Analytics 1 details",
+            "cpd" : [
+               {
+                  "sid" : "1239851ecfa8f07d39b367a70c1c4f34",
+                  "tid" : "4563931ecfa8f07d39b367a70c1c4f34"
+               }
+            ],
+            "protocol" : "http"
+         }
+      ]
+   },
+   "log" : {
+      "current_path" : "/opt/kronometrix/log/current",
+      "base_path" : "/opt/kronometrix/log",
+      "daily_path" : "/opt/kronometrix/log/daily"
+   },
+   "host_id" : "f32f6dcc-38e0-42ff-99da-2a092aaddef5"
 }

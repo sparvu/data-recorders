@@ -110,6 +110,8 @@ for my $key ( keys %appliance ) {
     print "$key => $value\n";
 }
 
+exit 0;
+
 ## SIGHUP handler
 $SIG{HUP} = \&reload_config;
 
@@ -451,27 +453,42 @@ sub get_appliance {
     foreach my $f (@temp) {
 
         my $ka    = $f->{'keepalive'};
-        my $url   = $f->{'url'};
-        my $sid   = $f->{'sid'};
-        my $token = $f->{'token'};
-        my $port  = $f->{'port'};
         my $proto = $f->{'protocol'};
+        my $host  = $f->{'host'};
+        my $port  = $f->{'port'};
 
-        if (    defined($url)
-            and defined($sid)
-            and defined($token)
-            and defined($proto)
-            and defined($port)
-            and defined($ka) )
-        {
-            my $keyapp = $url . ":" . $port; 
-            $appl{$keyapp} = "$sid:$token:$proto:$ka";
+        # last call, look for subscription
+        
+        my @sub   = @{ $f->{'cpd'} };
+        my ($sid, $tid) = 0;
+
+        #my @sidtid = @{ $data->{'transport'}->{'appliance'}->{'cpd'} };
+        foreach my $sd (@sub) {
+
+            $sid = $sd ->{'sid'};
+
+            $tid = $sd ->{'tid'};
+
+                # if (    defined($host)
+                #       and defined($sid)
+                #       and defined($tid)
+                #       and defined($proto)
+                #       and defined($port)
+                #       and defined($ka) )
+                #   {
+                #       my $keyapp = $host . ":" . $port; 
+                #       $appl{$keyapp} = "$sid:$tid:$proto:$ka";
+                #   }
+
         }
+
+        print "sid=$sid, tid=$tid\n";
 
     }
 
     return %appl;
 }
+
 
 ## auxiliares
 
