@@ -6,7 +6,7 @@
         "daily_path": "/opt/kronometrix/log/daily"
     },
     "transport": {
-        "cpd": [
+        "data_file": [
             {
 		"name": "sys",
 		"file": "sysrec.krd"
@@ -46,21 +46,12 @@
             {
                 "name": "zone",
                 "file": "zonerec.krd"
-            }
-        ],
-        "amd": [
-
+            },
             {
                 "name": "ws",
                 "file": "wsrec.krd"
             }
-        ],
-        "wcd": [
-            {
-                "name": "ws",
-                "file": "wsrec.krd"
-            }
-        ],
+	],
 	"appliance": [
 	    {
 		"name": "Appliance 1",
