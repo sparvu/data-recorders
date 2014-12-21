@@ -451,6 +451,7 @@ sub get_appliance {
     my @temp = @{ $data->{'transport'}->{'appliance'} };
 
     foreach my $f (@temp) {
+        my ($sid, $tid);
 
         my $ka    = $f->{'keepalive'};
         my $proto = $f->{'protocol'};
@@ -458,31 +459,26 @@ sub get_appliance {
         my $port  = $f->{'port'};
 
         # last call, look for subscription
-        
         my @sub   = @{ $f->{'cpd'} };
-        my ($sid, $tid) = 0;
 
-        #my @sidtid = @{ $data->{'transport'}->{'appliance'}->{'cpd'} };
         foreach my $sd (@sub) {
 
+            # get sid, tid
             $sid = $sd ->{'sid'};
-
             $tid = $sd ->{'tid'};
 
-                # if (    defined($host)
-                #       and defined($sid)
-                #       and defined($tid)
-                #       and defined($proto)
-                #       and defined($port)
-                #       and defined($ka) )
-                #   {
-                #       my $keyapp = $host . ":" . $port; 
-                #       $appl{$keyapp} = "$sid:$tid:$proto:$ka";
-                #   }
+                if ( defined($host)
+                     and defined($sid)
+                     and defined($tid)
+                     and defined($proto)
+                     and defined($port)
+                     and defined($ka) ) {
+                    my $keyapp = $host . ":" . $port . ":" . $sid;
+                     $appl{$keyapp} = "$tid:$proto:$ka";
+                }
 
+            print "sid=$sid, tid=$tid\n";
         }
-
-        print "sid=$sid, tid=$tid\n";
 
     }
 
