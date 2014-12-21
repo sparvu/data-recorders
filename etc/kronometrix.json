@@ -65,26 +65,38 @@
 	    {
 		"name": "Appliance 1",
 		"description": "Appliance Analytics 1 details",
-		"url": "destination",
+		"host": "destination",
 		"port": 80,
 		"protocol": "http",
-		"sid": [
-                    { "cpd": "2ff9851ecfa8f07d39b367a70c1c4f34" },
-                    { "wcd": "09923093239203902390239029302932" }
-                ],
-		"token": "the_new_API_token",
+                "subscription": {
+                    "cpd": [ 
+                               { "sid": "2ff9851ecfa8f07d39b367a70c1c4f34" },
+                               { "tid": "2903931ecfa8f07d39b367a70c1c4f34" }
+
+                           ],
+                    "wcd": [ 
+                               { "sid": "2ff9851ecfa8f07d39b367a70c1c4f34" },
+                               { "tid": "2903931ecfa8f07d39b367a70c1c4f34" }
+
+                           ]
+                },
 		"keepalive": 0
 	    },
 	    {
 		"name": "Appliance 2",
 		"description": "Appliance Analytics 2 details",
-		"url": "destination",
+		"host": "destination",
 		"port": 443,
 		"protocol": "https",
-		"sid": [
-                    { "cpd": "2ff9851ecfa8f07d39b367a70c1c4f34" }
-                ],
-		"token": "the_new_API_token",
+                "subscription": {
+                    "cpd": [ 
+                               { "sid": "2ff9851ecfa8f07d39b367a70c1c4f34" },
+                               { "tid": "2903931ecfa8f07d39b367a70c1c4f34" },
+                               { "sid": "0000001ecfa8f07d39b367a70c1c4f34" },
+                               { "tid": "abcd131ecfa8f07d39b367a70c1c4f34" }
+
+                           ]
+                },
 		"keepalive": 0
 	    }
 	]
