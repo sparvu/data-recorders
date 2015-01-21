@@ -109,13 +109,13 @@ while (1) {
         $tkbyte = sprintf ("%.2f", $tkbyte / 1024);
 
         my $cols   = delta($old_col, $col);
-        my $drops  = delta($old_drop, $drop);
+        my $pdrop  = delta($old_drop, $drop);
 
         printf "%.${tp}f:%s:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d\n",
                time, $n,
                $rpkt, $rkbyte, $rerr, $rdrop,
                $tpkt, $tkbyte, $terr,
-               $cols, $drops;
+               $cols, $pdrop;
 
         # save old data
         $old_nicdata{$n} = "$ipkt $ierr $idrop $ibyt $opkt $oerr $obyt $col $drop";
@@ -189,7 +189,7 @@ USAGE: diskrec [-hV] | [interval [count]]
   #10 txkbytes   : tx bytes, rate
   #11 txerr      : tx errors, rate 
   #12 cols       : packets collision, rate 
-  #13 drops      : packets drop, rate
+  #13 drop       : packets drop, rate
 END
     exit 0;
 }
