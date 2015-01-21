@@ -31,5 +31,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/hdwrec 86400 >> ${HDWREC_CUR} 2>> ${HDWREC_LOG} &
+${KRMX_BIN}/hdwrec 60 >> ${HDWREC_CUR} 2>> ${HDWREC_LOG} &
 echo "$!" > ${KRMX_LOG}/hdwrec.pid
