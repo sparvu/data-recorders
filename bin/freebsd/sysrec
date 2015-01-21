@@ -179,7 +179,7 @@ while (1) {
     ## nic stats
     my @ns = get_nicstat();
 
-    my ($rxpkt,$rxerr,$rxdrop,$rxkbyte,$txpkt,$txerr,$txkbyte,$cols,$drops);
+    my ($rxpkt,$rxerr,$rxdrop,$rxkbyte,$txpkt,$txerr,$txkbyte,$cols,$pdrop);
 
     foreach (@ns) {
  
@@ -207,7 +207,7 @@ while (1) {
         $txkbyte = delta($old_obyt, $obyt);
 
         $cols  = delta($old_col, $col);
-        $drops = delta($old_drop, $drop);
+        $pdrop = delta($old_drop, $drop);
 
         # save old data
         $old_nicdata{$nid} = "$ipkt:$ierr:$idrop:$ibyt:$opkt:$oerr:$obyt:$col:$drop";
@@ -223,7 +223,7 @@ while (1) {
             $vm[16], $vm[17], $vm[18], $vm[19], $vm[20],
             $ds[0], $ds[1], $ds[2], $ds[3], $ds[4], $ds[5], 
             $ds[6], $rxpkt, $rxkbyte, $rxerr, $rxdrop,
-            $txpkt, $txkbyte, $txerr, $cols, $drops,
+            $txpkt, $txkbyte, $txerr, $cols, $pdrop,
             $la->[0], $la->[1], $la->[2];
 
 
@@ -448,7 +448,7 @@ sub get_nicstat {
     
     my $netstat = "/usr/bin/netstat";
 
-    my ($rxpkt,$rxerr,$rxdrop,$rxbyte,$txpkt,$txerr,$txbyte,$cols,$drops) = 0;
+    my ($rxpkt,$rxerr,$rxdrop,$rxbyte,$txpkt,$txerr,$txbyte,$cols,$drop) = 0;
 
     my $nicount = 0;
 
@@ -483,7 +483,7 @@ sub get_nicstat {
         $cols += $c;
 
         # droped
-        $drops += $d;
+        $drop += $d;
 
     }
 
@@ -497,7 +497,7 @@ sub get_nicstat {
     $txbyte /= $nicount;
 
     $cols   /= $nicount;
-    $drops  /= $nicount;
+    $drop   /= $nicount;
 
     # turn to KB
     my $rxkbyte = sprintf("%.2f", $rxbyte / 1024);
@@ -511,7 +511,7 @@ sub get_nicstat {
     #           $cols, $drops;
 
     my @stats;
-    my $payload = "$rxpkt:$rxerr:$rxdrop:$rxkbyte:$txpkt:$txerr:$txkbyte:$cols:$drops";
+    my $payload = "$rxpkt:$rxerr:$rxdrop:$rxkbyte:$txpkt:$txerr:$txkbyte:$cols:$drop";
     push @stats, $payload;
 
     return @stats;
@@ -581,7 +581,7 @@ USAGE: sysrec [-hV] | [interval [count]]
    #43 txkbytes   : transmitted Kbytes per second, rate 
    #44 txerr      : number of errors while transmitting pkt per second, rate
    #45 cols       : number of collisions, rate
-   #46 drops      : number of dropped packets per second, rate
+   #46 drop       : number of dropped packets per second, rate
 
    #47 avg1       : LA of the last minute, number
    #48 avg5       : LA of the last 5 minutes, number

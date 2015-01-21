@@ -105,7 +105,7 @@ USAGE: diskrec [-hV] | [interval [count]]
   #06 wkbytes    : write KBytes per seconds, rate 
   #08 queue      : the number of not yet completed transactions, rate
   #07 service    : service time per transaction in miliseconds, number
-  #09 busy       : the percentage of time the device had one or more 
+  #09 diskutil   : the percentage of time the device had one or more 
                    transactions outstanding, number
 END
     exit 0;
