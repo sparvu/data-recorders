@@ -19,5 +19,3 @@ scripts: {
     post-install: "echo \"Ownership kronometrix \"; chown -R krmx:krmx /opt/kronometrix",
 }
 message: "------------------------------------------------------------------------\n*************************** KRONOMETRIX *************************************\nFollow the instructions:\n\nIn the directory /opt/kronometrix/log/current you can find all raw data files, for current day.\n\nAll you have to do is to start/stop data recorders or the transport layer. \n2) Transport: /opt/kronometrix/bin/sender -t5 10 as krmx user, or pkill -f sender to stop it.\n************************************************************************\n------------------------------------------------------------------------"
-files: {
-}
