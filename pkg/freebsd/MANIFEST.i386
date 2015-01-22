@@ -2,7 +2,7 @@ name: "kronometrix"
 version: "1.0"
 origin: "sysutils/kronometrix"
 comment: "A time-series data monitoring and analysis system"
-arch: "freebsd:10:x86" 
+arch: "freebsd:10:i386" 
 desc: "Consistent data recording across various types of systems, easy access to raw data, built to handle data messages in real-time and designed for time series analysis."
 maintainer: support@kronometrix.org
 www: https://www.kronometrix.org
