@@ -80,7 +80,7 @@
             ]
          },
          {
-            "name" : "Appliance 2",
+            "name" : "Appliance 1 HTTPS",
             "keepalive" : 0,
             "port" : 443,
             "cpd" : [
@@ -91,8 +91,8 @@
                }
             ],
             "protocol" : "https",
-            "description" : "Appliance Analytics 2 details",
-            "host" : "hostname2"
+            "description" : "Appliance Analytics 1 details",
+            "host" : "hostname1"
          }
       ]
    }
