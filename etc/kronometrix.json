@@ -1,5 +1,4 @@
 {
-   "host_id" : "",
    "log" : {
       "current_path" : "/opt/kronometrix/log/current",
       "base_path" : "/opt/kronometrix/log",
@@ -58,22 +57,25 @@
             "keepalive" : 0,
             "name" : "Appliance 1",
             "host" : "hostname1",
+            "protocol" : "http",
             "description" : "Appliance Analytics 1 details",
             "cpd" : [
                {
-                  "sid" : "1239851ecfa8f07d39b367a70c1c4f34",
-                  "tid" : "4563931ecfa8f07d39b367a70c1c4f34"
+                  "dsid" : "101",
+                   "sid" : "1239851ecfa8f07d39b367a70c1c4f34",
+                   "tid" : "4563931ecfa8f07d39b367a70c1c4f34"
                },
                {
+                  "dsid" : "102",
                   "tid" : "3453931ecfa8f07d39b367a70c1c4f34",
                   "sid" : "0129851ecfa8f07d39b367a70c1c4f34"
                }
             ],
-            "protocol" : "http",
             "wcd" : [
                {
-                  "sid" : "00000000cfa8f07d39b367a70c1c4f34",
-                  "tid" : "00000001cfa8f07d39b367a70c1c4f34"
+                  "dsid" : "109",
+                   "sid" : "00000000cfa8f07d39b367a70c1c4f34",
+                   "tid" : "00000001cfa8f07d39b367a70c1c4f34"
                }
             ]
          },
@@ -83,12 +85,9 @@
             "port" : 443,
             "cpd" : [
                {
-                  "sid" : "11111111111111111111111111111111",
-                  "tid" : "44444444444444444444444444444444"
-               },
-               {
-                  "sid" : "00000000000000000000000000000000",
-                  "tid" : "33333333333333333333333333333333"
+                  "dsid" : "101",
+                   "sid" : "1239851ecfa8f07d39b367a70c1c4f34",
+                   "tid" : "4563931ecfa8f07d39b367a70c1c4f34"
                }
             ],
             "protocol" : "https",
