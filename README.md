@@ -51,5 +51,4 @@ We plan to support and record data from different types of industries. For some 
 #### Meteorology / Climatology
 
  * wsrec: WH1080, WH1081, WH1090, WH20xx
- * vwsrec: Vaisala Weather Station recorder
   
