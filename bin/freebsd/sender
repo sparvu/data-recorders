@@ -91,17 +91,20 @@ my $osname = "$^O";
 # read configuration
 $cdata = open_config($cfile);
 
-## hostid
+# get OS host UUID
 $hostid = get_hostid($cdata);
 
-## logs
+# generate unique DSID
+my $dsid_check = make_dsid($cdata, $hostid);
+
+# logs
 ( $baselog, $curlog ) = get_log($cdata);
 $slog = $baselog . "/sender.log";
 
-## datafile
+# datafile
 @dbs = get_datafile($cdata);
 
-## appliance destination
+# appliance destination
 %appliance = get_appliance($cdata);
 
 print "appliance hash: " . keys(%appliance) . ".\n";
@@ -110,7 +113,7 @@ for my $key ( keys %appliance ) {
     print "$key => $value\n";
 }
 
-## SIGHUP handler
+# SIGHUP handler
 $SIG{HUP} = \&reload_config;
 
 # Daemonize
@@ -414,16 +417,74 @@ sub get_hostid {
     # get hostuuid
     my $h = new_hostid;
 
-    my $fh = $data->{'host_id'};
+    # my $fh = $data->{'host_id'};
 
-    if ( $fh ne $h ) {
-        $data->{'host_id'} = $h;
-        write_config( $cfile, $data );
-    }
+    # if ( $fh ne $h ) {
+    #     $data->{'host_id'} = $h;
+    #     # write_config( $cfile, $data );
+    # }
 
     # return hostid
     return $h;
 }
+
+# make data source ids, dsid
+sub make_dsid {
+
+    my ($data, $huuid) = @_;
+    my @lmo = ('cpd', 'amd', 'wcd');
+
+    # sid - subscription id
+    # dsid - data source id
+    # get all sids and generate dsid for each
+    # dsid must be unique per sid
+
+    my @applx = @{ $data->{'transport'}->{'appliance'} };
+
+    # populate dsid for each appliance and lmo
+    foreach my $appliance (@applx) {
+        my ($sid, $dsid);
+
+        my $host  = $appliance->{'host'};
+        my $port  = $appliance->{'port'};
+
+        # last call, look for subscription id, sid
+
+        foreach my $mo (@lmo) {
+
+            if ($appliance->{"$mo"}) {
+
+                my @sub = @{ $f->{"$mo"} };
+
+                foreach my $sd (@sub) {
+
+                    # get sid
+                    $sid = $sd ->{'sid'};
+
+                    # get dsid
+                    $dsid = $sd ->{'dsid'};
+                    
+                    if ($dsid eq "" ) {
+ 
+                        if ( defined($sid) ) {
+                            # check 
+                            # make dsid
+
+                        }
+                    } else {
+                        # my $keyapp = $mo . ":" . $host . ":" . $port . ":" . $sid;
+                        # $appl{$keyapp} = "$tid:$proto:$ka";
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
 
 # get logs
 sub get_log {
@@ -460,7 +521,7 @@ sub get_appliance {
     my ($data) = @_;
     my %appl;
 
-    my @lmo = ('cpd', 'amd', 'wcd', 'bad');
+    my @lmo = ('cpd', 'amd', 'wcd');
 
     my @temp = @{ $data->{'transport'}->{'appliance'} };
 
