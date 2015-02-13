@@ -97,6 +97,8 @@ $hostid = get_hostid($cdata);
 # generate unique DSID
 my $dsid_check = make_dsid($cdata, $hostid);
 
+exit 0;
+
 # logs
 ( $baselog, $curlog ) = get_log($cdata);
 $slog = $baselog . "/sender.log";
@@ -425,6 +427,7 @@ sub get_hostid {
     # }
 
     # return hostid
+     
     return $h;
 }
 
@@ -443,7 +446,7 @@ sub make_dsid {
 
     # populate dsid for each appliance and lmo
     foreach my $appliance (@applx) {
-        my ($sid, $dsid);
+        my ($sid, $tid, $dsid);
 
         my $host  = $appliance->{'host'};
         my $port  = $appliance->{'port'};
@@ -454,12 +457,13 @@ sub make_dsid {
 
             if ($appliance->{"$mo"}) {
 
-                my @sub = @{ $f->{"$mo"} };
+                my @sub = @{ $appliance->{"$mo"} };
 
                 foreach my $sd (@sub) {
 
                     # get sid
                     $sid = $sd ->{'sid'};
+                    $tid = $sd ->{'tid'};
 
                     # get dsid
                     $dsid = $sd ->{'dsid'};
@@ -469,6 +473,19 @@ sub make_dsid {
                         if ( defined($sid) ) {
                             # check 
                             # make dsid
+                            use UUID::Tiny ':std';
+
+
+                            # use Data::UUID qw(NameSpace_DNS);
+                            # my $ug = new Data::UUID;
+
+                            my $str = $huuid . $sid ;
+                            $dsid = create_uuid_as_string(UUID_V5,$str);
+
+                            # $dsid = lc $ug->create_from_name_str( NameSpace_DNS, $str);
+                            # $dsid = lc $ug->to_string($ug->from_string($sid));
+                            chomp($dsid);
+                            print "sid=$sid tid=$tid dsid=$dsid\n"; 
 
                         }
                     } else {
