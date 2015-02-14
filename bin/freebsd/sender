@@ -25,6 +25,7 @@ use File::Tail;
 use File::Temp qw(tempfile);
 use File::Copy;
 use File::Basename;
+use UUID::Tiny ':std';
 use Digest::SHA;
 use WWW::Curl::Easy;
 use Getopt::Std;
@@ -471,24 +472,17 @@ sub make_dsid {
                     if ($dsid eq "" ) {
  
                         if ( defined($sid) ) {
-                            # check 
-                            # make dsid
-                            use UUID::Tiny ':std';
-
-
-                            # use Data::UUID qw(NameSpace_DNS);
-                            # my $ug = new Data::UUID;
 
                             my $str = $huuid . $sid ;
                             $dsid = create_uuid_as_string(UUID_V5,$str);
-
-                            # $dsid = lc $ug->create_from_name_str( NameSpace_DNS, $str);
-                            # $dsid = lc $ug->to_string($ug->from_string($sid));
                             chomp($dsid);
                             print "sid=$sid tid=$tid dsid=$dsid\n"; 
 
                         }
                     } else {
+
+                        # dsid found, check match
+                       
                         # my $keyapp = $mo . ":" . $host . ":" . $port . ":" . $sid;
                         # $appl{$keyapp} = "$tid:$proto:$ka";
                     }
