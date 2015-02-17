@@ -594,7 +594,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sysrec: 1.0, 2015-01-28
+sysrec: 1.0.0, 2015-02-17
 END
     exit 0;
 }

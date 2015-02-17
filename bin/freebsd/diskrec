@@ -88,6 +88,33 @@ while (1) {
 
 ### SUBROUTINES
 
+sub get_diskstat {
+    
+    my ($t) = @_;
+
+    my $iostat = "/usr/sbin/iostat";
+    my $pt     = time;
+
+    open my $fh, "-|", "$iostat", "-x", "$t", "2"
+      or die "cannot execute '$iostat' - $!";
+
+    my @ds = <$fh>;
+    
+    close $fh;
+
+    foreach ( @ds ) {
+
+        # filter out
+        next if /extended/ ... /extended/;
+        next if /^device|pass|cd/;
+
+        my ($name,$xr,$xw,$xbr,$xbw,$q,$s,$b) = split /\s+/, $_;
+
+        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+               $pt, $name, $xr, $xbr, $xw, $xbw, $q, $s, $b;
+    }    
+}
+
 # usage - print usage and exit.
 #
 sub usage {
@@ -115,35 +142,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-diskrec: 1.0, 2015-01-28
+diskrec: 1.0.0, 2015-02-17
 END
     exit 0;
-}
-
-
-sub get_diskstat {
-    
-    my ($t) = @_;
-
-    my $iostat = "/usr/sbin/iostat";
-    my $pt     = time;
-
-    open my $fh, "-|", "$iostat", "-x", "$t", "2"
-      or die "cannot execute '$iostat' - $!";
-
-    my @ds = <$fh>;
-    
-    close $fh;
-
-    foreach ( @ds ) {
-
-        # filter out
-        next if /extended/ ... /extended/;
-        next if /^device|pass|cd/;
-
-        my ($name,$xr,$xw,$xbr,$xbw,$q,$s,$b) = split /\s+/, $_;
-
-        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
-               $pt, $name, $xr, $xbr, $xw, $xbw, $q, $s, $b;
-    }    
 }
