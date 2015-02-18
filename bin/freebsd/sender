@@ -454,14 +454,16 @@ sub make_dsid {
                     $dsid = $sd ->{'dsid'};
                    
                     if ($dsid eq "" ) {
- 
-                        if ( defined($sid) ) {
+
+                        if ( $sid ne "" ) {
                             my $str = $huuid . $sid;
                             $dsid = create_uuid_as_string(UUID_V5,$str);
                             chomp($dsid);
                             # print "sid=$sid tid=$tid dsid=$dsid\n";
                             $sd->{'dsid'} = $dsid;
                             write_config( $cfile, $data );
+                        } else {
+                            exit(1); 
                         }
                     } else {
                         my $str = $huuid . $sid;
