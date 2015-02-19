@@ -1,7 +1,7 @@
 
-========================
-SystemDataRecorder Linux
-========================
+=================
+Kronometrix Linux
+=================
 
 Recording Module
 
@@ -55,26 +55,26 @@ Automatic Mode
   is done by the package management software: RPM or DEB. The recorders
   and started automatically, after the software has been installed.
 
-  Note: to configure SDR software you need to check sdr.conf and
+  Note: to configure SDR software you need to check kronometrix.json and
   manually restart, if needed, the recorders or the transporter part.
   
-  1.1 Install SDR package:
+  1.1 Install kronometrix package:
 
     RPM based systems:
-    # rpm -ihv sdr-1.0-linux-x86_64.rpm
-     Preparing...                ########################################### [100%]
-        1:sdr                    ########################################### [100%]
-     Starting SDR recorders
+    # rpm -ihv kronometrix-1.0-linux-x86_64.rpm
+     Preparing...               ########################################### [100%]
+        1:kronometrix           ########################################### [100%]
+     Starting Kronometrix recorders
       sysrec: ok
       cpurec: ok
       nicrec: ok
       hdwrec: ok
 
-  1.2 Uninstall SDR package:
+  1.2 Uninstall Kronometrix package:
 
     RPM based systems:
-    # rpm -e sdr
-     Stopping SDR recorders
+    # rpm -e kronometrix
+     Stopping Kronometrix recorders
       sysrec: ok
       cpurec: ok
       nicrec: ok
@@ -84,24 +84,24 @@ Automatic Mode
 Manual Mode
 ===========
 
-  2.1 Install SDR package
+  2.1 Install Kronometrix package
 
     2.1.1 User/Group
 
-      SDR software should be configured to run as sdr user, if possible.
+      Kronometrix software should be configured to run as krmx user, if possible.
       If not, we can run all recorders as superuser and we can transport
-      all sdrd files as sdr user. This way we can separate between super
-      user and sdr user.
+      all krd files as krmx user. This way we can separate between super
+      user and krmx user.
 
-      Create a specific username/group for SDR. Select 'sdr'
+      Create a specific username/group for Kronometrix. Select 'krmx'
       for a default installation:
 
-        # groupadd -g 500 sdr
-        # useradd -u 500 -d /home/sdr -g sdr -m sdr
+        # groupadd -g 5000 krmx
+        # useradd -u 5000 -d /home/krmx -g krmx -m krmx
 
-        Note: sdr username should be part of the system accounts, if possible.
+        Note: krmx username should be part of the system accounts, if possible.
         If 500 id is already reserved make sure you allocate another id
-        and properly change the owner of the installation for sdr.
+        and properly change the owner of the installation for krmx.
 
     2.1.2 Package installation
 
@@ -114,7 +114,7 @@ Manual Mode
 
   2.2 Start Procedure
 
-    By default, sdr start-up script will start 5 main recorders: sysrec, cpurec,
+    By default, krmx start-up script will start 5 main recorders: sysrec, cpurec,
     diskrec, nicrec and hdwrec. Edit start-up sdr script, if you require to add
     remove recorders from the start-up list, defined under SDR_SVC variable. 
 
