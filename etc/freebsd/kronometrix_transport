@@ -21,7 +21,7 @@
 #
 # Add the following lines to /etc/rc.conf to enable Kronometrix
 #
-# kronometrix.transport_enable="YES"
+# kronometrix_transport_enable="YES"
 # kronometrix_transport_user="krmx"
 
 . /etc/rc.subr
