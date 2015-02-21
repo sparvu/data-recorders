@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# chkconfig:   2345 20 88
-# description: Kronometrix Data Recording, manages all message recorders
-#
 #  Copyright (c) 2015 Stefan Parvu (www.systemdatarecorder.org).
 #
 #  This program is free software; you can redistribute it and/or
@@ -20,6 +17,88 @@
 #  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 #  (http://www.gnu.org/copyleft/gpl.html)
+
+# PROVIDE: minecraft
+# REQUIRE: LOGIN DAEMON NETWORKING mountcritlocal
+# KEYWORD: shutdown
+#
+# Add the following lines to /etc/rc.conf.local to enable the minecraft server:
+#
+# kronometrix_enable="YES"
+# kronometrix_user="krmx"
+# minecraft_chdir="<run server in this directory>"
+# minecraft_path="<path to minecraft_server.jar>"
+# minecraft_flags="<set as needed>"
+#
+# For default setup, create a user named 'minecraft', set its home directory
+# to /srv/minecraft, and place minecraft_server.jar into /srv/minecraft
+#
+# See minecraft_server.jar for flags
+
+. /etc/rc.subr
+
+name=kronometrix
+rcvar=kronometrix_enable
+
+load_rc_config ${name}
+
+command=/usr/local/bin/screen
+pidfile=/var/run/minecraft.pid
+
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+status_cmd="${name}_status"
+
+: ${minecraft_enable="NO"}
+: ${minecraft_session="minecraft-session"}
+: ${minecraft_user="minecraft"}
+: ${minecraft_chdir="/srv/minecraft"}
+: ${minecraft_path="/srv/minecraft/minecraft_server.jar"}
+: ${minecraft_flags=""}
+: ${minecraft_args="/usr/local/bin/java -Xmx1024M -Xms1024M \
+                    -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalPacing \
+                    -XX:ParallelGCThreads=4 -XX:+AggressiveOpts \
+                    -jar ${minecraft_path} ${minecraft_flags} nogui"}
+
+kronometrix_start() {
+    unset "${rc_arg}_cmd"
+    minecraft_flags="-d -m -S ${minecraft_session} ${minecraft_args}"
+    if minecraft_running; then
+        echo "minecraft already running?"
+    else
+        run_rc_command "start"
+    fi
+}
+
+kronometrix_stop() {
+    local cmd
+    cmd="${command} -p 0 -S ${minecraft_session} -X eval 'stuff stop\015'"
+    if minecraft_running; then
+        echo "Stopping minecraft."
+        su -m ${minecraft_user} -c "${cmd}"
+    fi
+}
+
+minecraft_status() {
+    if minecraft_running; then
+        echo "minecraft is running."
+    else
+        echo "minecraft is not running."
+    fi
+}
+
+minecraft_running() {
+    local check ses
+    ses="${minecraft_session}"
+    check=`su -m ${minecraft_user} -c "${command} -list" | grep ${ses}`
+    if [ "$check" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+run_rc_command "$1"
 
 
 RETVAL=0
