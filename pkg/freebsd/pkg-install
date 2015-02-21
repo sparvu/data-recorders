@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ $2 == "PRE-INSTALL" ]; then
+    if ! /usr/sbin/pw groupshow krmx >/dev/null 2>&1; then
+        /usr/sbin/pw groupadd krmx -g 5000
+    fi
+
+    if ! /usr/sbin/pw usershow krmx >/dev/null 2>&1; then
+        /usr/sbin/pw useradd krmx -m -d /home/krmx \
+         -u 5000 -g 5000 -c "Kronometrix user"
+    fi
+fi
+
+if [ $2 == "POST-INSTALL" ]; then
+    chown -R krmx:krmx /opt/kronometrix
+    cp /opt/kronometrix/etc/rc/kronometrix* /etc/rc.d/
+    /etc/rc.d/kronometrix onestart
+fi

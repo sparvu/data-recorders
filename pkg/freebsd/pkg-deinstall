@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ $2 == "DEINSTALL" ]; then
+    /etc/rc.d/kronometrix_transport onestop >/dev/null 2>&1
+    /etc/rc.d/kronometrix onestop >/dev/null 2>&1
+fi
+
+if [ $2 == "POST-DEINSTALL" ]; then
+    [ -f /etc/rc.d/kronometrix_transport ] && rm /etc/rc.d/kronometrix_transport 
+    [ -f /etc/rc.d/kronometrix ] && rm /etc/rc.d/kronometrix
+fi

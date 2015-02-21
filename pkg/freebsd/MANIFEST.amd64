@@ -14,7 +14,3 @@ groups: [
     "krmx"
 ]
 licenses: ["GPL"]
-scripts: {
-    pre-install: "if ! /usr/sbin/pw groupshow krmx >/dev/null 2>&1; then \n /usr/sbin/pw groupadd krmx -g 5000; else \n fi \n if ! /usr/sbin/pw usershow krmx >/dev/null 2>&1; then \n /usr/sbin/pw useradd krmx -m -d /home/krmx -u 5000 -g 5000 -c \"Kronometrix user\" \n fi",
-    post-install: "chown -R krmx:krmx /opt/kronometrix \n cp /opt/kronometrix/etc/rc/kronometrix* /etc/rc.d/ \n /etc/rc.d/kronometrix onestart",
-    pre-deinstall: "/etc/rc.d/kronometrix onestop >/dev/null 2>&1 \n /etc/rc.d/kronometrix_transport onestop >/dev/null 2>&1"}
