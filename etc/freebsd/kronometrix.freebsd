@@ -18,11 +18,8 @@
 #
 #  (http://www.gnu.org/copyleft/gpl.html)
 
-# PROVIDE: minecraft
-# REQUIRE: LOGIN DAEMON NETWORKING mountcritlocal
-# KEYWORD: shutdown
 #
-# Add the following lines to /etc/rc.conf.local to enable the minecraft server:
+# Add the following lines to /etc/rc.conf to enable Kronometrix
 #
 # kronometrix_enable="YES"
 # kronometrix_user="krmx"
@@ -30,10 +27,6 @@
 # minecraft_path="<path to minecraft_server.jar>"
 # minecraft_flags="<set as needed>"
 #
-# For default setup, create a user named 'minecraft', set its home directory
-# to /srv/minecraft, and place minecraft_server.jar into /srv/minecraft
-#
-# See minecraft_server.jar for flags
 
 . /etc/rc.subr
 
@@ -42,187 +35,31 @@ rcvar=kronometrix_enable
 
 load_rc_config ${name}
 
-command=/usr/local/bin/screen
-pidfile=/var/run/minecraft.pid
-
+command=/opt/kronometrix/etc/agents
 start_cmd="${name}_start"
 stop_cmd="${name}_stop"
 status_cmd="${name}_status"
 
-: ${minecraft_enable="NO"}
-: ${minecraft_session="minecraft-session"}
-: ${minecraft_user="minecraft"}
-: ${minecraft_chdir="/srv/minecraft"}
-: ${minecraft_path="/srv/minecraft/minecraft_server.jar"}
-: ${minecraft_flags=""}
-: ${minecraft_args="/usr/local/bin/java -Xmx1024M -Xms1024M \
-                    -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalPacing \
-                    -XX:ParallelGCThreads=4 -XX:+AggressiveOpts \
-                    -jar ${minecraft_path} ${minecraft_flags} nogui"}
+: ${kronometrix_enable="NO"}
+: ${kronometrix_user="krmx"}
+: ${kronometrix_flags=""}
+: ${kronometrix_args=""}
 
 kronometrix_start() {
     unset "${rc_arg}_cmd"
-    minecraft_flags="-d -m -S ${minecraft_session} ${minecraft_args}"
-    if minecraft_running; then
-        echo "minecraft already running?"
-    else
-        run_rc_command "start"
-    fi
+    local cmd
+    kronometrix_args="start"
+    cmd="${command} ${kronometrix_args}"
+    su -m ${kronometrix_user} -c "${cmd}" 
 }
+
 
 kronometrix_stop() {
     local cmd
-    cmd="${command} -p 0 -S ${minecraft_session} -X eval 'stuff stop\015'"
-    if minecraft_running; then
-        echo "Stopping minecraft."
-        su -m ${minecraft_user} -c "${cmd}"
-    fi
+    kronometrix_args="stop"
+    cmd="${command} ${kronometrix_args}"
+    su -m ${kronometrix_user} -c "${cmd}" 
 }
 
-minecraft_status() {
-    if minecraft_running; then
-        echo "minecraft is running."
-    else
-        echo "minecraft is not running."
-    fi
-}
-
-minecraft_running() {
-    local check ses
-    ses="${minecraft_session}"
-    check=`su -m ${minecraft_user} -c "${command} -list" | grep ${ses}`
-    if [ "$check" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
 
 run_rc_command "$1"
-
-
-RETVAL=0
-OS_NAME=`uname -s`
-
-if [ "X${OS_NAME}" = "XSunOS" ]; then
-
-
-KRMX_PREFIX="/opt/kronometrix"
-KRMX_ETC=${KRMX_PREFIX}/etc
-KRMX_LOG=${KRMX_PREFIX}/log
-RECORDERS="sys cpu disk nic hdw"
-
-# test all startups
-test -f ${KRMX_ETC}/sysrec.start  || exit 0
-test -f ${KRMX_ETC}/cpurec.start  || exit 0
-test -f ${KRMX_ETC}/diskrec.start || exit 0
-test -f ${KRMX_ETC}/nicrec.start  || exit 0
-test -f ${KRMX_ETC}/hdwrec.start  || exit 0
-test -f ${KRMX_ETC}/jvmrec.start  || exit 0
-test -f ${KRMX_ETC}/netrec.start  || exit 0
-test -f ${KRMX_ETC}/procrec.start || exit 0
-test -f ${KRMX_ETC}/xenrec.start  || exit 0
-
-
-start() {
-    echo "Starting KRMX recorders"
-
-    for rec in $RECORDERS
-    do
-        RETVAL=0
-
-        if [ "X${OS_NAME}" = "XSunOS" ]; then
-            echo " ${rec}rec: \c"
-        else
-            echo -n " ${rec}rec: "
-        fi
-           
-        # check pid before start
-        if [ -f ${KRMX_LOG}/${rec}rec.pid ]; then
-            kill -0 `cat ${KRMX_LOG}/${rec}rec.pid` >/dev/null 2>&1
-            if [ $? -ne 0 ]; then
-                ${KRMX_ETC}/${rec}rec.start
-                RETVAL=$?
-            else
-                RETVAL=1
-            fi
-            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-        else
-            # no pid files
-            ${KRMX_ETC}/${rec}rec.start
-            RETVAL=$?
-            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-        fi
-    done
-
-    return $RETVAL
-}
-
-
-stop() {
-    echo "Stopping KRMX recorders"
-
-    for rec in $RECORDERS
-    do
-        RETVAL=0
-
-        if [ "X${OS_NAME}" = "XSunOS" ]; then
-            echo " ${rec}rec: \c"
-        else
-            echo -n " ${rec}rec: "
-        fi
-
-        if [ -f ${KRMX_LOG}/${rec}rec.pid ]; then
-            # webrec
-            if [ "X$rec" = "Xweb" ]; then
-                case "$OS_NAME" in
-                  SunOS)
-                   kill `ptree \`cat ${KRMX_LOG}/webrec.pid\` | awk '{print $1}' | xargs | awk '{print $2}'` >/dev/null 2>&1
-                   RETVAL=$?
-                   [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-                   continue
-                   ;;
- 
-                  Linux)
-                   kill `cat ${KRMX_LOG}/webrec.pid` >/dev/null 2>&1
-                   RETVAL=$?
-                   [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-                   continue
-                   ;;
-
-                  *)
-                   echo "Error: not supported OS"
-                   exit 1
-                   ;;
-                esac
-            fi
-                 
-            kill `cat ${KRMX_LOG}/${rec}rec.pid` >/dev/null 2>&1
-            RETVAL=$?
-            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-
-        else
-            RETVAL=1
-            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-        fi
-    done
-
-    return $RETVAL
-}
-
-case "$1" in
-   start)
-      start
-      ;;
-   stop)
-      stop
-      ;;
-   restart)
-      stop
-      start
-      ;;
-   *)
-      echo "Usage: $0 {start|stop|restart}"
-      exit 1
-esac
-exit $RETVAL
