@@ -1,0 +1,102 @@
+#!/bin/sh
+
+#  Copyright (c) 2015 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+RETVAL=0
+OS_NAME=`uname -s`
+KRMX_PREFIX="/opt/kronometrix"
+KRMX_BIN=${KRMX_PREFIX}/bin
+KRMX_LOG=${KRMX_PREFIX}/log
+TRANSPORT="sender"
+
+# sender
+test -f ${KRMX_BIN}/sender || exit 0
+
+
+start() {
+    echo "Starting KRMX transport"
+
+    RETVAL=0
+
+    if [ "X${OS_NAME}" = "XSunOS" ]; then
+        echo " ${TRANSPORT}: \c"
+    else
+        echo -n " ${TRANSPORT}: "
+    fi
+           
+    # check pid before start
+    if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
+        kill -0 `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
+            RETVAL=$?
+        else
+            RETVAL=1
+        fi
+        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+    else
+        # no pid files
+        ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+    fi
+
+    return $RETVAL
+}
+
+
+stop() {
+    echo "Stopping KRMX transport"
+
+    RETVAL=0
+
+    if [ "X${OS_NAME}" = "XSunOS" ]; then
+        echo " ${TRANSPORT}: \c"
+    else
+        echo -n " ${TRANSPORT}: "
+    fi
+
+    if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
+        kill `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+    else
+        RETVAL=1
+        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+    fi
+
+    return $RETVAL
+}
+
+case "$1" in
+   start)
+      start
+      ;;
+   stop)
+      stop
+      ;;
+   restart)
+      stop
+      start
+      ;;
+   *)
+      echo "Usage: $0 {start|stop|restart}"
+      exit 1
+esac
+exit $RETVAL
