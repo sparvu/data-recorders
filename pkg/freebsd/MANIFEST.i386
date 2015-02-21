@@ -3,7 +3,8 @@ version: "1.0"
 origin: "sysutils/kronometrix"
 comment: "A time-series data monitoring and analysis system"
 arch: "freebsd:10:i386" 
-desc: "Consistent data recording across various types of systems, easy access to raw data, built to handle data messages in real-time and designed for time series analysis."
+desc: "All in a simple package: consistent data recording across various types of systems, easy access to raw da
+ta, built to handle data messages in real-time and designed for time series analysis."
 maintainer: support@kronometrix.org
 www: https://www.kronometrix.org
 prefix: /opt/kronometrix
@@ -16,6 +17,5 @@ groups: [
 licenses: ["GPL"]
 scripts: {
     pre-install: "echo \"===> Creating users and/or groups.\"\nif ! /usr/sbin/pw groupshow krmx >/dev/null 2>&1; then \n  echo \"Creating group 'krmx' with gid '5000'.\" \n  /usr/sbin/pw groupadd krmx -g 5000; else echo \"Using existing group 'krmx'.\"\nfi\nif ! /usr/sbin/pw usershow krmx >/dev/null 2>&1; then \n  echo \"Creating user 'krmx' with uid '5000'.\" \n  /usr/sbin/pw useradd krmx -m -d /home/krmx -u 5000 -g 5000 -c \"kronometrix user\" \n  else \necho \"Using existing user 'krmx'.\" \nfi",
-    post-install: "echo \"Ownership kronometrix \"; chown -R krmx:krmx /opt/kronometrix",
+    post-install: "echo \"Ownership kronometrix \"; chown -R krmx:krmx /opt/kronometrix"
 }
-message:"******************************** KRONOMETRIX ********************************\nFollow the instructions:\n\nIn the directory /opt/kronometrix/log/current you can find all raw data\n files, for current day.\n\nAll you have to do is to start/stop data recorders or the transport layer. Transport: /opt/kronometrix/bin/sender -t5 10 as krmx user, or\n pkill -f sender to stop it.\n*****************************************************************************"
