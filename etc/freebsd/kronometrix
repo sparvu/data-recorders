@@ -23,10 +23,6 @@
 #
 # kronometrix_enable="YES"
 # kronometrix_user="krmx"
-# minecraft_chdir="<run server in this directory>"
-# minecraft_path="<path to minecraft_server.jar>"
-# minecraft_flags="<set as needed>"
-#
 
 . /etc/rc.subr
 
