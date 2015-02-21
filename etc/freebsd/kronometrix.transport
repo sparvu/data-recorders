@@ -22,38 +22,38 @@
 # Add the following lines to /etc/rc.conf to enable Kronometrix
 #
 # kronometrix.transport_enable="YES"
-# kronometrix_user="krmx"
+# kronometrix_transport_user="krmx"
 
 . /etc/rc.subr
 
-name=kronometrix.transport
-rcvar=kronometrix.transport_enable
+name=kronometrix_transport
+rcvar=kronometrix_transport_enable
 
 load_rc_config ${name}
 
-command=/opt/kronometrix/etc/sender
+command=/opt/kronometrix/etc/transport
 start_cmd="${name}_start"
 stop_cmd="${name}_stop"
 status_cmd="${name}_status"
 
-: ${kronometrix_enable="NO"}
-: ${kronometrix_user="krmx"}
-: ${kronometrix_args=""}
+: ${kronometrix_transport_enable="NO"}
+: ${kronometrix_transport_user="krmx"}
+: ${kronometrix_transport_args=""}
 
-kronometrix_start() {
+kronometrix_transport_start() {
     unset "${rc_arg}_cmd"
     local cmd
-    kronometrix_args="start"
-    cmd="${command} ${kronometrix_args}"
-    su -m ${kronometrix_user} -c "${cmd}" 
+    kronometrix_transport_args="start"
+    cmd="${command} ${kronometrix_transport_args}"
+    su -m ${kronometrix_transport_user} -c "${cmd}" 
 }
 
 
-kronometrix_stop() {
+kronometrix_transport_stop() {
     local cmd
-    kronometrix_args="stop"
-    cmd="${command} ${kronometrix_args}"
-    su -m ${kronometrix_user} -c "${cmd}" 
+    kronometrix_transport_args="stop"
+    cmd="${command} ${kronometrix_transport_args}"
+    su -m ${kronometrix_transport_user} -c "${cmd}"
 }
 
 
