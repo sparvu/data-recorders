@@ -13,6 +13,12 @@ fi
 
 if [ $2 == "POST-INSTALL" ]; then
     chown -R krmx:krmx /opt/kronometrix
+    # setup crontabs
+    echo "krmx" >> /etc/cron.allow
+    if ! -f /var/cron/tabs/krmx; then
+        echo "59 23 * * *  /bin/sleep 59 && newsyslog -f /etc/newsyslog.conf.d/kronometrix" >> /var/cron/tabs/krmx
+        echo "00 00 * * *  /bin/sleep 30 && /opt/kronometrix/bin/raw2day" >> /var/cron/tabs/krmx
+    fi
     cp /opt/kronometrix/etc/rc/kronometrix* /etc/rc.d/
     /etc/rc.d/kronometrix onestart
 fi
