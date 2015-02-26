@@ -22,7 +22,7 @@
 # Add the following lines to /etc/rc.conf to enable Kronometrix
 #
 # kronometrix_transport_enable="YES"
-# kronometrix_transport_user="krmx"
+# kronometrix_user="krmx"
 
 . /etc/rc.subr
 
@@ -37,7 +37,7 @@ stop_cmd="${name}_stop"
 status_cmd="${name}_status"
 
 : ${kronometrix_transport_enable="YES"}
-: ${kronometrix_transport_user="krmx"}
+: ${kronometrix_user="krmx"}
 : ${kronometrix_transport_args=""}
 
 kronometrix_transport_start() {
@@ -45,7 +45,7 @@ kronometrix_transport_start() {
     local cmd
     kronometrix_transport_args="start"
     cmd="${command} ${kronometrix_transport_args}"
-    su -m ${kronometrix_transport_user} -c "${cmd}" 
+    su -m ${kronometrix_user} -c "${cmd}" 
 }
 
 
@@ -53,7 +53,7 @@ kronometrix_transport_stop() {
     local cmd
     kronometrix_transport_args="stop"
     cmd="${command} ${kronometrix_transport_args}"
-    su -m ${kronometrix_transport_user} -c "${cmd}"
+    su -m ${kronometrix_user} -c "${cmd}"
 }
 
 
