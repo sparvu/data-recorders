@@ -23,8 +23,8 @@
 
 Summary: Kronometrix Linux Data Recorder
 Name: kronometrix
-Version: 1.0.0
-Release: b10
+Version: 1.0.7
+Release: 0
 Group: System/Monitoring/Tools
 License: GPL
 URL: http://www.systemdatarecorder.org/
