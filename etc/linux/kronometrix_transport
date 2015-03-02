@@ -1,6 +1,7 @@
 #!/bin/sh
 
-#  Copyright (c) 2015 Stefan Parvu (www.systemdatarecorder.org).
+# chkconfig:   2345 20 88
+#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -18,71 +19,28 @@
 #
 #  (http://www.gnu.org/copyleft/gpl.html)
 
+
 RETVAL=0
 OS_NAME=`uname -s`
-KRMX_PREFIX="/opt/kronometrix"
-KRMX_BIN=${KRMX_PREFIX}/bin
-KRMX_LOG=${KRMX_PREFIX}/log
-TRANSPORT="sender"
 
-# sender
-test -f ${KRMX_BIN}/sender || exit 0
+BASEDIR="/opt/kronometrix/etc"
+KRMX_SVC="${BASEDIR}/transport"
+KRMX_USER="krmx"
+
+# basedir test
+test -d ${BASEDIR} || exit 0
+test -f ${KRMX_SVC} || exit 0
 
 
 start() {
-    echo "Starting KRMX transport"
-
-    RETVAL=0
-
-    if [ "X${OS_NAME}" = "XSunOS" ]; then
-        echo " ${TRANSPORT}: \c"
-    else
-        echo -n " ${TRANSPORT}: "
-    fi
-           
-    # check pid before start
-    if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
-        kill -0 `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
-        if [ $? -ne 0 ]; then
-            ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
-            RETVAL=$?
-        else
-            RETVAL=1
-        fi
-        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-    else
-        # no pid files
-        ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
-        RETVAL=$?
-        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-    fi
-
-    return $RETVAL
+    su - $KRMX_USER -c "${KRMX_SVC} start >/dev/null 2>&1"
 }
 
 
 stop() {
-    echo "Stopping KRMX transport"
-
-    RETVAL=0
-
-    if [ "X${OS_NAME}" = "XSunOS" ]; then
-        echo " ${TRANSPORT}: \c"
-    else
-        echo -n " ${TRANSPORT}: "
-    fi
-
-    if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
-        kill `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
-        RETVAL=$?
-        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-    else
-        RETVAL=1
-        [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-    fi
-
-    return $RETVAL
+    su - $KRMX_USER -c "${KRMX_SVC} stop >/dev/null 2>&1"
 }
+
 
 case "$1" in
    start)
@@ -100,3 +58,4 @@ case "$1" in
       exit 1
 esac
 exit $RETVAL
+

@@ -1,6 +1,7 @@
 #!/bin/sh
 
-#  Copyright (c) 2015 Stefan Parvu (www.systemdatarecorder.org).
+# chkconfig:   2345 20 88
+#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -22,108 +23,24 @@
 RETVAL=0
 OS_NAME=`uname -s`
 
-KRMX_PREFIX="/opt/kronometrix"
-KRMX_ETC=${KRMX_PREFIX}/etc
-KRMX_LOG=${KRMX_PREFIX}/log
-RECORDERS="sys cpu disk nic hdw"
+BASEDIR="/opt/kronometrix/etc"
+KRMX_SVC="${BASEDIR}/agents"
+KRMX_USER="krmx"
 
-# test all startups
-test -f ${KRMX_ETC}/sysrec.start  || exit 0
-test -f ${KRMX_ETC}/cpurec.start  || exit 0
-test -f ${KRMX_ETC}/diskrec.start || exit 0
-test -f ${KRMX_ETC}/nicrec.start  || exit 0
-test -f ${KRMX_ETC}/hdwrec.start  || exit 0
-test -f ${KRMX_ETC}/jvmrec.start  || exit 0
-test -f ${KRMX_ETC}/netrec.start  || exit 0
-test -f ${KRMX_ETC}/procrec.start || exit 0
-test -f ${KRMX_ETC}/xenrec.start  || exit 0
+# basedir test
+test -d ${BASEDIR} || exit 0
+test -f ${KRMX_SVC} || exit 0
 
 
 start() {
-    echo "Starting KRMX recorders"
-
-    for rec in $RECORDERS
-    do
-        RETVAL=0
-
-        if [ "X${OS_NAME}" = "XSunOS" ]; then
-            echo " ${rec}rec: \c"
-        else
-            echo -n " ${rec}rec: "
-        fi
-           
-        # check pid before start
-        if [ -f ${KRMX_LOG}/${rec}rec.pid ]; then
-            kill -0 `cat ${KRMX_LOG}/${rec}rec.pid` >/dev/null 2>&1
-            if [ $? -ne 0 ]; then
-                ${KRMX_ETC}/${rec}rec.start
-                RETVAL=$?
-            else
-                RETVAL=1
-            fi
-            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-        else
-            # no pid files
-            ${KRMX_ETC}/${rec}rec.start
-            RETVAL=$?
-            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-        fi
-    done
-
-    return $RETVAL
+    su - $KRMX_USER -c "${KRMX_SVC} start >/dev/null 2>&1"
 }
 
 
 stop() {
-    echo "Stopping KRMX recorders"
-
-    for rec in $RECORDERS
-    do
-        RETVAL=0
-
-        if [ "X${OS_NAME}" = "XSunOS" ]; then
-            echo " ${rec}rec: \c"
-        else
-            echo -n " ${rec}rec: "
-        fi
-
-        if [ -f ${KRMX_LOG}/${rec}rec.pid ]; then
-            # webrec
-            if [ "X$rec" = "Xweb" ]; then
-                case "$OS_NAME" in
-                  SunOS)
-                   kill `ptree \`cat ${KRMX_LOG}/webrec.pid\` | awk '{print $1}' | xargs | awk '{print $2}'` >/dev/null 2>&1
-                   RETVAL=$?
-                   [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-                   continue
-                   ;;
- 
-                  Linux)
-                   kill `cat ${KRMX_LOG}/webrec.pid` >/dev/null 2>&1
-                   RETVAL=$?
-                   [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-                   continue
-                   ;;
-
-                  *)
-                   echo "Error: not supported OS"
-                   exit 1
-                   ;;
-                esac
-            fi
-                 
-            kill `cat ${KRMX_LOG}/${rec}rec.pid` >/dev/null 2>&1
-            RETVAL=$?
-            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-
-        else
-            RETVAL=1
-            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-        fi
-    done
-
-    return $RETVAL
+    su - $KRMX_USER -c "${KRMX_SVC} stop >/dev/null 2>&1"
 }
+
 
 case "$1" in
    start)
@@ -141,3 +58,4 @@ case "$1" in
       exit 1
 esac
 exit $RETVAL
+
