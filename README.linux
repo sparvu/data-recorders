@@ -1,64 +1,35 @@
+==========================================
+Kronometrix Data Recording - Linux Edition
+==========================================
 
-=================
-Kronometrix Linux
-=================
+1. Supported Operating Systems
 
-Recording Module
+   CentOS 5.x+ 32/64bit
+   RedHat Enterprise Linux 5.x+ 32/64bit
+   Ubuntu Server Edition 10.04+ 32/64bit
+   Debian 7+ 32/64bit
+   Note: Kernel: minim 2.6+ 32/64bit
 
-OS                   : RedHat Enterprise Linux 5.x+ 32/64bit
-                       Ubuntu Server Edition 10.04+ 32/64bit
-                       CentOS 5.x+ 32/64bit
-                       Debian 6,7,8 32/64bit
+2. Prerequisites
 
-Kernel               : minim 2.6+ 32/64bit
+   CHKCONFIG:
+   Make sure your system has installed chkconfig. It is not 
+   mandatory but highly recommended.
 
-
-Prerequisites
-=============
-
-CHKCONFIG:
-  Make sure your system has installed chkconfig. It is not 
-  mandatory but highly recommended.
-
-For Ubuntu/Debian based systems enable cron:
-  # update-rc.d cron defaults
-  # chkconfig --list cron
+   For Ubuntu/Debian based systems enable cron:
+     # update-rc.d cron defaults
+     # chkconfig --list cron
 
 
-KSH93:
-  Make sure you have installed ksh93 on your Linux distribution.
-  Example for Ubuntu/Debian systems, 64bit:
-    apt-get install ksh , this will install ksh93 pkg 
-    (ksh_93t+20100309-1_amd64.deb)
-   
- 
-JAVA:
-  If you would like to use webrec, make sure you have downloaded
-  from your vendor, Oracle Java 6 version. webrec will require at 
-  least Java 6. Example for Java 6:
+3. Install
 
-  * Ubuntu/Debian/RedHat:
-    # mkdir /opt/java
-    # cd java
-    # sh jdk-6u45-linux-x64.bin
-    # ln -s jdk1.6.0_45 current
+   Kronometrix can be installed using the RPM package management system
+   found on all RedHat based installations. The data recorders
+   and started automatically, after the software has been installed. The
+   transport utility will not start automatically.
 
 
-SDR Recording module can be installed and administered using two modes:
-automatic and manual.
-
-
-Automatic Mode
-==============
-
-  Under automatic mode, the installation and start-up of SDR software
-  is done by the package management software: RPM or DEB. The recorders
-  and started automatically, after the software has been installed.
-
-  Note: to configure SDR software you need to check kronometrix.json and
-  manually restart, if needed, the recorders or the transporter part.
-  
-  1.1 Install kronometrix package:
+   3.1 RPM package
 
     RPM based systems:
     # rpm -ihv kronometrix-1.0-linux-x86_64.rpm
@@ -69,6 +40,25 @@ Automatic Mode
       cpurec: ok
       nicrec: ok
       hdwrec: ok
+
+
+    3.2 DEB package
+
+    3.3 TAR package
+
+
+4. Uninstall
+
+
+5. Start
+
+
+6. Stop
+
+
+7. Configuration
+
+
 
   1.2 Uninstall Kronometrix package:
 
