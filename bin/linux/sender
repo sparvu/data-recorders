@@ -400,9 +400,9 @@ sub process_hid {
     my $host_uuid;
 
     open my $dbusfile, "<", "$fh"
-        or die "error: cannot open $varid: $!\n";
+        or die "error: cannot open $fh: $!\n";
 
-    my @mid = <$dbus>;
+    my @mid = <$dbusfile>;
 
     close $dbusfile;
 
@@ -645,7 +645,7 @@ sub send_data {
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
     } else {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$dev_id:$delta");
-        $post   = "$msg_id:$sid:$dsidid:$dev_id:$delta:$hash";
+        $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
     }
     writelog("info: send_data - $post data to be delivered")
         if ( $verbose_flag == 1 );
@@ -715,7 +715,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.0, 2015-03-03
+sender: 1.0.9, 2015-03-03 1336
 END
     exit 0;
 }
