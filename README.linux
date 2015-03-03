@@ -5,8 +5,9 @@ Kronometrix Data Recording
 1.Supported Operating Systems
 
   We support the following Linux based operating systems:
-   CentOS 5.x+ 32/64bit
-   RedHat Enterprise Linux 5.x+ 32/64bit
+   CentOS release 5.11 (Final)
+   CentOS release 6.6 (Final)
+   CentOS Linux release 7.0.1406 (Core)
    Ubuntu Server Edition 10.04+ 32/64bit
    Debian 7+ 32/64bit
    Note: Kernel: minim 2.6+ 32/64bit
@@ -14,11 +15,10 @@ Kronometrix Data Recording
 
 2.Prerequisites
 
-   CHKCONFIG:
-   Make sure your system has installed chkconfig. It is not 
-   mandatory but highly recommended.
+   o Make sure your system has installed chkconfig. It is not 
+     mandatory but highly recommended.
 
-   For Ubuntu/Debian based systems enable cron:
+   o For Ubuntu/Debian based systems enable cron:
      # update-rc.d cron defaults
      # chkconfig --list cron
 
@@ -54,6 +54,13 @@ Kronometrix Data Recording
 
 4.Uninstall
 
+   RPM package
+
+     # rpm -e kronometrix 
+     # ps -o uid,pid,cmd -u krmx
+
+   DEB package
+
 
 5.Start procedure
 
@@ -65,25 +72,6 @@ Kronometrix Data Recording
 
 
 
-  1.2 Uninstall Kronometrix package:
-
-    RPM based systems:
-    # rpm -e kronometrix
-     Stopping Kronometrix recorders
-      sysrec: ok
-      cpurec: ok
-      nicrec: ok
-      hdwrec: ok
-
-
-Manual Mode
-===========
-
-  2.1 Install Kronometrix package
-
-    2.1.1 User/Group
-
-      Kronometrix software should be configured to run as krmx user, if possible.
       If not, we can run all recorders as superuser and we can transport
       all krd files as krmx user. This way we can separate between super
       user and krmx user.
