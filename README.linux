@@ -33,14 +33,17 @@ Kronometrix Data Recording
 
    RPM package
 
-     # rpm -ihv kronometrix-1.0-linux-x86_64.rpm
-      Preparing...           ########################################### [100%]
-       1:kronometrix         ########################################### [100%]
-       Starting Kronometrix recorders
-        sysrec: ok
-        cpurec: ok
-        nicrec: ok
-        hdwrec: ok
+     # rpm -ihv kronometrix-1.0.9-x86_64.rpm 
+       Preparing...        ########################################### [100%]
+           1:kronometrix   ########################################### [100%]
+
+     # ps -o uid,pid,cmd -u krmx
+      UID   PID CMD
+     5000 21123 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/sysrec 60
+     5000 21141 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/cpurec 60
+     5000 21159 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/diskrec 60
+     5000 21177 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/nicrec 60
+     5000 21195 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/hdwrec 60
 
 
    DEB package
