@@ -1,6 +1,9 @@
 #!/bin/sh
 #
-# chkconfig: 2345 95 05
+# chkconfig: 2345 96 10
+# description: kronometrix data transport services
+#
+# /etc/init.d/kronometrix_transport
 #
 #  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
