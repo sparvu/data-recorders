@@ -1,16 +1,18 @@
-==========================================
-Kronometrix Data Recording - Linux Edition
-==========================================
 
-1. Supported Operating Systems
+Kronometrix Data Recording
 
+
+1.Supported Operating Systems
+
+  We support the following Linux based operating systems:
    CentOS 5.x+ 32/64bit
    RedHat Enterprise Linux 5.x+ 32/64bit
    Ubuntu Server Edition 10.04+ 32/64bit
    Debian 7+ 32/64bit
    Note: Kernel: minim 2.6+ 32/64bit
 
-2. Prerequisites
+
+2.Prerequisites
 
    CHKCONFIG:
    Make sure your system has installed chkconfig. It is not 
@@ -21,7 +23,7 @@ Kronometrix Data Recording - Linux Edition
      # chkconfig --list cron
 
 
-3. Install
+3.Install
 
    Kronometrix can be installed using the RPM package management system
    found on all RedHat based installations. The data recorders
@@ -29,34 +31,34 @@ Kronometrix Data Recording - Linux Edition
    transport utility will not start automatically.
 
 
-   3.1 RPM package
+   RPM package
 
-    RPM based systems:
-    # rpm -ihv kronometrix-1.0-linux-x86_64.rpm
-     Preparing...               ########################################### [100%]
-        1:kronometrix           ########################################### [100%]
-     Starting Kronometrix recorders
-      sysrec: ok
-      cpurec: ok
-      nicrec: ok
-      hdwrec: ok
-
-
-    3.2 DEB package
-
-    3.3 TAR package
+     # rpm -ihv kronometrix-1.0-linux-x86_64.rpm
+      Preparing...           ########################################### [100%]
+       1:kronometrix         ########################################### [100%]
+       Starting Kronometrix recorders
+        sysrec: ok
+        cpurec: ok
+        nicrec: ok
+        hdwrec: ok
 
 
-4. Uninstall
+   DEB package
+
+   TAR package
 
 
-5. Start
+
+4.Uninstall
 
 
-6. Stop
+5.Start procedure
 
 
-7. Configuration
+6.Stop procedure
+
+
+7.Configuration
 
 
 
