@@ -1,0 +1,13 @@
+Package: kronometrix
+Architecture: i386
+Section: utils
+Priority: extra
+Version:1.0.0-b10
+Maintainer: support@systemdatarecorder.org
+Homepage: http://www.systemdatarecorder.org/
+Description: Performance Analysis and Capacity Planning
+ Tactical approach to meet today's demanding capacity challenges. 
+ Monitoring and analysing the IT infrastructure is an important key 
+ to ensure your business continuity and prepare for future grow. 
+ SDR is simple to use for performance analysis, system sizing
+ and capacity planning in today's challenging business environments.
