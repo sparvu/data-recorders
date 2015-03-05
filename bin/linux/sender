@@ -75,6 +75,7 @@ my %appliance;
 
 local $| = 1;
 
+
 ### MAIN BODY #
 
 # Default krd
@@ -396,15 +397,15 @@ sub get_devid {
 # process host uuid file
 sub process_hid {
 
-    my $fh = @_;
+    my ($dbusfile) = @_;
     my $host_uuid;
 
-    open my $dbusfile, "<", "$fh"
-        or die "error: cannot open $fh: $!\n";
+    open my $fh, "<", "$dbusfile"
+        or die "error: cannot open $dbusfile: $!\n";
 
-    my @mid = <$dbusfile>;
+    my @mid = <$fh>;
 
-    close $dbusfile;
+    close $fh;
 
     foreach my $h (@mid) {
         substr( $h, 8,  0 ) = '-';
@@ -430,11 +431,11 @@ sub new_hostid {
 
     # fetches machine-id from DBUS
     if ( -e $varid ) {
-        $hid = process_hid ($varid);
+        $hid = process_hid ("$varid");
     }
     # RHEL, CentOS 7
     elsif ( -e $etcid ) {
-        $hid = process_hid ($varid);
+        $hid = process_hid ("$etcid");
     }
     else {
         my $str = time . $osname;
