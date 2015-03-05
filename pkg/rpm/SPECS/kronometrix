@@ -149,6 +149,11 @@ elif [ $1 -eq 2 ]; then
     /etc/init.d/kronometrix start >/dev/null 2>&1 || :
     # /etc/init.d/kronometrix.transport start || :
     chown -R krmx:krmx /opt/kronometrix || :
+
+    # restore config
+    if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
+        cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc >/dev/null 2>&1 || :
+    fi
 fi
 
 # before removal
@@ -180,4 +185,10 @@ if [ $1 -eq 0 ]; then
 
     # wipeout krmx crontab
     crontab -u krmx -r  2>/dev/null || :
+
+    # make a copy of kronometrix.json
+    if [ -f /opt/kronometrix/etc/kronometrix.json ]; then
+        mkdir /opt/kronometrix/backup
+        cp /opt/kronometrix/etc/kronometrix.json /opt/kronometrix/backup >/dev/null 2>&1 || :
+    fi
 fi
