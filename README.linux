@@ -1,31 +1,34 @@
 
-Kronometrix Data Recording
-
-1.Package Content
-
-Kronometrix 1.0 Linux edition contains, all data records, the transport 
-utility and additional weather data recorders. Along with these come 
-the manual pages and documentation, all for free:
-
-  - agents: sysrec, cpurec, diskrec, nicrec, hdwrec, procrec, jvmrec, 
-            netrec, wsrec, xenrec
-
-  - transport: sender at the moment uses HTTP protocol
-
-  - all needed libraries: openssl, libcurl, perl
-
-  - documentation: manual pages
+README Kronometrix Data Recording
 
 
-2.Supported Operating Systems
+1.Supported Operating Systems
 
   We support the following Linux based operating systems:
-   CentOS release 5.11 (Final)
-   CentOS release 6.6 (Final)
-   CentOS Linux release 7.0.1406 (Core)
-   Ubuntu Server Edition 10.04+ 32/64bit
-   Debian 7+ 32/64bit
-   Note: Kernel: minim 2.6+ 32/64bit
+   CentOS release 5.11 (Final) x86_64, i386
+   CentOS release 6.6 (Final) x86_64, i386
+   CentOS Linux release 7.0.1406 (Core) x86_64, i386
+   Debian GNU/Linux 7 (wheezy) x86_64, i386
+   Ubuntu Server Edition 10.04+ x86_64, i386
+   Raspbian GNU/Linux 7 (wheezy) armv6
+
+   Note: Kernel: minim 2.6+ x86_64, i386
+
+
+2.Package Content
+
+  Kronometrix 1.0 Linux edition contains, all data records, the 
+  transport utility and additional weather data recorders. Along 
+  with these come the manual pages and documentation, all for free:
+
+    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec, procrec, jvmrec, 
+      netrec, wsrec, xenrec
+
+    - transport: sender at the moment uses HTTP protocol
+
+    - all needed libraries: openssl, libcurl, perl
+
+    - documentation: manual pages
 
 
 3.Prerequisites
