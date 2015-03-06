@@ -143,16 +143,16 @@ if [ $1 -eq 1 ]; then
     echo "59 23 * * *  /bin/sleep 59 && /usr/sbin/logrotate -f -s /opt/kronometrix/log/logkrmx.status /opt/kronometrix/etc/logrotate.krmx" >> /var/tmp/cronkrmx || :
     echo "00 00 * * *  /bin/sleep 30 && /opt/kronometrix/bin/raw2day" >> /var/tmp/cronkrmx || :
     crontab -u krmx /var/tmp/cronkrmx 2>/dev/null || :
-elif [ $1 -eq 2 ]; then
-    # upgrade
-    chown -R krmx:krmx /opt/kronometrix || :
-    /etc/init.d/kronometrix start >/dev/null 2>&1 || :
-    # /etc/init.d/kronometrix.transport start || :
 
     # restore config
     if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
         cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
     fi
+elif [ $1 -eq 2 ]; then
+    # upgrade
+    chown -R krmx:krmx /opt/kronometrix || :
+    /etc/init.d/kronometrix start >/dev/null 2>&1 || :
+    # /etc/init.d/kronometrix.transport start || :
 
     chown -R krmx:krmx /opt/kronometrix || :
 fi
