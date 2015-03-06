@@ -140,11 +140,20 @@ while (1) {
                 or die "error: cannot find redhat-release: $!\n";
             while (<$rhelrel>) {
                 chomp;
-                $distid = "RedHatEnterpriseServer"; $os = $_; $relos = $1 if $_ =~ /.*\s+(.*)$/;
+                if ($_ =~ /^CentOS/o) {
+                    # CentOS release 5.11 (Final)
+                    # CentOS release 6.6 (Final)
+                    # CentOS Linux release 7.0.1406 (Core)
+                    $os="CentOS";
+                    $distid="CentOS";
+                    $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
+                } else {
+                    $distid = "RedHatEnterpriseServer"; $os = $_; $relos = $1 if $_ =~ /.*\s+(.*)$/;
+                    $relos =~ s/^\(//;
+                    $relos  =~ s/\)$//; 
+                }
             }
             close $rhelrel;
-            $relos =~ s/^\(//;
-            $relos  =~ s/\)$//; 
         } elsif ( -e "/etc/debian_version" ) {
             open my $debrel, "<", "/etc/debian_version"
                 or die "error: cannot find debian_version: $!\n";
