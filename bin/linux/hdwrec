@@ -118,8 +118,36 @@ while (1) {
     # fetch dist_id, os, codename
     my ($distid, $os, $relos) = "NA";
 
-    if (-e "$lsb") {
-
+    if (-e "/etc/redhat-release") {
+        # rhel systems
+        open my $rhelrel, "<", "/etc/redhat-release"
+            or die "error: cannot find redhat-release: $!\n";
+        while (<$rhelrel>) {
+            chomp;
+            if ($_ =~ /^CentOS/o) {
+                # CentOS release 5.11 (Final)
+                # CentOS release 6.6 (Final)
+                # CentOS Linux release 7.0.1406 (Core)
+                $os="CentOS";
+                $distid="CentOS";
+                $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
+            } elsif ($_ =~ /^Red/o) {
+                # Red Hat Enterprise Linux Server release 6.1 (Santiago)
+                $os = "RHEL";
+                $distid = "RHEL"; 
+                $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
+            }
+        }
+        close $rhelrel;
+    } elsif ( -e "/etc/debian_version" ) {
+        open my $debrel, "<", "/etc/debian_version"
+          or die "error: cannot find debian_version: $!\n";
+        while (<$debrel>) {
+            chomp;
+            $os="Debian"; $distid="Debian"; $relos="$_";
+        }
+        close $debrel;
+    } elsif ( -e "$lsb") {
         open my $LSBINFO, "-|", "$lsb", "-a"
             or die "error: cannot execute lsb_release - $!";
 
@@ -130,42 +158,10 @@ while (1) {
         $os = $distid;
 
         close $LSBINFO;
-
     } else {
-
-        # fallback on release etc info
-        if (-e "/etc/redhat-release") {
-            # rhel systems
-            open my $rhelrel, "<", "/etc/redhat-release"
-                or die "error: cannot find redhat-release: $!\n";
-            while (<$rhelrel>) {
-                chomp;
-                if ($_ =~ /^CentOS/o) {
-                    # CentOS release 5.11 (Final)
-                    # CentOS release 6.6 (Final)
-                    # CentOS Linux release 7.0.1406 (Core)
-                    $os="CentOS";
-                    $distid="CentOS";
-                    $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
-                } else {
-                    $distid = "RedHatEnterpriseServer"; $os = $_; $relos = $1 if $_ =~ /.*\s+(.*)$/;
-                    $relos =~ s/^\(//;
-                    $relos  =~ s/\)$//; 
-                }
-            }
-            close $rhelrel;
-        } elsif ( -e "/etc/debian_version" ) {
-            open my $debrel, "<", "/etc/debian_version"
-                or die "error: cannot find debian_version: $!\n";
-            while (<$debrel>) {
-                chomp;
-                $os="Debian"; $distid="Debian"; $relos="$_";
-            }
-            close $debrel;
-        }
-
-
+        $os="NA"; $relos="NA"; $distid="NA";
     }
+
 
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
