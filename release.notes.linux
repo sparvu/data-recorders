@@ -29,7 +29,7 @@ Releases
     raw2day xml to json #2
     recording/wsrec warnings in strict mode #1
     update perl-5.20.2
-    update openssl-1.0.0l
+    update openssl-1.0.2
     update curl-7.41.0
     update sysstat-10.2.1
 
