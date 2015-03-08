@@ -8,13 +8,13 @@ sysrec \- system Recorder. Uses perl
 .SH DESCRIPTION
 sysrec records the following system performance parameters: cpu, memory
 utilization, disk and network throughput, errors and system load averages. 
-The recorder reports several key metrics across all devices, being the 
-main recorder of SDR, responsible for overall system performance. 
+The recorder reports several key metrics across all devices,
+responsible for overall system performance. 
 This will be the first place to check how your system performs in the long run.
 
 .PP
 The recorder uses Sys::Statistics::Linux to fetch all metrics. 
-The raw data is already prepared and formatted for SDR analysis process. 
+The raw data is already prepared and formatted for the analysis process. 
 The recorder runs continuously.
 
 
@@ -58,8 +58,6 @@ executes every 0.5 seconds
 .SH FIELDS
 sysrec outputs utilization and specific metrics 
 character \: separated.
-The format is selected to match easy SDR Reporting side and 
-RRD module for storage and further analysis.
 
 .TP
 #1 timestamp
@@ -250,7 +248,7 @@ sysrec records up to 43 metrics under Linux OS x64 and x86 platforms.
 
 .PP
 .SH DOCUMENTATION
-See SDR documentation for more details.
+See Kronometrix documentation for more details.
 
 .SH EXIT
 sysrec will run continuously until is stopped by the master script 
