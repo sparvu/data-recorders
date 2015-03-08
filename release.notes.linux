@@ -17,7 +17,7 @@ Bug Management System:
 
 Releases
 
-  1.0.9 Release March 2015
+  1.0.9 March 2015 Release
     
     hdwrec/linux incorrect os and relos fields #19
     recording dependency libs clean-up #18
@@ -32,5 +32,4 @@ Releases
     update openssl-1.0.2
     update curl-7.41.0
     update sysstat-10.2.1
-
 
