@@ -1,5 +1,5 @@
 name: "kronometrix"
-version: "1.0.0"
+version: "1.0.9"
 origin: "sysutils/kronometrix"
 comment: "A time-series data monitoring and analysis system"
 arch: "freebsd:10:i386" 
