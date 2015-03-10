@@ -15,9 +15,8 @@ if [ $2 == "PRE-INSTALL" ]; then
 fi
 
 if [ $2 == "POST-INSTALL" ]; then
-    chown -R krmx:krmx /opt/kronometrix
+
     # setup crontabs
-    # cronjobs
     if ! grep krmx /etc/cron.allow >/dev/null; then
         echo "krmx" >> /etc/cron.allow || :
     fi
@@ -33,6 +32,8 @@ if [ $2 == "POST-INSTALL" ]; then
     if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
         cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
     fi
+
+    chown -R krmx:krmx /opt/kronometrix
 
     # install service
     grep kronometrix ${RC_CONF} >/dev/null 2>&1
