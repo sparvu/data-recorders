@@ -27,7 +27,7 @@ if [ $2 == "POST-INSTALL" ]; then
         echo "00 00 * * *  /bin/sleep 30 && /opt/kronometrix/bin/raw2day" >> /var/cron/tabs/krmx
     fi
     cp /opt/kronometrix/etc/rc/kronometrix* /etc/rc.d/
-    /etc/rc.d/kronometrix onestart
+    /etc/rc.d/kronometrix onestart >/dev/null 2>&1
 
     # restore config
     if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
