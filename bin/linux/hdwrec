@@ -140,11 +140,13 @@ while (1) {
         }
         close $rhelrel;
     } elsif ( -e "/etc/debian_version" ) {
-        open my $debrel, "<", "/etc/debian_version"
-          or die "error: cannot find debian_version: $!\n";
+        open my $debrel, "<", "/etc/os-release"
+          or die "error: cannot find os_release: $!\n";
         while (<$debrel>) {
             chomp;
-            $os="Debian"; $distid="Debian"; $relos="$_";
+            $os = $1 if $_ =~ /^NAME\=\"(\w+).*\"$/;
+            $relos = $1 if $_ =~ /^VERSION_ID\=\"(\d+(?:\.\d+(?:\.\d+)?)?)\"$/;
+            $distid = $os;
         }
         close $debrel;
     } elsif ( -e "$lsb") {
