@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -68,6 +68,7 @@ my $bsd_cputime     = BSD::Sysctl->new( 'kern.cp_time' );
 my $bsd_ncpu        = BSD::Sysctl->new( 'hw.ncpu' );
 my $bsd_pgsize      = BSD::Sysctl->new( 'hw.pagesize' );
 my $bsd_memphys     = BSD::Sysctl->new( 'hw.physmem' );
+my $bsd_memall      = BSD::Sysctl->new( 'vm.stats.vm.v_page_count' );
 my $bsd_memactive   = BSD::Sysctl->new( 'vm.stats.vm.v_active_count' );
 my $bsd_meminactive = BSD::Sysctl->new( 'vm.stats.vm.v_inactive_count' );
 my $bsd_memwire     = BSD::Sysctl->new( 'vm.stats.vm.v_wire_count' );
@@ -178,7 +179,7 @@ while (1) {
     ## nic stats
     my @ns = get_nicstat();
 
-    my ($rxpkt,$rxerr,$rxdrop,$rxkbyte,$txpkt,$txerr,$txkbyte,$cols,$drops);
+    my ($rxpkt,$rxerr,$rxdrop,$rxkbyte,$txpkt,$txerr,$txkbyte,$cols,$pdrop);
 
     foreach (@ns) {
  
@@ -206,23 +207,23 @@ while (1) {
         $txkbyte = delta($old_obyt, $obyt);
 
         $cols  = delta($old_col, $col);
-        $drops = delta($old_drop, $drop);
+        $pdrop = delta($old_drop, $drop);
 
         # save old data
         $old_nicdata{$nid} = "$ipkt:$ierr:$idrop:$ibyt:$opkt:$oerr:$obyt:$col:$drop";
 
     }
 
-    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f\n",
+    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f\n",
             time, $cpupct, $sumpct, $headpct,
             $user, $nice, $sys, $intr, $idle,
             $vm[0], $vm[1], $vm[2], $vm[3], $vm[4],
             $vm[5], $vm[6], $vm[7], $vm[8], $vm[9], $vm[10],
             $vm[11], $vm[12], $vm[13], $vm[14], $vm[15],
-            $vm[16], $vm[17], $vm[18], $vm[19],
+            $vm[16], $vm[17], $vm[18], $vm[19], $vm[20],
             $ds[0], $ds[1], $ds[2], $ds[3], $ds[4], $ds[5], 
             $ds[6], $rxpkt, $rxkbyte, $rxerr, $rxdrop,
-            $txpkt, $txkbyte, $txerr, $cols, $drops,
+            $txpkt, $txkbyte, $txerr, $cols, $pdrop,
             $la->[0], $la->[1], $la->[2];
 
 
@@ -316,6 +317,7 @@ sub get_vmstat {
     ### get mem stats
     my $vmtotal  = $bsd_vmtotal->get();
     my $memphys  = $bsd_memphys->get();
+    my $memall   = $bsd_memall->get() * $factor;
     my $active   = $bsd_memactive->get() * $factor;
     my $inactive = $bsd_meminactive->get() * $factor;
     my $wired    = $bsd_memwire->get() * $factor;
@@ -344,6 +346,8 @@ sub get_vmstat {
     my $sp = $vmtotal->{sleeping};
 
     # vm stats
+
+    # total memory
     my $mt = $memphys;
     my $realfree = $inactive + $cache + $free;
     my $mu = $mt - $realfree;
@@ -361,10 +365,13 @@ sub get_vmstat {
     my $memcache = sprintf("%.2f", $cache / 1024);
     my $memfree = sprintf("%.2f", $free / 1024);
     my $memrealfree = sprintf("%.2f", $realfree / 1024);
+    my $memrealfreepct = sprintf("%.2f", ($memrealfree / ( $memall / 1024 ) ) * 100 );
 
     my @stats;
-    push(@stats, $rq, $bl, $pw, $dw, $sp, $memusedpct, $memused, $memavailpct, $memavail, 
-         $memtotal, $memactive, $meminactive, $memwired, $memcache, $memfree, $memrealfree, 
+    push(@stats, $rq, $bl, $pw, $dw, $sp, 
+         $memusedpct, $memused, $memavailpct, $memavail, 
+         $memtotal, $memactive, $meminactive, $memwired, $memcache, 
+         $memfree, $memrealfree, $memrealfreepct, 
          $swapin, $swappin, $swapout, $swappout);
 
     # print "@stats";
@@ -441,7 +448,7 @@ sub get_nicstat {
     
     my $netstat = "/usr/bin/netstat";
 
-    my ($rxpkt,$rxerr,$rxdrop,$rxbyte,$txpkt,$txerr,$txbyte,$cols,$drops) = 0;
+    my ($rxpkt,$rxerr,$rxdrop,$rxbyte,$txpkt,$txerr,$txbyte,$cols,$drop) = 0;
 
     my $nicount = 0;
 
@@ -476,7 +483,7 @@ sub get_nicstat {
         $cols += $c;
 
         # droped
-        $drops += $d;
+        $drop += $d;
 
     }
 
@@ -490,7 +497,7 @@ sub get_nicstat {
     $txbyte /= $nicount;
 
     $cols   /= $nicount;
-    $drops  /= $nicount;
+    $drop   /= $nicount;
 
     # turn to KB
     my $rxkbyte = sprintf("%.2f", $rxbyte / 1024);
@@ -504,7 +511,7 @@ sub get_nicstat {
     #           $cols, $drops;
 
     my @stats;
-    my $payload = "$rxpkt:$rxerr:$rxdrop:$rxkbyte:$txpkt:$txerr:$txkbyte:$cols:$drops";
+    my $payload = "$rxpkt:$rxerr:$rxdrop:$rxkbyte:$txpkt:$txerr:$txkbyte:$cols:$drop";
     push @stats, $payload;
 
     return @stats;
@@ -549,35 +556,36 @@ USAGE: sysrec [-hV] | [interval [count]]
    #24 free       : size of free memory pages in kilobytes, number
    #25 realfree   : size of real free memory in kilobytes, number
                      (inactive + cache + free)
-   #26 swapin     : swap pager pageins, rate
-   #27 swappgsin  : swap pager pages paged in, rate 
-   #28 swapout    : swap pager pageouts, rate
-   #29 swappgsout : swap pager pages paged out, rate
+   #26 realfreepct: size of real free memory in percent of total memory, number
+   #27 swapin     : swap pager pageins, rate
+   #28 swappgsin  : swap pager pages paged in, rate 
+   #29 swapout    : swap pager pageouts, rate
+   #30 swappgsout : swap pager pages paged out, rate
 
   DISK
-   #30 reads      : read requests per second, rate
-   #31 rkbytes    : read KBytes per second,rate
-   #32 writes     : write requests per second, rate
-   #33 wkbytes    : write KBytes per second, rate
-   #34 queue      : the number of not yet completed transactions, rate
-   #35 service    : service time per transaction in miliseconds, number 
-   #36 busy       : the percentage of time the device had one or more 
+   #31 reads      : read requests per second, rate
+   #32 rkbytes    : read KBytes per second,rate
+   #33 writes     : write requests per second, rate
+   #34 wkbytes    : write KBytes per second, rate
+   #35 queue      : the number of not yet completed transactions, rate
+   #36 service    : service time per transaction in miliseconds, number 
+   #37 diskutil   : the percentage of time the device had one or more 
                      transactions outstanding, number
 
   NET
-   #37 rxpkt      : received packets per second, rate
-   #38 rxkbytes   : received Kbytes per seccond, rate
-   #39 rxerr      : number of errors while received pkt per second, rate
-   #40 rxdrop     : number of rx packets that were dropped per second, rate
-   #41 txpkt      : transmitted packets per second, rate
-   #42 txkbytes   : transmitted Kbytes per second, rate 
-   #43 txerr      : number of errors while transmitting pkt per second, rate
-   #44 cols       : number of collisions, rate
-   #45 drops      : number of dropped packets per second, rate
+   #38 rxpkt      : received packets per second, rate
+   #39 rxkbytes   : received Kbytes per seccond, rate
+   #40 rxerr      : number of errors while received pkt per second, rate
+   #41 rxdrop     : number of rx packets that were dropped per second, rate
+   #42 txpkt      : transmitted packets per second, rate
+   #43 txkbytes   : transmitted Kbytes per second, rate 
+   #44 txerr      : number of errors while transmitting pkt per second, rate
+   #45 cols       : number of collisions, rate
+   #46 drop       : number of dropped packets per second, rate
 
-   #46 avg1       : LA of the last minute, number
-   #47 avg5       : LA of the last 5 minutes, number
-   #48 avg15      : LA of the last 15 minutes, number
+   #47 avg1       : LA of the last minute, number
+   #48 avg5       : LA of the last 5 minutes, number
+   #49 avg15      : LA of the last 15 minutes, number
 END
     exit 0;
 }
@@ -586,7 +594,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.0, 2014-09-01
+sysrec: 1.0.0, 2015-02-17
 END
     exit 0;
 }

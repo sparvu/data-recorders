@@ -3,28 +3,37 @@
 # initial installation, after tasks
 chown -R krmx:krmx /opt/kronometrix || :
 
-if [ ! -f /etc/init.d/kronometrix ]; then
-    ln -s /opt/kronometrix/etc/kronometrix /etc/init.d/kronometrix || :
+if [ ! -L /etc/init.d/kronometrix ]; then
+    ln -s /opt/kronometrix/etc/rc/kronometrix /etc/init.d/kronometrix || :
 fi
 
-if [ ! -f /etc/init.d/kronometrix.transport ]; then
-    ln -s /opt/kronometrix/etc/kronometrix.transport /etc/init.d/kronometrix.transport || :
+if [ ! -L /etc/init.d/kronometrix_transport ]; then
+    ln -s /opt/kronometrix/etc/rc/kronometrix_transport /etc/init.d/kronometrix_transport || :
 fi
 
 # link here kronometrix
 update-rc.d kronometrix start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || :
 
 # link here kronometrix.transport
-update-rc.d kronometrix.transport start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || :
+update-rc.d kronometrix_transport start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || :
 
 if [ -d /opt/kronometrix ]; then
     chown -R krmx:krmx /opt/kronometrix/log || :
 fi
-su - krmx -c "/etc/init.d/kronometrix start >/dev/null 2>&1" || :
+/etc/init.d/kronometrix start >/dev/null 2>&1 || :
 
 # cronjobs
-echo "krmx" >> /etc/cron.allow || :
+if ! grep krmx /etc/cron.allow >/dev/null 2>&1; then
+    echo "krmx" >> /etc/cron.allow || :
+fi
+
 crontab -u krmx -l > /var/tmp/cronkrmx 2>/dev/null || :
 echo "59 23 * * *  /bin/sleep 59 && /usr/sbin/logrotate -f -s /opt/kronometrix/log/logkrmx.status /opt/kronometrix/etc/logrotate.krmx" >> /var/tmp/cronkrmx || :
 echo "00 00 * * *  /bin/sleep 30 && /opt/kronometrix/bin/raw2day" >> /var/tmp/cronkrmx || :
 crontab -u krmx /var/tmp/cronkrmx 2>/dev/null || :
+
+# restore config
+if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
+    cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
+fi
+

@@ -1,9 +1,6 @@
 #!/bin/sh
 
-# chkconfig:   2345 20 88
-# description: Kronometrix Data Recording, manages all message recorders
-#
-#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#  Copyright (c) 2015 Stefan Parvu (www.systemdatarecorder.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -24,6 +21,7 @@
 
 RETVAL=0
 OS_NAME=`uname -s`
+
 KRMX_PREFIX="/opt/kronometrix"
 KRMX_ETC=${KRMX_PREFIX}/etc
 KRMX_LOG=${KRMX_PREFIX}/log

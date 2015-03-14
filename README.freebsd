@@ -1,6 +1,150 @@
 
-==========================
-SystemDataRecorder FreeBSD
-==========================
+README Kronometrix Data Recording
 
-<To be updated>
+
+1.Supported Operating Systems
+
+  We support the following Linux based operating systems:
+   FreeBSD 10, 10.1 amd64, i386
+
+   Note: We dont support FreeBSD 9 or 8 at this time.
+
+
+2.Package Content
+
+  Kronometrix 1.0 FreeBSD edition contains, all data records, the 
+  transport utility. Along with these come the manual pages and 
+  documentation, all for free:
+
+    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec
+
+    - transport: sender at the moment uses HTTP protocol
+
+    - all needed libraries: openssl, libcurl, perl
+
+    - documentation: manual pages
+
+
+3.Prerequisites
+
+   o Make sure your system has installed chkconfig. It is not 
+     mandatory but highly recommended.
+
+   o For Ubuntu/Debian based systems enable cron:
+     # update-rc.d cron defaults
+     # chkconfig --list cron
+
+
+4.Install
+
+   Kronometrix can be installed using the RPM package management system
+   found on all RedHat based installations. The data recorders
+   and started automatically, after the software has been installed. The
+   transport utility will not start automatically.
+
+
+   RPM package
+
+     # rpm -ihv kronometrix-1.0.9-x86_64.rpm 
+       Preparing...        ########################################### [100%]
+           1:kronometrix   ########################################### [100%]
+
+     # ps -o uid,pid,cmd -u krmx
+      UID   PID CMD
+     5000 21123 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/sysrec 60
+     5000 21141 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/cpurec 60
+     5000 21159 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/diskrec 60
+     5000 21177 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/nicrec 60
+     5000 21195 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/hdwrec 60
+
+
+   DEB package
+
+     # dpkg -i /var/tmp/kronometrix-1.0.9-debian7.8-amd64.deb
+     Selecting previously unselected package kronometrix.
+     (Reading database ... 31233 files and directories currently installed.)
+     Unpacking kronometrix(from .../kronometrix-1.0.9-debian7.8-amd64.deb) ...
+     Setting up kronometrix (1.0.9) ...
+
+
+4.Uninstall
+
+   RPM package
+
+     # rpm -e kronometrix 
+     # ps -o uid,pid,cmd -u krmx
+
+
+   DEB package
+
+     # dpkg -P kronometrix
+     (Reading database ... 33706 files and directories currently installed.)
+     Removing kronometrix ...
+     dpkg: warning: while removing kronometrix, directory 
+       '/opt/kronometrix/log/current' not empty so not removed
+
+
+5.Start procedure
+
+  5.1 Agents
+  
+      We can start all agents, data recorders using kronometrix/etc/agents 
+      script. Make sure before running that you are logged as krmx user
+
+      As krmx user:
+        $ /opt/kronometrix/etc/agents start
+
+      As root:
+        # /etc/init.d/kronometrix start
+
+  5.1 Transport
+  
+      We can start sender, the transport utility kronometrix/etc/transport
+      script. Make sure before running that you are logged as krmx user
+
+      As krmx user:
+        $ /opt/kronometrix/etc/transport start
+
+      As root:
+        # /etc/init.d/kronometrix_transport start
+
+
+6.Stop procedure
+
+  5.1 Agents
+  
+      We can stop all agents, data recorders using kronometrix/etc/agents 
+      script. Make sure before running that you are logged as krmx user
+
+      As krmx user:
+        $ /opt/kronometrix/etc/agents stop
+
+      As root:
+        # /etc/init.d/kronometrix stop
+
+  5.1 Transport
+  
+      We can start sender, the transport utility kronometrix/etc/transport
+      script. Make sure before running that you are logged as krmx user
+
+      As krmx user:
+        $ /opt/kronometrix/etc/transport stop
+
+      As root:
+        # /etc/init.d/kronometrix_transport stop
+
+
+7.Configuration
+
+
+  7.1 kronometrix.json
+
+  7.2 Log rotation
+
+
+
+Notes
+
+  Kronometrix uses its own logrotate job in order to be flexible and dont 
+  conflict with other operating system jobs. raw2day as well is called after 
+  the logrotation has taken place ! 

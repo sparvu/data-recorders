@@ -1,302 +1,214 @@
 
-========================
-SystemDataRecorder Linux
-========================
-
-Recording Module
-
-OS                   : RedHat Enterprise Linux 5.x+ 32/64bit
-                       Ubuntu Server Edition 10.04+ 32/64bit
-                       CentOS 5.x+ 32/64bit
-                       Debian 6,7,8 32/64bit
-
-Kernel               : minim 2.6+ 32/64bit
+README Kronometrix Data Recording
 
 
-Prerequisites
-=============
+1.Supported Operating Systems
 
-CHKCONFIG:
-  Make sure your system has installed chkconfig. It is not 
-  mandatory but highly recommended.
+  We support the following Linux based operating systems:
+    CentOS release 5.11 (Final) x86_64, i386
+    CentOS release 6.6 (Final) x86_64, i386
+    CentOS Linux release 7.0.1406 (Core) x86_64, i386
+    Debian GNU/Linux 7 (wheezy) x86_64, i386
+    Ubuntu Server Edition 10.04+ x86_64, i386
+    Raspbian GNU/Linux 7 (wheezy) armv6
 
-For Ubuntu/Debian based systems enable cron:
-  # update-rc.d cron defaults
-  # chkconfig --list cron
-
-
-KSH93:
-  Make sure you have installed ksh93 on your Linux distribution.
-  Example for Ubuntu/Debian systems, 64bit:
-    apt-get install ksh , this will install ksh93 pkg 
-    (ksh_93t+20100309-1_amd64.deb)
-   
- 
-JAVA:
-  If you would like to use webrec, make sure you have downloaded
-  from your vendor, Oracle Java 6 version. webrec will require at 
-  least Java 6. Example for Java 6:
-
-  * Ubuntu/Debian/RedHat:
-    # mkdir /opt/java
-    # cd java
-    # sh jdk-6u45-linux-x64.bin
-    # ln -s jdk1.6.0_45 current
+  Note: Kernel 2.6+ (x86_64 i386), 3.12 (armv6)
 
 
-SDR Recording module can be installed and administered using two modes:
-automatic and manual.
+2.Package Content
+
+  Kronometrix 1.0 Linux edition contains, all data records, the 
+  transport utility and additional weather data recorders. Along 
+  with these come the manual pages and documentation, all for free:
+
+    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec, procrec, jvmrec, 
+      netrec, wsrec, xenrec
+
+    - transport: sender at the moment uses HTTP protocol
+
+    - all needed libraries: openssl, libcurl, perl
+
+    - documentation: manual pages
 
 
-Automatic Mode
-==============
+3.Prerequisites
 
-  Under automatic mode, the installation and start-up of SDR software
-  is done by the package management software: RPM or DEB. The recorders
-  and started automatically, after the software has been installed.
+  o Make sure your system has installed chkconfig. It is not 
+    mandatory but highly recommended.
 
-  Note: to configure SDR software you need to check sdr.conf and
-  manually restart, if needed, the recorders or the transporter part.
+  o For Ubuntu/Debian based systems enable cron:
+      # update-rc.d cron defaults
+      # chkconfig --list cron
+
+
+4.Install
+
+  Kronometrix can be installed using the RPM package management system
+  found on all RedHat based installations. The data recorders
+  and started automatically, after the software has been installed. The
+  transport utility will not start automatically.
+
+
+  RPM package
+
+    # rpm -ihv kronometrix-1.0.9-x86_64.rpm 
+      Preparing...        ########################################### [100%]
+          1:kronometrix   ########################################### [100%]
+
+    # ps -o uid,pid,cmd -u krmx
+      UID   PID CMD
+     5000 21123 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/sysrec 60
+     5000 21141 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/cpurec 60
+     5000 21159 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/diskrec 60
+     5000 21177 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/nicrec 60
+     5000 21195 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/hdwrec 60
+
+
+  DEB package
+
+    # dpkg -i /var/tmp/kronometrix-1.0.9-debian7.8-amd64.deb
+      Selecting previously unselected package kronometrix.
+      (Reading database ... 31233 files and directories currently installed.)
+      Unpacking kronometrix(from .../kronometrix-1.0.9-debian7.8-amd64.deb) ...
+      Setting up kronometrix (1.0.9) ...
+
+
+4.Uninstall
+
+  RPM package
+
+    # rpm -e kronometrix 
+    # ps -o uid,pid,cmd -u krmx
+
+
+  DEB package
+
+    # dpkg -P kronometrix
+      (Reading database ... 33706 files and directories currently installed.)
+      Removing kronometrix ...
+      dpkg: warning: while removing kronometrix, directory 
+      '/opt/kronometrix/log/current' not empty so not removed
+
+
+5.Start procedure
+
+  5.1 Agents
+
+    We can start all agents, data recorders using kronometrix/etc/agents 
+    script. Make sure before running that you are logged as krmx user
+
+    As krmx user:
+      $ /opt/kronometrix/etc/agents start
+
+    As root:
+      # /etc/init.d/kronometrix start
+
+  5.1 Transport
   
-  1.1 Install SDR package:
+    We can start sender, the transport utility kronometrix/etc/transport
+    script. Make sure before running that you are logged as krmx user
 
-    RPM based systems:
-    # rpm -ihv sdr-1.0-linux-x86_64.rpm
-     Preparing...                ########################################### [100%]
-        1:sdr                    ########################################### [100%]
-     Starting SDR recorders
-      sysrec: ok
-      cpurec: ok
-      nicrec: ok
-      hdwrec: ok
+    As krmx user:
+      $ /opt/kronometrix/etc/transport start
 
-  1.2 Uninstall SDR package:
-
-    RPM based systems:
-    # rpm -e sdr
-     Stopping SDR recorders
-      sysrec: ok
-      cpurec: ok
-      nicrec: ok
-      hdwrec: ok
+    As root:
+      # /etc/init.d/kronometrix_transport start
 
 
-Manual Mode
-===========
+6.Stop procedure
 
-  2.1 Install SDR package
+  6.1 Agents
+  
+    We can stop all agents, data recorders using kronometrix/etc/agents 
+    script. Make sure before running that you are logged as krmx user
 
-    2.1.1 User/Group
+    As krmx user:
+      $ /opt/kronometrix/etc/agents stop
 
-      SDR software should be configured to run as sdr user, if possible.
-      If not, we can run all recorders as superuser and we can transport
-      all sdrd files as sdr user. This way we can separate between super
-      user and sdr user.
+    As root:
+      # /etc/init.d/kronometrix stop
 
-      Create a specific username/group for SDR. Select 'sdr'
-      for a default installation:
+  6.2 Transport
+  
+    We can start sender, the transport utility kronometrix/etc/transport
+    script. Make sure before running that you are logged as krmx user
 
-        # groupadd -g 500 sdr
-        # useradd -u 500 -d /home/sdr -g sdr -m sdr
+    As krmx user:
+      $ /opt/kronometrix/etc/transport stop
 
-        Note: sdr username should be part of the system accounts, if possible.
-        If 500 id is already reserved make sure you allocate another id
-        and properly change the owner of the installation for sdr.
-
-    2.1.2 Package installation
-
-      SDR ships as a RPM, DEB or TAR archive. For manual installation select the
-      TAR archive. Place the installation under /opt filesystem.
-    
-        # cd /opt
-        # bzcat sdr-0735-linux-x64.tar.bz2 | tar xvf -
+    As root:
+      # /etc/init.d/kronometrix_transport stop
 
 
-  2.2 Start Procedure
+7.Raw data
 
-    By default, sdr start-up script will start 5 main recorders: sysrec, cpurec,
-    diskrec, nicrec and hdwrec. Edit start-up sdr script, if you require to add
-    remove recorders from the start-up list, defined under SDR_SVC variable. 
-
-    Example: 
-      * enable sysrec, cpurec, netrec SDR_SVC="sys cpu net"
-      * enable sysrec, netrec SDR_SVC="sys net"
-
-    SDR start sequence:   
-      # cd /etc/init.d
-      # ln -s /opt/sdr/etc/sdr .
-      # ln -s /opt/sdr/etc/sdr.transport .
-      # chkconfig --add sdr
-      # chkconfig --add sdr.transport
-      # chkconfig --list sdr
-      # chkconfig --list sdr.transport
-
-      # /etc/init.d/sdr start
-      Starting SDR recorders
-       sysrec: ok
-       cpurec: ok
-       nicrec: ok
-       hdwrec: ok
-
-      Note: On some Debian/Ubuntu based systems we need to sym link insserv before 
-      using chkconfig: 
-        # ln -s /usr/lib/insserv/insserv /sbin/insserv
-
-    SDR Transport mode is used to send sdrd raw data to a backend system
-    for further analysis. Transport mode includes two operating modes:
-      
-    - Instant Transport Mode
-      All sdrd raw data updates are delivered as soon as they happen 
-      via HTTP or SSH2. Transport is handled by the sender utility.
-
-      Note: Before starting sender, make sure you have defined under 
-      /opt/sdr/etc/sdr.conf a valid subscription id. Without a valid subscription id 
-      sender wont be able to start:
-
-      Starting SDR transport
-       sender: error: main - no subscription defined, check sdr.conf
-      failed
-
-      After you have defined the reporting host, the subscription id and credentials
-      you can easily transport sdrd raw data updates, by starting sender:
-
-        # /etc/init.d/sdr.transport start
-        Starting SDR transport
-         sender: ok
+  Kronometrix data recorders will write the raw data under the main
+  prefix installation directory:
  
-    - Batch Transport Mode
-      All sdrd raw data files are delivered one time per day, the batch being
-      scheduled to run at a fixed time.
-          
-        # env EDITOR=vi crontab -e
-        06 00 * * *  /opt/sdr/bin/raw2day
+    /opt/kronometrix/log/current
 
-        Note: We can try to rotate logs as close as possible to midnight. 
-        See below example:
+  For every data recorder, one raw data file, having .krd extension
+  will be created and updated. Every night, we rotate these krd files
+  and store them under:
 
-        00 00 * * * /bin/sleep 30 && /opt/sdr/bin/raw2day -t sftp
+    /opt/kronometrix/log/daily
+
+
+8.Configuration
+
+  All data recorders do not need extra configuration except the transport
+  utility, sender. It is recommended to dont change or alter data recorders
+  configuration, since they are already configured.
+
+  8.1 kronometrix.json
+
+    This is the main configuration file used by the sender transport
+    utility. All data recorders wont use or consult this file. 
+
+    Logging section
+
+    This is the section defining all raw data logs will be stored and
+    the base path for the entire logs. This can be located on a local
+    disk or a remote LUN. Usually, this section, should not be changed 
+    or removed.
+
+
+    Transport section
+
+    Describes all raw data files and their naming convention. Usually, 
+    this section, should not be changed or removed.
+
+
+    Appliance section
+ 
+    This is the section where users should defined where they want to 
+    send data. The appliance section describes the details of one or
+    many data analytics appliances, each with own settings.
+
+    All raw data can be transported to one or many appliances at the same
+    time. Under this section we need to define and configure, the following:
+
+      o appliance port number, the port number default 80
      
- 
-  2.3 Stop procedure
+      o appliance hostname, IP or FQD of the appliance 
+  
+      o protocol: HTTP or HTTPS, currently we support HTTP only
 
-    # /etc/init.d/sdr stop
-    Stopping SDR recorders
-     sysrec: ok
-     cpurec: ok
-     nicrec: ok
-     hdwrec: ok
+      o lmo id: cpd or amd or wcd. cpd means, computer performance data 
+        and describes data belong to IT computer performance.
 
-    # /etc/init.d/sdr.transport stop
-    Stopping SDR transport
-     sender: ok
+        o sid: subscription id
 
+        o tid: token id
 
-  2.4 SDRD Raw data file rotation
+        o dsid: to be let empty, will be computed
 
-    sdrd raw data files, from each host must be rotated every night in order to
-    keep a clean status of each daily activity. To do this we need to configure
-    logrotate on each host being monitored.
-
-    Transport and SDRD Raw data rotation should be configured as sdr username. 
-    Enable log rotation every 24hrs. Configure sdr rotation script and raw2day. 
-    Edit sdr's crontab, to enable the sdrd raw data rotation and if needed the
-    batch transport:
-
-    $ env EDITOR=vi crontab -e
-    59 23 * * *  /bin/sleep 59 && /usr/sbin/logrotate -f -s /opt/sdr/log/logsdr.status \
-    /opt/sdr/etc/logrotate.sdr
-    00 00 * * *  /bin/sleep 30 && /opt/sdr/bin/raw2day -t sftp
-
-    The previous example does rotate sdrd files every 23:59:59 and will
-    transport them via SFTP to a reporting backend at 00:00:30, every night.
- 
-
-SDR Configuration
-=================
-
-  All SDR recorders do have their own start-up scripts under /opt/sdr/etc  
-  and do not use any centralized configuration management file. The reason 
-  is simple: to minimize the memory usage and keep things simple.
-
-  On the other hand the transport utilities, raw2day and sender use sdr.conf, 
-  a XML based type of configuration which defines certain system properties 
-  important how and where the sdrd raw data will be delivered.
-
-  Recording element:
-
-    * sender: if you plan to transport sdrd raw data using instant
-      mode, transport it as soon as we have it, make sure you configure 
-      sender:
-
-      <!-- Instant Monitoring -->
-      <sender description="Sender configuration">
-
-        <private_key path="" description="The private authentication key" />
-
-        <!-- Subscription Id -->
-        <subscription></subscription>
-
-        <!-- Reporting Destination -->
-        <destination>reporting</destination>
-
-        <!-- Transport Modes: http ssh2 -->
-        <transport>http</transport>
-
-        <!-- TCP Keepalive 0: disabled, 1: enabled -->
-        <tcp_keepalive>0</tcp_keepalive>
-
-        <data>
-          <!-- Raw data files -->
-          <sdrd name="sys"  description="Overall system sysrec.sdrd" />
-          <sdrd name="cpu"  description="Cpu cpurec.sdrd"  />
-          <sdrd name="disk" description="Disk diskrec.sdrd" />
-          <sdrd name="nic"  description="Nic nicrec.sdrd"  />
-          <sdrd name="hdw"  description="Hdw hdwrec.sdrd"  />
-        </data>
-
-      </sender>
-
-   
-    Reporting element:
-
-    * destination: define where and how you plan to transport your sdrd data.
-      There can be one or many reporting servers, defined but only one 
-      will be configured under recording element to be used. Configure here 
-      the reporting hostname, the http or ssh2 ports if HTTP or SSH2 are running on
-      different ports than standard, the credentials: username, password or public key. 
-
-      If you don't specify a valid password automatically means we are using public keys.
-
-      <!-- Destination Reporting Servers -->
-      <host name="reporting" ver="0.74" description="SDR Reporting Server">
-        <http description="default HTTP port">
-          <port>80</port>
-          <!-- Via HTTP Proxy -->
-          <proxy></proxy>
-          <proxyport></proxyport>
-        </http>
-
-        <ssh2 description="default SSH2 port">
-          <port>22</port>
-        </ssh2>
-
-        <username>sdr</username>
-        <!-- PLEASE USE SSH Public Key Based Authentication ! -->
-        <password></password>
-      </host>
+      
+  8.2 Log rotation
 
 
 Notes
-=====
 
-  Diskrec is currently under development and it is not included as part of 
-  SDR 0.74 release.
-
-  SDR Recording Linux supports any distribution based on Linux x86_64 kernel
-  versions 2.6 at least.  
-
-  SDR uses its own logrotate job in order to be flexible and dont conflict with
-  other operating system jobs. raw2day as well is called after the logrotation
-  has taken place ! If your installation requires to copy every night the raw
-  data to the reporting system, make sure you configure raw2day and check the
-  SDR Manual for more information.
+  Kronometrix uses its own logrotate job in order to be flexible and dont 
+  conflict with other operating system jobs. raw2day as well is called after 
+  the log rotation has taken place ! 

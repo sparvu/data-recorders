@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@ use File::Tail;
 use File::Temp qw(tempfile);
 use File::Copy;
 use File::Basename;
+use UUID::Tiny ':std';
 use Digest::SHA;
 use WWW::Curl::Easy;
 use Getopt::Std;
@@ -65,12 +66,9 @@ my $cdata;                 # configuration data
 my $tcpka = 0;             # transport TCP keepalive settings
 my $sid   = "";            # subscription id
 my $token = "NA";          # token id
-my ( $datafeed, $dataport );    # datafeed settings
-my ( $dr,       $dest );
 my @files;
 
 ## configuration
-my $hostid;
 my ( $baselog, $curlog, $slog );
 my @dbs;
 my %appliance;
@@ -91,17 +89,17 @@ my $osname = "$^O";
 # read configuration
 $cdata = open_config($cfile);
 
-## hostid
-$hostid = get_hostid($cdata);
+# get OS host UUID
+get_hostid($cdata);
 
-## logs
+# logs
 ( $baselog, $curlog ) = get_log($cdata);
 $slog = $baselog . "/sender.log";
 
-## datafile
+# datafile
 @dbs = get_datafile($cdata);
 
-## appliance destination
+# appliance destination
 %appliance = get_appliance($cdata);
 
 print "appliance hash: " . keys(%appliance) . ".\n";
@@ -110,7 +108,7 @@ for my $key ( keys %appliance ) {
     print "$key => $value\n";
 }
 
-## SIGHUP handler
+# SIGHUP handler
 $SIG{HUP} = \&reload_config;
 
 # Daemonize
@@ -132,7 +130,7 @@ else {
 
 # If already running, then exit
 if ( Proc::PID::File->running( { dir => "$baselog" } ) ) {
-    exit(0);
+    exit 0;
 }
 
 # cd krd raw data directory
@@ -251,15 +249,15 @@ while (1) {
                 # cpd:hostname2:443:00000000000000000000000000000000
                 # lmo:host:port:sid => $token:$proto:$ka
                 my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
-                my ( $tid, $proto, $ka ) = split( /:/, $value );
+                my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
 
-                writelog("info: main - $lid => $hname:$port:$sid  value=$tid:$proto:$ka"
+                writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
                 ) if ( $verbose_flag == 1 );
 
                 if ($lid eq $lmoid ) {
                     
                     # writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
-                    send_data( $http, $hname, $sid, $tid, $hostid,
+                    send_data( $http, $hname, $sid, $tid, $dsid,
                         $msgid, $devid, $proto, $port, $delta );
                 }
             }
@@ -366,7 +364,7 @@ sub reload_config {
     $cdata = open_config($cfile);
 
     ## hostid
-    $hostid = get_hostid($cdata);
+    get_hostid($cdata);
 
     ## datafile
     @dbs = get_datafile($cdata);
@@ -414,15 +412,75 @@ sub get_hostid {
     # get hostuuid
     my $h = new_hostid;
 
-    my $fh = $data->{'host_id'};
+    # populate DSID
+    make_dsid($data, $h);
+}
 
-    if ( $fh ne $h ) {
-        $data->{'host_id'} = $h;
-        write_config( $cfile, $data );
+# make data source ids, dsid
+sub make_dsid {
+
+    my ($data, $huuid) = @_;
+    my @lmo = ('cpd', 'amd', 'wcd');
+
+    # sid - subscription id
+    # dsid - data source id
+    # get all sids and generate dsid for each
+    # dsid must be unique per sid
+
+    my @applx = @{ $data->{'transport'}->{'appliance'} };
+
+    # populate dsid for each appliance and lmo
+    foreach my $appliance (@applx) {
+        my ($sid, $tid, $dsid);
+
+        my $host  = $appliance->{'host'};
+        my $port  = $appliance->{'port'};
+
+        # last call, look for subscription id, sid
+
+        foreach my $mo (@lmo) {
+
+            if ($appliance->{"$mo"}) {
+
+                my @sub = @{ $appliance->{"$mo"} };
+
+                foreach my $sd (@sub) {
+
+                    # get sid, tid
+                    $sid = $sd ->{'sid'};
+                    $tid = $sd ->{'tid'};
+
+                    # get dsid
+                    $dsid = $sd ->{'dsid'};
+                   
+                    if ($dsid eq "" ) {
+
+                        if ( $sid ne "" ) {
+                            my $str = $huuid . $sid;
+                            $dsid = create_uuid_as_string(UUID_V5,$str);
+                            chomp($dsid);
+                            # print "sid=$sid tid=$tid dsid=$dsid\n";
+                            $sd->{'dsid'} = $dsid;
+                            write_config( $cfile, $data );
+                        } else {
+                            exit 1;
+                        }
+                    } else {
+                        my $str = $huuid . $sid;
+                        my $dsid_man = create_uuid_as_string(UUID_V5,$str);
+                        chomp($dsid_man);
+
+                        if ( $dsid ne $dsid_man ) {
+                            # we need to update json file
+                            # print "Not OK: $dsid => $dsid_man\n";
+                            $sd->{'dsid'} = $dsid_man;
+                            write_config( $cfile, $data );
+                        }
+                    }
+                }
+            }
+        }
     }
-
-    # return hostid
-    return $h;
 }
 
 # get logs
@@ -460,12 +518,12 @@ sub get_appliance {
     my ($data) = @_;
     my %appl;
 
-    my @lmo = ('cpd', 'amd', 'wcd', 'bad');
+    my @lmo = ('cpd', 'amd', 'wcd');
 
     my @temp = @{ $data->{'transport'}->{'appliance'} };
 
     foreach my $f (@temp) {
-        my ($sid, $tid);
+        my ($sid, $tid, $dsid);
 
         my $ka    = $f->{'keepalive'};
         my $proto = $f->{'protocol'};
@@ -482,18 +540,20 @@ sub get_appliance {
 
                 foreach my $sd (@sub) {
 
-                    # get sid, tid
-                    $sid = $sd ->{'sid'};
-                    $tid = $sd ->{'tid'};
+                    # get sid, tid, dsid
+                    $sid  = $sd ->{'sid'};
+                    $tid  = $sd ->{'tid'};
+                    $dsid = $sd ->{'dsid'};
 
                     if ( defined($host)
                          and defined($sid)
+                         and defined($dsid)
                          and defined($tid)
                          and defined($proto)
                          and defined($port)
                          and defined($ka) ) {
                         my $keyapp = $mo . ":" . $host . ":" . $port . ":" . $sid;
-                        $appl{$keyapp} = "$tid:$proto:$ka";
+                        $appl{$keyapp} = "$dsid:$tid:$proto:$ka";
                     }
                 }
             }
@@ -524,7 +584,7 @@ sub writelog {
 sub send_data {
 
     my (
-        $curl,  $dest,   $sid,   $token, $hid,
+        $curl,  $dest,   $sid,   $token, $dsid,
         $msg_id, $dev_id, $proto, $port,  $delta
     ) = @_;
     my $response;
@@ -535,11 +595,11 @@ sub send_data {
     my ($hash, $post);
 
     if ( $msg_id =~ /cpurec|diskrec|nicrec/ ) {
-        $hash   = sha256krd("$msg_id:$sid:$hid:$delta");
-        $post   = "$msg_id:$sid:$hid:$delta:$hash";
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
+        $post   = "$msg_id:$sid:$dsid:$delta:$hash";
     } else {
-        $hash   = sha256krd("$msg_id:$sid:$hid:$dev_id:$delta");
-        $post   = "$msg_id:$sid:$hid:$dev_id:$delta:$hash";
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$dev_id:$delta");
+        $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
     }
     writelog("info: send_data - $post data to be delivered")
         if ( $verbose_flag == 1 );
@@ -609,7 +669,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.0, 2014-12-21
+sender: 1.0.0, 2015-02-17
 END
     exit 0;
 }

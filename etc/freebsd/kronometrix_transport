@@ -1,0 +1,60 @@
+#!/bin/sh
+
+#  Copyright (c) 2015 Stefan Parvu (www.systemdatarecorder.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+#
+# Add the following lines to /etc/rc.conf to enable Kronometrix
+#
+# kronometrix_transport_enable="YES"
+# kronometrix_user="krmx"
+
+. /etc/rc.subr
+
+name=kronometrix_transport
+rcvar=kronometrix_transport_enable
+
+load_rc_config ${name}
+
+command=/opt/kronometrix/etc/transport
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+status_cmd="${name}_status"
+
+: ${kronometrix_transport_enable="YES"}
+: ${kronometrix_user="krmx"}
+: ${kronometrix_transport_args=""}
+
+kronometrix_transport_start() {
+    unset "${rc_arg}_cmd"
+    local cmd
+    kronometrix_transport_args="start"
+    cmd="${command} ${kronometrix_transport_args}"
+    su -m ${kronometrix_user} -c "${cmd}" 
+}
+
+
+kronometrix_transport_stop() {
+    local cmd
+    kronometrix_transport_args="stop"
+    cmd="${command} ${kronometrix_transport_args}"
+    su -m ${kronometrix_user} -c "${cmd}"
+}
+
+
+run_rc_command "$1"

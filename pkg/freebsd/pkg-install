@@ -1,0 +1,58 @@
+#!/bin/sh
+
+RC_CONF=/etc/rc.conf
+
+
+if [ $2 == "PRE-INSTALL" ]; then
+    if ! /usr/sbin/pw groupshow krmx >/dev/null 2>&1; then
+        /usr/sbin/pw groupadd krmx -g 5000
+    fi
+
+    if ! /usr/sbin/pw usershow krmx >/dev/null 2>&1; then
+        /usr/sbin/pw useradd krmx -m -d /home/krmx \
+         -u 5000 -g 5000 -c "Kronometrix user"
+    fi
+fi
+
+if [ $2 == "POST-INSTALL" ]; then
+
+    # setup crontabs
+    if ! grep krmx /etc/cron.allow >/dev/null; then
+        echo "krmx" >> /etc/cron.allow || :
+    fi
+
+    if [ ! -f /var/cron/tabs/krmx ]; then
+        echo "59 23 * * *  /bin/sleep 59 && newsyslog -f /etc/newsyslog.conf.d/kronometrix" >> /var/cron/tabs/krmx
+        echo "00 00 * * *  /bin/sleep 30 && /opt/kronometrix/bin/raw2day" >> /var/cron/tabs/krmx
+    fi
+    cp /opt/kronometrix/etc/rc/kronometrix* /etc/rc.d/
+    /etc/rc.d/kronometrix onestart >/dev/null 2>&1
+
+    # restore config
+    if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
+        cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
+    fi
+
+    chown -R krmx:krmx /opt/kronometrix
+
+    # install service
+    grep kronometrix ${RC_CONF} >/dev/null 2>&1
+    if [ $? -eq 1 ]; then
+
+        # add the service
+        echo "kronometrix=\"YES\"" >> ${RC_CONF}
+        if [ $? -eq 1 ]; then
+            echo "Error: cannot activate service, exit now"
+            exit 1
+        fi
+
+        grep kronometrix_user ${RC_CONF} >/dev/null 2>&1 
+        if [ $? -eq 1 ]; then
+            echo "kronometrix_user=\"krmx\"" >> ${RC_CONF}
+            if [ $? -eq 1 ]; then
+                echo "Error: cannot activate service, exit now"
+                exit 1
+            fi
+        fi
+    fi
+fi

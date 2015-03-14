@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -118,8 +118,38 @@ while (1) {
     # fetch dist_id, os, codename
     my ($distid, $os, $relos) = "NA";
 
-    if (-e "$lsb") {
-
+    if (-e "/etc/redhat-release") {
+        # rhel systems
+        open my $rhelrel, "<", "/etc/redhat-release"
+            or die "error: cannot find redhat-release: $!\n";
+        while (<$rhelrel>) {
+            chomp;
+            if ($_ =~ /^CentOS/o) {
+                # CentOS release 5.11 (Final)
+                # CentOS release 6.6 (Final)
+                # CentOS Linux release 7.0.1406 (Core)
+                $os="CentOS";
+                $distid="CentOS";
+                $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
+            } elsif ($_ =~ /^Red/o) {
+                # Red Hat Enterprise Linux Server release 6.1 (Santiago)
+                $os = "RHEL";
+                $distid = "RHEL"; 
+                $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
+            }
+        }
+        close $rhelrel;
+    } elsif ( -e "/etc/debian_version" ) {
+        open my $debrel, "<", "/etc/os-release"
+          or die "error: cannot find os_release: $!\n";
+        while (<$debrel>) {
+            chomp;
+            $os = $1 if $_ =~ /^NAME\=\"(\w+).*\"$/;
+            $relos = $1 if $_ =~ /^VERSION_ID\=\"(\d+(?:\.\d+(?:\.\d+)?)?)\"$/;
+            $distid = $os;
+        }
+        close $debrel;
+    } elsif ( -e "$lsb") {
         open my $LSBINFO, "-|", "$lsb", "-a"
             or die "error: cannot execute lsb_release - $!";
 
@@ -130,33 +160,10 @@ while (1) {
         $os = $distid;
 
         close $LSBINFO;
-
     } else {
-
-        # fallback on release etc info
-        if (-e "/etc/redhat-release") {
-            # rhel systems
-            open my $rhelrel, "<", "/etc/redhat-release"
-                or die "error: cannot find redhat-release: $!\n";
-            while (<$rhelrel>) {
-                chomp;
-                $distid = "RedHatEnterpriseServer"; $os = $_; $relos = $1 if $_ =~ /.*\s+(.*)$/;
-            }
-            close $rhelrel;
-            $relos =~ s/^\(//;
-            $relos  =~ s/\)$//; 
-        } elsif ( -e "/etc/debian_version" ) {
-            open my $debrel, "<", "/etc/debian_version"
-                or die "error: cannot find debian_version: $!\n";
-            while (<$debrel>) {
-                chomp;
-                $os="Debian"; $distid="Debian"; $relos="$_";
-            }
-            close $debrel;
-        }
-
-
+        $os="NA"; $relos="NA"; $distid="NA";
     }
+
 
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
@@ -258,7 +265,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.0, 2014-05-04
+hdwrec: 1.0.9, 2015-03-03 1341
 END
     exit 0;
 }

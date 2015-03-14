@@ -1,9 +1,6 @@
 #!/bin/sh
 
-# chkconfig:   2345 20 88
-# description: Kronometrix Data Recording, manages all message recorders
-#
-#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#  Copyright (c) 2015 Stefan Parvu (www.systemdatarecorder.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -35,19 +32,6 @@ test -f ${KRMX_BIN}/sender || exit 0
 start() {
     echo "Starting KRMX transport"
 
-    # check uid
-    if [ "X${OS_NAME}" = "XSunOS" ]; then
-        if [ "`/usr/xpg4/bin/id -ur`" != '0' ]; then
-            echo 'Error: you must be root to start KRMX transport'
-            exit 1
-        fi
-    else
-        if [ "`id -ur`" != '0' ]; then
-            echo 'Error: you must be root to start KRMX transport'
-            exit 1
-        fi
-    fi
-
     RETVAL=0
 
     if [ "X${OS_NAME}" = "XSunOS" ]; then
@@ -60,7 +44,7 @@ start() {
     if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
         kill -0 `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
         if [ $? -ne 0 ]; then
-            su - krmx -c "${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
+            ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
             RETVAL=$?
         else
             RETVAL=1
@@ -68,7 +52,7 @@ start() {
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     else
         # no pid files
-        su - krmx -c "${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1"
+        ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
         RETVAL=$?
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     fi

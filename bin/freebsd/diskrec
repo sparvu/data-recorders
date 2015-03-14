@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2014 Stefan Parvu (www.systemdatarecorder.org).
+#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -88,39 +88,6 @@ while (1) {
 
 ### SUBROUTINES
 
-# usage - print usage and exit.
-#
-sub usage {
-    print STDERR <<END;
-USAGE: diskrec [-hV] | [interval [count]]
- e.g. diskrec 5       print continuously, every 5 seconds
-      diskrec 1 5     print 5 times, every 1 second
-
- FIELDS:
-  #01 timestamp  : seconds since Epoch, time
-  #02 name       : disk name, string
-  #03 reads      : read requests per second, rate
-  #04 rkbytes    : read KBytes per seconds, rate 
-  #05 writes     : write requests per second, rate
-  #06 wkbytes    : write KBytes per seconds, rate 
-  #08 queue      : the number of not yet completed transactions, rate
-  #07 service    : service time per transaction in miliseconds, number
-  #09 busy       : the percentage of time the device had one or more 
-                   transactions outstanding, number
-END
-    exit 0;
-}
-
-
-## revision - print revision and exit
-sub revision {
-    print STDERR <<END;
-diskrec: 1.0.0, 2014-09-01
-END
-    exit 0;
-}
-
-
 sub get_diskstat {
     
     my ($t) = @_;
@@ -146,4 +113,36 @@ sub get_diskstat {
         printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
                $pt, $name, $xr, $xbr, $xw, $xbw, $q, $s, $b;
     }    
+}
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: diskrec [-hV] | [interval [count]]
+ e.g. diskrec 5       print continuously, every 5 seconds
+      diskrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 name       : disk name, string
+  #03 reads      : read requests per second, rate
+  #04 rkbytes    : read KBytes per seconds, rate 
+  #05 writes     : write requests per second, rate
+  #06 wkbytes    : write KBytes per seconds, rate 
+  #08 queue      : the number of not yet completed transactions, rate
+  #07 service    : service time per transaction in miliseconds, number
+  #09 diskutil   : the percentage of time the device had one or more 
+                   transactions outstanding, number
+END
+    exit 0;
+}
+
+
+## revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+diskrec: 1.0.0, 2015-02-17
+END
+    exit 0;
 }

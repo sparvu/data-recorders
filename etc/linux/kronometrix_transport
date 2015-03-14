@@ -1,5 +1,10 @@
 #!/bin/sh
 #
+# chkconfig: 2345 96 10
+# description: kronometrix data transport services
+#
+# /etc/init.d/kronometrix_transport
+#
 #  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
@@ -19,17 +24,42 @@
 #  (http://www.gnu.org/copyleft/gpl.html)
 
 
-# ######### #
-# MAIN BODY #
-# ######### #
+RETVAL=0
+OS_NAME=`uname -s`
 
-PWD=`dirname $0`
-if [ "$PWD" = "." ]; then
-    . ../bin/setenv
-else
-    PWD=`echo $PWD | sed 's/etc.*//'`
-    . ${PWD}bin/setenv
-fi
+BASEDIR="/opt/kronometrix/etc"
+KRMX_SVC="${BASEDIR}/transport"
+KRMX_USER="krmx"
 
-${KRMX_BIN}/jvmrec 300 >> ${JVMREC_CUR} 2>> ${JVMREC_LOG} &
-echo "$!" > ${KRMX_LOG}/jvmrec.pid
+# basedir test
+test -d ${BASEDIR} || exit 0
+test -f ${KRMX_SVC} || exit 0
+
+
+start() {
+    su - $KRMX_USER -c "${KRMX_SVC} start >/dev/null 2>&1"
+}
+
+
+stop() {
+    su - $KRMX_USER -c "${KRMX_SVC} stop >/dev/null 2>&1"
+}
+
+
+case "$1" in
+   start)
+      start
+      ;;
+   stop)
+      stop
+      ;;
+   restart)
+      stop
+      start
+      ;;
+   *)
+      echo "Usage: $0 {start|stop|restart}"
+      exit 1
+esac
+exit $RETVAL
+

@@ -1,25 +1,33 @@
 #!/bin/sh
 
 update-rc.d -f kronometrix remove >/dev/null 2>&1 || : 
-update-rc.d -f kronometrix.transport remove >/dev/null 2>&1 || :
+update-rc.d -f kronometrix_transport remove >/dev/null 2>&1 || :
 
 # check for old installs
-if [ -f /etc/init.d/kronometrix.transport ]; then
-    /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
-    update-rc.d -f kronometrix.transport remove >/dev/null 2>&1 || :
-    rm -f /etc/init.d/kronometrix.transport || :
+if [ -f /etc/init.d/kronometrix_transport ]; then
+    /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
+    update-rc.d -f kronometrix_transport remove >/dev/null 2>&1 || :
+    rm -f /etc/init.d/kronometrix_transport || :
 fi
 
 # uinstall
 if [ -f /etc/init.d/kronometrix ]; then
-    su - krmx -c "/etc/init.d/kronometrix stop >/dev/null 2>&1" || :
+    /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
     rm -f /etc/init.d/kronometrix || :
 fi
 
-if [ -f /etc/init.d/kronometrix.transport ]; then
-    /etc/init.d/kronometrix.transport stop >/dev/null 2>&1 || :
-    rm -f /etc/init.d/kronometrix.transport || :
+if [ -f /etc/init.d/kronometrix_transport ]; then
+    /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
+    rm -f /etc/init.d/kronometrix_transport || :
 fi
 
 # wipeout krmx crontab
 crontab -u krmx -r  2>/dev/null || :
+
+# make a copy of kronometrix.json
+if [ -f /opt/kronometrix/etc/kronometrix.json ]; then
+    if [ ! -d /opt/kronometrix/backup ]; then
+        mkdir /opt/kronometrix/backup
+    fi
+    cp /opt/kronometrix/etc/kronometrix.json /opt/kronometrix/backup || :
+fi
