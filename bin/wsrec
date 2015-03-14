@@ -40,7 +40,7 @@ usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 getopts('dhvp') or usage();
 usage() if defined $main::opt_h;
 revision() if defined $main::opt_v;
-my $rrd   = defined $main::opt_p ? $main::opt_p : 0;
+my $csv   = defined $main::opt_p ? $main::opt_p : 0;
 my $debug = defined $main::opt_d ? $main::opt_d : 0;
 
 # process [[interval [count]]
@@ -290,7 +290,7 @@ while (1) {
 
         if ($line >= $PAGESIZE) {
             # print human readable
-            if ($rrd == 0) {
+            if ($csv == 0) {
                 printf "%8s %3s %3s %6s %6s %6s %6s %5s %5s %3s %4s %4s %5s %6s\n",
                    "Time", "IH%", "OH%", "IT(C)", "OT(C)", "DP(C)", "WC(C)", "W(m/s)", "G(m/s)", "WD",
                    "1Hr", "24Hr", "T", "P";
@@ -325,6 +325,7 @@ while (1) {
 	my $gust = unpack('x10C', $current_block);
 	my $wind_extra = unpack('x11C', $current_block);
 	my $wind_dir = unpack('x12C', $current_block);
+        print "wind_dir $wind_dir\n";
 	my $total_rain = unpack('x13S', $current_block) * 0.3;
 
 	$wind_speed = ($wind + (($wind_extra & 0x0F) <<8)) * 0.38;	# Was 0.1
@@ -355,7 +356,7 @@ while (1) {
 	($hourly_rain_rate += $_) for @hourly_rain;
 	($daily_rain_rate += $_) for @daily_rain;
 	
-	if ($rrd == 1) {
+	if ($csv == 1) {
 	    printf("%d:%d:%d:%.1f:%.1f:%.1f:%.1f:%.1f:%.1f:%s:%.1f:%.1f:%.1f:%.1f\n",
 	        time,
                 $indoor_humidity, $outdoor_humidity, $indoor_temperature, $outdoor_temperature, 
