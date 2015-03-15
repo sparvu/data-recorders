@@ -23,6 +23,7 @@ use warnings;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use Sys::Statistics::Linux;
+use Linux::Distribution qw(distribution_name distribution_version);
 use POSIX qw(pause);
 use Sys::Hostname;
 
@@ -67,6 +68,7 @@ my $lxs = Sys::Statistics::Linux->new(
     sysinfo  => 1,
     procstats  => 1
 );
+my $dl = Linux::Distribution->new;
 ### 0.1sec sleep using a timer
 pause;
 
@@ -118,52 +120,11 @@ while (1) {
     # fetch dist_id, os, relos 
     my ($distid, $os, $relos) = "NA";
 
-    if (-e "/etc/redhat-release") {
-        # rhel systems
-        open my $rhelrel, "<", "/etc/redhat-release"
-            or die "error: cannot find redhat-release: $!\n";
-        while (<$rhelrel>) {
-            chomp;
-            if ($_ =~ /^CentOS/o) {
-                # CentOS release 5.11 (Final)
-                # CentOS release 6.6 (Final)
-                # CentOS Linux release 7.0.1406 (Core)
-                $os="CentOS";
-                $distid="CentOS";
-                $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
-            } elsif ($_ =~ /^Red/o) {
-                # Red Hat Enterprise Linux Server release 6.1 (Santiago)
-                $os = "RHEL";
-                $distid = "RHEL"; 
-                $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
-            }
-        }
-        close $rhelrel;
-    } elsif ( -e "/etc/debian_version" ) {
- 
-        # we will use lsb_release if avail, because os-release
-        # is different between Debian, Ubuntu
-        if ( -e "$lsb" ) {
-            ($os, $relos, $distid) = get_lsb("$lsb");
-        } else {
-            open my $debrel, "<", "/etc/os-release"
-              or die "error: cannot find os_release: $!\n";
-            while (<$debrel>) {
-                chomp;
-                $os = $1 if $_ =~ /^NAME\=\"(\w+).*\"$/;
-                $relos = $1 if $_ =~ /^VERSION_ID\=\"(\d+(?:\.\d+(?:\.\d+)?)?)\"$/;
-                $distid = $os;
-            }
-            close $debrel;
-        }
-    } elsif ( -e "$lsb") {
-
-        ($os, $relos, $distid) = get_lsb("$lsb");
-
-    } else {
-        $os="NA"; $relos="NA"; $distid="NA";
+    # get os, relos
+    if(my $distro = $dl->distribution_name()) {
+        $relos = $dl->distribution_version();
+        $os = $distro;
     }
-
 
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
@@ -183,8 +144,8 @@ while (1) {
     $swaptotal =~ s/\s+[kK]B$//;
 
     # print metrics
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%d:%d:%.2f:%.2f:%d:%d:%s:%s\n",
-      time, $host, $si->{arch}, $hypervisor, $os, $relos, $distid, 
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%.2f:%.2f:%d:%d:%s:%s\n",
+      time, $host, $si->{arch}, $hypervisor, $os, $relos,
       $si->{kernel} . " " . $si->{release},
       $si->{pcpucount}, $si->{tcpucount},
       $memtotal, $swaptotal, 
@@ -265,16 +226,15 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #04 hypervisor : name of the hypervisor, string
   #05 os         : name of the operating system, string
   #06 relos      : release number of operating system, string
-  #07 distributor: name of the operating system distributor
-  #08 kernel     : kernel version and release number
-  #09 pcpu       : number of physical installed CPUs, number
-  #10 vcpu       : number of virtual CPUs, number
-  #11 memtotal   : total physical memory installed, number
-  #12 swaptotal  : total physical swap installed, number
-  #13 disks      : total number of disks, number
-  #14 nics       : total number of NICs, number
-  #15 jvms       : total number of running JVMs, number
-  #16 uptime     : how long the system has been running, number 
+  #07 kernel     : kernel version and release number
+  #08 pcpu       : number of physical installed CPUs, number
+  #09 vcpu       : number of virtual CPUs, number
+  #10 memtotal   : total physical memory installed, number
+  #11 swaptotal  : total physical swap installed, number
+  #12 disks      : total number of disks, number
+  #13 nics       : total number of NICs, number
+  #14 jvms       : total number of running JVMs, number
+  #15 uptime     : how long the system has been running, number 
 END
     exit 0;
 }
@@ -284,7 +244,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.9, 2015-03-03 1341
+hdwrec: 1.0.10, 2015-03-15 1826
 END
     exit 0;
 }
