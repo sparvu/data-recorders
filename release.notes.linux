@@ -20,6 +20,7 @@ Releases
   1.0.10 14 March 2015 Release
     hdwrec debian incorrect os and relos fields #21
     debian pkg does not check for cron.allow #22
+    hdwrec distid field not used anymore #23
 
   1.0.9 1 March 2015 Release
     hdwrec/linux incorrect os and relos fields #19
