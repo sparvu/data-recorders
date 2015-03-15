@@ -115,7 +115,7 @@ while (1) {
     my $rdisks = get_disks();
     $num_disk =  scalar(@$rdisks);
 
-    # fetch dist_id, os, codename
+    # fetch dist_id, os, relos 
     my ($distid, $os, $relos) = "NA";
 
     if (-e "/etc/redhat-release") {
@@ -140,26 +140,26 @@ while (1) {
         }
         close $rhelrel;
     } elsif ( -e "/etc/debian_version" ) {
-        open my $debrel, "<", "/etc/os-release"
-          or die "error: cannot find os_release: $!\n";
-        while (<$debrel>) {
-            chomp;
-            $os = $1 if $_ =~ /^NAME\=\"(\w+).*\"$/;
-            $relos = $1 if $_ =~ /^VERSION_ID\=\"(\d+(?:\.\d+(?:\.\d+)?)?)\"$/;
-            $distid = $os;
+ 
+        # we will use lsb_release if avail, because os-release
+        # is different between Debian, Ubuntu
+        if ( -e "$lsb" ) {
+            ($os, $relos, $distid) = get_lsb("$lsb");
+        } else {
+            open my $debrel, "<", "/etc/os-release"
+              or die "error: cannot find os_release: $!\n";
+            while (<$debrel>) {
+                chomp;
+                $os = $1 if $_ =~ /^NAME\=\"(\w+).*\"$/;
+                $relos = $1 if $_ =~ /^VERSION_ID\=\"(\d+(?:\.\d+(?:\.\d+)?)?)\"$/;
+                $distid = $os;
+            }
+            close $debrel;
         }
-        close $debrel;
     } elsif ( -e "$lsb") {
-        open my $LSBINFO, "-|", "$lsb", "-a"
-            or die "error: cannot execute lsb_release - $!";
 
-        while (<$LSBINFO>) {
-            chomp;
-            $distid = $1 if $_ =~ /^Distributor ID\:\s+(.*)/; $relos = $1 if $_ =~ /^Release\:\s+(.*)/;
-        }
-        $os = $distid;
+        ($os, $relos, $distid) = get_lsb("$lsb");
 
-        close $LSBINFO;
     } else {
         $os="NA"; $relos="NA"; $distid="NA";
     }
@@ -201,6 +201,25 @@ while (1) {
 
 
 ### SUBROUTINES
+sub get_lsb {
+
+    my ($lsbfh) = @_;
+    my ($o,$r,$d);
+
+    open my $LSBINFO, "-|", "$lsbfh -a 2>/dev/null"
+        or die "error: cannot execute lsb_release - $!";
+
+    while (<$LSBINFO>) {
+        chomp;
+        $d = $1 if $_ =~ /^Distributor ID\:\s+(.*)/; $r = $1 if $_ =~ /^Release\:\s+(.*)/;
+    }
+    $o = $d;
+
+    close $LSBINFO;
+
+    return ( $o, $r, $d );
+}
+
 
 sub get_disks {
 
