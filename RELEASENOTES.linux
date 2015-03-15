@@ -17,17 +17,17 @@ Bug Management System
 
 Releases
 
-  1.0.10 14 March 2015 Release
+  1.0.10 15-03-2015 Release
     hdwrec debian incorrect os and relos fields #21
     debian pkg does not check for cron.allow #22
     hdwrec distid field not used anymore #23
 
-  1.0.9 1 March 2015 Release
+  1.0.9 01-03-2015 Release
     hdwrec/linux incorrect os and relos fields #19
     recording dependency libs clean-up #18
     modernization of booting process #17
     builder libidn removal #15
-    hdwrec os ans relos support #14
+    hdwrec os and relos support #14
     sender should be aware of monitoring objects #10
     wsrec dies when connection is lost #4
     raw2day xml to json #2
