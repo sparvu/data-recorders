@@ -1,28 +1,23 @@
 
-================
-SDR version 1.00
-================
-
-Release Date
-2014-xx-xx
+Kronometrix Data Recording
 
 Platforms
- FreeBSd i386, amd64
- 
-Compiled by: sparvu
+   FreeBSD 10 10.1 amd64, i386
+
+Bug Management System
+  https://github.com/kronometrix/recording/issues
 
 
-Recording
-=========
+Releases
 
-
-1.00
-====
-
-
-Notes
-=====
-            
-Bugzilla:
- http://www.systemdatarecorder.org:9009/bugzilla/query.cgi
- Product: sdr
+  1.0.10 16-03-2015 Release
+    hdwrec distid field not used anymore #23
+    recording dependency libs clean-up #18
+    modernization of booting process #17
+    builder libidn removal #15
+    hdwrec os and relos support #14
+    sender should be aware of monitoring objects #10
+    raw2day xml to json #2
+    update perl-5.20.2
+    update openssl-1.0.2
+    update curl-7.41.0

@@ -122,9 +122,6 @@ while (1) {
     my $host = hostname;
     $host =~ s/\..*$// if $host =~ /\./;
 
-    # distributor
-    my $dist = "freebsd.org";
-
     # hypervisor type
     $hypervisor = $guest if $guest;
     if ($hypervisor eq "none" ) {
@@ -174,8 +171,8 @@ while (1) {
     # num_jvm can be NA or value, defaults to string
     # HT can be NA or value, defaults to string
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s:%s\n", 
-        time, $host, $arch, $hypervisor, $os, $relos, $dist,
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s:%s\n", 
+        time, $host, $arch, $hypervisor, $os, $relos,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
         $num_disk, $num_nic, $num_jvm, $uptime;
 
@@ -319,7 +316,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.0, 2015-02-17
+hdwrec: 1.0.10, 2015-03-16 1431
 END
     exit 0;
 }
