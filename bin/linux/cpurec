@@ -146,11 +146,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-<<<<<<< HEAD
 cpurec: 1.0.10, 2015-03-16 1451
-=======
-cpurec: 1.0.10, 2015-03-16 1434
->>>>>>> 1c888f0adca8849e82825e2c1af501cec1efa6c4
 END
     exit 0;
 }
