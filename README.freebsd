@@ -5,14 +5,12 @@ README Kronometrix Data Recording
 1.Supported Operating Systems
 
   We support the following Linux based operating systems:
-   FreeBSD 10, 10.1 amd64, i386
-
-   Note: We dont support FreeBSD 9 or 8 at this time.
+    FreeBSD 10, 10.1 amd64, i386
 
 
 2.Package Content
 
-  Kronometrix 1.0 FreeBSD edition contains, all data records, the 
+  Kronometrix 1.0 Linux edition contains, all data records and the 
   transport utility. Along with these come the manual pages and 
   documentation, all for free:
 
@@ -27,124 +25,187 @@ README Kronometrix Data Recording
 
 3.Prerequisites
 
-   o Make sure your system has installed chkconfig. It is not 
-     mandatory but highly recommended.
-
-   o For Ubuntu/Debian based systems enable cron:
-     # update-rc.d cron defaults
-     # chkconfig --list cron
+  o You will need libidn installed on your FreeBSD distribution
 
 
 4.Install
 
-   Kronometrix can be installed using the RPM package management system
-   found on all RedHat based installations. The data recorders
-   and started automatically, after the software has been installed. The
-   transport utility will not start automatically.
+  Kronometrix can be installed using the PKG package management system
+  found on all FreeBSD 10 installations. The data recorders
+  and started automatically, after the software has been installed. The
+  transport utility will not start automatically.
 
 
-   RPM package
+  PKG package
 
-     # rpm -ihv kronometrix-1.0.9-x86_64.rpm 
-       Preparing...        ########################################### [100%]
-           1:kronometrix   ########################################### [100%]
+    # pkg install kronometrix-1.0.9-x86_64.rpm 
+      Updating FreeBSD repository catalogue...
+      FreeBSD repository is up-to-date.
+      All repositories are up-to-date.
+      Checking integrity... done (0 conflicting)
+      The following 1 packages will be affected (of 0 checked):
 
-     # ps -o uid,pid,cmd -u krmx
-      UID   PID CMD
-     5000 21123 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/sysrec 60
-     5000 21141 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/cpurec 60
-     5000 21159 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/diskrec 60
-     5000 21177 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/nicrec 60
-     5000 21195 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/hdwrec 60
+      New packages to be INSTALLED:
+	kronometrix: 1.0.10
+
+      The process will require 64 MiB more space.
+
+      Proceed with this action? [y/N]: y
+      [1/1] Installing kronometrix-1.0.10...
+      [1/1] Extracting kronometrix-1.0.10: 100%
 
 
-   DEB package
 
-     # dpkg -i /var/tmp/kronometrix-1.0.9-debian7.8-amd64.deb
-     Selecting previously unselected package kronometrix.
-     (Reading database ... 31233 files and directories currently installed.)
-     Unpacking kronometrix(from .../kronometrix-1.0.9-debian7.8-amd64.deb) ...
-     Setting up kronometrix (1.0.9) ...
+    # ps -o uid,pid,command -U krmx
+      UID   PID COMMAND
+     5000 62506 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/sysrec 60
+     5000 62522 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/cpurec 60
+     5000 62538 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/diskrec 60
+     5000 62555 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/nicrec 60
+     5000 62572 /opt/kronometrix/perl/bin/perl /opt/kronometrix/bin/hdwrec 60
 
 
 4.Uninstall
 
-   RPM package
+  PKG package
 
-     # rpm -e kronometrix 
-     # ps -o uid,pid,cmd -u krmx
+    # pkg remove kronometrix
+      Checking integrity... done (0 conflicting)
+      Deinstallation has been requested for the following 1 packages (of 0 packages in the universe):
+
+      Installed packages to be REMOVED:
+	kronometrix-1.0.10
+
+      The operation will free 64 MiB.
+
+      Proceed with deinstalling packages? [y/N]: y
+      [1/1] Deinstalling kronometrix-1.0.10...
+      [1/1] Deleting files for kronometrix-1.0.10: 100%
 
 
-   DEB package
-
-     # dpkg -P kronometrix
-     (Reading database ... 33706 files and directories currently installed.)
-     Removing kronometrix ...
-     dpkg: warning: while removing kronometrix, directory 
-       '/opt/kronometrix/log/current' not empty so not removed
+    # ps -o uid,pid,command -U krmx
+    #
 
 
 5.Start procedure
 
   5.1 Agents
-  
-      We can start all agents, data recorders using kronometrix/etc/agents 
-      script. Make sure before running that you are logged as krmx user
 
-      As krmx user:
-        $ /opt/kronometrix/etc/agents start
+    We can start all agents, data recorders using kronometrix/etc/agents 
+    script. Make sure before running that you are logged as krmx user
 
-      As root:
-        # /etc/init.d/kronometrix start
+    As krmx user:
+      $ /opt/kronometrix/etc/agents start
+
+    As root:
+      # /etc/init.d/kronometrix start
 
   5.1 Transport
   
-      We can start sender, the transport utility kronometrix/etc/transport
-      script. Make sure before running that you are logged as krmx user
+    We can start sender, the transport utility kronometrix/etc/transport
+    script. Make sure before running that you are logged as krmx user
 
-      As krmx user:
-        $ /opt/kronometrix/etc/transport start
+    As krmx user:
+      $ /opt/kronometrix/etc/transport start
 
-      As root:
-        # /etc/init.d/kronometrix_transport start
+    As root:
+      # /etc/init.d/kronometrix_transport start
 
 
 6.Stop procedure
 
-  5.1 Agents
+  6.1 Agents
   
-      We can stop all agents, data recorders using kronometrix/etc/agents 
-      script. Make sure before running that you are logged as krmx user
+    We can stop all agents, data recorders using kronometrix/etc/agents 
+    script. Make sure before running that you are logged as krmx user
 
-      As krmx user:
-        $ /opt/kronometrix/etc/agents stop
+    As krmx user:
+      $ /opt/kronometrix/etc/agents stop
 
-      As root:
-        # /etc/init.d/kronometrix stop
+    As root:
+      # /etc/init.d/kronometrix stop
 
-  5.1 Transport
+  6.2 Transport
   
-      We can start sender, the transport utility kronometrix/etc/transport
-      script. Make sure before running that you are logged as krmx user
+    We can start sender, the transport utility kronometrix/etc/transport
+    script. Make sure before running that you are logged as krmx user
 
-      As krmx user:
-        $ /opt/kronometrix/etc/transport stop
+    As krmx user:
+      $ /opt/kronometrix/etc/transport stop
 
-      As root:
-        # /etc/init.d/kronometrix_transport stop
-
-
-7.Configuration
+    As root:
+      # /etc/init.d/kronometrix_transport stop
 
 
-  7.1 kronometrix.json
+7.Raw data
 
-  7.2 Log rotation
+  Kronometrix data recorders will write the raw data under the main
+  prefix installation directory:
+ 
+    /opt/kronometrix/log/current
 
+  For every data recorder, one raw data file, having .krd extension
+  will be created and updated. Every night, we rotate these krd files
+  and store them under:
+
+    /opt/kronometrix/log/daily
+
+
+8.Configuration
+
+  All data recorders do not need extra configuration except the transport
+  utility, sender. It is recommended to dont change or alter data recorders
+  configuration, since they are already configured.
+
+  8.1 kronometrix.json
+
+    This is the main configuration file used by the sender transport
+    utility. All data recorders wont use or consult this file. 
+
+    Logging section
+
+    This is the section defining all raw data logs will be stored and
+    the base path for the entire logs. This can be located on a local
+    disk or a remote LUN. Usually, this section, should not be changed 
+    or removed.
+
+
+    Transport section
+
+    Describes all raw data files and their naming convention. Usually, 
+    this section, should not be changed or removed.
+
+
+    Appliance section
+ 
+    This is the section where users should defined where they want to 
+    send data. The appliance section describes the details of one or
+    many data analytics appliances, each with own settings.
+
+    All raw data can be transported to one or many appliances at the same
+    time. Under this section we need to define and configure, the following:
+
+      o appliance port number, the port number default 80
+     
+      o appliance hostname, IP or FQD of the appliance 
+  
+      o protocol: HTTP or HTTPS, currently we support HTTP only
+
+      o lmo id: cpd or amd or wcd. cpd means, computer performance data 
+        and describes data belong to IT computer performance.
+
+        o sid: subscription id
+
+        o tid: token id
+
+        o dsid: to be let empty, will be computed
+
+      
+  8.2 Log rotation
 
 
 Notes
 
   Kronometrix uses its own logrotate job in order to be flexible and dont 
   conflict with other operating system jobs. raw2day as well is called after 
-  the logrotation has taken place ! 
+  the log rotation has taken place ! 

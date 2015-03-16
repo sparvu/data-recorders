@@ -2,7 +2,7 @@
 Kronometrix Data Recording
 
 Platforms
-   FreeBSD 10 10.1 amd64, i386
+   FreeBSD 10, 10.1 amd64, i386
 
 Bug Management System
   https://github.com/kronometrix/recording/issues
@@ -10,7 +10,7 @@ Bug Management System
 
 Releases
 
-  1.0.10 16-03-2015 Release
+  1.0.10 17-03-2015 Release
     hdwrec distid field not used anymore #23
     recording dependency libs clean-up #18
     modernization of booting process #17
