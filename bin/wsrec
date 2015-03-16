@@ -105,7 +105,7 @@ END
 ##
 sub revision {
        print STDERR <<END;
-wsrec: 1.4, 2014-11-02
+wsrec: 1.0.10, 2015-03-16 2130
 END
        exit 1;
 }
