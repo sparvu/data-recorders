@@ -17,7 +17,7 @@ fi
 if [ $2 == "POST-INSTALL" ]; then
 
     # setup crontabs
-    if ! grep krmx /etc/cron.allow >/dev/null; then
+    if ! grep krmx /etc/cron.allow >/dev/null 2>&1; then
         echo "krmx" >> /etc/cron.allow || :
     fi
 
