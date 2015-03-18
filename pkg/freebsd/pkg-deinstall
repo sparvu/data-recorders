@@ -28,7 +28,6 @@ if [ $2 == "POST-DEINSTALL" ]; then
     # operate on date snapshot file
     cp ${RC_CONF} ${RC_CONF}.${DATE}
 
-    echo "step 1"
     grep "^${SVC}_transport_enable=\"YES\"" ${RC_CONF}.${DATE} >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         # remove the service
@@ -36,7 +35,6 @@ if [ $2 == "POST-DEINSTALL" ]; then
         mv ${RC_CONF}.${DATE}.tmp ${RC_CONF}.${DATE}
     fi
 
-    echo "step 2"
     grep "^${SVC}_user=\"krmx\"" ${RC_CONF}.${DATE} >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         # remove the service
@@ -44,7 +42,6 @@ if [ $2 == "POST-DEINSTALL" ]; then
         mv ${RC_CONF}.${DATE}.tmp ${RC_CONF}.${DATE}
     fi
 
-    echo "step 3"
     grep "^${SVC}_enable=\"YES\"" ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         # remove the service

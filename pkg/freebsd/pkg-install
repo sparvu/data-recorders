@@ -74,5 +74,5 @@ if [ $2 == "POST-INSTALL" ]; then
         ln -s /opt/kronometrix/etc/rc/kronometrix_transport /etc/rc.d/kronometrix_transport || :
     fi
 
-    /etc/rc.d/kronometrix onestart
+    /etc/rc.d/kronometrix onestart > /dev/null
 fi
