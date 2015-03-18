@@ -40,7 +40,7 @@ test -f ${KRMX_ETC}/xenrec.start  || exit 0
 
 
 start() {
-    echo "Starting KRMX recorders"
+    echo "Starting Kronometrix recorders"
 
     for rec in $RECORDERS
     do
@@ -75,7 +75,7 @@ start() {
 
 
 stop() {
-    echo "Stopping KRMX recorders"
+    echo "Stopping Kronometrix recorders"
 
     for rec in $RECORDERS
     do

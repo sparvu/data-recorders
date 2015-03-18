@@ -30,7 +30,7 @@ test -f ${KRMX_BIN}/sender || exit 0
 
 
 start() {
-    echo "Starting KRMX transport"
+    echo "Starting Kronometrix transport"
 
     RETVAL=0
 
@@ -62,7 +62,7 @@ start() {
 
 
 stop() {
-    echo "Stopping KRMX transport"
+    echo "Stopping Kronometrix transport"
 
     RETVAL=0
 
