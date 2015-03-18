@@ -11,12 +11,14 @@ if [ $2 == "DEINSTALL" ]; then
         fi
         cp /opt/kronometrix/etc/kronometrix.json /opt/kronometrix/backup || :
     fi
+
     chown -R krmx:krmx /opt/kronometrix/backup
 fi
 
 if [ $2 == "POST-DEINSTALL" ]; then
-    [ -f /etc/rc.d/kronometrix_transport ] && rm /etc/rc.d/kronometrix_transport 
-    [ -f /etc/rc.d/kronometrix ] && rm /etc/rc.d/kronometrix
+
+    [ -L /etc/rc.d/kronometrix_transport ] && rm /etc/rc.d/kronometrix_transport 
+    [ -L /etc/rc.d/kronometrix ] && rm /etc/rc.d/kronometrix
 
     # uninstall service
     SVC=kronometrix
@@ -26,35 +28,35 @@ if [ $2 == "POST-DEINSTALL" ]; then
     # operate on date snapshot file
     cp ${RC_CONF} ${RC_CONF}.${DATE}
 
-    grep "$SVC=\"YES\"" ${RC_CONF} >/dev/null 2>&1
+    grep "${SVC}_enable=\"YES\"" ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         # remove the service
-        grep -v "$SVC=\"YES\"" ${RC_CONF}.${DATE} > ${RC_CONF}.${DATE}.tmp
+        grep -v "${SVC}_enable=\"YES\"" ${RC_CONF}.${DATE} > ${RC_CONF}.${DATE}.tmp
         mv ${RC_CONF}.${DATE}.tmp ${RC_CONF}
         if [ $? -eq 1 ]; then
-            echo "Error: cannot uninstall service: $SVC, exit now"
+            echo "Error: cannot uninstall service: ${SVC}, exit now"
             exit 1
         fi
     fi
 
-    grep "$SVC_transport=\"YES\"" ${RC_CONF} >/dev/null 2>&1
+    grep "${SVC}_transport_enable=\"YES\"" ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         # remove the service
-        grep -v "$SVC_transport=\"YES\"" ${RC_CONF}.${DATE} > ${RC_CONF}.${DATE}.tmp
+        grep -v "${SVC}_transport_enable=\"YES\"" ${RC_CONF}.${DATE} > ${RC_CONF}.${DATE}.tmp
         mv ${RC_CONF}.${DATE}.tmp ${RC_CONF}
         if [ $? -eq 1 ]; then
-            echo "Error: cannot uninstall service: $SVC_transport, exit now"
+            echo "Error: cannot uninstall service: ${SVC}_transport, exit now"
             exit 1
         fi
     fi
 
-    grep "$SVC_user=\"krmx\"" ${RC_CONF} >/dev/null 2>&1
+    grep "${SVC}_user=\"krmx\"" ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         # remove the service
-        grep -v "$SVC_user=\"krmx\"" ${RC_CONF}.${DATE} > ${RC_CONF}.${DATE}.tmp
+        grep -v "${SVC}_user=\"krmx\"" ${RC_CONF}.${DATE} > ${RC_CONF}.${DATE}.tmp
         mv ${RC_CONF}.${DATE}.tmp ${RC_CONF}
         if [ $? -eq 1 ]; then
-            echo "Error: cannot uninstall service: $SVC_user, exit now"
+            echo "Error: cannot uninstall service: ${SVC}_user, exit now"
             exit 1
         fi
     fi

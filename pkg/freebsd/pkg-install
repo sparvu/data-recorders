@@ -25,8 +25,6 @@ if [ $2 == "POST-INSTALL" ]; then
         echo "59 23 * * *  /bin/sleep 59 && newsyslog -f /etc/newsyslog.conf.d/kronometrix" >> /var/cron/tabs/krmx
         echo "00 00 * * *  /bin/sleep 30 && /opt/kronometrix/bin/raw2day" >> /var/cron/tabs/krmx
     fi
-    cp /opt/kronometrix/etc/rc/kronometrix* /etc/rc.d/
-    /etc/rc.d/kronometrix onestart >/dev/null 2>&1
 
     # restore config
     if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
@@ -35,14 +33,14 @@ if [ $2 == "POST-INSTALL" ]; then
 
     chown -R krmx:krmx /opt/kronometrix
 
-    # install service
+    # install kornometrix service
     grep kronometrix ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 1 ]; then
 
         # add the service
-        echo "kronometrix=\"YES\"" >> ${RC_CONF}
+        echo "kronometrix_enable=\"YES\"" >> ${RC_CONF}
         if [ $? -eq 1 ]; then
-            echo "Error: cannot activate service, exit now"
+            echo "Error: cannot activate service: kronometrix, exit now"
             exit 1
         fi
 
@@ -50,9 +48,20 @@ if [ $2 == "POST-INSTALL" ]; then
         if [ $? -eq 1 ]; then
             echo "kronometrix_user=\"krmx\"" >> ${RC_CONF}
             if [ $? -eq 1 ]; then
-                echo "Error: cannot activate service, exit now"
+                echo "Error: cannot activate service: kronometrix_user, exit now"
                 exit 1
             fi
         fi
     fi
+
+    # start and link the service
+    if [ ! -L /etc/rc.d/kronometrix ]; then
+        ln -s /opt/kronometrix/etc/rc/kronometrix /etc/rc.d/kronometrix || :
+    fi
+
+    if [ ! -L /etc/rc.d/kronometrix_transport ]; then
+        ln -s /opt/kronometrix/etc/rc/kronometrix_transport /etc/rc.d/kronometrix_transport || :
+    fi
+
+    /etc/rc.d/kronometrix onestart >/dev/null 2>&1
 fi
