@@ -18,7 +18,7 @@ if [ $2 == "POST-INSTALL" ]; then
 
     # setup crontabs
     if ! grep krmx /etc/cron.allow >/dev/null 2>&1; then
-        echo "krmx" >> /etc/cron.allow || :
+        echo "krmx" >> /etc/cron.allow
     fi
 
     if [ ! -f /var/cron/tabs/krmx ]; then
@@ -28,7 +28,7 @@ if [ $2 == "POST-INSTALL" ]; then
 
     # restore config
     if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
-        cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
+        cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc
     fi
 
     chown -R krmx:krmx /opt/kronometrix
@@ -67,12 +67,12 @@ if [ $2 == "POST-INSTALL" ]; then
 
     # start and link the service
     if [ ! -L /etc/rc.d/kronometrix ]; then
-        ln -s /opt/kronometrix/etc/rc/kronometrix /etc/rc.d/kronometrix || :
+        ln -s /opt/kronometrix/etc/rc/kronometrix /etc/rc.d/kronometrix
     fi
 
     if [ ! -L /etc/rc.d/kronometrix_transport ]; then
-        ln -s /opt/kronometrix/etc/rc/kronometrix_transport /etc/rc.d/kronometrix_transport || :
+        ln -s /opt/kronometrix/etc/rc/kronometrix_transport /etc/rc.d/kronometrix_transport
     fi
 
-    /etc/rc.d/kronometrix onestart >/dev/null || :
+    /etc/rc.d/kronometrix start >/dev/null 2>&1
 fi
