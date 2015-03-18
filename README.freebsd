@@ -35,6 +35,10 @@ README Kronometrix Data Recording
   and started automatically, after the software has been installed. The
   transport utility will not start automatically.
 
+  Both services: kronometrix and kronometrix_transport are enabled to rc.d
+  interface, so if you reboot your server both services should start 
+  automatically.
+
 
   PKG package
 
@@ -98,7 +102,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/agents start
 
     As root:
-      # /etc/init.d/kronometrix start
+      # /etc/rc.d/kronometrix start
 
   5.1 Transport
   
@@ -109,7 +113,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/transport start
 
     As root:
-      # /etc/init.d/kronometrix_transport start
+      # /etc/rc.d/kronometrix_transport start
 
 
 6.Stop procedure
@@ -123,7 +127,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/agents stop
 
     As root:
-      # /etc/init.d/kronometrix stop
+      # /etc/rc.d/kronometrix stop
 
   6.2 Transport
   
@@ -134,7 +138,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/transport stop
 
     As root:
-      # /etc/init.d/kronometrix_transport stop
+      # /etc/rc.d/kronometrix_transport stop
 
 
 7.Raw data
