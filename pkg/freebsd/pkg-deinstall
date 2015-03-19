@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $2 == "DEINSTALL" ]; then
+if [ "X$2" == "XDEINSTALL" ]; then
     /etc/rc.d/kronometrix_transport onestop >/dev/null 2>&1
     /etc/rc.d/kronometrix onestop >/dev/null 2>&1
 
@@ -15,7 +15,7 @@ if [ $2 == "DEINSTALL" ]; then
     chown -R krmx:krmx /opt/kronometrix/backup
 fi
 
-if [ $2 == "POST-DEINSTALL" ]; then
+if [ "X$2" == "XPOST-DEINSTALL" ]; then
 
     [ -L /etc/rc.d/kronometrix_transport ] && rm /etc/rc.d/kronometrix_transport 
     [ -L /etc/rc.d/kronometrix ] && rm /etc/rc.d/kronometrix

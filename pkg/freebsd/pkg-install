@@ -1,9 +1,7 @@
-#!/bin/sh
-
 RC_CONF=/etc/rc.conf
 
 
-if [ $2 == "PRE-INSTALL" ]; then
+if [ "X$2" == "XPRE-INSTALL" ]; then
     if ! /usr/sbin/pw groupshow krmx >/dev/null 2>&1; then
         /usr/sbin/pw groupadd krmx -g 5000
     fi
@@ -14,7 +12,7 @@ if [ $2 == "PRE-INSTALL" ]; then
     fi
 fi
 
-if [ $2 == "POST-INSTALL" ]; then
+if [ "X$2" == "XPOST-INSTALL" ]; then
 
     # setup crontabs
     if ! grep krmx /etc/cron.allow >/dev/null 2>&1; then
@@ -74,5 +72,5 @@ if [ $2 == "POST-INSTALL" ]; then
         ln -s /opt/kronometrix/etc/rc/kronometrix_transport /etc/rc.d/kronometrix_transport
     fi
 
-    /etc/rc.d/kronometrix start >/dev/null
+    /etc/rc.d/kronometrix onestart >/dev/null
 fi
