@@ -172,7 +172,7 @@ while (1) {
     # HT can be NA or value, defaults to string
 
     printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s:%s\n", 
-        time, $host, $arch, $hypervisor, $os, $relos,
+        time, $host, $arch, $hypervisor, lc($os), $relos,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
         $num_disk, $num_nic, $num_jvm, $uptime;
 
