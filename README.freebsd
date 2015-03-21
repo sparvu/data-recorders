@@ -4,13 +4,13 @@ README Kronometrix Data Recording
 
 1.Supported Operating Systems
 
-  We support the following Linux based operating systems:
+  We support the following FreeBSD based operating systems:
     FreeBSD 10, 10.1 amd64, i386
 
 
 2.Package Content
 
-  Kronometrix 1.0 Linux edition contains, all data records and the 
+  Kronometrix 1.0 FreeBSD edition contains, all data records and the 
   transport utility. Along with these come the manual pages and 
   documentation, all for free:
 
