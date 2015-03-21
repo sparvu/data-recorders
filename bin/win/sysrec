@@ -1,0 +1,47 @@
+use strict;
+use Win32::OLE qw( in );
+
+my $Machine = ".";
+
+my $WMIServices = Win32::OLE->GetObject
+  ( "winmgmts:{impersonationLevel=impersonate,
+  (security)}//$Machine/root/cimv2" ) || die;
+
+my $DriveCollection = $WMIServices->ExecQuery
+  ( 'select * from Win32_LogicalDisk where
+  DeviceID >= "C:"' ) || die "Query Failed";
+
+foreach my $Drive ( in( $DriveCollection ) )
+{
+  my $FreePercent = int( ( $Drive->{FreeSpace} / $Drive->{Size} ) * 100 );
+  print "$Drive->{DeviceID}\n";
+  print "\tVolume: $Drive->{VolumeName}\n";
+  print "\tDisk Size: " . FormatNumber( $Drive->{Size} ) . "\n";
+  print "\tAvailable: " . FormatNumber( $Drive->{FreeSpace} ) . "
+  ($FreePercent%)\n";
+  print "\n";
+}
+
+sub FormatNumber
+{
+    my($Number) = @_;
+    my $Suffix = "";
+    if( $Number > 1024 * 1024 * 1024 )
+    {
+      $Number /= (1024 * 1024 * 1024);
+      $Suffix = "G";
+    }
+    elsif( $Number > 1024 * 1024 )
+    {
+      $Number /= (1024 * 1024);
+      $Suffix = "M";
+    }
+    elsif( $Number > 1024 )
+    {
+      $Number /= 1024;
+      $Suffix = "K";
+    }
+    $Number = sprintf( "%0.2f", $Number );
+    while( $Number =~ s/^(-?\d+)(\d{3})/$1,$2/ ){};
+    return( $Number . $Suffix );
+} 
