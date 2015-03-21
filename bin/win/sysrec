@@ -1,47 +1,175 @@
+#
+# Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# (http://www.gnu.org/copyleft/gpl.html)
+
 use strict;
+use warnings;
+use Getopt::Std;
+use Time::HiRes qw(time sleep);
+use POSIX qw(pause);
 use Win32::OLE qw( in );
 
-my $Machine = ".";
+# Debug Only
+# use Data::Dumper;
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hV') or usage();
+usage() if defined $main::opt_h;
+revision() if defined $main::opt_V;
 
-my $WMIServices = Win32::OLE->GetObject
-  ( "winmgmts:{impersonationLevel=impersonate,
-  (security)}//$Machine/root/cimv2" ) || die;
-
-my $DriveCollection = $WMIServices->ExecQuery
-  ( 'select * from Win32_LogicalDisk where
-  DeviceID >= "C:"' ) || die "Query Failed";
-
-foreach my $Drive ( in( $DriveCollection ) )
-{
-  my $FreePercent = int( ( $Drive->{FreeSpace} / $Drive->{Size} ) * 100 );
-  print "$Drive->{DeviceID}\n";
-  print "\tVolume: $Drive->{VolumeName}\n";
-  print "\tDisk Size: " . FormatNumber( $Drive->{Size} ) . "\n";
-  print "\tAvailable: " . FormatNumber( $Drive->{FreeSpace} ) . "
-  ($FreePercent%)\n";
-  print "\n";
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
 }
 
-sub FormatNumber
-{
-    my($Number) = @_;
-    my $Suffix = "";
-    if( $Number > 1024 * 1024 * 1024 )
-    {
-      $Number /= (1024 * 1024 * 1024);
-      $Suffix = "G";
-    }
-    elsif( $Number > 1024 * 1024 )
-    {
-      $Number /= (1024 * 1024);
-      $Suffix = "M";
-    }
-    elsif( $Number > 1024 )
-    {
-      $Number /= 1024;
-      $Suffix = "K";
-    }
-    $Number = sprintf( "%0.2f", $Number );
-    while( $Number =~ s/^(-?\d+)(\d{3})/$1,$2/ ){};
-    return( $Number . $Suffix );
-} 
+### Variables
+my $update;       # used for deltas
+my %cpudataOld;   # cpu_stats data
+my $loop = 0;     # current loop number
+$main::opt_h = 0; # help option
+$main::opt_V = 0; # revision option
+my $tp = 0;       # time precision
+local $| = 1;     # autoflush
+
+
+### MAIN BODY
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+my @fields = qw(PercentIdleTime PercentProcessorTime 
+                PercentPrivilegedTime 
+	        PercentUserTime PercentInterruptTime 
+		TimeStamp_Sys100NS);
+
+my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+    or die "Cannot initialize WMI interface\n";
+
+
+# check interval input
+if ( $interval =~ /\./ ) {
+   $tp = 3;
+}
+
+while(1) {
+
+
+    # get stats
+
+    my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+        or die "Failed to get instance object\n";
+
+    printf "%.${tp}f:%s\n", time , "Im in loop";
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    sleep $interval;
+
+}
+
+
+### SUBROUTINES
+
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: sysrec [-hV] | [interval [count]]
+ e.g. sysrec 5        print continuously, every 5 seconds
+      sysrec 1 5      print 5 times, every 1 second
+
+ FIELDS:
+  CPU
+   #01 timestamp  : seconds since Epoch, time
+   #02 cpupct     : cpu utilization, across all cpus, number
+   #03 sumpct     : sum of all cpus utilization, number
+   #04 headpct    : headroom cpu available, all cpus, number
+   #05 userpct    : cpu utilization, user space in percent, number
+   #06 nicepct    : cpu utilization, user space with nice priority, number
+   #07 sysct      : cpu utilization, system space, number
+   #08 idlepct    : cpu utilization, idle state, number
+   #09 iowaitcpt  : cpu percentage in idle state because an I/O operation 
+                     is waiting to complete, number
+   #10 irqpct     : cpu percentage servicing interrupts, number
+   #11 softirqpct : cpu percentage servicing softirqs, number
+   #12 stealpct   : cpu percentage of time spent in other operating systems
+                    when running in a virtualized environment, number
+   #13 runqsz     : run queue length, tasks waiting for run time, number
+   #14 plistsz    : tasks in the task list, number
+
+  MEM
+   #15 memusedpct : size of used memory in percent, number
+   #16 memused    : size of used memory in kilobytes, number
+   #17 memfree    : size of free memory in kilobytes, number
+   #18 memtotal   : size of memory in kilobytes, number
+   #19 buffers    : size of buffers used from memory in kilobytes, number
+   #20 cached     : size of cached memory in kilobytes, number
+   #21 realfree   : size of memory is real free, number
+                     (memfree+buffers+cached)
+   #22 realfreepct: size of memory real free in percent of total memory, number
+   #23 swapusedpct: size of used swap space in percent, number
+   #24 swapused   : size of swap space is used is kilobytes, number
+   #25 swapfree   : size of swap space is free in kilobytes, number
+   #26 swaptotal  : size of swap space in kilobytes, number
+   #27 swapcached : memory that once was swapped out, is swapped back in 
+                     but still also is in the swapfile, number
+
+  DISK
+   #28 reads      : disk read requests per second, rate
+   #29 rkbytes    : read bytes per second, in KB, rate
+   #30 writes     : disk write requests per second, rate
+   #31 wkbytes    : write bytes per second, in KB, rate
+   #32 sumrws     : disk read+write requests per second, rate
+   #33 sumrwkbs   : read+write Kbytes per second, rate
+
+  NET
+   #34 rxkbytes   : received bytes per seccond, in KB, rate
+   #35 txkbytes   : transmitted bytes per second, in KB, rate 
+   #36 sumrxtxkbs : received + transmitted bytes per second, in KB, rate
+   #37 rxerr      : number of errors while received pkt per second, rate
+   #38 txerr      : number of errors while transmitting pkt per second, rate
+   #39 rxdrop     : number of rx packets that were dropped per second, rate
+   #40 txdrop     : number of tx packets that were dropped per second, rate
+ 
+   #41 avg1       : LA of the last minute, number
+   #42 avg5       : LA of the last 5 minutes, number
+   #43 avg15      : LA of the last 15 minutes, number
+END
+    exit 0;
+}
+
+
+
+# revision - print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+sysrec: 1.0.0, 2015-03-21 1431
+END
+exit 0;
+}
