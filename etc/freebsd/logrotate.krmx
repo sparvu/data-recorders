@@ -1,8 +1,0 @@
-/opt/kronometrix/log/current/*.krd {
-        daily
-        start 0
-        rotate 1
-	compress
-	copytruncate
-	missingok
-}
