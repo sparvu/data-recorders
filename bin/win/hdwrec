@@ -23,6 +23,7 @@ use Getopt::Std;
 use Time::HiRes qw(time sleep);
 use POSIX qw(pause);
 use Win32::OLE;
+use Sys::Hostname;
 
 # Debug Only
 # use Data::Dumper;
@@ -59,24 +60,24 @@ local $| = 1;     # autoflush
 # how often do we trigger (seconds)?
 my $first_interval = $interval;
 
-my @fields = qw(PercentIdleTime PercentProcessorTime 
-                PercentPrivilegedTime 
-	        PercentUserTime PercentInterruptTime 
-		TimeStamp_Sys100NS);
+#my @fields = qw(PercentIdleTime PercentProcessorTime 
+#                PercentPrivilegedTime 
+#	        PercentUserTime PercentInterruptTime 
+#		TimeStamp_Sys100NS);
+#
+#my $hash1 = {};
+#my $key = 'Name';
 
-my $hash1 = {};
-my $key = 'Name';
-
-my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-    or die "Cannot initialize WMI interface\n";
-
-my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-    or die "Failed to get instance object\n";
-
-my $v;
-foreach $v (in $list) {            
-    map{$hash1->{$v->{$key}}->{$_} = $v->{$_} }@fields;
-}
+#my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+#    or die "Cannot initialize WMI interface\n";
+#
+#my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+#    or die "Failed to get instance object\n";
+#
+#my $v;
+#foreach $v (in $list) {            
+#    map{$hash1->{$v->{$key}}->{$_} = $v->{$_} }@fields;
+#}
 
 
 # check interval input
@@ -87,16 +88,16 @@ if ( $interval =~ /\./ ) {
 while(1) {
 
     # hostname# hostname
-    my $host = hostname;
+    my $host = lc(hostname);
     $host =~ s/\..*$// if $host =~ /\./;
 
     # get stats
 
-    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-        or die "Failed to get instance object\n";
+    #$list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+    #    or die "Failed to get instance object\n";
 
     printf "%.${tp}f:%s\n",
-            time , $hostname;
+            time , $host;
 
     ### Check for end
     last if ++$loop == $loop_max;
