@@ -22,7 +22,7 @@ use warnings;
 use Getopt::Std;
 use Time::HiRes qw(time sleep);
 use POSIX qw(pause);
-use Win32::OLE qw( in );
+use Win32::OLE;
 
 # Debug Only
 # use Data::Dumper;
@@ -64,8 +64,19 @@ my @fields = qw(PercentIdleTime PercentProcessorTime
 	        PercentUserTime PercentInterruptTime 
 		TimeStamp_Sys100NS);
 
+my $hash1 = {};
+my $key = 'Name';
+
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
+
+my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+    or die "Failed to get instance object\n";
+
+my $v;
+foreach $v (in $list) {            
+    map{$hash1->{$v->{$key}}->{$_} = $v->{$_} }@fields;
+}
 
 
 # check interval input
@@ -78,10 +89,31 @@ while(1) {
 
     # get stats
 
-    my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
         or die "Failed to get instance object\n";
 
-    printf "%.${tp}f:%s\n", time , "Im in loop";
+    my $hash = {};
+
+    foreach $v (in $list) {            
+        map{$hash1->{$v->{$key}}->{$_} = $v->{$_} }@fields;
+    }
+
+    my $cpu_time = sprintf("%.2f", (1 - get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentProcessorTime' )) * 100);
+
+    my $cpu_idle = sprintf("%.2f", 100-$cpu_time);
+
+    my $cpu_user = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentUserTime' )* 100);
+
+    my $cpu_priv = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentPrivilegedTime' )* 100);
+
+    my $cpu_int = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentInterruptTime' )* 100);
+
+    
+    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+            time , $cpu_time, $cpu_priv, $cpu_user, $cpu_int, $cpu_idle;
+
+
+    $hash1 = $hash;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -93,6 +125,13 @@ while(1) {
 
 
 ### SUBROUTINES
+
+
+
+sub get_value {
+    my ($h1, $h2, $property) = @_;
+    return (($h2->{$property} - $h1->{$property})/($h2->{'TimeStamp_Sys100NS'}-$h1->{'TimeStamp_Sys100NS'}));
+}
 
 
 # usage - print usage and exit.
