@@ -56,4 +56,7 @@ if [ "X$2" == "XPOST-DEINSTALL" ]; then
         exit 1
     fi
 
+    # remove crontab
+    yes | crontab -u krmx -r >/dev/null 2>&1
+
 fi
