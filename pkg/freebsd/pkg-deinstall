@@ -57,7 +57,9 @@ if [ "X$2" == "XPOST-DEINSTALL" ]; then
     fi
 
     # remove crontab
-    yes | crontab -u krmx -r >/dev/null 2>&1
+    if [ -f /var/cron/tabs/krmx ]; then
+        rm /var/cron/tabs/krmx 
+    fi
 
     # remove newsyslog
     [ -f /etc/newsyslog.conf.d/kronometrix ] && rm /etc/newsyslog.conf.d/kronometrix
