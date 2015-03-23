@@ -36,12 +36,14 @@ use WWW::Curl::Easy;
 
 # Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hvVt:q') or usage();
+getopts('chvVnt:q') or usage();
 usage() if defined $main::opt_h;
 revision() if defined $main::opt_V;
 usage() if (($#ARGV+1) >= 1);
 my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
 my $quiet_flag = defined $main::opt_q ? $main::opt_q : 0;
+my $null_flag = defined $main::opt_n ? $main::opt_n: 0;
+my $clean_flag = defined $main::opt_c ? $main::opt_c: 0;
 
 # Global Vars
 my $hport      = 80;                  # HTTP default port
@@ -52,6 +54,8 @@ my $ttype;                            # Transport mode
 my $krmxcnf    = 'kronometrix.json';  # Main configuration name
 $main::opt_h   = 0;                   # help option
 $main::opt_V   = 0;                   # revision option
+$main::opt_n   = 0;                   # null files option
+$main::opt_c   = 0;                   # null files option
 my ($hproxy, $hproxyport);
 
 my $conf;
@@ -63,8 +67,7 @@ local $| = 1;                 # autoflush
 # MAIN BODY #
 # ######### #
 
-my ($sdr_current, $sdr_daily, $pkey);
-my ($sdrid, $dr);
+my ($sid, $dr);
 
 #start counting here
 my $tstart = gettimeofday();
@@ -85,6 +88,9 @@ if (defined $main::opt_t) {
 my $host = hostname;
 $host =~ s/\..*$// if $host =~ /\./;
 
+my $fbsd_sem = 0;
+$fbsd_sem = 1 if  ($osname eq "freebsd");
+
 # read configuration
 my $kjson = open_config($krmxcnf);
 
@@ -92,13 +98,19 @@ my $kjson = open_config($krmxcnf);
 # my $hostid = get_hostid($cdata);
 
 ## logs
-my ( $curlog, $pastlog ) = get_log($kjson);
+my ( $baselog, $curlog, $pastlog ) = get_log($kjson);
 
 # Verbose Messages
 if ( $verbose_flag == 1 ) {
     print "info: main - recording hostname: $host \n";
     print "info: main - current log dir: $curlog \n";
     print "info: main - daily log dir: $pastlog \n";
+}
+
+# check null command option
+if ( $null_flag == 1 ) {
+    null2krd($baselog, $curlog);
+    exit 0;
 }
 
 my $yesterday = get_yesterday();
@@ -108,8 +120,14 @@ if ( $verbose_flag == 1 ) {
 }
 
 # Current to Daily
-my $numkrd = rotate($curlog, $pastlog, $yesterday);
 
+# FreeBSD cleanup krd routine
+my $numkrd;
+if ( $fbsd_sem == 1 ) {
+    $numkrd = rotate($baselog, $pastlog, $yesterday);
+} else {
+    $numkrd = rotate($curlog, $pastlog, $yesterday);
+}
 
 ## Mark End of Time
 my $tend = gettimeofday();
@@ -129,9 +147,7 @@ if ($quiet_flag == 0) {
 }
 
 
-
 ## Subroutines
-
 
 ## open JSON configuration file
 sub open_config {
@@ -178,10 +194,11 @@ sub get_log {
 
     my ($data) = @_;
 
+    my $bpath = $data->{'log'}->{'base_path'};
     my $cpath = $data->{'log'}->{'current_path'};
-    my $ppath = $data->{'log'}->{'daily_path'};
+    my $dpath = $data->{'log'}->{'daily_path'};
 
-    return ( $cpath, $ppath );
+    return ( $bpath, $cpath, $dpath );
 }
 
 
@@ -198,50 +215,6 @@ sub get_yesterday {
     # print "PREVDATE: $prevdate \n";
 
     return $prevdate;
-}
-
-
-## rotate raw data
-sub rotate {
-
-    my($rawdir, $dailydir, $pdir) = @_;
-
-    opendir(DIR, $rawdir) or 
-        die "error: rotate - Can't open $rawdir: $!";
-    my @files = grep {!/^\.+$/} readdir(DIR);
-    close(DIR);
-
-    my $dest = "$dailydir/$pdir";
-
-    my @krd_files;
-
-    foreach my $krd (@files) {
-        next if $krd !~ /.*\.krd\.0\.gz$/;
-        push @krd_files, $krd;
-    }
-
-    if ($verbose_flag == 1) {
-        printf "%s %d\n", "info: rotate - copying krd data files:", $#krd_files +1;
-    }
-
-    my $cnt = 0;
-    # check if we have anything to move to daily
-    if (($#krd_files+1) > 0) {
-   
-        # make daily target dir
-        unless(mkdir $dest) {
-            die "error: rotate - cannot create destination $pdir, already exists\n";
-        }
-
-        foreach my $dir (@krd_files) {
-            move("$rawdir/$dir","$dest") or
-                die "error: rotate - copying previous daily data, $!\n";
-            $cnt++;
-        }
-    }
-
-    # return number of raw krd files moved to daily
-    return $cnt;
 }
 
 
@@ -296,7 +269,7 @@ sub tar_krd {
     }
 
     # Tar sdrd files
-    my $krdtar = '/var/tmp/krd.' . $sdrid . '.' . $host . '.tar';
+    my $krdtar = '/var/tmp/krd.' . $sid . '.' . $host . '.tar';
 
     $tar->write($krdtar);
 
@@ -304,13 +277,98 @@ sub tar_krd {
 }
 
 
+## null the raw data
+sub null2krd {
+
+    my($blog, $clog ) = @_;
+
+    opendir(DIR, $clog) or
+        die "error: null2krd - Can't open $clog: $!";
+    my @files = grep {!/^\.+$/} readdir(DIR);
+    close(DIR);
+
+    my @krds;
+    foreach my $krd (@files) {
+        next if $krd !~ /.*\.krd$/;
+        push @krds, $krd;
+    }
+
+    foreach my $krdf (@krds) {
+        copy("$clog/$krdf", "$blog") or
+           die "error: null2krd cannot copy krd file: $krdf $!\n";
+         open my $fh, ">", "$clog/$krdf";
+         close $fh;
+    }
+
+    return;
+}
+
+
+
+## rotate raw data
+sub rotate {
+
+    my($rawdir, $dailydir, $pdir) = @_;
+
+    opendir(DIR, $rawdir) or
+        die "error: rotate - Can't open $rawdir: $!";
+    my @files = grep {!/^\.+$/} readdir(DIR);
+    close(DIR);
+
+    my $dest = "$dailydir/$pdir";
+
+    my @krd_files;
+
+    foreach my $krd (@files) {
+        next if $krd !~ /.*\.krd\.0\.gz$/;
+        push @krd_files, $krd;
+    }
+
+    if ($verbose_flag == 1) {
+        printf "%s %d\n", 
+               "info: rotate - copying krd data files:", $#krd_files +1;
+    }
+
+    my $cnt = 0;
+    # check if we have anything to move to daily
+    if (($#krd_files+1) > 0) {
+   
+        # make daily target dir
+        unless(mkdir $dest) {
+            die "error: rotate - cannot create dest $pdir, already exists\n";
+        }
+
+        foreach my $dir (@krd_files) {
+            move("$rawdir/$dir","$dest") or
+                die "error: rotate - copying previous daily data, $!\n";
+            $cnt++;
+        }
+    }
+
+    # clean for old krd zero files
+    if ( $clean_flag == 1 ) {
+        # self check in case you work in current_log
+        # do not remove current hot krd files
+        if ($rawdir eq $baselog) {
+            foreach my $krdf (@files) {
+                next if $krdf !~ /.*\.krd$/;
+                rmkrd "$rawdir/$krdf";
+            }
+        }
+    }
+
+    # return number of raw krd files moved to daily
+    return $cnt;
+}
+
+
 ## usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: raw2day [-hV] [-t ftp|http]
-  e.g. raw2day               rotate raw data to daily log
-       raw2day -t http       transport sdrd files over HTTP
-       raw2day -t ftp        transport sdrd files over FTP
+USAGE: raw2day [-n] [-chV] [-t ftp|http]
+  e.g. raw2day         rotate raw data to daily log
+       raw2day -n      copy krd files to base and null originals
+       raw2day -c      rotate and clean base
 END
     exit 0;
 }
@@ -319,7 +377,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-raw2day: 1.0.11, 2015-03-19 1102
+raw2day: 1.0.12, 2015-03-23 0959
 END
     exit 0;
 }
