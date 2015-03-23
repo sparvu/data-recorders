@@ -142,7 +142,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.11, 2015-03-19 1100
+diskrec: 1.0.12, 2015-03-19 1100
 END
     exit 0;
 }
