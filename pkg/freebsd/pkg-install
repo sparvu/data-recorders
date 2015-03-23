@@ -27,6 +27,11 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
         echo "00 00 * * *  /bin/sleep 15 && /opt/kronometrix/bin/raw2day -c" >> /var/cron/tabs/krmx
     fi
 
+    # newsyslog kronometrix log rotation job
+    if [ ! -f /etc/newsyslog.conf.d/kronometrix ]; then
+        cp /opt/kronometrix/etc/kronometrix.newsyslog /etc/newsyslog.conf.d/kronometrix
+    fi
+
     # restore config
     if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
         cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc
