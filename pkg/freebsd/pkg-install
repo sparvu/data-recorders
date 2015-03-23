@@ -22,8 +22,7 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
     fi
 
     if [ ! -f /var/cron/tabs/krmx ]; then
-        echo "59 23 * * *  /bin/sleep 55 && /opt/kronometrix/bin/raw2day -n" >> /var/cron/tabs/krmx
-        echo "/usr/sbin/newsyslog -rf /etc/newsyslog.conf.d/kronometrix" >> /var/cron/tabs/krmx
+        echo "59 23 * * *  /bin/sleep 55 && /opt/kronometrix/bin/raw2day -n && /usr/sbin/newsyslog -rf /etc/newsyslog.conf.d/kronometrix" >> /var/cron/tabs/krmx
         echo "00 00 * * *  /bin/sleep 15 && /opt/kronometrix/bin/raw2day -c" >> /var/cron/tabs/krmx
     fi
 
