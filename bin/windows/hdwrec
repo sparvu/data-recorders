@@ -110,22 +110,27 @@ while(1) {
     }
 
 
-    # os, relos
+    # os, relos, kernel build
     my $os = Win32::GetOSName();
     my ($s, $maj, $min, $build, $id) = Win32::GetOSVersion();
     my $relos = $maj . "." . $min;
     my $kernel = $build;
 
-    #
-
+    # pcpu, vcpu
+    my $compsys = $wmi->InstancesOf("Win32_ComputerSystem");
+    my ($pcpu, $vcpu);
+    foreach my $obj (in $compsys) {
+        $pcpu = $obj->{NumberOfProcessors};
+        $vcpu = $obj->{NumberOfLogicalProcessors};
+    }
 
     my $end = gettimeofday();
     my $elapsed = ($end - $start) * 1000;
 
     # print "Elapsed time: $elapsed\n";
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s\n", 
-      time , $host, $hdw, $os, $relos, $kernel;
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d\n", 
+      time , $host, $hdw, $os, $relos, $kernel, $pcpu, $vcpu;
 
     ### Check for end
     last if ++$loop == $loop_max;
