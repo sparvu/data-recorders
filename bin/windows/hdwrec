@@ -101,11 +101,9 @@ while(1) {
 
     # measure payload
     my $start = gettimeofday();
-    my $cpuset = $wmi->InstancesOf("Win32_Processor");
-
-
+    my $wproc = $wmi->InstancesOf("Win32_Processor");
     my $hdw;
-    foreach my $obj (in $cpuset) {
+    foreach my $obj (in $wproc) {
         $hdw = $obj->{AddressWidth};
     }
 
@@ -117,20 +115,33 @@ while(1) {
     my $kernel = $build;
 
     # pcpu, vcpu
-    my $compsys = $wmi->InstancesOf("Win32_ComputerSystem");
+    my $wcs = $wmi->InstancesOf("Win32_ComputerSystem");
     my ($pcpu, $vcpu);
-    foreach my $obj (in $compsys) {
+    foreach my $obj (in $wcs) {
         $pcpu = $obj->{NumberOfProcessors};
         $vcpu = $obj->{NumberOfLogicalProcessors};
+    }
+
+
+    # memtotal, swaptotal
+    my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
+    my ($memtotal, $swaptotal, $freemem);
+    foreach my $obj (in $wos) {
+        $memtotal  = $obj->{TotalVisibleMemorySize};
+        $swaptotal = $obj->{SizeStoredInPagingFiles};
+        $freemem   = $obj->{FreePhysicalMemory};
     }
 
     my $end = gettimeofday();
     my $elapsed = ($end - $start) * 1000;
 
-    # print "Elapsed time: $elapsed\n";
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d\n", 
-      time , $host, $hdw, $os, $relos, $kernel, $pcpu, $vcpu;
+    print "elapsed time: $elapsed ms\n";
+
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%s\n", 
+      time , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+      $memtotal, $swaptotal, $freemem;
+    print "\n";
 
     ### Check for end
     last if ++$loop == $loop_max;
