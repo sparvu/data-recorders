@@ -21,10 +21,11 @@
 use strict;
 use warnings;
 use Getopt::Std;
-use Time::HiRes qw(time sleep);
+use Time::HiRes qw(time gettimeofday);
 use POSIX qw(pause);
 use Win32::OLE ('in');
 use Sys::Hostname;
+use Win32;
 
 # Debug Only
 use Data::Dumper;
@@ -86,37 +87,39 @@ if ( $interval =~ /\./ ) {
    $tp = 3;
 }
 
+# get stats
+my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+    or die "Cannot initialize WMI interface\n";
+
+
 while(1) {
 
     # hostname# hostname
     my $host = lc(hostname);
     $host =~ s/\..*$// if $host =~ /\./;
-
-    # get stats
-    my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-        or die "Cannot initialize WMI interface\n";
-
-    # 
-    my @items = $wmi->ExecQuery("SELECT * FROM Win32_Processor", "WQL", 
-                                    0x10 | 0x20);
+   
+    my $start = gettimeofday();
+    my $cpuset = $wmi->InstancesOf("Win32_Processor");
 
     #print Dumper($_) for (@items);
 
-    foreach my $obj (in @items) {
-       
-        print "$obj->{AddressWidth}";
-
-    #    print "proc: $objItem->{AddressWidth}";
+    my $hdw;
+    foreach my $obj (in $cpuset) {
+        $hdw = $obj->{AddressWidth};
     }
 
+    my $end = gettimeofday();
+    my $elapsed = ($end - $start) * 1000;
 
-    printf "%.${tp}f:%s\n", time , $host;
+    # print "Elapsed time: $elapsed\n";
+
+    printf "%.${tp}f:%s:%s\n", time , $host, $hdw;
 
     ### Check for end
     last if ++$loop == $loop_max;
 
     ### Interval
-    sleep $interval;
+    Win32::Sleep(($interval * 1000 ) - $elapsed);
 
 }
 
