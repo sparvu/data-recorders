@@ -206,7 +206,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-xenrec: 1.0.10, 2015-03-16 1454
+xenrec: 1.0.12, 2015-03-16 1454
 END
     exit (0);
 }
