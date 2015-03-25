@@ -10,10 +10,11 @@ Bug Management System
 
 Releases
 
-  1.0.12 27-03-2015 Release
+  1.0.12 29-03-2015 Release
     raw2day not properly rotating logs #28
     missing newsyslog log rotation job file #29
     update openssl-1.0.2a
+
 
   1.0.11 22-03-2015 Release
     agents, transport startup message #24
