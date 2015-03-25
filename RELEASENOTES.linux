@@ -17,6 +17,10 @@ Bug Management System
 
 Releases
 
+  1.0.12 29-03-2015 Release
+    raw2day not properly rotating logs #28
+    update openssl-1.0.2a
+
   1.0.10 15-03-2015 Release
     hdwrec debian incorrect os and relos fields #21
     debian pkg does not check for cron.allow #22
@@ -36,4 +40,3 @@ Releases
     update openssl-1.0.2
     update curl-7.41.0
     update sysstat-10.2.1
-
