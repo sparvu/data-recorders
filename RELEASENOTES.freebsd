@@ -15,13 +15,11 @@ Releases
     missing newsyslog log rotation job file #29
     update openssl-1.0.2a
 
-
   1.0.11 22-03-2015 Release
     agents, transport startup message #24
     hdwrec os field lower-case everywhere #27
     pkg removal does not clean rc.conf #26
     rc startup scripts on freebsd should better support rc.conf #25
-
 
   1.0.10 17-03-2015 Release
     hdwrec distid field not used anymore #23
