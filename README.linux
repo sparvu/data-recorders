@@ -33,10 +33,11 @@ README Kronometrix Data Recording
 
 3.Prerequisites
 
-  o Make sure your system has installed chkconfig. It is not 
-    mandatory but highly recommended.
+  o dbus package, have a proper machine-id
 
-  o For Ubuntu/Debian based systems enable cron:
+  o chkconfig, it is not mandatory but highly recommended
+
+  o Ubuntu/Debian based systems enable cron:
       # update-rc.d cron defaults
       # chkconfig --list cron
 

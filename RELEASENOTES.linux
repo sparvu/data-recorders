@@ -19,6 +19,7 @@ Releases
 
   1.0.12 29-03-2015 Release
     raw2day not properly rotating logs #28
+    sender linux hostuuid improvements #30
     update openssl-1.0.2a
 
   1.0.10 15-03-2015 Release
