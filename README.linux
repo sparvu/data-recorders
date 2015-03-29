@@ -33,7 +33,7 @@ README Kronometrix Data Recording
 
 3.Prerequisites
 
-  o dbus package, have a proper machine-id
+  o dbus
 
   o chkconfig, it is not mandatory but highly recommended
 
