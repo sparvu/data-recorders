@@ -325,7 +325,7 @@ while (1) {
 	my $gust = unpack('x10C', $current_block);
 	my $wind_extra = unpack('x11C', $current_block);
 	my $wind_dir = unpack('x12C', $current_block);
-        print "wind_dir $wind_dir\n";
+        # print "wind_dir $wind_dir\n";
 	my $total_rain = unpack('x13S', $current_block) * 0.3;
 
 	$wind_speed = ($wind + (($wind_extra & 0x0F) <<8)) * 0.38;	# Was 0.1
