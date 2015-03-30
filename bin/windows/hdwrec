@@ -125,23 +125,49 @@ while(1) {
 
     # memtotal, swaptotal
     my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
-    my ($memtotal, $swaptotal, $freemem);
+    my ($memtotal, $swaptotal, $freemem, $lastboot);
     foreach my $obj (in $wos) {
         $memtotal  = $obj->{TotalVisibleMemorySize};
         $swaptotal = $obj->{SizeStoredInPagingFiles};
         $freemem   = $obj->{FreePhysicalMemory};
+	$lastboot  = $obj->{LastBootUptime};
     }
 
+
+    # get no of disks
+    # Win32_DiskDrive Class
+    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
+    my $ndisk = 0;
+    foreach my $disk (in $wd) {
+        $ndisk++;
+    }
+
+
+    #my $wd2 = $wmi->ExecQuery("SELECT Name FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk where name != '_Total'", "WQL", 0x10 | 0x20 );
+    #foreach my $obj (in $wd2) {
+    #    print "$obj->{Name}\n";
+    #}
+
+    # get no of NICs
+    # Win32_NetworkAdapterConfiguration
+    my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+    my $nnic = 0;
+    foreach my $nic (in $wn) {
+        if ( defined($nic->{MACAddress}) and 
+	     defined($nic->{IPAddress} ) ) {
+            $nnic++;
+	}
+    }
+    
     my $end = gettimeofday();
     my $elapsed = ($end - $start) * 1000;
 
 
-    print "elapsed time: $elapsed ms\n";
+    # print "elapsed time: $elapsed ms\n";
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%s\n", 
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d\n", 
       time , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
-      $memtotal, $swaptotal, $freemem;
-    print "\n";
+      $memtotal, $swaptotal, $ndisk, $nnic;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -177,8 +203,6 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #11 swaptotal  : total physical swap installed, number
   #12 disks      : total number of disks, number
   #13 nics       : total number of NICs, number
-  #14 jvms       : total number of running JVMs, number
-  #15 uptime     : how long the system has been running, number 
 END
     exit 0;
 }
@@ -188,7 +212,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.0, 2015-03-22 1437
+hdwrec: 1.0.15, 2015-03-30 1533
 END
     exit 0;
 }
