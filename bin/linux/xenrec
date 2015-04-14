@@ -167,7 +167,7 @@ OPTIONS:
  e.g. xenrec 5                  print continuously, every 5 seconds
       xenrec 2 5                print 5 times, every 2 seconds
       xenrec -d c5964           print c5964 domain statistics
-      xenrec -d sdrcom,sdrorg   print sdrcom and sdrorg domains statistics
+      xenrec -d vmcom,vmorg     print vmcom and vmorg domains statistics
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
@@ -206,7 +206,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-xenrec: 1.0.12, 2015-03-16 1454
+xenrec: 1.0.13, 2015-04-24 0000
 END
     exit (0);
 }

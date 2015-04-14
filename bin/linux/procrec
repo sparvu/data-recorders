@@ -359,9 +359,9 @@ OPTIONS:
       procrec -xn java 120   print every 120sec all java processes ext stats
       procrec -xn 'com*' 360 print every 360secs all com JVMs
                                including extended statistics
-      procrec -u sdr -x 
+      procrec -u krmx -x 
          -e 'pts.[0-2]' 5    print every 5sec all processes which belong to
-                             sdr user, in extended mode, but only those 
+                             krmx user, in extended mode, but only those 
                              which contain regex 'pts.[0-2]'
 
  FIELDS:
@@ -405,7 +405,7 @@ END
 sub revision {
 
     print STDERR <<END;
-procrec: 1.0.12, 2015-03-16 1453
+procrec: 1.0.13, 2015-04-24 0000 
 END
     exit 0;
 }
