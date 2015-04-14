@@ -17,6 +17,10 @@ Bug Management System
 
 Releases
 
+  1.0.13 24-04-2015 Release
+    warning during rpm installation, cron.allow missing #32
+    update openssl-1.0.2a
+
   1.0.12 29-03-2015 Release
     raw2day not properly rotating logs #28
     sender linux hostuuid improvements #30
