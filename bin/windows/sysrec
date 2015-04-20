@@ -20,12 +20,15 @@
 use strict;
 use warnings;
 use Getopt::Std;
-use Time::HiRes qw(time sleep);
+use Time::HiRes qw(time gettimeofday);
 use POSIX qw(pause);
-use Win32::OLE;
+use Win32::OLE ('in');
+use Sys::Hostname;
+use Win32;
+use Time::Local;
 
 # Debug Only
-# use Data::Dumper;
+use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 getopts('hV') or usage();
@@ -59,24 +62,24 @@ local $| = 1;     # autoflush
 # how often do we trigger (seconds)?
 my $first_interval = $interval;
 
-my @fields = qw(PercentIdleTime PercentProcessorTime 
-                PercentPrivilegedTime 
-	        PercentUserTime PercentInterruptTime 
-		TimeStamp_Sys100NS);
+#my @fields = qw(PercentIdleTime PercentProcessorTime 
+#                PercentPrivilegedTime 
+#	        PercentUserTime PercentInterruptTime 
+#		TimeStamp_Sys100NS);
+#
+#my $hash1 = {};
+#my $key = 'Name';
 
-my $hash1 = {};
-my $key = 'Name';
-
-my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-    or die "Cannot initialize WMI interface\n";
-
-my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-    or die "Failed to get instance object\n";
-
-my $v;
-foreach $v (in $list) {            
-    map{$hash1->{$v->{$key}}->{$_} = $v->{$_} }@fields;
-}
+#my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+#    or die "Cannot initialize WMI interface\n";
+#
+#my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+#    or die "Failed to get instance object\n";
+#
+#my $v;
+#foreach $v (in $list) {            
+#    map{$hash1->{$v->{$key}}->{$_} = $v->{$_} }@fields;
+#}
 
 
 # check interval input
@@ -84,42 +87,126 @@ if ( $interval =~ /\./ ) {
    $tp = 3;
 }
 
+# get stats
+my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+    or die "Cannot initialize WMI interface\n";
+
+
 while(1) {
 
+    # hostname# hostname
+    my $host = lc(hostname);
+    $host =~ s/\..*$// if $host =~ /\./;
 
-    # get stats
 
-    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-        or die "Failed to get instance object\n";
-
-    my $hash = {};
-
-    foreach $v (in $list) {            
-        map{$hash1->{$v->{$key}}->{$_} = $v->{$_} }@fields;
+    # measure payload
+    my $start = gettimeofday();
+    my $wproc = $wmi->InstancesOf("Win32_Processor");
+    my $hdw;
+    foreach my $obj (in $wproc) {
+        $hdw = $obj->{AddressWidth};
     }
 
-    my $cpu_time = sprintf("%.2f", (1 - get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentProcessorTime' )) * 100);
 
-    my $cpu_idle = sprintf("%.2f", 100-$cpu_time);
+    # os, relos, kernel build
+    my $os = Win32::GetOSName();
+    my ($s, $maj, $min, $build, $id) = Win32::GetOSVersion();
+    my $relos = $maj . "." . $min;
+    my $kernel = $build;
 
-    my $cpu_user = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentUserTime' )* 100);
+    # pcpu, vcpu
+    my $wcs = $wmi->InstancesOf("Win32_ComputerSystem");
+    my ($pcpu, $vcpu);
+    foreach my $obj (in $wcs) {
+        $pcpu = $obj->{NumberOfProcessors};
+        $vcpu = $obj->{NumberOfLogicalProcessors};
+    }
 
-    my $cpu_priv = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentPrivilegedTime' )* 100);
 
-    my $cpu_int = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentInterruptTime' )* 100);
+    # memtotal, swaptotal
+    my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
+    my ($memtotal, $swaptotal, $freemem, $lastboot, $currtime);
+    foreach my $obj (in $wos) {
+        $memtotal  = $obj->{TotalVisibleMemorySize};
+        $swaptotal = $obj->{SizeStoredInPagingFiles};
+        $freemem   = $obj->{FreePhysicalMemory};
+	$lastboot  = $obj->{LastBootUptime};
+	$currtime  = $obj->{LocalDateTime};
+    }
 
+    # extract lastboot time
+    my $lyr   = substr ($lastboot, 0, 4);
+    my $lmon  = substr ($lastboot, 4, 2);
+    my $lday  = substr ($lastboot, 6, 2);
+    my $lhrs  = substr ($lastboot, 8, 2);
+    my $lmin  = substr ($lastboot, 10, 2);
+    my $lsec  = substr ($lastboot, 12, 2);
+
+    my $cyr   = substr ($currtime, 0, 4);
+    my $cmon  = substr ($currtime, 4, 2);
+    my $cday  = substr ($currtime, 6, 2);
+    my $chrs  = substr ($currtime, 8, 2);
+    my $cmin  = substr ($currtime, 10, 2);
+    my $csec  = substr ($currtime, 12, 2);
+
+    # print "Last timeboot: $lyr $lmon $lday $lhrs $lmin $lsec\n";
+    # print "Current DateTime: $cyr $cmon $cday $chrs $cmin $csec\n";
+
+    my $bootTime = timelocal($lsec, $lmin, $lhrs, $lday, $lmon, $lyr);
+    my $currentTime = timelocal($csec, $cmin, $chrs, $cday, $cmon, $cyr);
+
+    my $difference = $currentTime - $bootTime;
+    my ($seconds, $minutes, $hours, $days);
+    $seconds    =  $difference % 60;
+    $difference = ($difference - $seconds) / 60;
+    $minutes    =  $difference % 60;
+    $difference = ($difference - $minutes) / 60;
+    $hours      =  $difference % 24;
+    $difference = ($difference - $hours)   / 24;
+    $days       =  $difference;
+
+    my $uptime = "$days" . "d " . "$hours" . "h " . "$minutes" . "m " . "$seconds" . "s";
+
+    # get no of disks
+    # Win32_DiskDrive Class
+    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
+    my $ndisk = 0;
+    foreach my $disk (in $wd) {
+        $ndisk++;
+    }
+
+
+    #my $wd2 = $wmi->ExecQuery("SELECT Name FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk where name != '_Total'", "WQL", 0x10 | 0x20 );
+    #foreach my $obj (in $wd2) {
+    #    print "$obj->{Name}\n";
+    #}
+
+    # get no of NICs
+    # Win32_NetworkAdapterConfiguration
+    my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+    my $nnic = 0;
+    foreach my $nic (in $wn) {
+        if ( defined($nic->{MACAddress}) and 
+	     defined($nic->{IPAddress} ) ) {
+            $nnic++;
+	}
+    }
     
-    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
-            time , $cpu_time, $cpu_priv, $cpu_user, $cpu_int, $cpu_idle;
+    my $end = gettimeofday();
+    my $elapsed = ($end - $start) * 1000;
 
 
-    $hash1 = $hash;
+    # print "elapsed time: $elapsed ms\n";
+
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n", 
+      time , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+      $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
     ### Check for end
     last if ++$loop == $loop_max;
 
     ### Interval
-    sleep $interval;
+    Win32::Sleep(($interval * 1000 ) - $elapsed);
 
 }
 
@@ -127,88 +214,40 @@ while(1) {
 ### SUBROUTINES
 
 
-
-sub get_value {
-    my ($h1, $h2, $property) = @_;
-    return (($h2->{$property} - $h1->{$property})/($h2->{'TimeStamp_Sys100NS'}-$h1->{'TimeStamp_Sys100NS'}));
-}
-
-
 # usage - print usage and exit.
 #
 sub usage {
     print STDERR <<END;
-USAGE: sysrec [-hV] | [interval [count]]
- e.g. sysrec 5        print continuously, every 5 seconds
-      sysrec 1 5      print 5 times, every 1 second
+USAGE: hdwrec [-hV] | [interval [count]]
+ e.g. hdwrec 5       print continuously every 5 seconds
+      hdwrec 1 5     print 5 times, every 1 second
 
  FIELDS:
-  CPU
-   #01 timestamp  : seconds since Epoch, time
-   #02 cpupct     : cpu utilization, across all cpus, number
-   #03 sumpct     : sum of all cpus utilization, number
-   #04 headpct    : headroom cpu available, all cpus, number
-   #05 userpct    : cpu utilization, user space in percent, number
-   #06 nicepct    : cpu utilization, user space with nice priority, number
-   #07 sysct      : cpu utilization, system space, number
-   #08 idlepct    : cpu utilization, idle state, number
-   #09 iowaitcpt  : cpu percentage in idle state because an I/O operation 
-                     is waiting to complete, number
-   #10 irqpct     : cpu percentage servicing interrupts, number
-   #11 softirqpct : cpu percentage servicing softirqs, number
-   #12 stealpct   : cpu percentage of time spent in other operating systems
-                    when running in a virtualized environment, number
-   #13 runqsz     : run queue length, tasks waiting for run time, number
-   #14 plistsz    : tasks in the task list, number
-
-  MEM
-   #15 memusedpct : size of used memory in percent, number
-   #16 memused    : size of used memory in kilobytes, number
-   #17 memfree    : size of free memory in kilobytes, number
-   #18 memtotal   : size of memory in kilobytes, number
-   #19 buffers    : size of buffers used from memory in kilobytes, number
-   #20 cached     : size of cached memory in kilobytes, number
-   #21 realfree   : size of memory is real free, number
-                     (memfree+buffers+cached)
-   #22 realfreepct: size of memory real free in percent of total memory, number
-   #23 swapusedpct: size of used swap space in percent, number
-   #24 swapused   : size of swap space is used is kilobytes, number
-   #25 swapfree   : size of swap space is free in kilobytes, number
-   #26 swaptotal  : size of swap space in kilobytes, number
-   #27 swapcached : memory that once was swapped out, is swapped back in 
-                     but still also is in the swapfile, number
-
-  DISK
-   #28 reads      : disk read requests per second, rate
-   #29 rkbytes    : read bytes per second, in KB, rate
-   #30 writes     : disk write requests per second, rate
-   #31 wkbytes    : write bytes per second, in KB, rate
-   #32 sumrws     : disk read+write requests per second, rate
-   #33 sumrwkbs   : read+write Kbytes per second, rate
-
-  NET
-   #34 rxkbytes   : received bytes per seccond, in KB, rate
-   #35 txkbytes   : transmitted bytes per second, in KB, rate 
-   #36 sumrxtxkbs : received + transmitted bytes per second, in KB, rate
-   #37 rxerr      : number of errors while received pkt per second, rate
-   #38 txerr      : number of errors while transmitting pkt per second, rate
-   #39 rxdrop     : number of rx packets that were dropped per second, rate
-   #40 txdrop     : number of tx packets that were dropped per second, rate
- 
-   #41 avg1       : LA of the last minute, number
-   #42 avg5       : LA of the last 5 minutes, number
-   #43 avg15      : LA of the last 15 minutes, number
+  #01 timestamp  : seconds since Epoch, time
+  #02 hostname   : hostname
+  #03 hdw        : machine hardware name
+  #04 hypervisor : name of the hypervisor, string
+  #05 os         : name of the operating system, string
+  #06 relos      : release number of operating system, string
+  #07 kernel     : kernel version and release number
+  #08 pcpu       : number of physical installed CPUs, number
+  #09 vcpu       : number of virtual CPUs, number
+  #10 memtotal   : total physical memory installed, number
+  #11 swaptotal  : total physical swap installed, number
+  #12 disks      : total number of disks, number
+  #13 nics       : total number of NICs, number
+  #14 uptime     : total number of NICs, number
 END
     exit 0;
 }
-
 
 
 # revision - print revision and exit
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.0, 2015-03-21 1431
+sysrec: 1.0.15, 2015-04-20 1828
 END
-exit 0;
+    exit 0;
 }
+

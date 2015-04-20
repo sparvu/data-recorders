@@ -134,38 +134,7 @@ while(1) {
 	$currtime  = $obj->{LocalDateTime};
     }
 
-    # extract lastboot time
-    my $lyr   = substr ($lastboot, 0, 4);
-    my $lmon  = substr ($lastboot, 4, 2);
-    my $lday  = substr ($lastboot, 6, 2);
-    my $lhrs  = substr ($lastboot, 8, 2);
-    my $lmin  = substr ($lastboot, 10, 2);
-    my $lsec  = substr ($lastboot, 12, 2);
-
-    my $cyr   = substr ($currtime, 0, 4);
-    my $cmon  = substr ($currtime, 4, 2);
-    my $cday  = substr ($currtime, 6, 2);
-    my $chrs  = substr ($currtime, 8, 2);
-    my $cmin  = substr ($currtime, 10, 2);
-    my $csec  = substr ($currtime, 12, 2);
-
-    # print "Last timeboot: $lyr $lmon $lday $lhrs $lmin $lsec\n";
-    # print "Current DateTime: $cyr $cmon $cday $chrs $cmin $csec\n";
-
-    my $bootTime = timelocal($lsec, $lmin, $lhrs, $lday, $lmon, $lyr);
-    my $currentTime = timelocal($csec, $cmin, $chrs, $cday, $cmon, $cyr);
-
-    my $difference = $currentTime - $bootTime;
-    my ($seconds, $minutes, $hours, $days);
-    $seconds    =  $difference % 60;
-    $difference = ($difference - $seconds) / 60;
-    $minutes    =  $difference % 60;
-    $difference = ($difference - $minutes) / 60;
-    $hours      =  $difference % 24;
-    $difference = ($difference - $hours)   / 24;
-    $days       =  $difference;
-
-    my $uptime = "$days" . "d " . "$hours" . "h " . "$minutes" . "m " . "$seconds" . "s";
+    my $uptime = get_uptime ($lastboot, $currtime);
 
     # get no of disks
     # Win32_DiskDrive Class
@@ -246,17 +215,49 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.15, 2015-04-19 1537
+hdwrec: 1.0.15, 2015-04-20 1829
 END
     exit 0;
 }
 
 
-sub time2days {
-    my $days = (time() - $_[0])/(24*60*60);
-    my $hours = ($days - int($days)) * 24;
-    my $minutes = ($hours - int($hours)) * 60;
-    my $day_st = $days >= 2 ? 'days' : 'day';
+sub get_uptime {
 
-    return sprintf("%0d $day_st %02d:%02d", $days, $hours, $minutes);
+    my ($lb, $ct) = @_;
+
+    # extract lastboot time
+    my $lyr   = substr ($lb, 0, 4);
+    my $lmon  = substr ($lb, 4, 2);
+    my $lday  = substr ($lb, 6, 2);
+    my $lhrs  = substr ($lb, 8, 2);
+    my $lmin  = substr ($lb, 10, 2);
+    my $lsec  = substr ($lb, 12, 2);
+
+    my $cyr   = substr ($ct, 0, 4);
+    my $cmon  = substr ($ct, 4, 2);
+    my $cday  = substr ($ct, 6, 2);
+    my $chrs  = substr ($ct, 8, 2);
+    my $cmin  = substr ($ct, 10, 2);
+    my $csec  = substr ($ct, 12, 2);
+
+    # print "Last timeboot: $lyr $lmon $lday $lhrs $lmin $lsec\n";
+    # print "Current DateTime: $cyr $cmon $cday $chrs $cmin $csec\n";
+
+    my $bootTime = timelocal($lsec, $lmin, $lhrs, $lday, $lmon, $lyr);
+    my $currentTime = timelocal($csec, $cmin, $chrs, $cday, $cmon, $cyr);
+
+    my $delta = $currentTime - $bootTime;
+    my ($secs, $mins, $hrs, $days);
+    $secs    =  $delta % 60;
+    $delta   = ($delta - $secs) / 60;
+    $mins    =  $delta % 60;
+    $delta   = ($delta - $mins) / 60;
+    $hrs     =  $delta % 24;
+    $delta   = ($delta - $hrs)   / 24;
+    $days    =  $delta;
+
+    my $u = "$days" . "d " . "$hrs" . "h " . "$mins" . "m " . "$secs" . "s";
+
+    # return uptime
+    return $u;
 }
