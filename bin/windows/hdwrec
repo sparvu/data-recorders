@@ -1,4 +1,3 @@
-
 #
 # Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
@@ -26,6 +25,7 @@ use POSIX qw(pause);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Win32;
+use Time::Local;
 
 # Debug Only
 use Data::Dumper;
@@ -125,14 +125,47 @@ while(1) {
 
     # memtotal, swaptotal
     my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
-    my ($memtotal, $swaptotal, $freemem, $lastboot);
+    my ($memtotal, $swaptotal, $freemem, $lastboot, $currtime);
     foreach my $obj (in $wos) {
         $memtotal  = $obj->{TotalVisibleMemorySize};
         $swaptotal = $obj->{SizeStoredInPagingFiles};
         $freemem   = $obj->{FreePhysicalMemory};
 	$lastboot  = $obj->{LastBootUptime};
+	$currtime  = $obj->{LocalDateTime};
     }
 
+    # extract lastboot time
+    my $lyr   = substr ($lastboot, 0, 4);
+    my $lmon  = substr ($lastboot, 4, 2);
+    my $lday  = substr ($lastboot, 6, 2);
+    my $lhrs  = substr ($lastboot, 8, 2);
+    my $lmin  = substr ($lastboot, 10, 2);
+    my $lsec  = substr ($lastboot, 12, 2);
+
+    my $cyr   = substr ($currtime, 0, 4);
+    my $cmon  = substr ($currtime, 4, 2);
+    my $cday  = substr ($currtime, 6, 2);
+    my $chrs  = substr ($currtime, 8, 2);
+    my $cmin  = substr ($currtime, 10, 2);
+    my $csec  = substr ($currtime, 12, 2);
+
+    # print "Last timeboot: $lyr $lmon $lday $lhrs $lmin $lsec\n";
+    # print "Current DateTime: $cyr $cmon $cday $chrs $cmin $csec\n";
+
+    my $bootTime = timelocal($lsec, $lmin, $lhrs, $lday, $lmon, $lyr);
+    my $currentTime = timelocal($csec, $cmin, $chrs, $cday, $cmon, $cyr);
+
+    my $difference = $currentTime - $bootTime;
+    my ($seconds, $minutes, $hours, $days);
+    $seconds    =  $difference % 60;
+    $difference = ($difference - $seconds) / 60;
+    $minutes    =  $difference % 60;
+    $difference = ($difference - $minutes) / 60;
+    $hours      =  $difference % 24;
+    $difference = ($difference - $hours)   / 24;
+    $days       =  $difference;
+
+    my $uptime = "$days" . "d " . "$hours" . "h " . "$minutes" . "m " . "$seconds" . "s";
 
     # get no of disks
     # Win32_DiskDrive Class
@@ -165,9 +198,9 @@ while(1) {
 
     # print "elapsed time: $elapsed ms\n";
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d\n", 
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n", 
       time , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
-      $memtotal, $swaptotal, $ndisk, $nnic;
+      $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -203,6 +236,7 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #11 swaptotal  : total physical swap installed, number
   #12 disks      : total number of disks, number
   #13 nics       : total number of NICs, number
+  #14 uptime     : total number of NICs, number
 END
     exit 0;
 }
@@ -212,8 +246,17 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.15, 2015-03-30 1533
+hdwrec: 1.0.15, 2015-04-19 1537
 END
     exit 0;
 }
 
+
+sub time2days {
+    my $days = (time() - $_[0])/(24*60*60);
+    my $hours = ($days - int($days)) * 24;
+    my $minutes = ($hours - int($hours)) * 60;
+    my $day_st = $days >= 2 ? 'days' : 'day';
+
+    return sprintf("%0d $day_st %02d:%02d", $days, $hours, $minutes);
+}
