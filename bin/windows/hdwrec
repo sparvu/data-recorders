@@ -33,7 +33,7 @@ use JSON;
 use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hV') or usage();
+getopts('hvV') or usage();
 usage() if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
@@ -48,6 +48,11 @@ else {
     $interval = 1;
     $loop_max = 1;
 }
+
+
+# verbose flag
+my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
+
 
 ### Variables
 my $update;                            # used for deltas
@@ -89,6 +94,20 @@ my $first_interval = $interval;
 if ( $interval =~ /\./ ) {
    $tp = 3;
 }
+
+
+# read configuration
+my $cdata = open_config($cf);
+my ( $blog, $clog, $dlog ) = get_log($cdata);
+
+if ($verbose_flag) {
+    print "info: main - base:$blog, current:$clog, daily:$dlog\n";
+}
+
+my $hdwlog = $blog . "/hdwrec.log";
+
+
+
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
@@ -205,12 +224,12 @@ sub open_config {
 	        usage();
 	    }
 	} else {
-	    if ( -e "/c/Program Files/Kronometrix/etc/$conf" ) {
-		open my $fh, "<", "/c/Program Files/Kronometrix/etc/$conf";
+	    if ( -e "C:\\Program Files\\Kronometrix\\etc\\$conf" ) {
+		open my $fh, "<", "C:\\Program Files\\Kronometrix\\etc\\$conf";
 		$json_data = <$fh>;
 		close $fh;
 	    } else { 
-	        print "error: open_config - $! /c/Program Files/Kronometrix/etc/$conf \n"; 
+	        print "error: open_config - $! $conf \n"; 
 		usage(); 
 	    }
 	} 
@@ -221,45 +240,19 @@ sub open_config {
     return $perl_data;
 }
 
+sub get_log {
+    my ($data) = @_;
 
-# usage - print usage and exit.
-#
-sub usage {
-    print STDERR <<END;
-USAGE: hdwrec [-hV] | [interval [count]]
- e.g. hdwrec 5       print continuously every 5 seconds
-      hdwrec 1 5     print 5 times, every 1 second
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+    my $dpath = $data->{'log'}->{'daily_path'};
 
- FIELDS:
-  #01 timestamp  : seconds since Epoch, time
-  #02 hostname   : hostname
-  #03 hdw        : machine hardware name
-  #04 hypervisor : name of the hypervisor, string
-  #05 os         : name of the operating system, string
-  #06 relos      : release number of operating system, string
-  #07 kernel     : kernel version and release number
-  #08 pcpu       : number of physical installed CPUs, number
-  #09 vcpu       : number of virtual CPUs, number
-  #10 memtotal   : total physical memory installed, number
-  #11 swaptotal  : total physical swap installed, number
-  #12 disks      : total number of disks, number
-  #13 nics       : total number of NICs, number
-  #14 uptime     : total number of NICs, number
-END
-    exit 0;
+    return ( $bpath, $cpath, $dpath );
 }
 
 
-# revision - print revision and exit
+# get_uptime - return system uptime
 #
-sub revision {
-    print STDERR <<END;
-hdwrec: 1.0.15, 2015-04-20 1829
-END
-    exit 0;
-}
-
-
 sub get_uptime {
 
     my ($lb, $ct) = @_;
@@ -299,4 +292,42 @@ sub get_uptime {
 
     # return uptime
     return $u;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: hdwrec [-hV] | [interval [count]]
+ e.g. hdwrec 5       print continuously every 5 seconds
+      hdwrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 hostname   : hostname
+  #03 hdw        : machine hardware name
+  #04 hypervisor : name of the hypervisor, string
+  #05 os         : name of the operating system, string
+  #06 relos      : release number of operating system, string
+  #07 kernel     : kernel version and release number
+  #08 pcpu       : number of physical installed CPUs, number
+  #09 vcpu       : number of virtual CPUs, number
+  #10 memtotal   : total physical memory installed, number
+  #11 swaptotal  : total physical swap installed, number
+  #12 disks      : total number of disks, number
+  #13 nics       : total number of NICs, number
+  #14 uptime     : total number of NICs, number
+END
+    exit 0;
+}
+
+
+# revision - print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+hdwrec: 1.0.15, 2015-04-23 1359
+END
+    exit 0;
 }
