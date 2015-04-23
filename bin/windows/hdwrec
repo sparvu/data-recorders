@@ -50,13 +50,14 @@ else {
 }
 
 ### Variables
-my $update;       # used for deltas
-my %cpudataOld;   # cpu_stats data
-my $loop = 0;     # current loop number
-$main::opt_h = 0; # help option
-$main::opt_V = 0; # revision option
-my $tp = 0;       # time precision
-local $| = 1;     # autoflush
+my $update;                            # used for deltas
+my %cpudataOld;                        # cpu_stats data
+my $loop        = 0;                   # current loop number
+$main::opt_h    = 0;                   # help option
+$main::opt_V    = 0;                   # revision option
+my $tp          = 0;                   # time precision
+my $cf          = 'kronometrix.json';  # default json config
+local $|        = 1;                   # autoflush
 
 
 ### MAIN BODY
@@ -183,6 +184,42 @@ while(1) {
 
 
 ### SUBROUTINES
+
+# open JSON configuration file
+sub open_config {
+
+    my ($conf) = @_;
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+	if ( defined $ENV{'KRMX_PREFIX'} ) {
+	    if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+	        open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+	        $json_data = <$fh>;
+	        close $fh;
+	    } else {
+                print "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+	        usage();
+	    }
+	} else {
+	    if ( -e "/c/Program Files/Kronometrix/etc/$conf" ) {
+		open my $fh, "<", "/c/Program Files/Kronometrix/etc/$conf";
+		$json_data = <$fh>;
+		close $fh;
+	    } else { 
+	        print "error: open_config - $! /c/Program Files/Kronometrix/etc/$conf \n"; 
+		usage(); 
+	    }
+	} 
+    }
+    
+    my $perl_data = JSON->new->utf8->decode($json_data); 
+    
+    return $perl_data;
+}
 
 
 # usage - print usage and exit.
