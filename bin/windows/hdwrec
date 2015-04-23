@@ -295,6 +295,23 @@ sub get_uptime {
 }
 
 
+# writelog - write log message
+#
+sub writelog {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    print "\n$dt $logbuf";
+
+    return;
+}
+
+
 # usage - print usage and exit.
 #
 sub usage {
