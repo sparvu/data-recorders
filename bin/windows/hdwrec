@@ -224,8 +224,8 @@ sub open_config {
 	        usage();
 	    }
 	} else {
-	    if ( -e "C:\\Program Files\\Kronometrix\\etc\\$conf" ) {
-		open my $fh, "<", "C:\\Program Files\\Kronometrix\\etc\\$conf";
+	    if ( -e "C:\\Kronometrix\\etc\\$conf" ) {
+		open my $fh, "<", "C:\\Kronometrix\\etc\\$conf";
 		$json_data = <$fh>;
 		close $fh;
 	    } else { 
