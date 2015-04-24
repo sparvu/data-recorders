@@ -70,25 +70,6 @@ local $|        = 1;                   # autoflush
 # how often do we trigger (seconds)?
 my $first_interval = $interval;
 
-#my @fields = qw(PercentIdleTime PercentProcessorTime 
-#                PercentPrivilegedTime 
-#	        PercentUserTime PercentInterruptTime 
-#		TimeStamp_Sys100NS);
-#
-#my $hash1 = {};
-#my $key = 'Name';
-
-#my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-#    or die "Cannot initialize WMI interface\n";
-#
-#my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-#    or die "Failed to get instance object\n";
-#
-#my $v;
-#foreach $v (in $list) {            
-#    map{$hash1->{$v->{$key}}->{$_} = $v->{$_} }@fields;
-#}
-
 
 # check interval input
 if ( $interval =~ /\./ ) {
@@ -98,14 +79,12 @@ if ( $interval =~ /\./ ) {
 
 # read configuration
 my $cdata = open_config($cf);
-my ( $blog, $clog, $dlog ) = get_log($cdata);
-
-if ($verbose_flag) {
-    print "info: main - base:$blog, current:$clog, daily:$dlog\n";
-}
-
+my ( $blog, $clog, $dlog ) = getlog($cdata);
 my $hdwlog = $blog . "/hdwrec.log";
 
+
+# open raw data
+# my $hkrd = get_krd($clog);
 
 
 
@@ -204,7 +183,28 @@ while(1) {
 
 ### SUBROUTINES
 
-# open JSON configuration file
+# chklog - check log directory
+#
+sub chklog {
+
+    my ($dir) = @_;
+
+    if (defined $dir) {
+        if (! -d $dir) {
+            print "error: chklog - cannot find $dir log directory";
+	    usage();
+        }
+    } else {
+        print "error: chklog - cannot find $dir log directory";
+	usage();
+    }
+
+    return;
+}
+
+
+# open_config - open JSON configuration file
+#
 sub open_config {
 
     my ($conf) = @_;
@@ -240,12 +240,20 @@ sub open_config {
     return $perl_data;
 }
 
-sub get_log {
+
+# getlog - get log directory information
+#
+sub getlog {
     my ($data) = @_;
 
     my $bpath = $data->{'log'}->{'base_path'};
+    chklog($bpath);
+
     my $cpath = $data->{'log'}->{'current_path'};
+    chklog($cpath);
+
     my $dpath = $data->{'log'}->{'daily_path'};
+    chklog($dpath);
 
     return ( $bpath, $cpath, $dpath );
 }
@@ -312,7 +320,7 @@ sub writelog {
 }
 
 
-# usage - print usage and exit.
+# usage - print usage and exit
 #
 sub usage {
     print STDERR <<END;
