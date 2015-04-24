@@ -62,7 +62,7 @@ $main::opt_h    = 0;                   # help option
 $main::opt_V    = 0;                   # revision option
 my $tp          = 0;                   # time precision
 my $cf          = 'kronometrix.json';  # default json config
-local $|        = 1;                   # autoflush
+local $|= 1;                           # autoflush
 
 
 ### MAIN BODY
@@ -80,12 +80,13 @@ if ( $interval =~ /\./ ) {
 # read configuration
 my $cdata = open_config($cf);
 my ( $blog, $clog, $dlog ) = getlog($cdata);
-my $hdwlog = $blog . "/hdwrec.log";
+my $logfile = $blog . "\\hdwrec.log";
 
+# open log file
+my $hdwlog = open_file($logfile);
 
 # open raw data
-# my $hkrd = get_krd($clog);
-
+# my $hdwkrd = get_krd($clog);
 
 
 # get stats
@@ -168,7 +169,7 @@ while(1) {
 
     # print "elapsed time: $elapsed ms\n";
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n", 
+    printf $hdwlog "\n%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s",
       time , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
       $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -201,6 +202,32 @@ sub chklog {
 
     return;
 }
+
+
+# open_data - open data file
+#
+
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, ">>", "$file" or 
+	  die "error: open_file - cannot open $file $!";
+	seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, ">", "$file" or 
+	  die "error: open_file - cannot open $file $!";
+	select $fh;
+
+    }
+
+    return $fh;
+}
+
 
 
 # open_config - open JSON configuration file
