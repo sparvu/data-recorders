@@ -438,7 +438,7 @@ sub new_hostid {
         $hid = process_hid ("$etcid");
     }
     else {
-        my $str = randr(time) . $osname;
+        my $str = rand(time) . $osname;
         $hid = create_uuid_as_string(UUID_V5,$str);
     }
 
