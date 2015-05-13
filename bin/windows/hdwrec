@@ -25,6 +25,8 @@ use POSIX qw(pause);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
+#use Log::Log4perl qw(get_logger);
+#use Log::Dispatch::FileRotate;
 use Win32;
 use JSON;
 
@@ -70,17 +72,47 @@ local $|= 1;                           # autoflush
 # how often do we trigger (seconds)?
 my $first_interval = $interval;
 
-
 # check interval input
 if ( $interval =~ /\./ ) {
    $tp = 3;
 }
 
-
 # read configuration
 my $cdata = open_config($cf);
 my ( $blog, $clog, $dlog ) = getlog($cdata);
 my $logfile = $blog . "\\hdwrec.log";
+my $hdwkrd = "C:\\Kronometrix\\log\\current\\hdwrec.krd";
+
+# init logger
+#my $logconf = q(
+#    log4perl.category.hdwrec:log    = WARN, log1
+#    log4perl.appender.log1          = Log::Log4perl::Appender::File
+#    log4perl.appender.log1.filename = ) . $logfile . q(
+#    log4perl.appender.log1.mode     = append
+#    log4perl.appender.log1.layout   = Log::Log4perl::Layout::PatternLayout
+#    log4perl.appender.log1.layout.ConversionPattern = %d{yyyy-MM-ddTHH:mm:ss.SSS} %F[%P] %m%n
+#
+#    log4perl.category.hdwrec:krd    = INFO, log2
+#    log4perl.appender.log2          = Log::Log4perl::Appender::File
+#    log4perl.appender.log2.filename = ) . $hdwkrd . q'
+#    log4perl.appender.log2.mode     = append
+#    log4perl.appender.log2.layout   = Log::Log4perl::Layout::PatternLayout
+#    log4perl.appender.log2.layout.ConversionPattern = %m%n
+#
+#';
+
+#Log::Log4perl->init(\$logconf);
+#my $logmsg = get_logger("hdwrec:log");
+#my $lograw = get_logger("hdwrec:krd");
+
+
+#my $logger;
+#BEGIN { 
+#    $logger = get_logger("rec::log");
+#    $SIG{__WARN__} = sub { 
+#        $logger->error("WARN @_");
+#    }
+#}
 
 # open log file
 my $hdwlog = open_file($logfile);
@@ -93,13 +125,13 @@ my $hdwlog = open_file($logfile);
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
+#$logmsg->warn("started");
 
 while(1) {
 
     # hostname# hostname
     my $host = lc(hostname);
     $host =~ s/\..*$// if $host =~ /\./;
-
 
     # measure payload
     my $start = gettimeofday();
@@ -168,6 +200,15 @@ while(1) {
 
 
     # print "elapsed time: $elapsed ms\n";
+
+    #$lograw->info("$v");
+
+    #my $payload = 
+    #   sprintf("%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s", time, "$host",
+    #           "$hdw", lc("$os"), "$relos", "$kernel", "$pcpu", "$vcpu",
+#	       "$memtotal", "$swaptotal", "$ndisk", "$nnic", "$uptime");
+
+    #$lograw->info("$payload");
 
     printf $hdwlog "\n%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s",
       time , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
