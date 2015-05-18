@@ -20,8 +20,9 @@
 use strict;
 use warnings;
 use Getopt::Std;
+#use Time::HiRes qw(time gettimeofday tv_interval);
 use Time::HiRes qw(time gettimeofday);
-use POSIX qw(pause);
+#use POSIX qw(pause);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -64,6 +65,9 @@ $main::opt_h    = 0;                   # help option
 $main::opt_V    = 0;                   # revision option
 my $tp          = 0;                   # time precision
 my $cf          = 'kronometrix.json';  # default json config
+my $mintime     = '2359';              # min time check 23:59
+my $maxtime     = '1';                 # max time check 00:01
+my $stime;                             # sleep timer
 local $|= 1;                           # autoflush
 
 
@@ -93,7 +97,7 @@ my $hdwkrd = "C:\\Kronometrix\\log\\current\\hdwrec.krd";
 #    log4perl.appender.log1.layout.ConversionPattern = %d{yyyy-MM-ddTHH:mm:ss.SSS} %F[%P] %m%n
 #
 #    log4perl.category.hdwrec:krd    = INFO, log2
-#    log4perl.appender.log2          = Log::Log4perl::Appender::File
+#    log4perl.appender.log2          = Log::Log4perl::App=ender::File
 #    log4perl.appender.log2.filename = ) . $hdwkrd . q'
 #    log4perl.appender.log2.mode     = append
 #    log4perl.appender.log2.layout   = Log::Log4perl::Layout::PatternLayout
@@ -125,16 +129,22 @@ my $hdwlog = open_file($logfile);
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
-#$logmsg->warn("started");
+my $last_time = 0;
 
 while(1) {
+
+    # debug
+    # print "\n\n New cycle - last_time=$last_time\n";
 
     # hostname# hostname
     my $host = lc(hostname);
     $host =~ s/\..*$// if $host =~ /\./;
 
     # measure payload
-    my $start = gettimeofday();
+    #my $start = gettimeofday();
+    #my $start = [gettimeofday];
+    my $start = Win32::GetTickCount();
+
     my $wproc = $wmi->InstancesOf("Win32_Processor");
     my $hdw;
     foreach my $obj (in $wproc) {
@@ -194,31 +204,64 @@ while(1) {
             $nnic++;
 	}
     }
+
+    cktime();
     
-    my $end = gettimeofday();
-    my $elapsed = ($end - $start) * 1000;
+    my $elapsed  = Win32::GetTickCount() - $start;
+    my $stime = ($interval * 1000) - $elapsed;
+
+    # output time
+    my $tnow = int(gettimeofday);
+    print "Info: elapsed=$elapsed, sleeptime=$stime, timenow=$tnow\n"; 
+
+    if ($last_time > 0) {
+        my $drift = $tnow - $last_time;
+
+        if ($drift > $interval) {
+	    my $delta = $drift - $interval;
+	    my $tfix = $tnow - $delta;
+            print "Warning: Time drift detected, drift=$drift\n"; 
+            print "Info: delta=$delta, tnow=$tnow, tfix=$tfix\n"; 
+
+            printf $hdwlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+              $tfix , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+              $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+
+            $stime -= $delta * 1000;
+            $last_time = $tfix;
+
+            Win32::Sleep($stime);
+
+    	} else {
+
+            printf $hdwlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+              $tnow, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+              $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+
+	    $last_time = $tnow;
+
+	    Win32::Sleep($stime);
+
+	}
+    } else {
+
+        printf $hdwlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+           $tnow , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+           $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
 
-    # print "elapsed time: $elapsed ms\n";
+        ### Check for end
+        last if ++$loop == $loop_max;
 
-    #$lograw->info("$v");
+        # my $stime = ($interval * 1000) - $elapsed;
+        #print "sleep: $stime msec\n";
 
-    #my $payload = 
-    #   sprintf("%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s", time, "$host",
-    #           "$hdw", lc("$os"), "$relos", "$kernel", "$pcpu", "$vcpu",
-#	       "$memtotal", "$swaptotal", "$ndisk", "$nnic", "$uptime");
+        #$tcheck += $interval;
+        $last_time = $tnow;
 
-    #$lograw->info("$payload");
-
-    printf $hdwlog "\n%.${tp}f:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s",
-      time , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
-      $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
-
-    ### Check for end
-    last if ++$loop == $loop_max;
-
-    ### Interval
-    Win32::Sleep(($interval * 1000 ) - $elapsed);
+        ### Interval
+        Win32::Sleep($stime);
+    }
 
 }
 
@@ -383,6 +426,25 @@ sub writelog {
                 $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 
     print "\n$dt $logbuf";
+
+    return;
+}
+
+
+# cktime - check midnight time
+#
+sub cktime {
+
+    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = 
+       localtime(time);
+
+    my $tcheck = sprintf ("%02d%02d", $hour, $min);
+
+    # print "time check: $tcheck";
+
+    if ($tcheck >= 2359 or $tcheck <= 1) {
+        print "we have midnight: $tcheck\n";
+    }
 
     return;
 }
