@@ -83,15 +83,17 @@ if ( $interval =~ /\./ ) {
 
 # read configuration
 my $cdata = open_config($cf);
+
 my ( $blog, $clog, $dlog ) = getlog($cdata);
-my $logfile = $blog . "\\hdwrec.log";
-my $hdwkrd = "C:\\Kronometrix\\log\\current\\hdwrec.krd";
+
+my $fname = $blog . "\\hdwrec2.log";
+my $krdfile = "C:\\Kronometrix\\log\\current\\hdwrec.krd";
 
 # open log file
-my $hdwlog = open_file($logfile);
+my $log = open_file($fname);
 
 # open raw data
-# my $hdwkrd = get_krd($clog);
+# my $rawlog = get_krd($clog);
 
 
 # get stats
@@ -193,7 +195,7 @@ while(1) {
             print "Warning: drift > interval, drift=$drift\n"; 
             print "Info: delta=$delta, tnow=$tnow, tfix=$tfix\n"; 
 
-            printf $hdwlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+            printf $log "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tfix , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -207,7 +209,8 @@ while(1) {
             my $ext = $interval - $drift;
             my $tfix = $tnow + $ext;
             print "Warning: drift < interval, drift=$drift\n"; 
-            printf $hdwlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+
+            printf $log "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tfix, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -218,7 +221,7 @@ while(1) {
 
 	} else {
 
-            printf $hdwlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+            printf $log "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tnow, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -227,9 +230,11 @@ while(1) {
 	    Win32::Sleep($stime);
 
 	}
+
+    # 1st loop, last_time always 0
     } else {
 
-        printf $hdwlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+        printf $log "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
            $tnow , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
            $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -289,7 +294,7 @@ sub open_file {
     } else {
         open $fh, ">", "$file" or 
 	  die "error: open_file - cannot open $file $!";
-	select $fh;
+        select ((select ($fh), $| = 1)[0]);
 
     }
 
