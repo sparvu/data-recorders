@@ -187,7 +187,7 @@ while(1) {
 
     # output time
     my $tnow = int(gettimeofday);
-    writelog ("Info: elapsed=$elapsed, sleeptime=$stime, timenow=$tnow");
+    writelog ("info: elapsed=$elapsed, sleeptime=$stime, timenow=$tnow");
 
     if ($last_time > 0) {
         my $drift = $tnow - $last_time;
@@ -196,8 +196,8 @@ while(1) {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            writelog ("Warning: drift > interval, drift=$drift"); 
-            writelog ("Info: delta=$delta, tnow=$tnow, tfix=$tfix"); 
+            writelog ("warn: drift > interval condition, drift=$drift"); 
+            writelog ("info: delta=$delta, tnow=$tnow, tfix=$tfix"); 
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tfix , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
@@ -212,7 +212,7 @@ while(1) {
 
             my $ext = $interval - $drift;
             my $tfix = $tnow + $ext;
-            print "Warning: drift < interval, drift=$drift\n"; 
+            writelog ("warn: drift < interval condition, drift=$drift"); 
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tfix, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
