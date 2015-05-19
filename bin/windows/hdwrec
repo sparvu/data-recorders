@@ -104,7 +104,7 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $last_time = 0;
 
-writelog ("hdwrec started");
+writelog ("started");
 
 while(1) {
 
@@ -290,13 +290,13 @@ sub open_file {
     my $fh;
 
     if (-f $file) {
-        open $fh, ">>", "$file" or 
+        open $fh, "+>>", "$file" or 
 	  die "error: open_file - cannot open $file $!";
 	seek $fh, 0, 2;
         select ((select ($fh), $| = 1)[0]);
 
     } else {
-        open $fh, ">", "$file" or 
+        open $fh, "+>", "$file" or 
 	  die "error: open_file - cannot open $file $!";
         select ((select ($fh), $| = 1)[0]);
 
@@ -418,7 +418,12 @@ sub writelog {
     my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
                 $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 
-    print $log "$dt $logbuf\n";
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
 
     return;
 }
