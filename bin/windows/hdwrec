@@ -87,37 +87,6 @@ my ( $blog, $clog, $dlog ) = getlog($cdata);
 my $logfile = $blog . "\\hdwrec.log";
 my $hdwkrd = "C:\\Kronometrix\\log\\current\\hdwrec.krd";
 
-# init logger
-#my $logconf = q(
-#    log4perl.category.hdwrec:log    = WARN, log1
-#    log4perl.appender.log1          = Log::Log4perl::Appender::File
-#    log4perl.appender.log1.filename = ) . $logfile . q(
-#    log4perl.appender.log1.mode     = append
-#    log4perl.appender.log1.layout   = Log::Log4perl::Layout::PatternLayout
-#    log4perl.appender.log1.layout.ConversionPattern = %d{yyyy-MM-ddTHH:mm:ss.SSS} %F[%P] %m%n
-#
-#    log4perl.category.hdwrec:krd    = INFO, log2
-#    log4perl.appender.log2          = Log::Log4perl::App=ender::File
-#    log4perl.appender.log2.filename = ) . $hdwkrd . q'
-#    log4perl.appender.log2.mode     = append
-#    log4perl.appender.log2.layout   = Log::Log4perl::Layout::PatternLayout
-#    log4perl.appender.log2.layout.ConversionPattern = %m%n
-#
-#';
-
-#Log::Log4perl->init(\$logconf);
-#my $logmsg = get_logger("hdwrec:log");
-#my $lograw = get_logger("hdwrec:krd");
-
-
-#my $logger;
-#BEGIN { 
-#    $logger = get_logger("rec::log");
-#    $SIG{__WARN__} = sub { 
-#        $logger->error("WARN @_");
-#    }
-#}
-
 # open log file
 my $hdwlog = open_file($logfile);
 
