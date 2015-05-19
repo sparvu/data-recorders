@@ -188,7 +188,7 @@ while(1) {
 
     ### verbose
     if ($verbose) {
-        writelog ("info: elapsed=$elapsed (ms), sleeptime=$stime (ms), timenow=$tnow epcoh");
+        writelog ("info: elapsed=$elapsed(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
     }
 
     if ($last_time > 0) {
@@ -198,11 +198,11 @@ while(1) {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            writelog ("warn: drift > interval, drift=$drift (s), interval=$interval (s)");
+            writelog ("warn: drift > interval, drift=$drift(s), interval=$interval(s)");
 
 	    ### verbose
 	    if ($verbose) {
-                writelog ("info: delta=$delta (s), timenow=$tnow epoch, timefix=$tfix epoch");
+                writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
@@ -218,11 +218,11 @@ while(1) {
 
             my $ext = $interval - $drift;
             my $tfix = $tnow + $ext;
-            writelog ("warn: drift < interval, drift=$drift (s), interval=$interval (s)"); 
+            writelog ("warn: drift < interval, drift=$drift(s), interval=$interval(s)"); 
 
 	    ### verbose
 	    if ($verbose) {
-                writelog ("info: ext=$ext (s), timenow=$tnow epoch, timefix=$tfix epoch");
+                writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
