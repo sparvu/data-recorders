@@ -36,6 +36,9 @@ getopts('hvV') or usage();
 usage() if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
+# set verbose log
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
 # process [[interval [count]]
 my ( $interval, $loop_max );
 if ( defined $ARGV[0] ) {
@@ -83,16 +86,13 @@ my $cdata = open_config($cf);
 my ( $blog, $clog, $dlog ) = getlog($cdata);
 
 my $fname = $blog . "\\hdwrec2.log";
-my $fkrd  = $clog . "\\hdwrec.krd";
-
-my $krdfile = "C:\\Kronometrix\\log\\current\\hdwrec.krd";
+my $fkrd  = $clog . "\\hdwrec2.krd";
 
 # open log file
 my $log = open_file($fname);
 
 # open raw data
 my $rawlog = open_file($fkrd);
-
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
@@ -104,8 +104,10 @@ writelog ("started");
 
 while(1) {
 
-    # debug
-    # print "\n\n New cycle - last_time=$last_time\n";
+    ### verbose
+    if ($verbose) {
+        writelog ("info: main last_time=$last_time");
+    }
 
     # hostname# hostname
     my $host = lc(hostname);
@@ -183,7 +185,11 @@ while(1) {
 
     # output time
     my $tnow = int(gettimeofday);
-    writelog ("info: elapsed=$elapsed, sleeptime=$stime, timenow=$tnow");
+
+    ### verbose
+    if ($verbose) {
+        writelog ("info: elapsed=$elapsed, sleeptime=$stime, timenow=$tnow");
+    }
 
     if ($last_time > 0) {
         my $drift = $tnow - $last_time;
@@ -192,8 +198,12 @@ while(1) {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            writelog ("warn: drift > interval condition, drift=$drift"); 
-            writelog ("info: delta=$delta, tnow=$tnow, tfix=$tfix"); 
+            writelog ("warn: drift > interval condition, drift=$drift");
+
+	    ### verbose
+	    if ($verbose) {
+                writelog ("info: delta=$delta, tnow=$tnow, tfix=$tfix");
+	    }
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tfix , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
@@ -209,6 +219,11 @@ while(1) {
             my $ext = $interval - $drift;
             my $tfix = $tnow + $ext;
             writelog ("warn: drift < interval condition, drift=$drift"); 
+
+	    ### verbose
+	    if ($verbose) {
+                writelog ("info: ext=$ext, tnow=$tnow, tfix=$tfix");
+	    }
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tfix, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
