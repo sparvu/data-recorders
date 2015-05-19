@@ -87,13 +87,15 @@ my $cdata = open_config($cf);
 my ( $blog, $clog, $dlog ) = getlog($cdata);
 
 my $fname = $blog . "\\hdwrec2.log";
+my $fkrd  = $clog . "\\hdwrec.krd";
+
 my $krdfile = "C:\\Kronometrix\\log\\current\\hdwrec.krd";
 
 # open log file
 my $log = open_file($fname);
 
 # open raw data
-# my $rawlog = get_krd($clog);
+my $rawlog = open_file($fkrd);
 
 
 # get stats
@@ -101,6 +103,8 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
 my $last_time = 0;
+
+writelog ("hdwrec started");
 
 while(1) {
 
@@ -183,7 +187,7 @@ while(1) {
 
     # output time
     my $tnow = int(gettimeofday);
-    print "Info: elapsed=$elapsed, sleeptime=$stime, timenow=$tnow\n"; 
+    writelog ("Info: elapsed=$elapsed, sleeptime=$stime, timenow=$tnow");
 
     if ($last_time > 0) {
         my $drift = $tnow - $last_time;
@@ -192,10 +196,10 @@ while(1) {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            print "Warning: drift > interval, drift=$drift\n"; 
-            print "Info: delta=$delta, tnow=$tnow, tfix=$tfix\n"; 
+            writelog ("Warning: drift > interval, drift=$drift"); 
+            writelog ("Info: delta=$delta, tnow=$tnow, tfix=$tfix"); 
 
-            printf $log "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tfix , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -210,7 +214,7 @@ while(1) {
             my $tfix = $tnow + $ext;
             print "Warning: drift < interval, drift=$drift\n"; 
 
-            printf $log "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tfix, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -221,7 +225,7 @@ while(1) {
 
 	} else {
 
-            printf $log "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
               $tnow, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -234,7 +238,7 @@ while(1) {
     # 1st loop, last_time always 0
     } else {
 
-        printf $log "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+        printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
            $tnow , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
            $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
@@ -414,7 +418,7 @@ sub writelog {
     my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
                 $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 
-    print "\n$dt $logbuf";
+    print $log "$dt $logbuf\n";
 
     return;
 }
