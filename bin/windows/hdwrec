@@ -66,7 +66,7 @@ $main::opt_h    = 0;                   # help option
 $main::opt_V    = 0;                   # revision option
 my $tp          = 0;                   # time precision
 my $cf          = 'kronometrix.json';  # default json config
-my $mintime     = '0000';              # min time check 23:59
+my $logtime     = '1615';              # min time check 23:59
 my $maxtime     = '1';                 # max time check 00:01
 my $stime;                             # sleep timer
 local $|= 1;                           # autoflush
@@ -453,7 +453,7 @@ sub cktime {
 
     # print "time check: $tcheck";
 
-    if ($tcheck eq "1548" ) {
+    if ($tcheck eq $ $logtime ) {
         writelog "log rotation active";
         close ($rawlog);
 	my $numkrd = rotate($clog, $dlog, $yesterday);
