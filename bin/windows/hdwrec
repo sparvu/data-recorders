@@ -20,6 +20,7 @@
 use strict;
 use warnings;
 use Getopt::Std;
+use Date::Calc qw(:all);
 use Time::HiRes qw(time gettimeofday);
 use Win32::OLE ('in');
 use Sys::Hostname;
@@ -64,7 +65,7 @@ $main::opt_h    = 0;                   # help option
 $main::opt_V    = 0;                   # revision option
 my $tp          = 0;                   # time precision
 my $cf          = 'kronometrix.json';  # default json config
-my $mintime     = '2359';              # min time check 23:59
+my $mintime     = '0000';              # min time check 23:59
 my $maxtime     = '1';                 # max time check 00:01
 my $stime;                             # sleep timer
 local $|= 1;                           # autoflush
@@ -84,6 +85,8 @@ if ( $interval =~ /\./ ) {
 my $cdata = open_config($cf);
 
 my ( $blog, $clog, $dlog ) = getlog($cdata);
+
+my $yesterday = get_yesterday();
 
 my $fname = $blog . "\\hdwrec2.log";
 my $fkrd  = $clog . "\\hdwrec2.krd";
@@ -178,17 +181,17 @@ while(1) {
 	}
     }
 
-    cktime();
-    
-    my $elapsed  = Win32::GetTickCount() - $start;
-    my $stime = ($interval * 1000) - $elapsed;
+    my $end = Win32::GetTickCount() - $start;
+    my $stime = ($interval * 1000) - $end;
 
     # output time
     my $tnow = int(gettimeofday);
 
+    cktime();
+
     ### verbose
     if ($verbose) {
-        writelog ("info: elapsed=$elapsed(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+        writelog ("info: elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
     }
 
     if ($last_time > 0) {
@@ -266,7 +269,6 @@ while(1) {
         ### Interval
         Win32::Sleep($stime);
     }
-
 }
 
 
@@ -451,11 +453,147 @@ sub cktime {
 
     # print "time check: $tcheck";
 
-    if ($tcheck >= 2359 or $tcheck <= 1) {
-        print "we have midnight: $tcheck\n";
+    if ($tcheck eq "1450" ) {
+        print $log "log rotation active: $tcheck\n";
+        close ($rawlog);
+
+        
+
     }
 
     return;
+}
+
+
+## 
+sub rmkrd {
+    my ($file) = @_;
+
+    if ( -e $file ) {
+        if (unlink($file) > 0) { return 0; } else { return 1; }
+    }
+
+    return;
+}
+
+
+## tar raw data directory
+sub tar_krd {
+
+    my ($dir) = @_;
+    my ($sid, $host);
+
+    require Archive::Tar;
+
+    # Create a new tar object:
+    my $tar = Archive::Tar->new();
+
+    my $krdp = open_krd("$dir");
+
+    $dir = dirname($dir);
+    chdir "$dir" or
+        die "error: tarsdrd - cannot change local directory: $!\n";
+
+    foreach my $krd (@$krdp) {
+        next if $krd !~ /.*\.krd\.0\.gz$/;
+        my $krdf = $yesterday . '/' . $krd;
+        $tar->add_files($krdf);
+    }
+
+    # Tar sdrd files
+    my $krdtar = '/var/tmp/krd.' . $sid . '.' . $host . '.tar';
+
+    $tar->write($krdtar);
+
+    return $krdtar;
+}
+
+
+## null the raw data
+sub null2krd {
+
+    my($blog, $clog ) = @_;
+
+    opendir(DIR, $clog) or
+        die "error: null2krd - Can't open $clog: $!";
+    my @files = grep {!/^\.+$/} readdir(DIR);
+    close(DIR);
+
+    my @krds;
+    foreach my $krd (@files) {
+        next if $krd !~ /.*\.krd$/;
+        push @krds, $krd;
+    }
+
+    foreach my $krdf (@krds) {
+        copy("$clog/$krdf", "$blog") or
+           die "error: null2krd cannot copy krd file: $krdf $!\n";
+         open my $fh, ">", "$clog/$krdf";
+         close $fh;
+    }
+
+    return;
+}
+
+
+## rotate raw data
+sub rotate {
+
+    my($rawdir, $dailydir, $dstamp) = @_;
+
+    opendir(DIR, $rawdir) or
+        die "error: rotate - Can't open $rawdir: $!";
+    my @files = grep {!/^\.+$/} readdir(DIR);
+    close(DIR);
+
+    my $dest = "$dailydir/$dstamp";
+
+    my @krd_files;
+
+    foreach my $krd (@files) {
+        next if $krd !~ /.*\.krd\.0\.gz$/;
+        push @krd_files, $krd;
+    }
+
+    if ($verbose_flag == 1) {
+        printf "%s %d\n", 
+               "info: rotate - copying krd data files:", $#krd_files +1;
+    }
+
+    my $cnt = 0;
+    # check if we have anything to move to daily
+    if (($#krd_files+1) > 0) {
+   
+        # make daily target dir
+        unless(mkdir $dest) {
+            die "error: rotate - cannot create dest $dstamp, already exists\n";
+        }
+
+        foreach my $dir (@krd_files) {
+            move("$rawdir/$dir","$dest") or
+                die "error: rotate - copying previous daily data, $!\n";
+            $cnt++;
+        }
+    }
+
+    # return number of raw krd files moved to daily
+    return $cnt;
+}
+
+
+## get yesterday
+sub get_yesterday {
+
+    my ( $yy, $mm, $dd ) = Today();
+    ( $yy, $mm, $dd ) = Add_Delta_Days( $yy, $mm, $dd, -1 );
+
+    # ISO 8601 YYYY-MM-DD
+    my $prevdate = sprintf("%d-%02d-%02d", $yy, $mm, $dd);
+
+    # Debug
+    # print "PREVDATE: $prevdate \n";
+
+    return $prevdate;
 }
 
 
@@ -491,7 +629,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.15, 2015-04-23 2347
+hdwrec: 1.0.13, 2015-05-30 1445
 END
     exit 0;
 }
