@@ -89,8 +89,8 @@ my ( $blog, $clog, $dlog ) = getlog($cdata);
 
 my $yesterday = get_yesterday();
 
-my $fname = $blog . "\\hdwrec2.log";
-my $fkrd  = $clog . "\\hdwrec2.krd";
+my $fname = $blog . "\\hdwrec.log";
+my $fkrd  = $clog . "\\hdwrec.krd";
 
 # open log file
 my $log = open_file($fname);
@@ -104,13 +104,13 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $last_time = 0;
 
-writelog ("started");
+writelog ("info: started");
 
 while(1) {
 
     ### verbose
     if ($verbose) {
-        writelog ("info: main last_time=$last_time");
+        writelog ("info: main - last_time=$last_time");
     }
 
     # hostname# hostname
@@ -118,8 +118,6 @@ while(1) {
     $host =~ s/\..*$// if $host =~ /\./;
 
     # measure payload
-    #my $start = gettimeofday();
-    #my $start = [gettimeofday];
     my $start = Win32::GetTickCount();
 
     my $wproc = $wmi->InstancesOf("Win32_Processor");
@@ -192,7 +190,7 @@ while(1) {
 
     ### verbose
     if ($verbose) {
-        writelog ("info: elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+        writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
     }
 
     if ($last_time > 0) {
@@ -202,11 +200,11 @@ while(1) {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            writelog ("warn: positive drift detected, drift=$drift(s), interval=$interval(s)");
+            writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
 
 	    ### verbose
 	    if ($verbose) {
-                writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
@@ -222,11 +220,11 @@ while(1) {
 
             my $ext = $interval - $drift;
             my $tfix = $tnow + $ext;
-            writelog ("warn: negative drift detected, drift=$drift(s), interval=$interval(s)"); 
+            writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
 
 	    ### verbose
 	    if ($verbose) {
-                writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
@@ -454,10 +452,10 @@ sub cktime {
     # print "time check: $tcheck";
 
     if ($tcheck eq $logtime ) {
-        writelog ("log rotation active");
+        writelog ("info: cktime - start log rotation");
         close ($rawlog);
 	my $numkrd = rotate($clog, $dlog, $yesterday);
-        writelog ("log rotation executed, files rotated: $numkrd");
+        writelog ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);
     }
 
@@ -566,7 +564,7 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-            writelog ("warn: rotate - cannot create $dstamp, already exists\n");
+            writelog ("warning: rotate - cannot create $dstamp, already exists\n");
         }
 
         foreach my $rawfile (@krd_files) {
