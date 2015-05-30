@@ -202,7 +202,7 @@ while(1) {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            writelog ("warn: drift > interval, drift=$drift(s), interval=$interval(s)");
+            writelog ("warn: positive drift detected, drift=$drift(s), interval=$interval(s)");
 
 	    ### verbose
 	    if ($verbose) {
@@ -222,7 +222,7 @@ while(1) {
 
             my $ext = $interval - $drift;
             my $tfix = $tnow + $ext;
-            writelog ("warn: drift < interval, drift=$drift(s), interval=$interval(s)"); 
+            writelog ("warn: negative drift detected, drift=$drift(s), interval=$interval(s)"); 
 
 	    ### verbose
 	    if ($verbose) {
@@ -438,7 +438,6 @@ sub writelog {
         print $log "\n$dt $logbuf";
     }
 
-
     return;
 }
 
@@ -455,10 +454,10 @@ sub cktime {
     # print "time check: $tcheck";
 
     if ($tcheck eq "1548" ) {
-        print $log "log rotation enabled: $tcheck\n";
+        writelog "log rotation active";
         close ($rawlog);
 	my $numkrd = rotate($clog, $dlog, $yesterday);
-        print $log "log rotation rotated: $numkrd\n";
+        writelog "log rotation executed, files rotated: $numkrd";
         $rawlog = open_file($fkrd);
     }
 
