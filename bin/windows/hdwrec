@@ -21,6 +21,7 @@ use strict;
 use warnings;
 use Getopt::Std;
 use Date::Calc qw(:all);
+use File::Copy;
 use Time::HiRes qw(time gettimeofday);
 use Win32::OLE ('in');
 use Sys::Hostname;
@@ -453,7 +454,7 @@ sub cktime {
 
     # print "time check: $tcheck";
 
-    if ($tcheck eq "1450" ) {
+    if ($tcheck eq "1548" ) {
         print $log "log rotation enabled: $tcheck\n";
         close ($rawlog);
 	my $numkrd = rotate($clog, $dlog, $yesterday);
@@ -551,7 +552,7 @@ sub rotate {
     my @krd_files;
 
     foreach my $krd (@files) {
-        next if $krd !~ /.*\.krd\.0\.gz$/;
+        next if $krd !~ /^hdwrec2.krd$/;
         push @krd_files, $krd;
     }
 
@@ -566,12 +567,12 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-            die "error: rotate - cannot create dest $dstamp, already exists\n";
+            print $log "warn: rotate - cannot create $dstamp, already exists\n";
         }
 
-        foreach my $dir (@krd_files) {
-            move("$rawdir/$dir","$dest") or
-                die "error: rotate - copying previous daily data, $!\n";
+        foreach my $rawfile (@krd_files) {
+            move("$rawdir/$rawfile","$dest") or
+                print $log "error: rotate - copying previous daily data, $!\n";
             $cnt++;
         }
     }
