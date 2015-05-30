@@ -66,7 +66,7 @@ $main::opt_h    = 0;                   # help option
 $main::opt_V    = 0;                   # revision option
 my $tp          = 0;                   # time precision
 my $cf          = 'kronometrix.json';  # default json config
-my $logtime     = '1615';              # min time check 23:59
+my $logtime     = '1617';              # min time check 23:59
 my $maxtime     = '1';                 # max time check 00:01
 my $stime;                             # sleep timer
 local $|= 1;                           # autoflush
@@ -104,13 +104,13 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $last_time = 0;
 
-writelog ("started");
+writelog "started";
 
 while(1) {
 
     ### verbose
     if ($verbose) {
-        writelog ("info: main last_time=$last_time");
+        writelog "info: main last_time=$last_time";
     }
 
     # hostname# hostname
@@ -192,7 +192,7 @@ while(1) {
 
     ### verbose
     if ($verbose) {
-        writelog ("info: elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+        writelog "info: elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)";
     }
 
     if ($last_time > 0) {
@@ -202,11 +202,11 @@ while(1) {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            writelog ("warn: positive drift detected, drift=$drift(s), interval=$interval(s)");
+            writelog "warn: positive drift detected, drift=$drift(s), interval=$interval(s)";
 
 	    ### verbose
 	    if ($verbose) {
-                writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                writelog "info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
 	    }
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
@@ -222,11 +222,11 @@ while(1) {
 
             my $ext = $interval - $drift;
             my $tfix = $tnow + $ext;
-            writelog ("warn: negative drift detected, drift=$drift(s), interval=$interval(s)"); 
+            writelog "warn: negative drift detected, drift=$drift(s), interval=$interval(s)"; 
 
 	    ### verbose
 	    if ($verbose) {
-                writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                writelog "info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
 	    }
 
             printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
@@ -453,7 +453,7 @@ sub cktime {
 
     # print "time check: $tcheck";
 
-    if ($tcheck eq $ $logtime ) {
+    if ($tcheck eq $logtime ) {
         writelog "log rotation active";
         close ($rawlog);
 	my $numkrd = rotate($clog, $dlog, $yesterday);
@@ -566,12 +566,12 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-            print $log "warn: rotate - cannot create $dstamp, already exists\n";
+            writelog "warn: rotate - cannot create $dstamp, already exists\n";
         }
 
         foreach my $rawfile (@krd_files) {
             move("$rawdir/$rawfile","$dest") or
-                print $log "error: rotate - copying previous daily data, $!\n";
+                writelog "error: rotate - copying previous daily data, $!\n";
             $cnt++;
         }
     }
