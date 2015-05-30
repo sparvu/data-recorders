@@ -454,11 +454,11 @@ sub cktime {
     # print "time check: $tcheck";
 
     if ($tcheck eq "1450" ) {
-        print $log "log rotation active: $tcheck\n";
+        print $log "log rotation enabled: $tcheck\n";
         close ($rawlog);
-
-        
-
+	my $numkrd = rotate($clog, $dlog, $yesterday);
+        print $log "log rotation rotated: $numkrd\n";
+        $rawlog = open_file($fkrd);
     }
 
     return;
