@@ -1,4 +1,3 @@
-#!/opt/kronometrix/perl/bin/perl
 #
 #  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #
@@ -27,10 +26,7 @@ use File::Copy;
 use File::Basename;
 use UUID::Tiny ':std';
 use Digest::SHA;
-#use WWW::Curl::Easy;
 use Getopt::Std;
-#use Proc::Daemon;
-#use Proc::PID::File;
 use Time::HiRes;
 #use HTTP::Response;
 
@@ -88,26 +84,26 @@ my $dname = basename($0);
 my $osname = "$^O";
 
 # read configuration
-$cdata = open_config($cfile);
+# $cdata = open_config($cfile);
 
 ## hostid
-get_hostid($cdata);
+# get_hostid($cdata);
 
 ## logs
-( $baselog, $curlog ) = get_log($cdata);
-$slog = $baselog . "/sender.log";
+# ( $baselog, $curlog ) = get_log($cdata);
+# $slog = $baselog . "/sender.log";
 
 ## datafile
-@dbs = get_datafile($cdata);
+# @dbs = get_datafile($cdata);
 
 ## appliance destination
-%appliance = get_appliance($cdata);
+# %appliance = get_appliance($cdata);
 
-print "appliance hash: " . keys(%appliance) . ".\n";
-for my $key ( keys %appliance ) {
-    my $value = $appliance{$key};
-    print "$key => $value\n";
-}
+# print "appliance hash: " . keys(%appliance) . ".\n";
+# for my $key ( keys %appliance ) {
+#     my $value = $appliance{$key};
+#     print "$key => $value\n";
+# }
 
 ## SIGHUP handler
 # $SIG{HUP} = \&reload_config;
@@ -140,14 +136,14 @@ for my $key ( keys %appliance ) {
 
 ##foreach (@dbs) {
 #    my $n = $_ . "rec.krd";
-    push(
+#    push(
 #        @files,
 #        File::Tail->new(
 #            name               => "$n",
 #            interval           => 1,
 #            maxinterval        => $interval,
 #            ignore_nonexistant => 1
-        )
+#        )
 #    );
 #}
 
@@ -155,7 +151,7 @@ for my $key ( keys %appliance ) {
 #my $http = WWW::Curl::Easy->new;
 
 # main loop
-while (1) {
+#while (1) {
 
 #    my ( $nfound, $timeleft, @pending ) =
 #      File::Tail::select( undef, undef, undef, $timeout, @files );
@@ -269,7 +265,8 @@ while (1) {
 
 #    }    # else raw data
 
-}    # while loop
+#}    # while loop
+
 
 ### Subroutines
 
@@ -633,21 +630,21 @@ sub send_data {
     writelog("info: send_data - $post data to be delivered")
         if ( $verbose_flag == 1 );
 
-    $curl->setopt( CURLOPT_NOPROGRESS, 1 );
-    $curl->setopt(CURLOPT_TIMEOUT, 30);
+    #$curl->setopt( CURLOPT_NOPROGRESS, 1 );
+    #$curl->setopt(CURLOPT_TIMEOUT, 30);
     my $head = tempfile();
-    $curl->setopt( CURLOPT_WRITEHEADER, $head );
-    $curl->setopt( CURLOPT_URL,         $url );
+    #$curl->setopt( CURLOPT_WRITEHEADER, $head );
+    #$curl->setopt( CURLOPT_URL,         $url );
 
-    my @myheaders;
-    $myheaders[0] = "Token: $token";
-    $myheaders[1] = "User-Agent: Kronometrix/1.0.0";
+    #my @myheaders;
+    #$myheaders[0] = "Token: $token";
+    #$myheaders[1] = "User-Agent: Kronometrix/1.0.0";
 
-    $curl->setopt( CURLOPT_HTTPHEADER, \@myheaders );
-
-    $curl->setopt( CURLOPT_POST,       1 );
-    $curl->setopt( CURLOPT_POSTFIELDS, $post );
-    $curl->setopt( CURLOPT_WRITEDATA,  \$response );
+    #$curl->setopt( CURLOPT_HTTPHEADER, \@myheaders );
+#
+    #$curl->setopt( CURLOPT_POST,       1 );
+    #$curl->setopt( CURLOPT_POSTFIELDS, $post );
+    #$curl->setopt( CURLOPT_WRITEDATA,  \$response );
 
     my $retcode = $curl->perform;
 

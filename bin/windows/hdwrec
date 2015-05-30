@@ -22,7 +22,7 @@ use warnings;
 use Getopt::Std;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday);
+use Time::HiRes qw(gettimeofday);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -396,11 +396,11 @@ sub get_uptime {
     my $cmin  = substr ($ct, 10, 2);
     my $csec  = substr ($ct, 12, 2);
 
-    # print "Last timeboot: $lyr $lmon $lday $lhrs $lmin $lsec\n";
-    # print "Current DateTime: $cyr $cmon $cday $chrs $cmin $csec\n";
+    #print "Last timeboot: $lyr $lmon $lday $lhrs $lmin $lsec\n";
+    #print "Current DateTime: $cyr $cmon $cday $chrs $cmin $csec\n";
 
-    my $bootTime = timelocal($lsec, $lmin, $lhrs, $lday, $lmon, $lyr);
-    my $currentTime = timelocal($csec, $cmin, $chrs, $cday, $cmon, $cyr);
+    my $bootTime = timelocal($lsec, $lmin, $lhrs, $lday, $lmon - 1, $lyr);
+    my $currentTime = timelocal($csec, $cmin, $chrs, $cday, $cmon - 1, $cyr);
 
     my $delta = $currentTime - $bootTime;
     my ($secs, $mins, $hrs, $days);
