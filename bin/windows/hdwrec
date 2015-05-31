@@ -65,6 +65,7 @@ my $loop        = 0;                   # current loop number
 $main::opt_h    = 0;                   # help option
 $main::opt_V    = 0;                   # revision option
 my $tp          = 0;                   # time precision
+my $recid       = 'hdwrec';
 my $cf          = 'kronometrix.json';  # default json config
 my $logtime     = '0000';              # min time check 23:59
 my $maxtime     = '1';                 # max time check 00:01
@@ -89,8 +90,8 @@ my ( $blog, $clog, $dlog ) = getlog($cdata);
 
 my $yesterday = get_yesterday();
 
-my $fname = $blog . "\\hdwrec.log";
-my $fkrd  = $clog . "\\hdwrec.krd";
+my $fname = $blog . "\\" . $recid . ".log";
+my $fkrd  = $clog . "\\" . $recid . ".krd";
 
 # open log file
 my $log = open_file($fname);
@@ -547,9 +548,10 @@ sub rotate {
     my $dest = "$dailydir/$dstamp";
 
     my @krd_files;
+    my $p = $recid . ".krd";
 
     foreach my $krd (@files) {
-        next if $krd !~ /^hdwrec2.krd$/;
+        next if $krd !~ /^$p$/;
         push @krd_files, $krd;
     }
 
@@ -564,12 +566,12 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-            writelog ("warning: rotate - cannot create $dstamp, already exists\n");
+            writelog ("warning: rotate - cannot create $dstamp, already exists");
         }
 
         foreach my $rawfile (@krd_files) {
             move("$rawdir/$rawfile","$dest") or
-                writelog ("error: rotate - copying previous daily data, $!\n");
+                writelog ("error: rotate - copying previous daily data, $!");
             $cnt++;
         }
     }
