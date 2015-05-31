@@ -22,7 +22,7 @@ use warnings;
 use Getopt::Std;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(gettimeofday);
+use Time::HiRes qw(time gettimeofday);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;

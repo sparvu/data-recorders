@@ -22,7 +22,7 @@ use warnings;
 use Getopt::Std;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(gettimeofday);
+use Time::HiRes qw(time gettimeofday);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -121,14 +121,14 @@ while(1) {
 
     my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor");
 
-    my ($cpupct, $userpct, $nicepct, $idlepct, $syspct);
+    my ($cpupct, $userpct, $nicepct, $idlepct, $syspct, $irqpct);
     foreach my $obj (in $wcpu) {
         $cpupct = $obj->{PercentProcessorTime};
         $userpct = $obj->{PercentUserTime};
 	$syspct = $obj->{PercentPrivilegedTime};
 	$idlepct = $obj->{PercentIdleTime};
+	$irqpct = $obj->{PercentInterruptTime};
     }
-
 
     my $sumpct = 0;
     my $headpct = 0;
@@ -160,7 +160,7 @@ while(1) {
                 writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            print_raw($tfix,$cpupct,$sumpct,$headpct,$userpct,$syspct);
+            putraw($tfix,$cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct);
 
             $stime -= $delta * 1000;
             $last_time = $tfix;
@@ -178,7 +178,7 @@ while(1) {
                 writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            print_raw($tfix,$cpupct,$sumpct,$headpct,$userpct,$syspct);
+            putraw($tfix,$cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct);
 
             $stime += $ext * 1000;
 	    $last_time = $tfix;
@@ -187,7 +187,7 @@ while(1) {
 
 	} else {
 
-            print_raw($tnow,$cpupct,$sumpct,$headpct,$userpct,$syspct);
+            putraw($tnow,$cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct);
 
 	    $last_time = $tnow;
 
@@ -198,7 +198,7 @@ while(1) {
     # 1st loop, last_time always 0
     } else {
 
-        print_raw($tnow,$cpupct,$sumpct,$headpct,$userpct,$syspct);
+        putraw($tnow,$cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct);
 
 
         ### Check for end
@@ -220,11 +220,11 @@ while(1) {
 
 # print_raw - print krd raw data
 #
-sub print_raw {
-    my ($traw, $total, $sum, $head, $user, $sys) = @_;
+sub putraw {
+    my ($traw, $total, $sum, $head, $user, $sys, $idle, $irq) = @_;
 
-    printf "%s:%.2f:%.2f:%.2f:%.2f:%.2f\n",
-       $traw, $total, $sum, $head, $user, $sys;
+    printf $rawlog "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+       $traw, $total, $sum, $head, $user, $sys, $idle, $irq;
 
 }
 
