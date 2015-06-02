@@ -22,6 +22,9 @@
 # MAIN BODY #
 # ######### #
 
+# resolution interval in seconds
+RES=60
+
 PWD=`dirname $0`
 if [ "$PWD" = "." ]; then
     . ../bin/setenv
@@ -30,5 +33,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/zonerec 60 >> ${ZONEREC_CUR} 2>> ${ZONEREC_LOG} &
+${KRMX_BIN}/zonerec $RES >> ${ZONEREC_CUR} 2>> ${ZONEREC_LOG} &
 print "$!" > ${KRMX_LOG}/zonerec.pid

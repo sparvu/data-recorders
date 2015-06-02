@@ -23,6 +23,9 @@
 # MAIN BODY #
 # ######### #
 
+# resolution interval in seconds
+RES=60
+
 PWD=`dirname $0`
 if [ "$PWD" = "." ]; then
     . ../bin/setenv
@@ -31,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/nicrec 60 >> ${NICREC_CUR} 2>> ${NICREC_LOG} &
+${KRMX_BIN}/nicrec $RES >> ${NICREC_CUR} 2>> ${NICREC_LOG} &
 echo "$!" > ${KRMX_LOG}/nicrec.pid
