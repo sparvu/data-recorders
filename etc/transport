@@ -109,7 +109,7 @@ status() {
         else
             RETVAL=1
         fi
-        [ $RETVAL -eq 0 ] && echo "running, pid:$PID" || echo "not running"
+        [ $RETVAL -eq 0 ] && echo "running, pid: $PID" || echo "not running"
     else
         # no pid files
         RETVAL=1
