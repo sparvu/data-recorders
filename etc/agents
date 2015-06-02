@@ -116,6 +116,9 @@ stop() {
             RETVAL=$?
             [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
 
+            # clean-up pid file
+            rm ${KRMX_LOG}/${rec}rec.pid
+
         else
             RETVAL=1
             [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"

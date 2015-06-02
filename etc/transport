@@ -76,6 +76,10 @@ stop() {
         kill `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
         RETVAL=$?
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+        
+        # clean-up transport pid file
+        rm ${KRMX_LOG}/${TRANSPORT}.pid
+
     else
         RETVAL=1
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
