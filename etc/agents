@@ -128,6 +128,39 @@ stop() {
     return $RETVAL
 }
 
+status() {
+    echo "Status Kronometrix recorders"
+
+    for rec in $RECORDERS
+    do
+        RETVAL=0
+
+        if [ "X${OS_NAME}" = "XSunOS" ]; then
+            echo " ${rec}rec: \c"
+        else
+            echo -n " ${rec}rec: "
+        fi
+           
+        # check pid before start
+        if [ -f ${KRMX_LOG}/${rec}rec.pid ]; then
+            kill -0 `cat ${KRMX_LOG}/${rec}rec.pid` >/dev/null 2>&1
+            if [ $? -ne 1 ]; then
+                RETVAL=$?
+                PID=`cat ${KRMX_LOG}/${rec}rec.pid`
+            else
+                RETVAL=1
+            fi
+            [ $RETVAL -eq 0 ] && echo "running, pid:$PID" || echo "not running"
+        else
+            # no pid files
+            RETVAL=1
+            [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
+        fi
+    done
+
+    return $RETVAL
+}
+
 case "$1" in
    start)
       start
@@ -139,8 +172,11 @@ case "$1" in
       stop
       start
       ;;
+   status)
+      status
+      ;;
    *)
-      echo "Usage: $0 {start|stop|restart}"
+      echo "Usage: $0 {start|stop|restart|status}"
       exit 1
 esac
 exit $RETVAL
