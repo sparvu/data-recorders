@@ -12,9 +12,7 @@ Releases
 
   1.0.13 06-06-2015 Release
     kronometrix_transport verbose during its operation #38 
-    warning during rpm installation, cron.allow missing #32
     support for agent start inteval #37
-    cant install 32 bit package on debian systems #36
     agents shutdown #34
     agents master script should report status #33
     update openssl-1.0.2a
