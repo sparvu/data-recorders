@@ -37,12 +37,12 @@ test -f ${KRMX_SVC} || exit 0
 
 
 start() {
-    su - $KRMX_USER -c "${KRMX_SVC} start >/dev/null 2>&1"
+    su - $KRMX_USER -c "${KRMX_SVC} start"
 }
 
 
 stop() {
-    su - $KRMX_USER -c "${KRMX_SVC} stop >/dev/null 2>&1"
+    su - $KRMX_USER -c "${KRMX_SVC} stop"
 }
 
 

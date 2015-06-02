@@ -17,9 +17,14 @@ Bug Management System
 
 Releases
 
-  1.0.13 24-04-2015 Release
+  1.0.13 06-06-2015 Release
     warning during rpm installation, cron.allow missing #32
+    support for agent start inteval #37
+    cant install 32 bit package on debian systems #36
+    agents shutdown #34
+    agents master script should report status #33
     update openssl-1.0.2a
+    update curl-7.42.1
 
   1.0.12 29-03-2015 Release
     raw2day not properly rotating logs #28
