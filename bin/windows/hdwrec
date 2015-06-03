@@ -88,8 +88,6 @@ my $cdata = open_config($cf);
 
 my ( $blog, $clog, $dlog ) = getlog($cdata);
 
-my $yesterday = get_yesterday();
-
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
 
@@ -450,6 +448,7 @@ sub cktime {
 
     my $tcheck = sprintf ("%02d%02d", $hour, $min);
 
+    my $yesterday = get_yesterday();
     # print "time check: $tcheck";
 
     if ($tcheck eq $logtime ) {
@@ -473,38 +472,6 @@ sub rmkrd {
     }
 
     return;
-}
-
-
-## tar raw data directory
-sub tar_krd {
-
-    my ($dir) = @_;
-    my ($sid, $host);
-
-    require Archive::Tar;
-
-    # Create a new tar object:
-    my $tar = Archive::Tar->new();
-
-    my $krdp = open_krd("$dir");
-
-    $dir = dirname($dir);
-    chdir "$dir" or
-        die "error: tarsdrd - cannot change local directory: $!\n";
-
-    foreach my $krd (@$krdp) {
-        next if $krd !~ /.*\.krd\.0\.gz$/;
-        my $krdf = $yesterday . '/' . $krd;
-        $tar->add_files($krdf);
-    }
-
-    # Tar sdrd files
-    my $krdtar = '/var/tmp/krd.' . $sid . '.' . $host . '.tar';
-
-    $tar->write($krdtar);
-
-    return $krdtar;
 }
 
 

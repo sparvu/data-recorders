@@ -65,7 +65,7 @@ my $loop        = 0;                   # current loop number
 $main::opt_h    = 0;                   # help option
 $main::opt_V    = 0;                   # revision option
 my $tp          = 0;                   # time precision
-my $recid       = 'sysrec';
+my $recid       = 'sysrec2';
 my $cf          = 'kronometrix.json';  # default json config
 my $logtime     = '0000';              # min time check 23:59
 my $stime;                             # sleep timer
@@ -89,8 +89,6 @@ my @cpu_params = qw(PercentIdleTime PercentProcessorTime PercentPriviledgedTime 
 my $cdata = open_config($cf);
 
 my ( $blog, $clog, $dlog ) = getlog($cdata);
-
-my $yesterday = get_yesterday();
 
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
@@ -130,6 +128,15 @@ while(1) {
 	$irqpct = $obj->{PercentInterruptTime};
     }
 
+    my $wsys = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_System");
+
+    my ($runqsz, $proc, $lwp);
+    foreach my $obj (in $wsys) {
+	$runqsz = $obj->{ProcessorQueueLength};
+	$proc = $obj->{Processes};
+	$lwp = $obj->{Threads};
+    }
+
     my $sumpct = 0;
     my $headpct = 0;
 
@@ -160,7 +167,10 @@ while(1) {
                 writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            putraw($tfix,$cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct);
+            putraw($tfix,
+	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
+	       $runqsz, $proc, $lwp
+	           );
 
             $stime -= $delta * 1000;
             $last_time = $tfix;
@@ -178,7 +188,10 @@ while(1) {
                 writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            putraw($tfix,$cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct);
+            putraw($tfix,
+	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
+	       $runqsz, $proc, $lwp
+	           );
 
             $stime += $ext * 1000;
 	    $last_time = $tfix;
@@ -187,8 +200,10 @@ while(1) {
 
 	} else {
 
-            putraw($tnow,$cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct);
-
+            putraw($tnow,
+	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
+	       $runqsz, $proc, $lwp
+	           );
 	    $last_time = $tnow;
 
 	    Win32::Sleep($stime);
@@ -198,7 +213,10 @@ while(1) {
     # 1st loop, last_time always 0
     } else {
 
-        putraw($tnow,$cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct);
+        putraw($tnow,
+	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
+	       $runqsz, $proc, $lwp
+	       );
 
 
         ### Check for end
@@ -221,10 +239,12 @@ while(1) {
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ($traw, $total, $sum, $head, $user, $sys, $idle, $irq) = @_;
+    my ($traw, $total, $sum, $head, $user, $sys, $idle, $irq, 
+        $rq, $prc, $thr) = @_;
 
-    printf $rawlog "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
-       $traw, $total, $sum, $head, $user, $sys, $idle, $irq;
+    printf $rawlog "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
+       $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
+       $prc, $thr;
 
 }
 
@@ -405,6 +425,8 @@ sub cktime {
 
     my $tcheck = sprintf ("%02d%02d", $hour, $min);
 
+    my $yesterday = get_yesterday();
+
     # print "time check: $tcheck";
 
     if ($tcheck eq $logtime ) {
@@ -428,38 +450,6 @@ sub rmkrd {
     }
 
     return;
-}
-
-
-## tar raw data directory
-sub tar_krd {
-
-    my ($dir) = @_;
-    my ($sid, $host);
-
-    require Archive::Tar;
-
-    # Create a new tar object:
-    my $tar = Archive::Tar->new();
-
-    my $krdp = open_krd("$dir");
-
-    $dir = dirname($dir);
-    chdir "$dir" or
-        die "error: tarsdrd - cannot change local directory: $!\n";
-
-    foreach my $krd (@$krdp) {
-        next if $krd !~ /.*\.krd\.0\.gz$/;
-        my $krdf = $yesterday . '/' . $krd;
-        $tar->add_files($krdf);
-    }
-
-    # Tar sdrd files
-    my $krdtar = '/var/tmp/krd.' . $sid . '.' . $host . '.tar';
-
-    $tar->write($krdtar);
-
-    return $krdtar;
 }
 
 
@@ -571,8 +561,8 @@ USAGE: sysrec [-hV] | [interval [count]]
    #06 sysct      : cpu utilization, system space, number
    #07 idlepct    : cpu utilization, idle state, number
    #08 irqpct     : cpu percentage servicing interrupts, number
-   #13 runqsz     : run queue length, tasks waiting for run time, number
-   #14 plistsz    : tasks in the task list, number
+   #09 runqsz     : run queue length, tasks waiting for run time, number
+   #10 plistsz    : tasks in the task list, number
 
   MEM
    #15 memusedpct : size of used memory in percent, number
