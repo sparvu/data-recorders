@@ -562,7 +562,8 @@ USAGE: sysrec [-hV] | [interval [count]]
    #07 idlepct    : cpu utilization, idle state, number
    #08 irqpct     : cpu percentage servicing interrupts, number
    #09 runqsz     : run queue length, tasks waiting for run time, number
-   #10 plistsz    : tasks in the task list, number
+   #10 plistsz    : number of processes in the system, number
+   #11 threads    : number of threads in the system, number
 
   MEM
    #15 memusedpct : size of used memory in percent, number
