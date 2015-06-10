@@ -23,8 +23,12 @@ fi
 /etc/init.d/kronometrix start >/dev/null 2>&1 || :
 
 # cronjobs
-if ! grep krmx /etc/cron.allow >/dev/null 2>&1; then
-    echo "krmx" >> /etc/cron.allow >/dev/null 2>&1 || :
+if [ ! -f /etc/cron.allow ]; then
+    echo "krmx" > /etc/cron.allow 2>/dev/null || :
+else
+    if ! grep krmx /etc/cron.allow >/dev/null; then
+        echo "krmx" >> /etc/cron.allow 2>/dev/null || :
+    fi
 fi
 
 crontab -u krmx -l > /var/tmp/cronkrmx 2>/dev/null || :

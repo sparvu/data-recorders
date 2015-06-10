@@ -23,7 +23,7 @@
 
 Summary: Kronometrix Data Recording
 Name: kronometrix
-Version: 1.0.12
+Version: 1.0.13
 Release: 0
 Group: System/Monitoring/Tools
 License: GPL
@@ -138,8 +138,12 @@ if [ $1 -eq 1 ]; then
     chown -R krmx:krmx /opt/kronometrix/log || :
 
     # cronjobs
-    if ! grep krmx /etc/cron.allow >/dev/null; then
-        echo "krmx" >> /etc/cron.allow >/dev/null 2>&1 || :
+    if [ ! -f /etc/cron.allow ]; then
+        echo "krmx" > /etc/cron.allow 2>/dev/null || :
+    else
+        if ! grep krmx /etc/cron.allow >/dev/null; then
+            echo "krmx" >> /etc/cron.allow 2>/dev/null || :
+        fi
     fi
 
     crontab -u krmx -l > /var/tmp/cronkrmx 2>/dev/null || :
