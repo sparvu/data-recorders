@@ -46,6 +46,10 @@ stop() {
 }
 
 
+status() {
+    su - $KRMX_USER -c "${KRMX_SVC} status"
+}
+
 case "$1" in
    start)
       start
@@ -57,8 +61,11 @@ case "$1" in
       stop
       start
       ;;
+   status)
+      status
+      ;;
    *)
-      echo "Usage: $0 {start|stop|restart}"
+      echo "Usage: $0 {start|stop|restart|status}"
       exit 1
 esac
 exit $RETVAL
