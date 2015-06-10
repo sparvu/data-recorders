@@ -57,4 +57,11 @@ kronometrix_transport_stop() {
 }
 
 
+kronometrix_transport_status() {
+    local cmd
+    kronometrix_transport_args="status"
+    cmd="${command} ${kronometrix_transport_args}"
+    su -m ${kronometrix_user} -c "${cmd}"
+}
+
 run_rc_command "$1"

@@ -58,4 +58,12 @@ kronometrix_stop() {
 }
 
 
+kronometrix_status() {
+    local cmd
+    kronometrix_args="status"
+    cmd="${command} ${kronometrix_args}"
+    su -m ${kronometrix_user} -c "${cmd}" 
+}
+
+
 run_rc_command "$1"
