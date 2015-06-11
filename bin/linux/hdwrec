@@ -118,7 +118,18 @@ while (1) {
     $num_disk =  scalar(@$rdisks);
 
     # fetch dist_id, os, relos 
-    my ($distid, $os, $relos) = "NA";
+    my ($os, $relos) = "NA";
+
+    # get os, relos
+    if(my $distro = $dl->distribution_name()) {
+        if (defined($dl->distribution_version()) && 
+           ($dl->distribution_version()) ne "" ) {
+            $relos = $dl->distribution_version();
+        } else {
+            $relos = "NA";
+        }
+        $os = $distro;
+    }
 
     # get os, relos
     if(my $distro = $dl->distribution_name()) {
@@ -244,7 +255,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.13, 2015-04-24 0000
+hdwrec: 1.0.14, 2015-06-11 2217
 END
     exit 0;
 }
