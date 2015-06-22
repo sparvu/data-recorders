@@ -30,6 +30,7 @@ use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use HTTP::Response;
 
+
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 getopts('t:hvV') or usage();
@@ -42,38 +43,37 @@ my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
 # timeout
 my $timeout = defined $main::opt_t ? $main::opt_t : 25;
 
-# process [interval]
-my $interval;
-
+# process [interval [count]],
+my ( $interval, $loop_max );
 if ( defined $ARGV[0] ) {
     $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
     usage() if $interval == 0;
 }
 else {
-    $interval = 60;
+    $interval = 1;
+    $loop_max = 1;
 }
 
 ###  Variables
-$main::opt_h = 0;    # help option
-$main::opt_V = 0;    # revision option
-my $cfile = 'kronometrix.json';    # configuration file
+$main::opt_h = 0;          # help option
+$main::opt_V = 0;          # revision option
+my $cfile = 'webrec.json'; # configuration file
 my $cdata;                 # configuration data
 my $tcpka = 0;             # transport TCP keepalive settings
-my $sid   = "";            # subscription id
-my $token = "NA";          # token id
-my @files;
+my $tp = 0;                # time precision
 
 ## configuration
 my ( $baselog, $curlog, $slog );
 my @dbs;
-my %appliance;
+my %workload;
 
 local $| = 1;
 
 
 ### MAIN BODY #
 
-# Set a timer for BSD::Sysctl objects
+# Set a timer for WWW::Curl::Easy object
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
 my $http = WWW::Curl::Easy->new;
@@ -104,6 +104,9 @@ my $osname = "$^O";
 # read configuration
 $cdata = open_config($cfile);
 
+
+exit 0;
+
 # get OS host UUID
 get_hostid($cdata);
 
@@ -111,134 +114,22 @@ get_hostid($cdata);
 ( $baselog, $curlog ) = get_log($cdata);
 $slog = $baselog . "/sender.log";
 
-# datafile
-@dbs = get_datafile($cdata);
-
 # appliance destination
-%appliance = get_appliance($cdata);
+%workload = get_appliance($cdata);
 
-print "appliance hash: " . keys(%appliance) . ".\n";
-for my $key ( keys %appliance ) {
-    my $value = $appliance{$key};
+print "appliance hash: " . keys(%workload) . ".\n";
+for my $key ( keys %workload ) {
+    my $value = $workload{$key};
     print "$key => $value\n";
 }
 
 # main loop
 while (1) {
 
-    my ( $nfound, $timeleft, @pending ) =
-      File::Tail::select( undef, undef, undef, $timeout, @files );
-
-    # timeout - do something else here, if you need to
-    unless ($nfound) {
-        writelog("info: main - no krd raw data found, checking...")
-          if ( $verbose_flag == 1 );
-    }
-    else {
-
-        ## raw data arrival
-        writelog("info: main - krd raw data found")
-          if ( $verbose_flag == 1 );
-
-        my $rcode = 0;
-        foreach (@pending) {
-            my $delta = $_->read;
-            chomp($delta);
-
-            # parse id
-            my $msgid;
-            my $devid;
-            my $lmoid;
-
-            if ( $_->{"input"} =~ /sysrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-sysrec";
-            }
-            elsif ( $_->{"input"} =~ /cpurec/ ) {
-                $lmoid = 'cpd';
-                $devid = get_devid( 1, $delta );
-                $msgid = "$osname-cpurec";
-            }
-            elsif ( $_->{"input"} =~ /diskrec/ ) {
-                $lmoid = 'cpd';
-                $devid = get_devid( 1, $delta );
-                $msgid = "$osname-diskrec";
-            }
-            elsif ( $_->{"input"} =~ /nicrec/ ) {
-                $lmoid = 'cpd';
-                $devid = get_devid( 1, $delta );
-                $msgid = "$osname-nicrec";
-            }
-            elsif ( $_->{"input"} =~ /netrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-netrec";
-            }
-            elsif ( $_->{"input"} =~ /jvmrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-jvmrec";
-            }
-            elsif ( $_->{"input"} =~ /procrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-procrec";
-            }
-            elsif ( $_->{"input"} =~ /zonerec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-zonerec";
-            }
-            elsif ( $_->{"input"} =~ /webrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-webrec";
-            }
-            elsif ( $_->{"input"} =~ /hdwrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-hdwrec";
-            }
-            elsif ( $_->{"input"} =~ /xenrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-xenrec";
-            }
-            elsif ( $_->{"input"} =~ /wsrec/ ) {
-                $lmoid = 'wcd';
-                $devid = 'system';
-                $msgid = "$osname-wsrec";
-            }
-
-            # each appliance
-            for my $key ( keys %appliance ) {
-                my $value = $appliance{$key};
-
-                ## value format
-                # cpd:hostname2:443:00000000000000000000000000000000
-                # lmo:host:port:sid => $token:$proto:$ka
-                my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
-                my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
-
-                writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
-                ) if ( $verbose_flag == 1 );
-
-                if ($lid eq $lmoid ) {
-                    
-                    # writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
-                    send_data( $http, $hname, $sid, $tid, $dsid,
-                        $msgid, $devid, $proto, $port, $delta );
-                }
-            }
-            print "\n" . $_->{"input"} . " payload[" . $delta . "]"
-              if ( $verbose_flag == 1 );
-
-        }    # for
-
-    }    # else raw data
 
 }    # while loop
+
+
 
 ### Subroutines
 
@@ -336,11 +227,8 @@ sub reload_config {
     ## hostid
     get_hostid($cdata);
 
-    ## datafile
-    @dbs = get_datafile($cdata);
-
     ## appliance destination
-    %appliance = get_appliance($cdata);
+    %workload = get_appliance($cdata);
 
     return;
 }
@@ -463,24 +351,6 @@ sub get_log {
     return ( $bpath, $cpath );
 }
 
-# get datafile
-sub get_datafile {
-
-    my ($data) = @_;
-    my $schilds = 0;
-    my @d;
-    my @temp = @{ $data->{'transport'}->{'data_file'} };
-
-    # load d array
-    foreach my $f (@temp) {
-        push @d, $f->{"name"};
-        $schilds++;
-    }
-
-    @d = @recs if ( $schilds == 0 );
-
-    return @d;
-}
 
 # get appliance information
 sub get_appliance {
