@@ -10,7 +10,7 @@
 
   "transport" : {
 
-    "workloads" : [
+    "workload" : [
       {
         "keepalive" : 0,
         "name" : "main site",
@@ -29,17 +29,19 @@
         ]
       },
       {
-        "port" : 443,
         "keepalive" : 0,
-        "name" : "Appliance 1 HTTPS",
-        "host" : "hostname",
-        "protocol" : "https",
-        "description" : "Appliance Analytics 1 details",
-        "cpd" : [
+        "name" : "demo site",
+        "description" : "Demo Website Transactions",
+        "transactions" : [
           {
-            "dsid" : "",
-            "sid"  : "00000000000000000000000000001234",
-            "tid"  : "4563931ecfa8f07d39b367a70c1c4f34"
+            "id" : "main",
+            "method" : "GET",
+            "url"  : "http://www.fi",
+          },
+          {
+            "id" : "about",
+            "method"  : "GET",
+            "url"  : "http://www.fi/about",
           }
         ]
       }

@@ -1,0 +1,645 @@
+#!/opt/kronometrix/perl/bin/perl
+#
+#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use File::Basename;
+use UUID::Tiny ':std';
+use Digest::SHA;
+use WWW::Curl::Easy;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use HTTP::Response;
+
+###  Process command line args
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('t:hvV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# verbose flag
+my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
+
+# timeout
+my $timeout = defined $main::opt_t ? $main::opt_t : 25;
+
+# process [interval]
+my $interval;
+
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    usage() if $interval == 0;
+}
+else {
+    $interval = 60;
+}
+
+###  Variables
+$main::opt_h = 0;    # help option
+$main::opt_V = 0;    # revision option
+my $cfile = 'kronometrix.json';    # configuration file
+my $cdata;                 # configuration data
+my $tcpka = 0;             # transport TCP keepalive settings
+my $sid   = "";            # subscription id
+my $token = "NA";          # token id
+my @files;
+
+## configuration
+my ( $baselog, $curlog, $slog );
+my @dbs;
+my %appliance;
+
+local $| = 1;
+
+
+### MAIN BODY #
+
+# Set a timer for BSD::Sysctl objects
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $http = WWW::Curl::Easy->new;
+
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+# check interval input
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+# daemon name
+my $dname = basename($0);
+
+# osname
+my $osname = "$^O";
+
+# read configuration
+$cdata = open_config($cfile);
+
+# get OS host UUID
+get_hostid($cdata);
+
+# logs
+( $baselog, $curlog ) = get_log($cdata);
+$slog = $baselog . "/sender.log";
+
+# datafile
+@dbs = get_datafile($cdata);
+
+# appliance destination
+%appliance = get_appliance($cdata);
+
+print "appliance hash: " . keys(%appliance) . ".\n";
+for my $key ( keys %appliance ) {
+    my $value = $appliance{$key};
+    print "$key => $value\n";
+}
+
+# main loop
+while (1) {
+
+    my ( $nfound, $timeleft, @pending ) =
+      File::Tail::select( undef, undef, undef, $timeout, @files );
+
+    # timeout - do something else here, if you need to
+    unless ($nfound) {
+        writelog("info: main - no krd raw data found, checking...")
+          if ( $verbose_flag == 1 );
+    }
+    else {
+
+        ## raw data arrival
+        writelog("info: main - krd raw data found")
+          if ( $verbose_flag == 1 );
+
+        my $rcode = 0;
+        foreach (@pending) {
+            my $delta = $_->read;
+            chomp($delta);
+
+            # parse id
+            my $msgid;
+            my $devid;
+            my $lmoid;
+
+            if ( $_->{"input"} =~ /sysrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid = "$osname-sysrec";
+            }
+            elsif ( $_->{"input"} =~ /cpurec/ ) {
+                $lmoid = 'cpd';
+                $devid = get_devid( 1, $delta );
+                $msgid = "$osname-cpurec";
+            }
+            elsif ( $_->{"input"} =~ /diskrec/ ) {
+                $lmoid = 'cpd';
+                $devid = get_devid( 1, $delta );
+                $msgid = "$osname-diskrec";
+            }
+            elsif ( $_->{"input"} =~ /nicrec/ ) {
+                $lmoid = 'cpd';
+                $devid = get_devid( 1, $delta );
+                $msgid = "$osname-nicrec";
+            }
+            elsif ( $_->{"input"} =~ /netrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid = "$osname-netrec";
+            }
+            elsif ( $_->{"input"} =~ /jvmrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid = "$osname-jvmrec";
+            }
+            elsif ( $_->{"input"} =~ /procrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid = "$osname-procrec";
+            }
+            elsif ( $_->{"input"} =~ /zonerec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid = "$osname-zonerec";
+            }
+            elsif ( $_->{"input"} =~ /webrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid = "$osname-webrec";
+            }
+            elsif ( $_->{"input"} =~ /hdwrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid = "$osname-hdwrec";
+            }
+            elsif ( $_->{"input"} =~ /xenrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid = "$osname-xenrec";
+            }
+            elsif ( $_->{"input"} =~ /wsrec/ ) {
+                $lmoid = 'wcd';
+                $devid = 'system';
+                $msgid = "$osname-wsrec";
+            }
+
+            # each appliance
+            for my $key ( keys %appliance ) {
+                my $value = $appliance{$key};
+
+                ## value format
+                # cpd:hostname2:443:00000000000000000000000000000000
+                # lmo:host:port:sid => $token:$proto:$ka
+                my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
+                my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
+
+                writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
+                ) if ( $verbose_flag == 1 );
+
+                if ($lid eq $lmoid ) {
+                    
+                    # writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
+                    send_data( $http, $hname, $sid, $tid, $dsid,
+                        $msgid, $devid, $proto, $port, $delta );
+                }
+            }
+            print "\n" . $_->{"input"} . " payload[" . $delta . "]"
+              if ( $verbose_flag == 1 );
+
+        }    # for
+
+    }    # else raw data
+
+}    # while loop
+
+### Subroutines
+
+## configuration file
+
+# open JSON configuration file
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+# write config file
+sub write_config {
+
+    my ( $conf, $perl_data ) = @_;
+
+    # JSON Object
+    my $json_data = JSON->new->utf8->pretty->encode($perl_data);
+
+    # we will parse now the file
+    if ( defined $ENV{'KRMX_PREFIX'} ) {
+        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
+
+            # print $fh encode_json($data);
+            print $fh $json_data;
+            close $fh;
+            move(
+                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
+                "$ENV{'KRMX_PREFIX'}/etc/$conf"
+            ) or die "Error: cannot update $conf: $!";
+
+        }
+        else {
+            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+            usage();
+        }
+    }
+    else {
+        if ( -e "/opt/kronometrix/etc/$conf" ) {
+            open my $fh, ">", "/opt/kronometrix/etc/$conf.tmp";
+            print $fh $json_data;
+            close $fh;
+            move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
+              or die "Error: cannot update $conf: $!";
+        }
+        else {
+            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
+            usage();
+        }
+    }
+}
+
+# reload configuration
+sub reload_config {
+
+    writelog("info: main - signal HUP received, reload armed...");
+
+    $cdata = open_config($cfile);
+
+    ## hostid
+    get_hostid($cdata);
+
+    ## datafile
+    @dbs = get_datafile($cdata);
+
+    ## appliance destination
+    %appliance = get_appliance($cdata);
+
+    return;
+}
+
+# get_devid, returns device_id
+sub get_devid {
+
+    my ( $pos, $krd ) = @_;
+    my $device_id;
+
+    my @krd = split( /:/, $krd );
+
+    $device_id = $krd[$pos];
+
+    writelog("info: get_devid - devid=$device_id")
+      if ( $verbose_flag == 1 );
+
+    # device_id
+    return $device_id;
+}
+
+# get hostuuid
+sub new_hostid {
+
+    # host UUID
+    my $hb  = BSD::Sysctl->new('kern.hostuuid');
+    my $hid = $hb->get();
+    chop($hid);
+
+    # return new host UUID
+    return $hid;
+}
+
+# get hostid
+sub get_hostid {
+
+    my ($data) = @_;
+
+    # get hostuuid
+    my $h = new_hostid;
+
+    # populate DSID
+    make_dsid($data, $h);
+}
+
+# make data source ids, dsid
+sub make_dsid {
+
+    my ($data, $huuid) = @_;
+    my @lmo = ('cpd', 'amd', 'wcd');
+
+    # sid - subscription id
+    # dsid - data source id
+    # get all sids and generate dsid for each
+    # dsid must be unique per sid
+
+    my @applx = @{ $data->{'transport'}->{'appliance'} };
+
+    # populate dsid for each appliance and lmo
+    foreach my $appliance (@applx) {
+        my ($sid, $tid, $dsid);
+
+        my $host  = $appliance->{'host'};
+        my $port  = $appliance->{'port'};
+
+        # last call, look for subscription id, sid
+
+        foreach my $mo (@lmo) {
+
+            if ($appliance->{"$mo"}) {
+
+                my @sub = @{ $appliance->{"$mo"} };
+
+                foreach my $sd (@sub) {
+
+                    # get sid, tid
+                    $sid = $sd ->{'sid'};
+                    $tid = $sd ->{'tid'};
+
+                    # get dsid
+                    $dsid = $sd ->{'dsid'};
+                   
+                    if ($dsid eq "" ) {
+
+                        if ( $sid ne "" ) {
+                            my $str = $huuid . $sid;
+                            $dsid = create_uuid_as_string(UUID_V5,$str);
+                            chomp($dsid);
+                            # print "sid=$sid tid=$tid dsid=$dsid\n";
+                            $sd->{'dsid'} = $dsid;
+                            write_config( $cfile, $data );
+                        } else {
+                            exit 1;
+                        }
+                    } else {
+                        my $str = $huuid . $sid;
+                        my $dsid_man = create_uuid_as_string(UUID_V5,$str);
+                        chomp($dsid_man);
+
+                        if ( $dsid ne $dsid_man ) {
+                            # we need to update json file
+                            # print "Not OK: $dsid => $dsid_man\n";
+                            $sd->{'dsid'} = $dsid_man;
+                            write_config( $cfile, $data );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+# get logs
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+# get datafile
+sub get_datafile {
+
+    my ($data) = @_;
+    my $schilds = 0;
+    my @d;
+    my @temp = @{ $data->{'transport'}->{'data_file'} };
+
+    # load d array
+    foreach my $f (@temp) {
+        push @d, $f->{"name"};
+        $schilds++;
+    }
+
+    @d = @recs if ( $schilds == 0 );
+
+    return @d;
+}
+
+# get appliance information
+sub get_appliance {
+
+    my ($data) = @_;
+    my %appl;
+
+    my @lmo = ('cpd', 'amd', 'wcd');
+
+    my @temp = @{ $data->{'transport'}->{'appliance'} };
+
+    foreach my $f (@temp) {
+        my ($sid, $tid, $dsid);
+
+        my $ka    = $f->{'keepalive'};
+        my $proto = $f->{'protocol'};
+        my $host  = $f->{'host'};
+        my $port  = $f->{'port'};
+
+        # last call, look for subscription
+
+        foreach my $mo (@lmo) {
+
+            if ($f->{"$mo"}) {
+
+                my @sub = @{ $f->{"$mo"} };
+
+                foreach my $sd (@sub) {
+
+                    # get sid, tid, dsid
+                    $sid  = $sd ->{'sid'};
+                    $tid  = $sd ->{'tid'};
+                    $dsid = $sd ->{'dsid'};
+
+                    if ( defined($host)
+                         and defined($sid)
+                         and defined($dsid)
+                         and defined($tid)
+                         and defined($proto)
+                         and defined($port)
+                         and defined($ka) ) {
+                        my $keyapp = $mo . ":" . $host . ":" . $port . ":" . $sid;
+                        $appl{$keyapp} = "$dsid:$tid:$proto:$ka";
+                    }
+                }
+            }
+        }
+    }
+
+    return %appl;
+}
+
+
+## auxiliares
+
+# write log message
+sub writelog {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+      localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    print "\n$dt $logbuf";
+
+    return;
+}
+
+sub send_data {
+
+    my (
+        $curl,  $dest,   $sid,   $token, $dsid,
+        $msg_id, $dev_id, $proto, $port,  $delta
+    ) = @_;
+    my $response;
+
+    ## http://server:port/api/private/send_data
+    my $url = "$proto://" . $dest . ":" . $port . "/api/private/send_data";
+
+    my ($hash, $post);
+
+    if ( $msg_id =~ /cpurec|diskrec|nicrec/ ) {
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
+        $post   = "$msg_id:$sid:$dsid:$delta:$hash";
+    } else {
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$dev_id:$delta");
+        $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
+    }
+    writelog("info: send_data - $post data to be delivered")
+        if ( $verbose_flag == 1 );
+
+    $curl->setopt( CURLOPT_NOPROGRESS, 1 );
+    $curl->setopt(CURLOPT_TIMEOUT, 30);
+    my $head = tempfile();
+    $curl->setopt( CURLOPT_WRITEHEADER, $head );
+    $curl->setopt( CURLOPT_URL,         $url );
+
+    my @myheaders;
+    $myheaders[0] = "Token: $token";
+    $myheaders[1] = "User-Agent: Kronometrix/1.0.0";
+
+    $curl->setopt( CURLOPT_HTTPHEADER, \@myheaders );
+
+    $curl->setopt( CURLOPT_POST,       1 );
+    $curl->setopt( CURLOPT_POSTFIELDS, $post );
+    $curl->setopt( CURLOPT_WRITEDATA,  \$response );
+
+    my $retcode = $curl->perform;
+
+    if ( $retcode == 0 ) {
+        if ( $verbose_flag == 1 ) {
+            writelog("info: send_data - $msg_id krd data delivered");
+        }
+    }
+    else {
+        writelog(
+            "error: send_data - cant send $msg_id krd data, transport error");
+    }
+
+    return $retcode;
+}
+
+# NIST SHA-256 message digest for krd raw data
+sub sha256krd {
+    my ($message) = @_;
+
+    # compute SHA-256
+    my $state = Digest::SHA->new(256);
+
+    $state->add($message);
+    my $digest = $state->hexdigest;
+
+    return $digest;
+}
+
+# usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: sender [-t secs] [-hvV] | [interval]
+OPTIONS:
+  -t        : timeout in seconds
+  -h        : help information
+  -h        : verbose information
+  -V        : release version
+  interval  : maximum number of seconds between samples, default 60, will 
+              never spend more than that without checking data
+
+ e.g. webrec    check and send krd raw data, every 60 secs
+      webrec 60 check and send krd raw data, every 10 secs
+END
+    exit 0;
+}
+
+# revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+webrec: 1.0.14, 2015-06-22 2152
+END
+    exit 0;
+}
