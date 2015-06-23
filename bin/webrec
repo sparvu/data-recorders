@@ -104,18 +104,15 @@ my $osname = "$^O";
 # read configuration
 $cdata = open_config($cfile);
 
-
-exit 0;
-
 # get OS host UUID
-get_hostid($cdata);
+# get_hostid($cdata);
 
 # logs
-( $baselog, $curlog ) = get_log($cdata);
-$slog = $baselog . "/sender.log";
+#( $baselog, $curlog ) = get_log($cdata);
+#$slog = $baselog . "/sender.log";
 
 # appliance destination
-%workload = get_appliance($cdata);
+%workloads = get_appliance($cdata);
 
 print "appliance hash: " . keys(%workload) . ".\n";
 for my $key ( keys %workload ) {
