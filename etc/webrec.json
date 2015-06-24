@@ -1,6 +1,4 @@
 {
-  "keepalive" : 0,
-
   "proxy" : {
     "hostname" : "proxy.domain",
     "port" : 8080,
@@ -10,38 +8,42 @@
 
   "transport" : {
 
-    "workload" : [
+    "workloads" : [
       {
         "keepalive" : 0,
-        "name" : "main site",
+        "name" : "production",
         "description" : "Main Website Transactions",
         "transactions" : [
           {
             "id" : "main",
             "method" : "GET",
-            "url"  : "http://www.fi",
+            "scheme" : "http",
+            "host" : "www.fi",
+            "port" : "80",
+            "path" : "/"
           },
           {
             "id" : "about",
-            "method"  : "GET",
-            "url"  : "http://www.fi/about",
+            "method" : "GET",
+            "scheme" : "http",
+            "host" : "www.fi",
+            "port" : "80",
+            "path" : "/about.html"
           }
         ]
       },
       {
         "keepalive" : 0,
-        "name" : "demo site",
+        "name" : "demo",
         "description" : "Demo Website Transactions",
         "transactions" : [
           {
             "id" : "main",
             "method" : "GET",
-            "url"  : "http://www.fi",
-          },
-          {
-            "id" : "about",
-            "method"  : "GET",
-            "url"  : "http://www.fi/about",
+            "scheme" : "http",
+            "host" : "www.fi",
+            "port" : "80",
+            "path"  : "/"
           }
         ]
       }
