@@ -107,10 +107,6 @@ $cdata = open_config($cfile);
 # get OS host UUID
 # get_hostid($cdata);
 
-# logs
-#( $baselog, $curlog ) = get_log($cdata);
-#$slog = $baselog . "/sender.log";
-
 # appliance destination
 %workloads = get_appliance($cdata);
 
