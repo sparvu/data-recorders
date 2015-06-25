@@ -12,6 +12,7 @@ Releases
 
   1.0.14 24-06-2015 Release
     wrong curl dependencies on FreeBSD i386 #42
+    CPAN update June 2015 #43
     update openssl-1.0.2c
     update curl-7.43.0
 
