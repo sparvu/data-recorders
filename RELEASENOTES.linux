@@ -18,8 +18,9 @@ Bug Management System
 
 Releases
 
-  1.0.14 29-06-2015 Release
+  1.0.14 15-07-2015 Release
     hdwrec on CloudLinux errors #40
+    linux installer should not create cron.allow by default #46
     update openssl-1.0.2c
     update curl-7.43.0
 
