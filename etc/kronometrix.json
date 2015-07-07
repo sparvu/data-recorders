@@ -55,41 +55,14 @@
       {
         "port" : 80,
         "keepalive" : 0,
-        "name" : "Appliance 1",
+        "name" : "Kronometrix Appliance",
         "host" : "hostname",
         "protocol" : "http",
-        "description" : "Appliance Analytics 1 details",
+        "description" : "Kronometrix Appliance Details",
         "cpd" : [
           {
             "dsid" : "",
             "sid"  : "00000000000000000000000000001230",
-            "tid"  : "4563931ecfa8f07d39b367a70c1c4f34"
-          },
-          {
-            "dsid" : "",
-            "tid"  : "3453931ecfa8f07d39b367a70c1c4f34",
-            "sid"  : "00000000000000000000000000001231"
-          }
-        ],
-        "wcd" : [
-          {
-            "dsid" : "",
-            "sid"  : "00000000cfa8f07d39b367a70c1c4f34",
-            "tid"  : "00000001cfa8f07d39b367a70c1c4f34"
-          }
-        ]
-      },
-      {
-        "port" : 443,
-        "keepalive" : 0,
-        "name" : "Appliance 1 HTTPS",
-        "host" : "hostname",
-        "protocol" : "https",
-        "description" : "Appliance Analytics 1 details",
-        "cpd" : [
-          {
-            "dsid" : "",
-            "sid"  : "00000000000000000000000000001234",
             "tid"  : "4563931ecfa8f07d39b367a70c1c4f34"
           }
         ]
