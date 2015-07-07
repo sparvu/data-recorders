@@ -131,125 +131,123 @@ foreach (@dbs) {
     );
 }
 
-exit 0;
- 
 # init HTTP transport
 #my $http = WWW::Curl::Easy->new;
 
 # main loop
 while (1) {
 
-#    my ( $nfound, $timeleft, @pending ) =
-#      File::Tail::select( undef, undef, undef, $timeout, @files );
+    my ( $nfound, $timeleft, @pending ) =
+      File::Tail::select( undef, undef, undef, $timeout, @files );
 
     # timeout - do something else here, if you need to
-#    unless ($nfound) {
-#        writelog("info: main - no krd raw data found, checking...")
-#          if ( $verbose_flag == 1 );
-#    }
-#    else {
+    unless ($nfound) {
+        writelog("info: main - no krd raw data found, checking...")
+          if ( $verbose_flag == 1 );
+    }
+    else {
 
         ## raw data arrival
-#        writelog("info: main - krd raw data found")
-#          if ( $verbose_flag == 1 );
+        writelog("info: main - krd raw data found")
+        if ( $verbose_flag == 1 );
 
-#        my $rcode = 0;
-#        foreach (@pending) {
-#            my $delta = $_->read;
-#            chomp($delta);
+        my $rcode = 0;
+        foreach (@pending) {
+            my $delta = $_->read;
+            chomp($delta);
 
             # parse id
-#            my $msgid;
-#            my $devid;
-#            my $lmoid;
+            my $msgid;
+            my $devid;
+            my $lmoid;
 
-#            if ( $_->{"input"} =~ /sysrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = 'system';
-#                $msgid  = "$osname-sysrec";
-#            }
-#            elsif ( $_->{"input"} =~ /cpurec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = get_devid( 1, $delta );
-#                $msgid = "$osname-cpurec";
-#            }
-#            elsif ( $_->{"input"} =~ /diskrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = get_devid( 1, $delta );
-#                $msgid = "$osname-diskrec";
-#            }
-#            elsif ( $_->{"input"} =~ /nicrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = get_devid( 1, $delta );
-#                $msgid = "$osname-nicrec";
-#            }
-#            elsif ( $_->{"input"} =~ /netrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = 'system';
-#                $msgid  = "$osname-netrec";
-#            }
-#            elsif ( $_->{"input"} =~ /jvmrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = 'system';
-#                $msgid  = "$osname-jvmrec";
-#            }
-#            elsif ( $_->{"input"} =~ /procrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = 'system';
-#                $msgid  = "$osname-procrec";
-#            }
-#            elsif ( $_->{"input"} =~ /zonerec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = 'system';
-#                $msgid  = "$osname-zonerec";
-#            }
-#            elsif ( $_->{"input"} =~ /webrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = 'system';
-#                $msgid  = "$osname-webrec";
-#            }
-#            elsif ( $_->{"input"} =~ /hdwrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = 'system';
-#                $msgid  = "$osname-hdwrec";
-#            }
-#            elsif ( $_->{"input"} =~ /xenrec/ ) {
-#                $lmoid = 'cpd';
-#                $devid = 'system';
-#                $msgid  = "$osname-xenrec";
-#            }
-#            elsif ( $_->{"input"} =~ /wsrec/ ) {
-#                $lmoid = 'wcd';
-#                $devid = 'system';
-#                $msgid  = "$osname-wsrec";
-#            }
+            if ( $_->{"input"} =~ /sysrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid  = "$osname-sysrec";
+            }
+            elsif ( $_->{"input"} =~ /cpurec/ ) {
+                $lmoid = 'cpd';
+                $devid = get_devid( 1, $delta );
+                $msgid = "$osname-cpurec";
+            }
+            elsif ( $_->{"input"} =~ /diskrec/ ) {
+                $lmoid = 'cpd';
+                $devid = get_devid( 1, $delta );
+                $msgid = "$osname-diskrec";
+            }
+            elsif ( $_->{"input"} =~ /nicrec/ ) {
+                $lmoid = 'cpd';
+                $devid = get_devid( 1, $delta );
+                $msgid = "$osname-nicrec";
+            }
+            elsif ( $_->{"input"} =~ /netrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid  = "$osname-netrec";
+            }
+            elsif ( $_->{"input"} =~ /jvmrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid  = "$osname-jvmrec";
+            }
+            elsif ( $_->{"input"} =~ /procrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid  = "$osname-procrec";
+            }
+            elsif ( $_->{"input"} =~ /zonerec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid  = "$osname-zonerec";
+            }
+            elsif ( $_->{"input"} =~ /webrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid  = "$osname-webrec";
+            }
+            elsif ( $_->{"input"} =~ /hdwrec/ ) {
+                $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid  = "$osname-hdwrec";
+           }
+            elsif ( $_->{"input"} =~ /xenrec/ ) {
+              $lmoid = 'cpd';
+                $devid = 'system';
+                $msgid  = "$osname-xenrec";
+            }
+            elsif ( $_->{"input"} =~ /wsrec/ ) {
+                $lmoid = 'wcd';
+                $devid = 'system';
+                $msgid  = "$osname-wsrec";
+            }
 
             # each appliance
-#            for my $key ( keys %appliance ) {
-#                my $value = $appliance{$key};
-#
-#                ## value format
-#                # cpd:hostname2:443:00000000000000000000000000000000
-#                # lmo:host:port:sid => $token:$proto:$ka
-#                my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
-#                my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
-#
-#                writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
-#                ) if ( $verbose_flag == 1 );
-#
-#                if ($lid eq $lmoid ) {
-#                    
-#                    # writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
+            for my $key ( keys %appliance ) {
+                my $value = $appliance{$key};
+
+                ## value format
+                # cpd:hostname2:443:00000000000000000000000000000000
+                # lmo:host:port:sid => $token:$proto:$ka
+                my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
+                my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
+
+                writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
+                ) if ( $verbose_flag == 1 );
+
+                if ($lid eq $lmoid ) {
+                    
+                    writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
 #                    send_data( $http, $hname, $sid, $tid, $dsid,
 #                        $msgid, $devid, $proto, $port, $delta );
-#                }
-#            }
-#            print "\n" . $_->{"input"} . " payload[" . $delta . "]"
-#              if ( $verbose_flag == 1 );
-#
-#        }    # for
+                }
+            }
+            print "\n" . $_->{"input"} . " payload[" . $delta . "]"
+              if ( $verbose_flag == 1 );
 
-#    }    # else raw data
+        }    # for
+
+    }    # else raw data
 
 }    # while loop
 
