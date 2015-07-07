@@ -29,6 +29,7 @@ use Digest::SHA;
 use Getopt::Std;
 use Time::HiRes;
 #use HTTP::Response;
+use Win32::Ole ('in');
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -84,10 +85,10 @@ my $dname = basename($0);
 my $osname = "$^O";
 
 # read configuration
-# $cdata = open_config($cfile);
+$cdata = open_config($cfile);
 
 ## hostid
-# get_hostid($cdata);
+get_hostid($cdata);
 
 ## logs
 # ( $baselog, $curlog ) = get_log($cdata);
@@ -273,44 +274,46 @@ my $osname = "$^O";
 ## configuration file
 
 # open JSON configuration file
+
+
+
+# open_config - open JSON configuration file
+#
 sub open_config {
 
     my ($conf) = @_;
-
     my $json_data;
 
     {
         local $/;
 
         # we will parse now the file
-        if ( defined $ENV{'KRMX_PREFIX'} ) {
-            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
-                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
-                $json_data = <$fh>;
-                close $fh;
-            }
-            else {
-                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-                usage();
-            }
-        }
-        else {
-            if ( -e "/opt/kronometrix/etc/$conf" ) {
-                open my $fh, "<", "/opt/kronometrix/etc/$conf";
-                $json_data = <$fh>;
-                close $fh;
-            }
-            else {
-                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
-                usage();
-            }
-        }
+	if ( defined $ENV{'KRMX_PREFIX'} ) {
+	    if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+	        open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+	        $json_data = <$fh>;
+	        close $fh;
+	    } else {
+                print "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+	        usage();
+	    }
+	} else {
+	    if ( -e "C:\\Kronometrix\\etc\\$conf" ) {
+		open my $fh, "<", "C:\\Kronometrix\\etc\\$conf";
+		$json_data = <$fh>;
+		close $fh;
+	    } else { 
+	        print "error: open_config - $! $conf \n"; 
+		usage(); 
+	    }
+	} 
     }
-
-    my $perl_data = JSON->new->utf8->decode($json_data);
-
+    
+    my $perl_data = JSON->new->utf8->decode($json_data); 
+    
     return $perl_data;
 }
+
 
 # write config file
 sub write_config {
@@ -340,15 +343,15 @@ sub write_config {
         }
     }
     else {
-        if ( -e "/opt/kronometrix/etc/$conf" ) {
-            open my $fh, ">", "/opt/kronometrix/etc/$conf.tmp";
+	if ( -e "C:\\Kronometrix\\etc\\$conf" ) {
+	    open my $fh, "<", "C:\\Kronometrix\\etc\\$conf.tmp";
             print $fh $json_data;
             close $fh;
-            move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
+            move( "C:\\Kronometrix\\etc\\$conf.tmp", "C:\\Kronometrix\\etc\\$conf" )
               or die "Error: cannot update $conf: $!";
         }
         else {
-            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
+            print "error: write_config - $! C:\\Kronometrix\\etc\\$conf \n";
             usage();
         }
     }
@@ -373,48 +376,24 @@ sub get_devid {
 }
 
 
-# process host uuid file
-sub process_hid {
-
-    my ($dbusfile) = @_;
-    my $host_uuid;
-
-    open my $fh, "<", "$dbusfile"
-        or die "error: cannot open $dbusfile: $!\n";
-
-    my @mid = <$fh>;
-
-    close $fh;
-
-    foreach my $h (@mid) {
-        substr( $h, 8,  0 ) = '-';
-        substr( $h, 13, 0 ) = '-';
-        substr( $h, 18, 0 ) = '-';
-        substr( $h, 23, 0 ) = '-';
-        $host_uuid = $h;
-    }
-
-    return $host_uuid;
-}
-
-
-
 # get hostuuid
 sub new_hostid {
 
-    # machine-id
-    my $varid = '/var/lib/dbus/machine-id';
-    my $etcid = '/etc/machine-id';
-    my @machineid;
     my $hid;
 
-    # fetches machine-id from DBUS
-    if ( -e $varid ) {
-        $hid = process_hid ("$varid");
+    # get stats
+    my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+      or die "Cannot initialize WMI interface\n";
+
+
+    my $wcsp = $wmi->InstancesOf("Win32_ComputerSystemProduct");
+    foreach my $obj (in $wcsp) {
+        $hid = $obj->{UUID};
     }
-    # RHEL, CentOS 7
-    elsif ( -e $etcid ) {
-        $hid = process_hid ("$etcid");
+
+    # fetches machine-id Win32
+    if ( defined $hid ) {
+        $hid = lc "$hid";
     }
     else {
         my $str = rand(time) . $osname;
@@ -423,7 +402,10 @@ sub new_hostid {
 
     chomp($hid);
 
-    # return new host UUID
+    print "Host UUID: $hid\n";
+    exit 0;
+
+    # return new host UUID;
     return $hid;
 }
 
@@ -695,7 +677,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.13, 2015-05-30 2221
+sender: 1.0.14, 2015-07-05 2020
 END
     exit 0;
 }
