@@ -69,7 +69,6 @@ my $hostid;
 my ( $baselog, $curlog, $slog );
 my @dbs;
 my %appliance;
-
 local $| = 1;
 
 
@@ -91,8 +90,11 @@ $cdata = open_config($cfile);
 get_hostid($cdata);
 
 ## logs
-( $baselog, $curlog ) = get_log($cdata);
-$slog = $baselog . "/sender.log";
+( $baselog, $curlog ) = getlog($cdata);
+$slog = $baselog . "\\sender.log";
+
+# open log file
+my $log = open_file($slog);
 
 ## datafile
 @dbs = get_datafile($cdata);
@@ -100,40 +102,21 @@ $slog = $baselog . "/sender.log";
 ## appliance destination
 %appliance = get_appliance($cdata);
 
-print "appliance hash: " . keys(%appliance) . ".\n";
-for my $key ( keys %appliance ) {
-    my $value = $appliance{$key};
-    print "$key => $value\n";
+if ($verbose_flag) {
+    print "appliance hash: " . keys(%appliance) . ".\n";
+    for my $key ( keys %appliance ) {
+        my $value = $appliance{$key};
+        print "$key => $value\n";
+    }
 }
 
-## SIGHUP handler
-# $SIG{HUP} = \&reload_config;
 
-# Daemonize
-#eval {
-#    Proc::Daemon::Init(
-#        {
-#            child_STDOUT => "+>>$slog",
-#            child_STDERR => "+>>$slog"
-#        }
-#    );
-#};
+writelog ("info: started");
 
-#if ($@) {
-#    die "error: boot - cannot start daemon: $@";
-#}
-#else {
-#    writelog("info: boot - daemon $dname initialized");
-#}
-
-# If already running, then exit
-#if ( Proc::PID::File->running( { dir => "$baselog" } ) ) {
-#    exit(0);
-#}
 
 # cd krd raw data directory
-#chdir("$curlog")
-#  or die "error: main - cannot open raw data directory, $!\n";
+chdir("$curlog")
+  or die "error: main - cannot open raw data directory, $!\n";
 
 foreach (@dbs) {
     my $n = $_ . "rec.krd";
@@ -148,12 +131,13 @@ foreach (@dbs) {
     );
 }
 
+exit 0;
  
 # init HTTP transport
 #my $http = WWW::Curl::Easy->new;
 
 # main loop
-#while (1) {
+while (1) {
 
 #    my ( $nfound, $timeleft, @pending ) =
 #      File::Tail::select( undef, undef, undef, $timeout, @files );
@@ -267,16 +251,11 @@ foreach (@dbs) {
 
 #    }    # else raw data
 
-#}    # while loop
+}    # while loop
+
 
 
 ### Subroutines
-
-## configuration file
-
-# open JSON configuration file
-
-
 
 # open_config - open JSON configuration file
 #
@@ -489,15 +468,64 @@ sub make_dsid {
 }
 
 
-# get logs
-sub get_log {
+# chklog - check log directory
+#
+sub chklog {
+
+    my ($dir) = @_;
+
+    if (defined $dir) {
+        if (! -d $dir) {
+            print "error: chklog - cannot find $dir log directory";
+	    usage();
+        }
+    } else {
+        print "error: chklog - cannot find $dir log directory";
+	usage();
+    }
+
+    return;
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+	  die "error: open_file - cannot open $file $!";
+	seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+	  die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+# getlog - get log directory information
+#
+sub getlog {
     my ($data) = @_;
 
     my $bpath = $data->{'log'}->{'base_path'};
+    chklog($bpath);
+
     my $cpath = $data->{'log'}->{'current_path'};
+    chklog($cpath);
 
     return ( $bpath, $cpath );
 }
+
 
 # get datafile
 sub get_datafile {
@@ -573,20 +601,26 @@ sub get_appliance {
 
 ## auxiliares
 
-# write log message
+# writelog - write log message
+#
 sub writelog {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
-      localtime(time);
+    localtime(time);
 
     my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
-      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 
-    print "\n$dt $logbuf";
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
 
     return;
 }
+
 
 sub send_data {
 
@@ -642,6 +676,7 @@ sub send_data {
     return $retcode;
 }
 
+
 # NIST SHA-256 message digest for krd raw data
 sub sha256krd {
     my ($message) = @_;
@@ -676,7 +711,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.14, 2015-07-05 2020
+sender: 1.0.14, 2015-07-07 2352
 END
     exit 0;
 }
