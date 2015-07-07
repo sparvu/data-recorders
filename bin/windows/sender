@@ -91,20 +91,20 @@ $cdata = open_config($cfile);
 get_hostid($cdata);
 
 ## logs
-# ( $baselog, $curlog ) = get_log($cdata);
-# $slog = $baselog . "/sender.log";
+( $baselog, $curlog ) = get_log($cdata);
+$slog = $baselog . "/sender.log";
 
 ## datafile
-# @dbs = get_datafile($cdata);
+@dbs = get_datafile($cdata);
 
 ## appliance destination
-# %appliance = get_appliance($cdata);
+%appliance = get_appliance($cdata);
 
-# print "appliance hash: " . keys(%appliance) . ".\n";
-# for my $key ( keys %appliance ) {
-#     my $value = $appliance{$key};
-#     print "$key => $value\n";
-# }
+print "appliance hash: " . keys(%appliance) . ".\n";
+for my $key ( keys %appliance ) {
+    my $value = $appliance{$key};
+    print "$key => $value\n";
+}
 
 ## SIGHUP handler
 # $SIG{HUP} = \&reload_config;
@@ -135,19 +135,20 @@ get_hostid($cdata);
 #chdir("$curlog")
 #  or die "error: main - cannot open raw data directory, $!\n";
 
-##foreach (@dbs) {
-#    my $n = $_ . "rec.krd";
-#    push(
-#        @files,
-#        File::Tail->new(
-#            name               => "$n",
-#            interval           => 1,
-#            maxinterval        => $interval,
-#            ignore_nonexistant => 1
-#        )
-#    );
-#}
+foreach (@dbs) {
+    my $n = $_ . "rec.krd";
+    push(
+        @files,
+        File::Tail->new(
+            name               => "$n",
+            interval           => 1,
+            maxinterval        => $interval,
+            ignore_nonexistant => 1
+        )
+    );
+}
 
+ 
 # init HTTP transport
 #my $http = WWW::Curl::Easy->new;
 
@@ -344,7 +345,7 @@ sub write_config {
     }
     else {
 	if ( -e "C:\\Kronometrix\\etc\\$conf" ) {
-	    open my $fh, "<", "C:\\Kronometrix\\etc\\$conf.tmp";
+	    open my $fh, ">", "C:\\Kronometrix\\etc\\$conf.tmp";
             print $fh $json_data;
             close $fh;
             move( "C:\\Kronometrix\\etc\\$conf.tmp", "C:\\Kronometrix\\etc\\$conf" )
@@ -402,12 +403,10 @@ sub new_hostid {
 
     chomp($hid);
 
-    print "Host UUID: $hid\n";
-    exit 0;
-
     # return new host UUID;
     return $hid;
 }
+
 
 # get hostid
 sub get_hostid {
@@ -467,7 +466,7 @@ sub make_dsid {
                             chomp($dsid);
                             # print "sid=$sid tid=$tid dsid=$dsid\n";
                             $sd->{'dsid'} = $dsid;
-                            write_config( $cfile, $data );
+                            write_config($cfile, $data);
                         } else {
                             exit 1;
                         }
@@ -480,7 +479,7 @@ sub make_dsid {
                             # we need to update json file
                             # print "Not OK: $dsid => $dsid_man\n";
                             $sd->{'dsid'} = $dsid_man;
-                            write_config( $cfile, $data );
+                            write_config($cfile, $data);
                         }
                     }
                 }
