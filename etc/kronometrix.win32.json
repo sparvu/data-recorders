@@ -1,0 +1,72 @@
+{
+  "log" : {
+    "current_path" : "C:\\Kronometrix\\log\\current",
+    "base_path" : "C:\\Kronometrix\\log",
+    "daily_path" : "C:\\Kronometrix\\log\\daily"
+  },
+  "transport" : {
+    "data_file" : [
+      {
+        "name" : "sys",
+        "file" : "sysrec.krd"
+      },
+      {
+        "file" : "cpurec.krd",
+        "name" : "cpu"
+      },
+      {
+        "name" : "disk",
+        "file" : "diskrec.krd"
+      },
+      {
+        "name" : "nic",
+        "file" : "nicrec.krd"
+      },
+      {
+        "name" : "hdw",
+        "file" : "hdwrec.krd"
+      },
+      {
+        "file" : "netrec.krd",
+        "name" : "net"
+      },
+      {
+        "file" : "procrec.krd",
+        "name" : "proc"
+      },
+      {
+        "name" : "jvm",
+        "file" : "jvmrec.krd"
+      },
+      {
+        "file" : "xenrec.krd",
+        "name" : "xen"
+      },
+      {
+        "name" : "zone",
+        "file" : "zonerec.krd"
+      },
+      {
+        "file" : "wsrec.krd",
+        "name" : "ws"
+      }
+    ],
+    "appliance" : [
+      {
+        "port" : 80,
+        "keepalive" : 0,
+        "name" : "Kronometrix Appliance",
+        "host" : "hostname",
+        "protocol" : "http",
+        "description" : "Kronometrix Appliance Details",
+        "cpd" : [
+          {
+            "dsid" : "",
+            "sid"  : "00000000000000000000000000001230",
+            "tid"  : "4563931ecfa8f07d39b367a70c1c4f34"
+          }
+        ]
+      }
+    ]
+  }
+}
