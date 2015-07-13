@@ -22,7 +22,7 @@ Releases
     hdwrec on CloudLinux errors #40
     linux installer should not create cron.allow by default #46
     CPAN update June 2015 #43
-    update openssl-1.0.2c
+    update openssl-1.0.2d
     update curl-7.43.0
 
   1.0.13 06-06-2015 Release
