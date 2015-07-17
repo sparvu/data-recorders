@@ -156,7 +156,7 @@ while (1) {
 
     # print metrics
     printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%.2f:%.2f:%d:%d:%s:%s\n",
-      time, $host, $si->{arch}, $hypervisor, $os, $relos,
+      time, $host, $si->{arch}, $hypervisor, lc($os), $relos,
       $si->{kernel} . " " . $si->{release},
       $si->{pcpucount}, $si->{tcpucount},
       $memtotal, $swaptotal, 
@@ -255,7 +255,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.14, 2015-06-11 2217
+hdwrec: 1.0.14, 2015-07-17 1450
 END
     exit 0;
 }
