@@ -627,6 +627,7 @@ sub send_data {
         $curl,  $dest,   $sid,   $token, $dsid,
         $msg_id, $dev_id, $proto, $port,  $delta
     ) = @_;
+
     my $response;
 
     ## http://server:port/api/private/send_data
@@ -650,29 +651,36 @@ sub send_data {
     #$curl->setopt( CURLOPT_WRITEHEADER, $head );
     #$curl->setopt( CURLOPT_URL,         $url );
 
-    #my @myheaders;
-    #$myheaders[0] = "Token: $token";
-    #$myheaders[1] = "User-Agent: Kronometrix/1.0.0";
+    my @myheaders;
+    $myheaders[0] = "Token: $token";
+    $myheaders[1] = "User-Agent: Kronometrix/1.0.14";
+
+    $response = $http->request('POST', $url, { 
+        content => $post,
+        headers => { 'content-type' => 'application/x-www-form-urlencoded' },});
+
+    writelog("info: send_data - cant send $msg_id krd data\n") 
+       unless $response->{success};
+
 
     #$curl->setopt( CURLOPT_HTTPHEADER, \@myheaders );
-#
     #$curl->setopt( CURLOPT_POST,       1 );
     #$curl->setopt( CURLOPT_POSTFIELDS, $post );
     #$curl->setopt( CURLOPT_WRITEDATA,  \$response );
 
-    my $retcode = $curl->perform;
+    #my $retcode = $curl->perform;
 
-    if ( $retcode == 0 ) {
-        if ( $verbose_flag == 1 ) {
-            writelog("info: send_data - $msg_id krd data delivered");
-        }
-    }
-    else {
-        writelog(
-            "error: send_data - cant send $msg_id krd data, transport error");
-    }
+    # if ( $retcode == 0 ) {
+    #     if ( $verbose_flag == 1 ) {
+    #         writelog("info: send_data - $msg_id krd data delivered");
+    #     }
+    # }
+    #else {
+    #    writelog(
+    #        "error: send_data - cant send $msg_id krd data, transport error");
+    #}
 
-    return $retcode;
+    return;
 }
 
 
