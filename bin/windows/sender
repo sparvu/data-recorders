@@ -705,7 +705,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.14, 2015-07-07 2352
+sender: 1.0.14, 2015-07-18 1552
 END
     exit 0;
 }
