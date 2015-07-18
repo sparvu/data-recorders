@@ -65,7 +65,7 @@ my $loop        = 0;                   # current loop number
 $main::opt_h    = 0;                   # help option
 $main::opt_V    = 0;                   # revision option
 my $tp          = 0;                   # time precision
-my $recid       = 'sysrec2';
+my $recid       = 'sysrec';
 my $cf          = 'kronometrix.json';  # default json config
 my $logtime     = '0000';              # min time check 23:59
 my $stime;                             # sleep timer
