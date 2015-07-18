@@ -657,20 +657,14 @@ sub send_data {
 
     my $status = $response->{status};
 
-    #$response = $http->request('POST', $url, { 
-    #    content => $post,
-    #    headers => { 'Token' => "$token" },});
+    if ( $verbose_flag == 1 ) {
 
-    #my $status = $response->{status};
-
-    if ($response->{success} ) {
-    #     if ( $verbose_flag == 1 ) {
-             writelog("info: send_data - $msg_id krd data delivered");
-    #     }
-    }
-    else {
-        writelog(
+        if ($response->{success} ) {
+            writelog("info: send_data - $msg_id krd data delivered");
+        } else {
+            writelog(
             "error: send_data - cant send $msg_id krd data, transport error");
+        }
     }
 
     return;
