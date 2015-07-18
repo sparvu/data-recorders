@@ -83,6 +83,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
+$osname = "win" if $osname eq "MSWin32";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -133,7 +134,8 @@ foreach (@dbs) {
 }
 
 # init HTTP transport
-my $http = HTTP::Tiny->new;
+my $http = HTTP::Tiny->new(keep_alive => 0,
+                           agent => 'Kronometrix_Win/1.0');
 
 # main loop
 while (1) {
@@ -238,9 +240,9 @@ while (1) {
 
                 if ($lid eq $lmoid ) {
                     
-                    writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
-#                    send_data( $http, $hname, $sid, $tid, $dsid,
-#                        $msgid, $devid, $proto, $port, $delta );
+                    writelog("debug: main - before sending ... $lid/$msgid => $hname:$port:$sid:$tid");
+                    send_data( $http, $hname, $sid, $tid, $dsid,
+                        $msgid, $devid, $proto, $port, $delta );
                 }
             }
             print "\n" . $_->{"input"} . " payload[" . $delta . "]"
@@ -645,40 +647,31 @@ sub send_data {
     writelog("info: send_data - $post data to be delivered")
         if ( $verbose_flag == 1 );
 
-    #$curl->setopt( CURLOPT_NOPROGRESS, 1 );
-    #$curl->setopt(CURLOPT_TIMEOUT, 30);
-    my $head = tempfile();
-    #$curl->setopt( CURLOPT_WRITEHEADER, $head );
-    #$curl->setopt( CURLOPT_URL,         $url );
 
-    my @myheaders;
-    $myheaders[0] = "Token: $token";
-    $myheaders[1] = "User-Agent: Kronometrix/1.0.14";
+    # writelog("info: send_data - post=$post");
 
-    $response = $http->request('POST', $url, { 
+    $response = $http->request('POST', $url, {
         content => $post,
-        headers => { 'content-type' => 'application/x-www-form-urlencoded' },});
+        headers => { 'Token' => "$token",
+    	             'content-type' => 'application/x-www-form-urlencoded'},});
 
-    writelog("info: send_data - cant send $msg_id krd data\n") 
-       unless $response->{success};
+    my $status = $response->{status};
 
+    #$response = $http->request('POST', $url, { 
+    #    content => $post,
+    #    headers => { 'Token' => "$token" },});
 
-    #$curl->setopt( CURLOPT_HTTPHEADER, \@myheaders );
-    #$curl->setopt( CURLOPT_POST,       1 );
-    #$curl->setopt( CURLOPT_POSTFIELDS, $post );
-    #$curl->setopt( CURLOPT_WRITEDATA,  \$response );
+    #my $status = $response->{status};
 
-    #my $retcode = $curl->perform;
-
-    # if ( $retcode == 0 ) {
+    if ($response->{success} ) {
     #     if ( $verbose_flag == 1 ) {
-    #         writelog("info: send_data - $msg_id krd data delivered");
+             writelog("info: send_data - $msg_id krd data delivered");
     #     }
-    # }
-    #else {
-    #    writelog(
-    #        "error: send_data - cant send $msg_id krd data, transport error");
-    #}
+    }
+    else {
+        writelog(
+            "error: send_data - cant send $msg_id krd data, transport error");
+    }
 
     return;
 }

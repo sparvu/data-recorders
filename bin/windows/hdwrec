@@ -69,6 +69,7 @@ my $recid       = 'hdwrec';
 my $cf          = 'kronometrix.json';  # default json config
 my $logtime     = '0000';              # min time check 23:59
 my $maxtime     = '1';                 # max time check 00:01
+my $hp          = 'NA';                # hypervisor
 my $stime;                             # sleep timer
 local $|= 1;                           # autoflush
 
@@ -124,6 +125,9 @@ while(1) {
     foreach my $obj (in $wproc) {
         $hdw = $obj->{AddressWidth};
     }
+
+    if ($hdw == 64) { $hdw = "x86_64"; }
+    else { $hdw = "x86"; }
 
 
     # os, relos, kernel build
@@ -206,8 +210,8 @@ while(1) {
                 writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-              $tfix , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+            printf $rawlog "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+              $tfix , $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
             $stime -= $delta * 1000;
@@ -226,8 +230,8 @@ while(1) {
                 writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-              $tfix, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+            printf $rawlog "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+              $tfix, $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
             $stime += $ext * 1000;
@@ -237,8 +241,8 @@ while(1) {
 
 	} else {
 
-            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-              $tnow, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+            printf $rawlog "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+              $tnow, $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, $vcpu,
               $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
 	    $last_time = $tnow;
@@ -250,8 +254,8 @@ while(1) {
     # 1st loop, last_time always 0
     } else {
 
-        printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-           $tnow , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
+        printf $rawlog "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+           $tnow , $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, $vcpu,
            $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
 
 
@@ -576,17 +580,16 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #01 timestamp  : seconds since Epoch, time
   #02 hostname   : hostname
   #03 hdw        : machine hardware name
-  #04 hypervisor : name of the hypervisor, string
-  #05 os         : name of the operating system, string
-  #06 relos      : release number of operating system, string
-  #07 kernel     : kernel version and release number
-  #08 pcpu       : number of physical installed CPUs, number
-  #09 vcpu       : number of virtual CPUs, number
-  #10 memtotal   : total physical memory installed, number
-  #11 swaptotal  : total physical swap installed, number
-  #12 disks      : total number of disks, number
-  #13 nics       : total number of NICs, number
-  #14 uptime     : total number of NICs, number
+  #04 os         : name of the operating system, string
+  #05 relos      : release number of operating system, string
+  #06 kernel     : kernel version and release number
+  #07 pcpu       : number of physical installed CPUs, number
+  #08 vcpu       : number of virtual CPUs, number
+  #09 memtotal   : total physical memory installed, number
+  #10 swaptotal  : total physical swap installed, number
+  #11 disks      : total number of disks, number
+  #12 nics       : total number of NICs, number
+  #13 uptime     : total number of NICs, number
 END
     exit 0;
 }
@@ -596,7 +599,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.13, 2015-05-30 1445
+hdwrec: 1.0.14, 2015-07-18 1448
 END
     exit 0;
 }
