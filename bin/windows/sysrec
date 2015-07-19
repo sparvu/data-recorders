@@ -140,6 +140,15 @@ while(1) {
     my $sumpct = 0;
     my $headpct = 0;
 
+
+    # memory
+    
+    my $wmem = $wmi->InstancesOf("Win32_OperatingSystem");
+
+
+
+
+
     my $end = Win32::GetTickCount() - $start;
     my $stime = ($interval * 1000) - $end;
 
@@ -566,20 +575,20 @@ USAGE: sysrec [-hV] | [interval [count]]
    #11 threads    : number of threads in the system, number
 
   MEM
-   #15 memusedpct : size of used memory in percent, number
-   #16 memused    : size of used memory in kilobytes, number
-   #17 memfree    : size of free memory in kilobytes, number
-   #18 memtotal   : size of memory in kilobytes, number
-   #19 buffers    : size of buffers used from memory in kilobytes, number
-   #20 cached     : size of cached memory in kilobytes, number
-   #21 realfree   : size of memory is real free, number
+   #12 memusedpct : size of used memory in percent, number
+   #13 memused    : size of used memory in kilobytes, number
+   #14 memfree    : size of free memory in kilobytes, number
+   #15 memtotal   : size of memory in kilobytes, number
+   #16 buffers    : size of buffers used from memory in kilobytes, number
+   #17 cached     : size of cached memory in kilobytes, number
+   #18 realfree   : size of memory is real free, number
                      (memfree+buffers+cached)
-   #22 realfreepct: size of memory real free in percent of total memory, number
-   #23 swapusedpct: size of used swap space in percent, number
-   #24 swapused   : size of swap space is used is kilobytes, number
-   #25 swapfree   : size of swap space is free in kilobytes, number
-   #26 swaptotal  : size of swap space in kilobytes, number
-   #27 swapcached : memory that once was swapped out, is swapped back in 
+   #19 realfreepct: size of memory real free in percent of total memory, number
+   #20 swapusedpct: size of used swap space in percent, number
+   #21 swapused   : size of swap space is used is kilobytes, number
+   #22 swapfree   : size of swap space is free in kilobytes, number
+   #23 swaptotal  : size of swap space in kilobytes, number
+   #24 swapcached : memory that once was swapped out, is swapped back in 
                      but still also is in the swapfile, number
 
   DISK
