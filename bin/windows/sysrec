@@ -17,6 +17,8 @@
 #
 # (http://www.gnu.org/copyleft/gpl.html)
 
+package PerlSvc;
+
 use strict;
 use warnings;
 use Getopt::Long;
@@ -66,18 +68,14 @@ my $recid       = 'sysrec';
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
-my $opt_v    = 0;                         # revision option
 $|= 1;                                    # autoflush
 
-my $verbose = defined $opt_v ? $opt_v : 0;
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
 
 our %Config = (ServiceName => "$recid");
 
 
 ### MAIN BODY
-
-# how often do we trigger (seconds)?
-my $first_interval = $interval;
 
 # cpu properties
 my @cpu_params = qw(PercentIdleTime PercentProcessorTime PercentPriviledgedTime PercentUserTime PercentInterruptTime TimeStamp_Sys100NS);
@@ -104,7 +102,25 @@ my $last_time = 0;
 
 writelog ("info: started");
 
-while(1) {
+unless (defined &ContinueRun) {
+    *ContinueRun = sub { return 1 };
+    *RunningAsService = sub { return 0 };
+    Interactive();
+}
+
+if (RunningAsService()) {
+    if ($interval == 1 && $loop_max == 1) {
+        $interval = 60;
+        $loop_max = 2**32;
+    }
+}
+
+### SUBROUTINES
+
+
+sub Startup {
+
+    while(ContinueRun()) {
 
     ### verbose
     if ($verbose) {
@@ -238,8 +254,11 @@ while(1) {
 	       $realfreepct
 	       );
 
-        ### Check for end
-        last if ++$loop == $loop_max;
+
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
 
         $last_time = $tnow;
 
@@ -247,12 +266,38 @@ while(1) {
         Win32::Sleep($stime);
     }
 
-    # check count, interval
-    last if ++$loop == $loop_max;
+    if (!RunningAsService()) {
+        # check count, interval
+        last if ++$loop == $loop_max;
+    }
+
+    }
 }
 
 
-### SUBROUTINES
+
+sub Interactive {
+    Install();
+    Startup();
+}
+
+
+sub Install {
+
+    $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
+    $Config{Description} = "Kronometrix $recid service";
+
+    return;
+}
+
+
+sub remove {
+    Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
+
+    return;
+}
+
+
 
 # print_raw - print krd raw data
 #
