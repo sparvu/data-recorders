@@ -19,7 +19,7 @@
 
 use strict;
 use warnings;
-use Getopt::Std;
+use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
 use Time::HiRes qw(time gettimeofday);
@@ -30,16 +30,33 @@ use Win32;
 use JSON;
 
 
+
+### Variables
+my $opt_h    = 0;                      # help option
+my $opt_V    = 0;                      # revision option
+my $opt_v    = 0;                      # revision option
+my $loop     = 0;                      # current loop number
+my $tp          = 0;                   # time precision
+my $recid       = 'sysrec';
+my $cf          = 'kronometrix.json';  # default json config
+my $logtime     = '0000';              # min time check 23:59
+my $stime;                             # sleep timer
+$|= 1;                                 # autoflush
+
 # Debug Only
 use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hvV') or usage();
-usage() if defined $main::opt_h;
-revision() if defined $main::opt_V;
 
-# set verbose log
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+Getopt::Long::Configure('bundling');
+my $result = GetOptions (
+                "v|verbose" => $opt_v,
+                "h|help"    => $opt_h,
+                "V|version" => $opt_V
+                );
+
+usage() if ( $opt_h || ! $result );
+revision() if defined $opt_V;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -53,23 +70,9 @@ else {
     $loop_max = 1;
 }
 
+my $verbose = defined $opt_v ? $opt_v : 0;
 
-# verbose flag
-my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
-
-
-### Variables
-my $update;                            # used for deltas
-my %cpudataOld;                        # cpu_stats data
-my $loop        = 0;                   # current loop number
-$main::opt_h    = 0;                   # help option
-$main::opt_V    = 0;                   # revision option
-my $tp          = 0;                   # time precision
-my $recid       = 'sysrec';
-my $cf          = 'kronometrix.json';  # default json config
-my $logtime     = '0000';              # min time check 23:59
-my $stime;                             # sleep timer
-local $|= 1;                           # autoflush
+our %Config = (ServiceName => "$recid");
 
 
 ### MAIN BODY
@@ -143,12 +146,20 @@ while(1) {
 
     # memory
     
-    my $wmem = $wmi->InstancesOf("Win32_OperatingSystem");
+    my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
+
+    my ($memtotal, $memfree, $swaptotal);
+    foreach my $obj (in $wos) {
+        $memtotal  = $obj->{TotalVisibleMemorySize};
+        $memfree = $obj->{FreePhysicalMemory};
+        $swaptotal = $obj->{SizeStoredInPagingFiles};
+    }
 
 
-
-
-
+    my $memused =  $memtotal - $memfree;
+    my $memusedpct = sprintf ("%.2f", ( $memused / $memtotal ) * 100 );
+    my $realfreepct = sprintf ("%.2f", ( $memfree / $memtotal ) * 100 );
+    
     my $end = Win32::GetTickCount() - $start;
     my $stime = ($interval * 1000) - $end;
 
@@ -178,7 +189,7 @@ while(1) {
 
             putraw($tfix,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct
 	           );
 
             $stime -= $delta * 1000;
@@ -199,7 +210,7 @@ while(1) {
 
             putraw($tfix,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct
 	           );
 
             $stime += $ext * 1000;
@@ -211,7 +222,8 @@ while(1) {
 
             putraw($tnow,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,
+	       $realfreepct
 	           );
 	    $last_time = $tnow;
 
@@ -224,7 +236,8 @@ while(1) {
 
         putraw($tnow,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,
+	       $realfreepct
 	       );
 
 
@@ -249,11 +262,11 @@ while(1) {
 #
 sub putraw {
     my ($traw, $total, $sum, $head, $user, $sys, $idle, $irq, 
-        $rq, $prc, $thr) = @_;
+        $rq, $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct) = @_;
 
-    printf $rawlog "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
+    printf $rawlog "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f\n",
        $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
-       $prc, $thr;
+       $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct;
 
 }
 
@@ -509,7 +522,7 @@ sub rotate {
         push @krd_files, $krd;
     }
 
-    if ($verbose_flag == 1) {
+    if ($verbose == 1) {
         printf "%s %d\n", 
                "info: rotate - copying krd data files:", $#krd_files +1;
     }
@@ -579,11 +592,7 @@ USAGE: sysrec [-hV] | [interval [count]]
    #13 memused    : size of used memory in kilobytes, number
    #14 memfree    : size of free memory in kilobytes, number
    #15 memtotal   : size of memory in kilobytes, number
-   #16 buffers    : size of buffers used from memory in kilobytes, number
-   #17 cached     : size of cached memory in kilobytes, number
-   #18 realfree   : size of memory is real free, number
-                     (memfree+buffers+cached)
-   #19 realfreepct: size of memory real free in percent of total memory, number
+   #16 realfreepct: size of memory real free in percent of total memory, number
    #20 swapusedpct: size of used swap space in percent, number
    #21 swapused   : size of swap space is used is kilobytes, number
    #22 swapfree   : size of swap space is free in kilobytes, number
@@ -620,7 +629,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.13, 2015-05-31 2104
+sysrec: 1.0.14, 2015-07-20 1545
 END
     exit 0;
 }

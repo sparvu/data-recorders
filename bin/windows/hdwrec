@@ -54,10 +54,6 @@ else {
 }
 
 
-# verbose flag
-my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
-
-
 ### Variables
 my $update;                            # used for deltas
 my %cpudataOld;                        # cpu_stats data
