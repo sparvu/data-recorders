@@ -92,7 +92,7 @@ my $fkrd  = $clog . "\\" . $recid . ".krd";
 my $log = open_file($fname);
 
 # open raw data
-my $rawlog = open_file($fkrd);
+my $rawlog;
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
@@ -113,6 +113,8 @@ if (RunningAsService()) {
         $interval = 60;
         $loop_max = 2**32;
     }
+
+    $rawlog = open_file($fkrd);
 }
 
 ### SUBROUTINES
@@ -285,7 +287,7 @@ sub Interactive {
 sub Install {
 
     $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
-    $Config{Description} = "Kronometrix $recid service";
+    $Config{Description} = "Kronometrix $recid Service";
 
     return;
 }
@@ -305,10 +307,17 @@ sub putraw {
     my ($traw, $total, $sum, $head, $user, $sys, $idle, $irq, 
         $rq, $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct) = @_;
 
-    printf $rawlog "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f\n",
-       $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
-       $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct;
-
+    if (!RunningAsService()) {
+        printf
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f\n",
+        $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
+        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct;
+    } else {
+        printf $rawlog 
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f\n",
+        $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
+        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct;
+    }
 }
 
 
