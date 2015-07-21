@@ -17,9 +17,10 @@
 #
 #  (http://www.gnu.org/copyleft/gpl.html)
 
+package PerlSvc;
+
 use strict;
 use warnings;
-use JSON;
 use File::Tail;
 use File::Temp qw(tempfile);
 use File::Copy;
@@ -27,10 +28,11 @@ use File::Basename;
 use UUID::Tiny ':std';
 use Digest::SHA;
 use Getopt::Long;
-use Time::HiRes;
-use HTTP::Response;
-use Win32::Ole ('in');
+use Time::HiRes qw(time);
+use Win32::OLE ('in');
 use HTTP::Tiny;
+use JSON;
+
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -113,17 +115,7 @@ my $log = open_file($slog);
 ## appliance destination
 %appliance = get_appliance($cdata);
 
-if ($verbose) {
-    print "appliance hash: " . keys(%appliance) . ".\n";
-    for my $key ( keys %appliance ) {
-        my $value = $appliance{$key};
-        print "$key => $value\n";
-    }
-}
-
-
 writelog ("info: started");
-
 
 # cd krd raw data directory
 chdir("$curlog")
@@ -146,8 +138,30 @@ foreach (@dbs) {
 my $http = HTTP::Tiny->new(keep_alive => 0,
                            agent => 'Kronometrix_Win/1.0');
 
-# main loop
-while (1) {
+
+unless (defined &ContinueRun) {
+    *ContinueRun = sub { return 1 };
+    *RunningAsService = sub { return 0 };
+    Interactive();
+}
+
+
+if (!RunningAsService()) {
+    if ($verbose) {
+        print "appliance hash: " . keys(%appliance) . ".\n";
+        for my $key ( keys %appliance ) {
+            my $value = $appliance{$key};
+            print "$key => $value\n";
+        }
+    }
+}
+
+### Subroutines
+
+sub Startup {
+
+    # main loop
+    while (ContinueRun()) {
 
     my ( $nfound, $timeleft, @pending ) =
       File::Tail::select( undef, undef, undef, $timeout, @files );
@@ -244,12 +258,12 @@ while (1) {
                 my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
                 my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
 
-                writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
-                ) if ( $verbose == 1 );
+                # writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
+                #) if ( $verbose == 1 );
 
                 if ($lid eq $lmoid ) {
                     
-                    writelog("debug: main - before sending ... $lid/$msgid => $hname:$port:$sid:$tid");
+                    # writelog("debug: main - before sending ... $lid/$msgid => $hname:$port:$sid:$tid");
                     send_data( $http, $hname, $sid, $tid, $dsid,
                         $msgid, $devid, $proto, $port, $delta );
                 }
@@ -261,11 +275,33 @@ while (1) {
 
     }    # else raw data
 
-}    # while loop
+    }    # while loop
+}
 
 
+sub Interactive {
+    Install();
+    Startup();
+}
 
-### Subroutines
+
+sub Install {
+
+
+    $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
+    $Config{Description} = "Kronometrix $transid Service";
+
+    return;
+}
+
+
+sub remove {
+
+    Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
+
+    return;
+}
+
 
 # open_config - open JSON configuration file
 #
@@ -715,7 +751,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.14, 2015-07-21 2040
+sender: 1.0.14, 2015-07-22 0010
 END
     exit 0;
 }
