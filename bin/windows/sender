@@ -26,7 +26,7 @@ use File::Copy;
 use File::Basename;
 use UUID::Tiny ':std';
 use Digest::SHA;
-use Getopt::Std;
+use Getopt::Long;
 use Time::HiRes;
 use HTTP::Response;
 use Win32::Ole ('in');
@@ -34,15 +34,19 @@ use HTTP::Tiny;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('t:hvV') or usage();
-usage()    if defined $main::opt_h;
+
+# default timeout
+my $timeout = 25;
+Getopt::Long::Configure('bundling');
+my $result = GetOptions (
+                "t|timeout=i" => \$timeout,
+                "v|verbose" => \$main::opt_v,
+                "h|help"    => \$main::opt_h,
+                "V|version" => \$main::opt_V
+                );
+
+usage() if ( $main::opt_h || ! $result );
 revision() if defined $main::opt_V;
-
-# verbose flag
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
-
-# timeout
-my $timeout = defined $main::opt_t ? $main::opt_t : 25;
 
 # process [interval]
 my $interval;
@@ -55,22 +59,27 @@ else {
     $interval = 60;
 }
 
-###  Variables
-$main::opt_h = 0;               # help option
-$main::opt_V = 0;               # revision option
-my $cfile = 'kronometrix.json'; # configuration file
-my $cdata;                      # configuration data
-my $tcpka = 0;                  # transport TCP keepalive settings
-my $sid   = "";                 # subscription id
-my $token = "NA";               # token id
+### Variables
+$main::opt_h    = 0;                      # help option
+$main::opt_V    = 0;                      # revision option
+$main::opt_v    = 0;                      # verbose option
+my $loop        = 0;                      # current loop number
+my $transid     = 'sender';               # transport service name
+my $cfile       = 'kronometrix.json';     # configuration file
+my $cdata;                                # configuration data
+my $tcpka       = 0;                      # transport TCP keepalive settings
+my $sid         = "";                     # subscription id
+my $token       = "NA";                   # token id
 my @files;
-
-## configuration
 my $hostid;
 my ( $baselog, $curlog, $slog );
 my @dbs;
-my %appliance;
-local $| = 1;
+my %appliance;                            # appliance coordinates
+$|= 1;                                    # autoflush
+
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+our %Config = (ServiceName => "$transid");
 
 
 ### MAIN BODY #
@@ -686,18 +695,19 @@ sub sha256krd {
 
 # usage - print usage and exit.
 sub usage {
-    print STDERR <<END;
+    print STDERR <<END;   
 USAGE: sender [-t secs] [-hvV] | [interval]
 OPTIONS:
-  -t        : timeout in seconds
-  -h        : help information
-  -h        : verbose information
-  -V        : release version
-  interval  : maximum number of seconds between samples, default 60, will 
-              never spend more than that without checking data
+  -h | --help              : help information
+  -v | --verbose           : verbose information
+  -V | --version           : release version
+  -t secs | --timeout secs : timeout in seconds, default 25s
+  interval                 : max number of seconds between samples, default 60s 
 
- e.g. sender     check and send krd raw data, every 60 secs
-      sender 10  check and send krd raw data, every 10 secs
+ eg, 
+      sender          # default mode, will check raw data updates, every 60s
+      sender 10       # will check raw data updates, every 10s
+      sender -t5 10   # will check raw data updates, every 10s, 5s timeout
 END
     exit 0;
 }
@@ -705,7 +715,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.14, 2015-07-20 1607
+sender: 1.0.14, 2015-07-21 2040
 END
     exit 0;
 }
