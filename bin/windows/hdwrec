@@ -177,7 +177,7 @@ sub Startup {
 
     my $uptime = get_uptime ($lastboot, $currtime);
 
-    # get no of disks
+    # get no of physical disks
     # Win32_DiskDrive Class
     my $wd = $wmi->InstancesOf("Win32_DiskDrive");
     my $ndisk = 0;
@@ -644,9 +644,9 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #08 vcpu       : number of virtual CPUs, number
   #09 memtotal   : total physical memory installed, number
   #10 swaptotal  : total physical swap installed, number
-  #11 disks      : total number of disks, number
-  #12 nics       : total number of NICs, number
-  #13 uptime     : total number of NICs, number
+  #11 disks      : total number of physical disks, number
+  #12 nics       : total number of physical NICs, number
+  #13 uptime     : system uptime, string 
 END
     exit 0;
 }
@@ -656,7 +656,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.14, 2015-07-20 1814
+hdwrec: 1.0.14, 2015-07-22 1636
 END
     exit 0;
 }
