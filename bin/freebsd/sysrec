@@ -567,6 +567,8 @@ USAGE: sysrec [-hV] | [interval [count]]
    #32 rkbytes    : read KBytes per second,rate
    #33 writes     : write requests per second, rate
    #34 wkbytes    : write KBytes per second, rate
+   #xx sumrw      : disk read+write requests per second, rate
+   #xx sumrwkb    : read+write Kbytes per second, rate
    #35 queue      : the number of not yet completed transactions, rate
    #36 service    : service time per transaction in miliseconds, number 
    #37 diskutil   : the percentage of time the device had one or more 
@@ -575,10 +577,12 @@ USAGE: sysrec [-hV] | [interval [count]]
   NET
    #38 rxpkt      : received packets per second, rate
    #39 rxkbytes   : received Kbytes per seccond, rate
-   #40 rxerr      : number of errors while received pkt per second, rate
-   #41 rxdrop     : number of rx packets that were dropped per second, rate
    #42 txpkt      : transmitted packets per second, rate
    #43 txkbytes   : transmitted Kbytes per second, rate 
+   #42 sumrxtxpkt : received+transmitted packets per second, rate
+   #42 sumrxtxkb  : received+transmitted packets per second, rate
+   #40 rxerr      : number of errors while received pkt per second, rate
+   #41 rxdrop     : number of rx packets that were dropped per second, rate
    #44 txerr      : number of errors while transmitting pkt per second, rate
    #45 cols       : number of collisions, rate
    #46 drop       : number of dropped packets per second, rate
