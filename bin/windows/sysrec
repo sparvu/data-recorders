@@ -160,18 +160,20 @@ sub Startup {
     # memory statistics
     my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
 
-    my ($memtotal, $memfree, $swaptotal);
+    my ($memtotal, $memfree, $swaptotal, $swapfree);
     foreach my $obj (in $wos) {
         $memtotal  = $obj->{TotalVisibleMemorySize};
         $memfree = $obj->{FreePhysicalMemory};
         $swaptotal = $obj->{SizeStoredInPagingFiles};
+        $swapfree = $obj->{FreeSpaceInPagingFiles};
     }
 
     my $memused =  $memtotal - $memfree;
     my $memusedpct = sprintf ("%.2f", ( $memused / $memtotal ) * 100 );
     my $realfreepct = sprintf ("%.2f", ( $memfree / $memtotal ) * 100 );
-   
-
+    my $swapused = $swaptotal - $swapfree;
+    my $swapusedpct = sprintf("%.2f", ($swaptotal - $swapfree) / $swaptotal * 100); 
+    
 
     # end payload
     my $end = Win32::GetTickCount() - $start;
@@ -205,7 +207,7 @@ sub Startup {
 
             putraw($tfix,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct, $swapusedpct, $swapused
 	           );
 
             $stime -= $delta * 1000;
@@ -226,7 +228,7 @@ sub Startup {
 
             putraw($tfix,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
 	           );
 
             $stime += $ext * 1000;
@@ -239,7 +241,7 @@ sub Startup {
             putraw($tnow,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
 	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,
-	       $realfreepct
+	       $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
 	           );
 	    $last_time = $tnow;
 
@@ -253,7 +255,7 @@ sub Startup {
         putraw($tnow,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
 	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,
-	       $realfreepct
+	       $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
 	       );
 
 
@@ -275,7 +277,6 @@ sub Startup {
 
     }
 }
-
 
 
 sub Interactive {
@@ -305,18 +306,19 @@ sub remove {
 #
 sub putraw {
     my ($traw, $total, $sum, $head, $user, $sys, $idle, $irq, 
-        $rq, $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct) = @_;
+        $rq, $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, 
+	$supct, $su, $suf, $sut) = @_;
 
     if (!RunningAsService()) {
         printf
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f\n",
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d\n",
         $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
-        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct;
+        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, $supct, $su, $suf, $sut;
     } else {
-        printf $rawlog 
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f\n",
+        printf $rawlog
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d\n",
         $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
-        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct;
+        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, $supct, $su, $suf, $sut;
     }
 }
 
@@ -643,20 +645,18 @@ USAGE: sysrec [-hV] | [interval [count]]
    #14 memfree    : size of free memory in kilobytes, number
    #15 memtotal   : size of memory in kilobytes, number
    #16 realfreepct: size of memory real free in percent of total memory, number
-   #20 swapusedpct: size of used swap space in percent, number
-   #21 swapused   : size of swap space is used is kilobytes, number
-   #22 swapfree   : size of swap space is free in kilobytes, number
-   #23 swaptotal  : size of swap space in kilobytes, number
-   #24 swapcached : memory that once was swapped out, is swapped back in 
-                     but still also is in the swapfile, number
+   #17 swapusedpct: size of used swap space in percent, number
+   #18 swapused   : size of swap space is used is kilobytes, number
+   #19 swapfree   : size of swap space is free in kilobytes, number
+   #20 swaptotal  : size of swap space in kilobytes, number
 
   DISK
-   #28 reads      : disk read requests per second, rate
-   #29 rkbytes    : read bytes per second, in KB, rate
+   #21 reads      : disk read requests per second, rate
+   #22 rkbytes    : read bytes per second, in KB, rate
    #30 writes     : disk write requests per second, rate
    #31 wkbytes    : write bytes per second, in KB, rate
-   #32 sumrws     : disk read+write requests per second, rate
-   #33 sumrwkbs   : read+write Kbytes per second, rate
+   #32 sumrw      : disk read+write requests per second, rate
+   #33 sumrwkb    : read+write Kbytes per second, rate
 
   NET
    #34 rxkbytes   : received bytes per seccond, in KB, rate
