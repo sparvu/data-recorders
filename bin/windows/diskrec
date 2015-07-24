@@ -129,41 +129,42 @@ sub Startup {
         writelog ("info: main - last_time=$last_time");
     }
 
+    my ($reads, $writes);
+    my %dstats;
+    my ($di, $dkey);
+
     # measure payload
     my $start = Win32::GetTickCount();
 
+    my %diskname = getdisk();
 
-    # get no of physical disks
-    # Win32_DiskDrive Class
-    my ($di, $dd);
-    my ($reads, $writes);
-    my %dstats = ();
+    for my $k (keys %diskname) {
+        my $l = $diskname{$k};
+	$di = $k . " " . $l;
+	$l =~ s/\://;
+	$dkey = lc "disk$k$l";
 
-    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
-    foreach my $disk (in $wd) {
-        $di = $disk->{Index};
-        $dd = $disk->{DeviceID};
-	print "Disk: $di $dd\n";
-        my $wdstat = $wmi -> 
-	ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='0 C:'");
+	print "disk $k $l\n";
+	print "di $di\n";
+	print "dkey=$dkey\n";
+    }
+    # print "Disks: " . keys(%diskname);
 
-        foreach my $obj (in $wdstat) {
-            $reads = $obj->{DiskReadsPerSec};
-            $writes = $obj->{DiskWritesPerSec};
-	print "read=$reads\n";
-        }
+    # Performance Metrics
+    # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
+    # Where Name='0 C:'
+    my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
 
-        if (defined ($reads) 
-	    and defined($writes) ) {
-                $dstats{$di} = "$reads:$writes";
-        }
-
+    foreach my $obj (in $wdstat) {
+        $reads = $obj->{DiskReadsPerSec};
+        $writes = $obj->{DiskWritesPerSec};
     }
 
+    if (defined ($reads) and defined($writes) ) {
+        $dstats{$dkey} = "$reads:$writes";
+    }
 
-    print "dstats size=" .  keys(%dstats);
-
-    exit 0;
+    # print "dstats size=" .  keys(%dstats);
 
 
     # end payload
@@ -285,6 +286,42 @@ sub remove {
     return;
 }
 
+
+# getdisk -- get disks logic drive
+#
+sub getdisk {
+
+    my %disk;
+
+    # get physical disks
+    my ($di, $dd);
+    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
+    foreach my $disk (in $wd) {
+        $di = $disk->{Index};
+        $dd = $disk->{DeviceID};
+        $dd =~ s/\\/\\\\/sg;
+        # print "Physical Disk: $di $dd";
+
+        my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . $dd . '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
+
+        my $wpart = $wmi->ExecQuery($qpart);
+
+        foreach my $obj (in $wpart) {
+
+            my $d1 = $obj->{DeviceID};
+	    # print "$d1\n";
+
+            my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
+
+	    foreach my $lobj (in $wdrive) {
+                my $lid = $lobj->{DeviceID};
+	        $disk{$di} = $lid;
+	    }
+        }
+    }
+
+    return %disk;
+}
 
 
 # print_raw - print krd raw data
