@@ -741,9 +741,11 @@ OPTIONS:
   interval                 : max number of seconds between samples, default 60s 
 
  eg, 
-      sender          # default mode, will check raw data updates, every 60s
-      sender 10       # will check raw data updates, every 10s
-      sender -t5 10   # will check raw data updates, every 10s, 5s timeout
+  sender                 # default mode, transport raw data every 60s
+  sender 10              # transport raw data every 10s
+  sender -t5 10          # transport raw data every 10s with 5s timeout
+  sender --install auto  # run as a service, every 60s, 25s timeout
+  sender --remove        # stop and remove the service
 END
     exit 0;
 }
@@ -751,7 +753,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.14, 2015-07-22 0010
+sender: 1.0.14, 2015-07-23 1451
 END
     exit 0;
 }

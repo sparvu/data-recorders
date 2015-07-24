@@ -621,9 +621,11 @@ sub get_yesterday {
 sub usage {
     print STDERR <<END;
 USAGE: sysrec [-hV] | [interval [count]]
- e.g. sysrec 5        print continuously, every 5 seconds
-      sysrec 1 5      print 5 times, every 1 second
-      sysrec .5       print continuously, every 0.5 seconds
+ eg. 
+  sysrec                 # default CLI mode, print system stats
+  sysrec 1 5             # print system stats 5 times, every 1s
+  sysrec --install auto  # run as a service, every 60s
+  sysrec --remove        # stop and remove the service 
 
  FIELDS:
   CPU
@@ -679,7 +681,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.14, 2015-07-20 1622
+sysrec: 1.0.14, 2015-07-23 1454
 END
     exit 0;
 }
