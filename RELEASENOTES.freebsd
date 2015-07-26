@@ -11,7 +11,7 @@ Bug Management System
 Releases
 
   1.0.14 24-06-2015 Release
-    wrong curl dependencies on FreeBSD i386 #42
+    sender should use HTTP::Tiny #51
     CPAN update June 2015 #43
     update openssl-1.0.2d
     update curl-7.43.0
