@@ -29,6 +29,7 @@ use UUID::Tiny ':std';
 use Digest::SHA;
 use HTTP::Tiny;
 use Getopt::Std;
+use BSD::Sysctl qw(sysctl);
 use Proc::Daemon;
 use Proc::PID::File;
 use Time::HiRes;
@@ -41,7 +42,7 @@ usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
 
 # timeout
 my $timeout = defined $main::opt_t ? $main::opt_t : 25;
@@ -68,13 +69,11 @@ my $token = "NA";          # token id
 my @files;
 
 ## configuration
-my $hostid;
 my ( $baselog, $curlog, $slog );
 my @dbs;
 my %appliance;
 
 local $| = 1;
-
 
 ### MAIN BODY #
 
@@ -90,17 +89,17 @@ my $osname = "$^O";
 # read configuration
 $cdata = open_config($cfile);
 
-## hostid
+# get OS host UUID
 get_hostid($cdata);
 
-## logs
+# logs
 ( $baselog, $curlog ) = get_log($cdata);
 $slog = $baselog . "/sender.log";
 
-## datafile
+# datafile
 @dbs = get_datafile($cdata);
 
-## appliance destination
+# appliance destination
 %appliance = get_appliance($cdata);
 
 print "appliance hash: " . keys(%appliance) . ".\n";
@@ -109,7 +108,7 @@ for my $key ( keys %appliance ) {
     print "$key => $value\n";
 }
 
-## SIGHUP handler
+# SIGHUP handler
 $SIG{HUP} = \&reload_config;
 
 # Daemonize
@@ -131,7 +130,7 @@ else {
 
 # If already running, then exit
 if ( Proc::PID::File->running( { dir => "$baselog" } ) ) {
-    exit(0);
+    exit 0;
 }
 
 # cd krd raw data directory
@@ -153,8 +152,7 @@ foreach (@dbs) {
 
 # init HTTP transport
 my $http = HTTP::Tiny->new(keep_alive => $tcpka,
-                           agent => 'Kronometrix_Linux/1.0');
-
+                           agent => 'Kronometrix_FreeBSD/1.0');
 
 # main loop
 while (1) {
@@ -165,13 +163,13 @@ while (1) {
     # timeout - do something else here, if you need to
     unless ($nfound) {
         writelog("info: main - no krd raw data found, checking...")
-          if ( $verbose == 1 );
+          if ( $verbose_flag == 1 );
     }
     else {
 
         ## raw data arrival
         writelog("info: main - krd raw data found")
-          if ( $verbose == 1 );
+          if ( $verbose_flag == 1 );
 
         my $rcode = 0;
         foreach (@pending) {
@@ -186,7 +184,7 @@ while (1) {
             if ( $_->{"input"} =~ /sysrec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-sysrec";
+                $msgid = "$osname-sysrec";
             }
             elsif ( $_->{"input"} =~ /cpurec/ ) {
                 $lmoid = 'cpd';
@@ -206,42 +204,42 @@ while (1) {
             elsif ( $_->{"input"} =~ /netrec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-netrec";
+                $msgid = "$osname-netrec";
             }
             elsif ( $_->{"input"} =~ /jvmrec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-jvmrec";
+                $msgid = "$osname-jvmrec";
             }
             elsif ( $_->{"input"} =~ /procrec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-procrec";
+                $msgid = "$osname-procrec";
             }
             elsif ( $_->{"input"} =~ /zonerec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-zonerec";
+                $msgid = "$osname-zonerec";
             }
             elsif ( $_->{"input"} =~ /webrec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-webrec";
+                $msgid = "$osname-webrec";
             }
             elsif ( $_->{"input"} =~ /hdwrec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-hdwrec";
+                $msgid = "$osname-hdwrec";
             }
             elsif ( $_->{"input"} =~ /xenrec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
-                $msgid  = "$osname-xenrec";
+                $msgid = "$osname-xenrec";
             }
             elsif ( $_->{"input"} =~ /wsrec/ ) {
                 $lmoid = 'wcd';
                 $devid = 'system';
-                $msgid  = "$osname-wsrec";
+                $msgid = "$osname-wsrec";
             }
 
             # each appliance
@@ -255,7 +253,7 @@ while (1) {
                 my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
 
                 writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
-                ) if ( $verbose == 1 );
+                ) if ( $verbose_flag == 1 );
 
                 if ($lid eq $lmoid ) {
                     
@@ -265,7 +263,7 @@ while (1) {
                 }
             }
             print "\n" . $_->{"input"} . " payload[" . $delta . "]"
-              if ( $verbose == 1 );
+              if ( $verbose_flag == 1 );
 
         }    # for
 
@@ -276,6 +274,7 @@ while (1) {
 ### Subroutines
 
 ## configuration file
+
 
 # open JSON configuration file
 sub open_config {
@@ -316,6 +315,7 @@ sub open_config {
 
     return $perl_data;
 }
+
 
 # write config file
 sub write_config {
@@ -359,6 +359,7 @@ sub write_config {
     }
 }
 
+
 # reload configuration
 sub reload_config {
 
@@ -378,6 +379,7 @@ sub reload_config {
     return;
 }
 
+
 # get_devid, returns device_id
 sub get_devid {
 
@@ -389,66 +391,25 @@ sub get_devid {
     $device_id = $krd[$pos];
 
     writelog("info: get_devid - devid=$device_id")
-      if ( $verbose == 1 );
+      if ( $verbose_flag == 1 );
 
     # device_id
     return $device_id;
 }
 
 
-# process host uuid file
-sub process_hid {
-
-    my ($dbusfile) = @_;
-    my $host_uuid;
-
-    open my $fh, "<", "$dbusfile"
-        or die "error: cannot open $dbusfile: $!\n";
-
-    my @mid = <$fh>;
-
-    close $fh;
-
-    foreach my $h (@mid) {
-        substr( $h, 8,  0 ) = '-';
-        substr( $h, 13, 0 ) = '-';
-        substr( $h, 18, 0 ) = '-';
-        substr( $h, 23, 0 ) = '-';
-        $host_uuid = $h;
-    }
-
-    return $host_uuid;
-}
-
-
-
 # get hostuuid
 sub new_hostid {
 
-    # machine-id
-    my $varid = '/var/lib/dbus/machine-id';
-    my $etcid = '/etc/machine-id';
-    my @machineid;
-    my $hid;
-
-    # fetches machine-id from DBUS
-    if ( -e $varid ) {
-        $hid = process_hid ("$varid");
-    }
-    # RHEL, CentOS 7
-    elsif ( -e $etcid ) {
-        $hid = process_hid ("$etcid");
-    }
-    else {
-        my $str = rand(time) . $osname;
-        $hid = create_uuid_as_string(UUID_V5,$str);
-    }
-
-    chomp($hid);
+    # host UUID
+    my $hb  = BSD::Sysctl->new('kern.hostuuid');
+    my $hid = $hb->get();
+    chop($hid);
 
     # return new host UUID
     return $hid;
 }
+
 
 # get hostid
 sub get_hostid {
@@ -541,6 +502,7 @@ sub get_log {
     return ( $bpath, $cpath );
 }
 
+
 # get datafile
 sub get_datafile {
 
@@ -630,6 +592,7 @@ sub writelog {
     return;
 }
 
+
 sub send_data {
 
     my (
@@ -651,7 +614,7 @@ sub send_data {
         $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
     }
     writelog("info: send_data - $post data to be delivered")
-        if ( $verbose == 1 );
+        if ( $verbose_flag == 1 );
 
     $response = $http->request('POST', $url, {
         content => $post,
@@ -671,7 +634,9 @@ sub send_data {
     }
 
     return;
+
 }
+
 
 # NIST SHA-256 message digest for krd raw data
 sub sha256krd {
@@ -685,6 +650,7 @@ sub sha256krd {
 
     return $digest;
 }
+
 
 # usage - print usage and exit.
 sub usage {
@@ -704,10 +670,11 @@ END
     exit 0;
 }
 
+
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.14, 2015-06-11 2220
+sender: 1.0.14, 2015-07-26 1314
 END
     exit 0;
 }
