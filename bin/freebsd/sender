@@ -42,7 +42,7 @@ usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
-my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
 
 # timeout
 my $timeout = defined $main::opt_t ? $main::opt_t : 25;
@@ -163,13 +163,13 @@ while (1) {
     # timeout - do something else here, if you need to
     unless ($nfound) {
         writelog("info: main - no krd raw data found, checking...")
-          if ( $verbose_flag == 1 );
+          if ( $verbose == 1 );
     }
     else {
 
         ## raw data arrival
         writelog("info: main - krd raw data found")
-          if ( $verbose_flag == 1 );
+          if ( $verbose == 1 );
 
         my $rcode = 0;
         foreach (@pending) {
@@ -253,7 +253,7 @@ while (1) {
                 my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
 
                 writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
-                ) if ( $verbose_flag == 1 );
+                ) if ( $verbose == 1 );
 
                 if ($lid eq $lmoid ) {
                     
@@ -263,7 +263,7 @@ while (1) {
                 }
             }
             print "\n" . $_->{"input"} . " payload[" . $delta . "]"
-              if ( $verbose_flag == 1 );
+              if ( $verbose == 1 );
 
         }    # for
 
@@ -391,7 +391,7 @@ sub get_devid {
     $device_id = $krd[$pos];
 
     writelog("info: get_devid - devid=$device_id")
-      if ( $verbose_flag == 1 );
+      if ( $verbose == 1 );
 
     # device_id
     return $device_id;
@@ -614,7 +614,7 @@ sub send_data {
         $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
     }
     writelog("info: send_data - $post data to be delivered")
-        if ( $verbose_flag == 1 );
+        if ( $verbose == 1 );
 
     $response = $http->request('POST', $url, {
         content => $post,
