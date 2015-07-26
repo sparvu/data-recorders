@@ -27,7 +27,7 @@ use File::Copy;
 use File::Basename;
 use UUID::Tiny ':std';
 use Digest::SHA;
-use HTTP::Tiny;
+use WWW::Curl::Easy;
 use Getopt::Std;
 use Proc::Daemon;
 use Proc::PID::File;
@@ -41,7 +41,7 @@ usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
 
 # timeout
 my $timeout = defined $main::opt_t ? $main::opt_t : 25;
@@ -152,9 +152,7 @@ foreach (@dbs) {
 }
 
 # init HTTP transport
-my $http = HTTP::Tiny->new(keep_alive => $tcpka,
-                           agent => 'Kronometrix_Linux/1.0');
-
+my $http = WWW::Curl::Easy->new;
 
 # main loop
 while (1) {
@@ -165,13 +163,13 @@ while (1) {
     # timeout - do something else here, if you need to
     unless ($nfound) {
         writelog("info: main - no krd raw data found, checking...")
-          if ( $verbose == 1 );
+          if ( $verbose_flag == 1 );
     }
     else {
 
         ## raw data arrival
         writelog("info: main - krd raw data found")
-          if ( $verbose == 1 );
+          if ( $verbose_flag == 1 );
 
         my $rcode = 0;
         foreach (@pending) {
@@ -255,7 +253,7 @@ while (1) {
                 my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
 
                 writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
-                ) if ( $verbose == 1 );
+                ) if ( $verbose_flag == 1 );
 
                 if ($lid eq $lmoid ) {
                     
@@ -265,7 +263,7 @@ while (1) {
                 }
             }
             print "\n" . $_->{"input"} . " payload[" . $delta . "]"
-              if ( $verbose == 1 );
+              if ( $verbose_flag == 1 );
 
         }    # for
 
@@ -389,7 +387,7 @@ sub get_devid {
     $device_id = $krd[$pos];
 
     writelog("info: get_devid - devid=$device_id")
-      if ( $verbose == 1 );
+      if ( $verbose_flag == 1 );
 
     # device_id
     return $device_id;
@@ -651,26 +649,37 @@ sub send_data {
         $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
     }
     writelog("info: send_data - $post data to be delivered")
-        if ( $verbose == 1 );
+        if ( $verbose_flag == 1 );
 
-    $response = $http->request('POST', $url, {
-        content => $post,
-        headers => { 'Token' => "$token",
-                     'content-type' => 'application/x-www-form-urlencoded'},});
+    $curl->setopt( CURLOPT_NOPROGRESS, 1 );
+    $curl->setopt(CURLOPT_TIMEOUT, 30);
+    my $head = tempfile();
+    $curl->setopt( CURLOPT_WRITEHEADER, $head );
+    $curl->setopt( CURLOPT_URL,         $url );
 
-    my $status = $response->{status};
+    my @myheaders;
+    $myheaders[0] = "Token: $token";
+    $myheaders[1] = "User-Agent: Kronometrix/1.0.0";
 
-    if ( $verbose == 1 ) {
+    $curl->setopt( CURLOPT_HTTPHEADER, \@myheaders );
 
-        if ($response->{success} ) {
+    $curl->setopt( CURLOPT_POST,       1 );
+    $curl->setopt( CURLOPT_POSTFIELDS, $post );
+    $curl->setopt( CURLOPT_WRITEDATA,  \$response );
+
+    my $retcode = $curl->perform;
+
+    if ( $retcode == 0 ) {
+        if ( $verbose_flag == 1 ) {
             writelog("info: send_data - $msg_id krd data delivered");
-        } else {
-            writelog(
-            "error: send_data - cant send $msg_id krd data, transport error");
         }
     }
+    else {
+        writelog(
+            "error: send_data - cant send $msg_id krd data, transport error");
+    }
 
-    return;
+    return $retcode;
 }
 
 # NIST SHA-256 message digest for krd raw data
