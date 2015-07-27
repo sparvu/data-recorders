@@ -129,7 +129,8 @@ sub Startup {
         writelog ("info: main - last_time=$last_time");
     }
 
-    my ($reads, $writes);
+    my ($reads,  $rkbytes, $avgrkbytes, $rtimepct,
+        $writes, $wkbytes, $avgwkbytes, $wtimepct );
     my %dstats;
     my ($di, $dkey);
 
@@ -144,9 +145,9 @@ sub Startup {
 	$l =~ s/\://;
 	$dkey = lc "disk$k$l";
 
-	print "disk $k $l\n";
-	print "di $di\n";
-	print "dkey=$dkey\n";
+	# print "disk $k $l\n";
+	# print "di $di\n";
+	# print "dkey=$dkey\n";
     }
     # print "Disks: " . keys(%diskname);
 
@@ -157,15 +158,20 @@ sub Startup {
 
     foreach my $obj (in $wdstat) {
         $reads = $obj->{DiskReadsPerSec};
+        $rkbytes = $obj->{DiskReadBytesPerSec} / 1024;
+        $avgrkbytes = $obj->{AvgDiskBytesPerRead} / 1024;
+        $rtimepct = $obj->{DiskReadsPerSec};
         $writes = $obj->{DiskWritesPerSec};
+        $wkbytes = $obj->{DiskWriteBytesPerSec} / 1024;
+        $avgwkbytes = $obj->{AvgDiskBytesPerWrite} / 1024;
+        $wtimepct = $obj->{DiskWritesPerSec};
     }
 
-    if (defined ($reads) and defined($writes) ) {
-        $dstats{$dkey} = "$reads:$writes";
-    }
+    #if (defined ($reads) and defined($writes) ) {
+        $dstats{$dkey} = "$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct";
+    #}
 
     # print "dstats size=" .  keys(%dstats);
-
 
     # end payload
     my $end = Win32::GetTickCount() - $start;
@@ -175,7 +181,9 @@ sub Startup {
     my $tnow = int(gettimeofday);
 
     # cktime for rotation
-    cktime();
+    if (RunningAsService()) {
+        cktime();
+    }
 
     ### verbose
     if ($verbose) {
@@ -197,8 +205,9 @@ sub Startup {
                 writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            putraw($tfix,
-	       $reads, $writes
+            putraw($tfix, $dkey, 
+	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
+		   $writes, $wkbytes, $avgwkbytes, $wtimepct
 	           );
 
             $stime -= $delta * 1000;
@@ -217,8 +226,9 @@ sub Startup {
                 writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            putraw($tfix,
-	       $reads, $writes
+            putraw($tfix, $dkey, 
+	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
+		   $writes, $wkbytes, $avgwkbytes, $wtimepct
 	           );
 
             $stime += $ext * 1000;
@@ -228,8 +238,9 @@ sub Startup {
 
 	} else {
 
-            putraw($tnow,
-	       $reads, $writes
+            putraw($tnow, $dkey, 
+	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
+		   $writes, $wkbytes, $avgwkbytes, $wtimepct
 	           );
 	    $last_time = $tnow;
 
@@ -240,8 +251,9 @@ sub Startup {
     # 1st loop, last_time always 0
     } else {
 
-        putraw($tnow,
-	       $reads, $writes
+        putraw($tnow, $dkey, 
+	       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
+	       $writes, $wkbytes, $avgwkbytes, $wtimepct
 	       );
 
 
@@ -327,13 +339,20 @@ sub getdisk {
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ($traw, $r, $w) = @_;
+    my ($traw, $d, 
+        $r, $rkb, $avgrkb, $rt, 
+        $w, $wkb, $avgwkb, $wt) = @_;
 
     if (!RunningAsService()) {
-        printf "%s:%d:%d\n", $traw, $r, $w;
+        printf "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d\n", 
+	       $traw, $d, 
+               $r, $rkb, $avgrkb, $rt, 
+               $w, $wkb, $avgwkb, $wt;
     } else {
-        printf $rawlog "%s:%d:%d\n", $traw, $r, $w;
-
+        printf $rawlog "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d\n", 
+	       $traw, $d, 
+               $r, $rkb, $avgrkb, $rt, 
+               $w, $wkb, $avgwkb, $wt;
     }
 }
 

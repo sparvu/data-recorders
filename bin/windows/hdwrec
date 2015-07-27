@@ -203,7 +203,10 @@ sub Startup {
     # output time
     my $tnow = int(gettimeofday);
 
-    cktime();
+    # cktime for rotation
+    if (RunningAsService()) {
+        cktime();
+    }
 
     ### verbose
     if ($verbose) {
