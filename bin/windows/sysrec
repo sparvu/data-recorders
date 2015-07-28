@@ -17,9 +17,11 @@
 #
 # (http://www.gnu.org/copyleft/gpl.html)
 
+package PerlSvc;
+
 use strict;
 use warnings;
-use Getopt::Std;
+use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
 use Time::HiRes qw(time gettimeofday);
@@ -34,12 +36,16 @@ use JSON;
 use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hvV') or usage();
-usage() if defined $main::opt_h;
-revision() if defined $main::opt_V;
 
-# set verbose log
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+Getopt::Long::Configure('bundling');
+my $result = GetOptions (
+                "v|verbose" => \$main::opt_v,
+                "h|help"    => \$main::opt_h,
+                "V|version" => \$main::opt_V
+                );
+
+usage() if ( $main::opt_h || ! $result );
+revision() if defined $main::opt_V;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -53,34 +59,23 @@ else {
     $loop_max = 1;
 }
 
-
-# verbose flag
-my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
-
-
 ### Variables
-my $update;                            # used for deltas
-my %cpudataOld;                        # cpu_stats data
-my $loop        = 0;                   # current loop number
-$main::opt_h    = 0;                   # help option
-$main::opt_V    = 0;                   # revision option
-my $tp          = 0;                   # time precision
-my $recid       = 'sysrec2';
-my $cf          = 'kronometrix.json';  # default json config
-my $logtime     = '0000';              # min time check 23:59
-my $stime;                             # sleep timer
-local $|= 1;                           # autoflush
+$main::opt_h    = 0;                      # help option
+$main::opt_V    = 0;                      # revision option
+$main::opt_v    = 0;                      # verbose option
+my $loop        = 0;                      # current loop number
+my $recid       = 'sysrec';
+my $cf          = 'kronometrix.json';     # default json config
+my $logtime     = '0000';                 # min time check 23:59
+my $stime;                                # sleep timer
+$|= 1;                                    # autoflush
+
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+our %Config = (ServiceName => "$recid");
 
 
 ### MAIN BODY
-
-# how often do we trigger (seconds)?
-my $first_interval = $interval;
-
-# check interval input
-if ( $interval =~ /\./ ) {
-   $tp = 3;
-}
 
 # cpu properties
 my @cpu_params = qw(PercentIdleTime PercentProcessorTime PercentPriviledgedTime PercentUserTime PercentInterruptTime TimeStamp_Sys100NS);
@@ -97,7 +92,7 @@ my $fkrd  = $clog . "\\" . $recid . ".krd";
 my $log = open_file($fname);
 
 # open raw data
-my $rawlog = open_file($fkrd);
+my $rawlog;
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
@@ -107,7 +102,27 @@ my $last_time = 0;
 
 writelog ("info: started");
 
-while(1) {
+unless (defined &ContinueRun) {
+    *ContinueRun = sub { return 1 };
+    *RunningAsService = sub { return 0 };
+    Interactive();
+}
+
+if (RunningAsService()) {
+    if ($interval == 1 && $loop_max == 1) {
+        $interval = 60;
+        $loop_max = 2**32;
+    }
+
+    $rawlog = open_file($fkrd);
+}
+
+### SUBROUTINES
+
+
+sub Startup {
+
+    while(ContinueRun()) {
 
     ### verbose
     if ($verbose) {
@@ -117,6 +132,7 @@ while(1) {
     # measure payload
     my $start = Win32::GetTickCount();
 
+    # cpu statistics
     my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor");
 
     my ($cpupct, $userpct, $nicepct, $idlepct, $syspct, $irqpct);
@@ -140,28 +156,52 @@ while(1) {
     my $sumpct = 0;
     my $headpct = 0;
 
+
+    # memory statistics
+    my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
+
+    my ($memtotal, $memfree, $swaptotal, $swapfree);
+    foreach my $obj (in $wos) {
+        $memtotal  = $obj->{TotalVisibleMemorySize};
+        $memfree = $obj->{FreePhysicalMemory};
+        $swaptotal = $obj->{SizeStoredInPagingFiles};
+        $swapfree = $obj->{FreeSpaceInPagingFiles};
+    }
+
+    my $memused =  $memtotal - $memfree;
+    my $memusedpct = sprintf ("%.2f", ( $memused / $memtotal ) * 100 );
+    my $realfreepct = sprintf ("%.2f", ( $memfree / $memtotal ) * 100 );
+    my $swapused = $swaptotal - $swapfree;
+    my $swapusedpct = sprintf("%.2f", ($swaptotal - $swapfree) / $swaptotal * 100); 
+    
+
+    # end payload
     my $end = Win32::GetTickCount() - $start;
     my $stime = ($interval * 1000) - $end;
 
     # output time
     my $tnow = int(gettimeofday);
 
-    cktime();
+    # cktime for rotation
+    if (RunningAsService()) {
+        cktime();
+    }
 
     ### verbose
     if ($verbose) {
         writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
     }
 
+    # time drift adjustment
     if ($last_time > 0) {
+
         my $drift = $tnow - $last_time;
 
         if ($drift > $interval) {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
-
+            writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
 	    ### verbose
 	    if ($verbose) {
                 writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
@@ -169,7 +209,7 @@ while(1) {
 
             putraw($tfix,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct, $swapusedpct, $swapused
 	           );
 
             $stime -= $delta * 1000;
@@ -190,7 +230,7 @@ while(1) {
 
             putraw($tfix,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
 	           );
 
             $stime += $ext * 1000;
@@ -202,7 +242,8 @@ while(1) {
 
             putraw($tnow,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,
+	       $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
 	           );
 	    $last_time = $tnow;
 
@@ -215,37 +256,72 @@ while(1) {
 
         putraw($tnow,
 	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp
+	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,
+	       $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
 	       );
 
 
-        ### Check for end
-        last if ++$loop == $loop_max;
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
 
-        # my $stime = ($interval * 1000) - $elapsed;
-        #print "sleep: $stime msec\n";
-
-        #$tcheck += $interval;
         $last_time = $tnow;
 
         ### Interval
         Win32::Sleep($stime);
     }
+
+    if (!RunningAsService()) {
+        # check count, interval
+        last if ++$loop == $loop_max;
+    }
+
+    }
 }
 
 
-### SUBROUTINES
+sub Interactive {
+    Install();
+    Startup();
+}
+
+
+sub Install {
+
+    $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
+    $Config{Description} = "Kronometrix $recid Service";
+
+    return;
+}
+
+
+sub remove {
+    Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
+
+    return;
+}
+
+
 
 # print_raw - print krd raw data
 #
 sub putraw {
     my ($traw, $total, $sum, $head, $user, $sys, $idle, $irq, 
-        $rq, $prc, $thr) = @_;
+        $rq, $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, 
+	$supct, $su, $suf, $sut) = @_;
 
-    printf $rawlog "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
-       $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
-       $prc, $thr;
-
+    if (!RunningAsService()) {
+        printf
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d\n",
+        $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
+        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, $supct, $su, $suf, $sut;
+    } else {
+        printf $rawlog
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d\n",
+        $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
+        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, $supct, $su, $suf, $sut;
+    }
 }
 
 
@@ -500,7 +576,7 @@ sub rotate {
         push @krd_files, $krd;
     }
 
-    if ($verbose_flag == 1) {
+    if ($verbose == 1) {
         printf "%s %d\n", 
                "info: rotate - copying krd data files:", $#krd_files +1;
     }
@@ -547,9 +623,11 @@ sub get_yesterday {
 sub usage {
     print STDERR <<END;
 USAGE: sysrec [-hV] | [interval [count]]
- e.g. sysrec 5        print continuously, every 5 seconds
-      sysrec 1 5      print 5 times, every 1 second
-      sysrec .5       print continuously, every 0.5 seconds
+ eg. 
+  sysrec                 # default CLI mode, print system stats
+  sysrec 1 5             # print system stats 5 times, every 1s
+  sysrec --install auto  # run as a service, every 60s
+  sysrec --remove        # stop and remove the service 
 
  FIELDS:
   CPU
@@ -566,29 +644,23 @@ USAGE: sysrec [-hV] | [interval [count]]
    #11 threads    : number of threads in the system, number
 
   MEM
-   #15 memusedpct : size of used memory in percent, number
-   #16 memused    : size of used memory in kilobytes, number
-   #17 memfree    : size of free memory in kilobytes, number
-   #18 memtotal   : size of memory in kilobytes, number
-   #19 buffers    : size of buffers used from memory in kilobytes, number
-   #20 cached     : size of cached memory in kilobytes, number
-   #21 realfree   : size of memory is real free, number
-                     (memfree+buffers+cached)
-   #22 realfreepct: size of memory real free in percent of total memory, number
-   #23 swapusedpct: size of used swap space in percent, number
-   #24 swapused   : size of swap space is used is kilobytes, number
-   #25 swapfree   : size of swap space is free in kilobytes, number
-   #26 swaptotal  : size of swap space in kilobytes, number
-   #27 swapcached : memory that once was swapped out, is swapped back in 
-                     but still also is in the swapfile, number
+   #12 memusedpct : size of used memory in percent, number
+   #13 memused    : size of used memory in kilobytes, number
+   #14 memfree    : size of free memory in kilobytes, number
+   #15 memtotal   : size of memory in kilobytes, number
+   #16 realfreepct: size of memory real free in percent of total memory, number
+   #17 swapusedpct: size of used swap space in percent, number
+   #18 swapused   : size of swap space is used is kilobytes, number
+   #19 swapfree   : size of swap space is free in kilobytes, number
+   #20 swaptotal  : size of swap space in kilobytes, number
 
   DISK
-   #28 reads      : disk read requests per second, rate
-   #29 rkbytes    : read bytes per second, in KB, rate
+   #21 reads      : disk read requests per second, rate
+   #22 rkbytes    : read bytes per second, in KB, rate
    #30 writes     : disk write requests per second, rate
    #31 wkbytes    : write bytes per second, in KB, rate
-   #32 sumrws     : disk read+write requests per second, rate
-   #33 sumrwkbs   : read+write Kbytes per second, rate
+   #32 sumrw      : disk read+write requests per second, rate
+   #33 sumrwkb    : read+write Kbytes per second, rate
 
   NET
    #34 rxkbytes   : received bytes per seccond, in KB, rate
@@ -611,7 +683,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.13, 2015-05-31 2104
+sysrec: 1.0.14, 2015-07-23 1454
 END
     exit 0;
 }

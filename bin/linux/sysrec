@@ -357,13 +357,13 @@ USAGE: sysrec [-hV] | [interval [count]]
    #29 rkbytes    : read bytes per second, in KB, rate
    #30 writes     : disk write requests per second, rate
    #31 wkbytes    : write bytes per second, in KB, rate
-   #32 sumrws     : disk read+write requests per second, rate
-   #33 sumrwkbs   : read+write Kbytes per second, rate
+   #32 sumrw      : disk read+write requests per second, rate
+   #33 sumrwkb    : read+write Kbytes per second, rate
 
   NET
    #34 rxkbytes   : received bytes per seccond, in KB, rate
    #35 txkbytes   : transmitted bytes per second, in KB, rate 
-   #36 sumrxtxkbs : received + transmitted bytes per second, in KB, rate
+   #36 sumrxtxkb  : received + transmitted bytes per second, in KB, rate
    #37 rxerr      : number of errors while received pkt per second, rate
    #38 txerr      : number of errors while transmitting pkt per second, rate
    #39 rxdrop     : number of rx packets that were dropped per second, rate

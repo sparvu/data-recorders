@@ -1,8 +1,8 @@
 {
   "log" : {
-    "current_path" : "/opt/kronometrix/log/current",
-    "base_path" : "/opt/kronometrix/log",
-    "daily_path" : "/opt/kronometrix/log/daily"
+    "current_path" : "C:\\Kronometrix\\log\\current",
+    "base_path" : "C:\\Kronometrix\\log",
+    "daily_path" : "C:\\Kronometrix\\log\\daily"
   },
   "transport" : {
     "data_file" : [

@@ -8,7 +8,7 @@ Platforms
    CloudLinux 5.11 x86_64, i386
    Debian GNU/Linux 7 (wheezy) x86_64, i386
    Ubuntu Server Edition 10.04+ x86_64, i386
-   Raspbian GNU/Linux 7 (wheezy) armv6
+   Raspbian GNU/Linux 7 (wheezy) armv6, armv7
 
    Note: Kernel: minim 2.6+ x86_64, i386
 
@@ -18,10 +18,13 @@ Bug Management System
 
 Releases
 
-  1.0.14 29-06-2015 Release
+  1.0.14 28-07-2015 Release
+    sender should use HTTP::Tiny #51
     hdwrec on CloudLinux errors #40
-    update openssl-1.0.2c
-    update curl-7.43.0
+    linux installer should not create cron.allow by default #46
+    CPAN update June 2015 #43
+    update openssl-1.0.2d
+    removal curl
 
   1.0.13 06-06-2015 Release
     kronometrix_transport verbose during its operation #38

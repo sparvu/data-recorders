@@ -17,9 +17,11 @@
 #
 # (http://www.gnu.org/copyleft/gpl.html)
 
+package PerlSvc;
+
 use strict;
 use warnings;
-use Getopt::Std;
+use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
 use Time::HiRes qw(time gettimeofday);
@@ -34,12 +36,16 @@ use JSON;
 use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hvV') or usage();
-usage() if defined $main::opt_h;
-revision() if defined $main::opt_V;
 
-# set verbose log
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+Getopt::Long::Configure('bundling');
+my $result = GetOptions (
+                "v|verbose" => \$main::opt_v,
+                "h|help"    => \$main::opt_h,
+                "V|version" => \$main::opt_V
+                );
+
+usage() if ( $main::opt_h || ! $result );
+revision() if defined $main::opt_V;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -53,35 +59,27 @@ else {
     $loop_max = 1;
 }
 
-
-# verbose flag
-my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
-
-
 ### Variables
-my $update;                            # used for deltas
-my %cpudataOld;                        # cpu_stats data
-my $loop        = 0;                   # current loop number
-$main::opt_h    = 0;                   # help option
-$main::opt_V    = 0;                   # revision option
-my $tp          = 0;                   # time precision
+$main::opt_h    = 0;                      # help option
+$main::opt_V    = 0;                      # revision option
+$main::opt_v    = 0;                      # verbose option
+my $loop        = 0;                      # current loop number
 my $recid       = 'hdwrec';
-my $cf          = 'kronometrix.json';  # default json config
-my $logtime     = '0000';              # min time check 23:59
-my $maxtime     = '1';                 # max time check 00:01
-my $stime;                             # sleep timer
-local $|= 1;                           # autoflush
+my $cf          = 'kronometrix.json';     # default json config
+my $logtime     = '0000';                 # min time check 23:59
+my $hp          = 'NA';                   # hypervisor
+my $stime;                                # sleep timer
+$|= 1;                                    # autoflush
+
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+our %Config = (ServiceName => "$recid");
 
 
 ### MAIN BODY
 
 # how often do we trigger (seconds)?
 my $first_interval = $interval;
-
-# check interval input
-if ( $interval =~ /\./ ) {
-   $tp = 3;
-}
 
 # read configuration
 my $cdata = open_config($cf);
@@ -95,7 +93,7 @@ my $fkrd  = $clog . "\\" . $recid . ".krd";
 my $log = open_file($fname);
 
 # open raw data
-my $rawlog = open_file($fkrd);
+my $rawlog;
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
@@ -105,7 +103,29 @@ my $last_time = 0;
 
 writelog ("info: started");
 
-while(1) {
+unless (defined &ContinueRun) {
+    *ContinueRun = sub { return 1 };
+    *RunningAsService = sub { return 0 };
+    Interactive();
+}
+
+if (RunningAsService()) {
+    if ($interval == 1 && $loop_max == 1) {
+        $interval = 60;
+        $loop_max = 2**32;
+    }
+
+    $rawlog = open_file($fkrd);
+}
+
+
+### SUBROUTINES
+
+
+sub Startup {
+
+    while(ContinueRun()) {
+
 
     ### verbose
     if ($verbose) {
@@ -124,6 +144,9 @@ while(1) {
     foreach my $obj (in $wproc) {
         $hdw = $obj->{AddressWidth};
     }
+
+    if ($hdw == 64) { $hdw = "x86_64"; }
+    else { $hdw = "x86"; }
 
 
     # os, relos, kernel build
@@ -154,7 +177,7 @@ while(1) {
 
     my $uptime = get_uptime ($lastboot, $currtime);
 
-    # get no of disks
+    # get no of physical disks
     # Win32_DiskDrive Class
     my $wd = $wmi->InstancesOf("Win32_DiskDrive");
     my $ndisk = 0;
@@ -162,11 +185,6 @@ while(1) {
         $ndisk++;
     }
 
-
-    #my $wd2 = $wmi->ExecQuery("SELECT Name FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk where name != '_Total'", "WQL", 0x10 | 0x20 );
-    #foreach my $obj (in $wd2) {
-    #    print "$obj->{Name}\n";
-    #}
 
     # get no of NICs
     # Win32_NetworkAdapterConfiguration
@@ -185,7 +203,10 @@ while(1) {
     # output time
     my $tnow = int(gettimeofday);
 
-    cktime();
+    # cktime for rotation
+    if (RunningAsService()) {
+        cktime();
+    }
 
     ### verbose
     if ($verbose) {
@@ -206,9 +227,8 @@ while(1) {
                 writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-              $tfix , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
-              $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+            putraw($tfix , $host, $hdw, $hp, $os, $relos, $kernel, $pcpu, 
+	           $vcpu, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
 
             $stime -= $delta * 1000;
             $last_time = $tfix;
@@ -226,9 +246,8 @@ while(1) {
                 writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-              $tfix, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
-              $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+            putraw($tfix, $host, $hdw, $hp, $os, $relos, $kernel, $pcpu, 
+	           $vcpu, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
 
             $stime += $ext * 1000;
 	    $last_time = $tfix;
@@ -237,9 +256,8 @@ while(1) {
 
 	} else {
 
-            printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-              $tnow, $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
-              $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+            putraw($tnow, $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, 
+	           $vcpu, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
 
 	    $last_time = $tnow;
 
@@ -250,27 +268,51 @@ while(1) {
     # 1st loop, last_time always 0
     } else {
 
-        printf $rawlog "%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-           $tnow , $host, $hdw, lc($os), $relos, $kernel, $pcpu, $vcpu,
-           $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+        putraw($tnow , $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, 
+	       $vcpu, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
 
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
 
-        ### Check for end
-        last if ++$loop == $loop_max;
-
-        # my $stime = ($interval * 1000) - $elapsed;
-        #print "sleep: $stime msec\n";
-
-        #$tcheck += $interval;
         $last_time = $tnow;
 
         ### Interval
         Win32::Sleep($stime);
     }
+
+    
+    if (!RunningAsService()) {
+        # check count, interval
+        last if ++$loop == $loop_max;
+    }
+    }
 }
 
 
-### SUBROUTINES
+sub Interactive {
+    Install();
+    Startup();
+}
+
+
+sub Install {
+
+    $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
+    $Config{Description} = "Kronometrix $recid Service";
+
+    return;
+}
+
+
+sub remove {
+
+    Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
+
+    return;
+}
+
 
 # chklog - check log directory
 #
@@ -522,7 +564,7 @@ sub rotate {
         push @krd_files, $krd;
     }
 
-    if ($verbose_flag == 1) {
+    if ($verbose == 1) {
         printf "%s %d\n", 
                "info: rotate - copying krd data files:", $#krd_files +1;
     }
@@ -564,29 +606,53 @@ sub get_yesterday {
 }
 
 
+sub putraw {
+
+    my ($traw , $host, $hdw, $hp, $os, $relos, $kernel, $pcpu, $vcpu,
+        $memtotal, $swaptotal, $ndisk, $nnic, $uptime ) = @_;
+
+    if (!RunningAsService()) {
+
+        printf "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+            $traw , $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, $vcpu,
+            $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+
+    } else {
+
+        printf $rawlog 
+	    "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+             $traw , $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, $vcpu,
+             $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+    }
+}
+
+
+
 # usage - print usage and exit
 #
 sub usage {
     print STDERR <<END;
 USAGE: hdwrec [-hV] | [interval [count]]
- e.g. hdwrec 5       print continuously every 5 seconds
-      hdwrec 1 5     print 5 times, every 1 second
+ eg. 
+  hdwrec                 # default CLI mode, print system inventory data
+  hdwrec 1 5             # print system inventory data 5 times, every 1s
+  hdwrec --install auto  # run as a service, every 60s
+  hdwrec --remove        # stop and remove the service
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
   #02 hostname   : hostname
   #03 hdw        : machine hardware name
-  #04 hypervisor : name of the hypervisor, string
-  #05 os         : name of the operating system, string
-  #06 relos      : release number of operating system, string
-  #07 kernel     : kernel version and release number
-  #08 pcpu       : number of physical installed CPUs, number
-  #09 vcpu       : number of virtual CPUs, number
-  #10 memtotal   : total physical memory installed, number
-  #11 swaptotal  : total physical swap installed, number
-  #12 disks      : total number of disks, number
-  #13 nics       : total number of NICs, number
-  #14 uptime     : total number of NICs, number
+  #04 os         : name of the operating system, string
+  #05 relos      : release number of operating system, string
+  #06 kernel     : kernel version and release number
+  #07 pcpu       : number of physical installed CPUs, number
+  #08 vcpu       : number of virtual CPUs, number
+  #09 memtotal   : total physical memory installed, number
+  #10 swaptotal  : total physical swap installed, number
+  #11 disks      : total number of physical disks, number
+  #12 nics       : total number of physical NICs, number
+  #13 uptime     : system uptime, string 
 END
     exit 0;
 }
@@ -596,7 +662,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.13, 2015-05-30 1445
+hdwrec: 1.0.14, 2015-07-23 1456
 END
     exit 0;
 }
