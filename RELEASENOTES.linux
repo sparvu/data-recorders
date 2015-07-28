@@ -18,7 +18,7 @@ Bug Management System
 
 Releases
 
-  1.0.14 26-07-2015 Release
+  1.0.14 28-07-2015 Release
     sender should use HTTP::Tiny #51
     hdwrec on CloudLinux errors #40
     linux installer should not create cron.allow by default #46
