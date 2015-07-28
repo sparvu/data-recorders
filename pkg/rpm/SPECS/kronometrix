@@ -138,9 +138,7 @@ if [ $1 -eq 1 ]; then
     chown -R krmx:krmx /opt/kronometrix/log || :
 
     # cronjobs
-    if [ ! -f /etc/cron.allow ]; then
-        echo "krmx" > /etc/cron.allow 2>/dev/null || :
-    else
+    if [ -f /etc/cron.allow ]; then
         if ! grep krmx /etc/cron.allow >/dev/null; then
             echo "krmx" >> /etc/cron.allow 2>/dev/null || :
         fi
