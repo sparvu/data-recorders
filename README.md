@@ -1,3 +1,11 @@
+
+ _                                         _        _      
+| | ___ __ ___  _ __   ___  _ __ ___   ___| |_ _ __(_)_  __
+| |/ / '__/ _ \| '_ \ / _ \| '_ ` _ \ / _ \ __| '__| \ \/ /
+|   <| | | (_) | | | | (_) | | | | | |  __/ |_| |  | |>  < 
+|_|\_\_|  \___/|_| |_|\___/|_| |_| |_|\___|\__|_|  |_/_/\_\
+                                                           
+
 ## Overview
 
 All recorded observations we call them raw data. Raw data is produced by a monitoring agent, part of a data source.  This set of data is not modified, altered or changed in any way.
