@@ -131,12 +131,6 @@ while (1) {
         $os = $distro;
     }
 
-    # get os, relos
-    # if(my $distro = $dl->distribution_name()) {
-    #     $relos = $dl->distribution_version();
-    #     $os = $distro;
-    #}
-
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
     foreach my $i (split /, /, $si->{interfaces} ) {
