@@ -132,10 +132,10 @@ while (1) {
     }
 
     # get os, relos
-    if(my $distro = $dl->distribution_name()) {
-        $relos = $dl->distribution_version();
-        $os = $distro;
-    }
+    # if(my $distro = $dl->distribution_name()) {
+    #     $relos = $dl->distribution_version();
+    #     $os = $distro;
+    #}
 
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
