@@ -139,11 +139,12 @@ sub Startup {
 
     my %diskname = getdisk();
 
+    my $l;
     for my $k (keys %diskname) {
-        my $l = $diskname{$k};
+        $l = $diskname{$k};
 	$di = $k . " " . $l;
 	$l =~ s/\://;
-	$dkey = lc "disk$k$l";
+	$dkey = lc "disk" . $k . "_" . $l;
 
 	# print "disk $k $l\n";
 	# print "di $di\n";
@@ -151,10 +152,19 @@ sub Startup {
     }
     # print "Disks: " . keys(%diskname);
 
+    # Inventory data
+    my ($lsize, $lfree, $lfreepct);
+    my $wdinv = $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
+
+    foreach my $obj (in $wdinv) {
+        $lsize = $obj->{Size} / ( 1024 * 1024 * 1024);
+    }
+
     # Performance Metrics
     # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
     # Where Name='0 C:'
-    my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
+    # my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
+    my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk Where Name='$l:'");
 
     foreach my $obj (in $wdstat) {
         $reads = $obj->{DiskReadsPerSec};
@@ -165,10 +175,13 @@ sub Startup {
         $wkbytes = $obj->{DiskWriteBytesPerSec} / 1024;
         $avgwkbytes = $obj->{AvgDiskBytesPerWrite} / 1024;
         $wtimepct = $obj->{DiskWritesPerSec};
+        $lfree = $obj->{FreeMegaBytes} / 1024;
+        $lfreepct = $obj->{PercentFreeSpace};
     }
+    print "$di Size: $lsize Free: $lfree GB, Free: $lfreepct%\n";
 
     #if (defined ($reads) and defined($writes) ) {
-        $dstats{$dkey} = "$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct";
+        $dstats{$dkey} = "$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct:$lsize:$lfree:$lfreepct";
     #}
 
     # print "dstats size=" .  keys(%dstats);
@@ -207,7 +220,8 @@ sub Startup {
 
             putraw($tfix, $dkey, 
 	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct
+		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
+		   $lsize,  $lfree  , $lfreepct
 	           );
 
             $stime -= $delta * 1000;
@@ -228,7 +242,8 @@ sub Startup {
 
             putraw($tfix, $dkey, 
 	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct
+		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
+		   $lsize,  $lfree  , $lfreepct
 	           );
 
             $stime += $ext * 1000;
@@ -240,7 +255,8 @@ sub Startup {
 
             putraw($tnow, $dkey, 
 	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct
+		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
+		   $lsize,  $lfree  , $lfreepct
 	           );
 	    $last_time = $tnow;
 
@@ -253,7 +269,8 @@ sub Startup {
 
         putraw($tnow, $dkey, 
 	       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-	       $writes, $wkbytes, $avgwkbytes, $wtimepct
+	       $writes, $wkbytes, $avgwkbytes, $wtimepct,
+	       $lsize,  $lfree  , $lfreepct
 	       );
 
 
@@ -340,19 +357,22 @@ sub getdisk {
 #
 sub putraw {
     my ($traw, $d, 
-        $r, $rkb, $avgrkb, $rt, 
-        $w, $wkb, $avgwkb, $wt) = @_;
+        $r ,  $rkb, $avgrkb, $rt, 
+        $w ,  $wkb, $avgwkb, $wt,
+	$ls,  $lf , $lfp) = @_;
 
     if (!RunningAsService()) {
-        printf "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d\n", 
+        printf "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d\n", 
 	       $traw, $d, 
-               $r, $rkb, $avgrkb, $rt, 
-               $w, $wkb, $avgwkb, $wt;
+               $r , $rkb, $avgrkb, $rt, 
+               $w , $wkb, $avgwkb, $wt,
+	       $ls, $lf , $lfp;
     } else {
-        printf $rawlog "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d\n", 
+        printf $rawlog "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d\n", 
 	       $traw, $d, 
-               $r, $rkb, $avgrkb, $rt, 
-               $w, $wkb, $avgwkb, $wt;
+               $r , $rkb, $avgrkb, $rt, 
+               $w , $wkb, $avgwkb, $wt,
+	       $ls, $lf , $lfp;
     }
 }
 
