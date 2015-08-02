@@ -88,11 +88,8 @@ my ( $blog, $clog, $dlog ) = getlog($cdata);
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
 
-# log, rawlog files
-my $log = open_file($fname);
-
 # open raw data
-my $rawlog;
+my ($log, $rawlog);
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")

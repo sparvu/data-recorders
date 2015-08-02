@@ -89,19 +89,14 @@ my ( $blog, $clog, $dlog ) = getlog($cdata);
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
 
-# open log file
-my $log = open_file($fname);
-
 # open raw data
-my $rawlog;
+my ($log, $rawlog);
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
 my $last_time = 0;
-
-writelog ("info: started");
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -116,6 +111,8 @@ if (RunningAsService()) {
     }
 
     $rawlog = open_file($fkrd);
+    $log = open_file($fname);
+    writelog ("info: started");
 }
 
 
@@ -129,7 +126,11 @@ sub Startup {
 
     ### verbose
     if ($verbose) {
-        writelog ("info: main - last_time=$last_time");
+        if (RunningAsService()) {
+            writelog ("info: main - last_time=$last_time");
+	} else {
+            print "info: main - last_time=$last_time";
+	}
     }
 
     # hostname# hostname
@@ -210,7 +211,11 @@ sub Startup {
 
     ### verbose
     if ($verbose) {
-        writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+        if (RunningAsService()) {
+            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+	} else {
+            print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)";
+	}
     }
 
     if ($last_time > 0) {
@@ -220,11 +225,19 @@ sub Startup {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
-            writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
+            if (RunningAsService()) {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
+            } else {
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)";
+	    }
 
 	    ### verbose
 	    if ($verbose) {
-                writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                if (RunningAsService()) {
+                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+		} else {
+                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
+		}
 	    }
 
             putraw($tfix , $host, $hdw, $hp, $os, $relos, $kernel, $pcpu, 
@@ -239,11 +252,20 @@ sub Startup {
 
             my $ext = $interval - $drift;
             my $tfix = $tnow + $ext;
-            writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
+            if (RunningAsService()) {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
+            } else {
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)"; 
+	    }
 
 	    ### verbose
 	    if ($verbose) {
-                writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                if (RunningAsService()) {
+                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+		} else {
+                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
+		}
+
 	    }
 
             putraw($tfix, $host, $hdw, $hp, $os, $relos, $kernel, $pcpu, 
