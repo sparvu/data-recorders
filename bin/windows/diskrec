@@ -132,7 +132,7 @@ sub Startup {
   
     my ($reads,  $rkbytes, $avgrkbytes, $rtimepct,
         $writes, $wkbytes, $avgwkbytes, $wtimepct );
-    my %dstats;
+    my %dstat;
     my ($di, $dkey);
 
     # measure payload
@@ -179,13 +179,13 @@ sub Startup {
         $lfree = $obj->{FreeMegaBytes} / 1024;
         $lfreepct = $obj->{PercentFreeSpace};
     }
-    print "$di Size: $lsize Free: $lfree GB, Free: $lfreepct%\n";
+    # print "$di Size: $lsize Free: $lfree GB, Free: $lfreepct%\n";
 
     #if (defined ($reads) and defined($writes) ) {
-        $dstats{$dkey} = "$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct:$lsize:$lfree:$lfreepct";
+        $dstat{$dkey} = "$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct:$lsize:$lfree:$lfreepct";
     #}
 
-    # print "dstats size=" .  keys(%dstats);
+    # print "dstat size=" .  keys(%dstat);
 
     # end payload
     my $end = Win32::GetTickCount() - $start;
@@ -232,11 +232,7 @@ sub Startup {
 		}
 	    }
 
-            putraw($tfix, $dkey, 
-	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-		   $lsize,  $lfree  , $lfreepct
-	           );
+            putraw($tfix, %dstat);
 
             $stime -= $delta * 1000;
             $last_time = $tfix;
@@ -263,11 +259,7 @@ sub Startup {
 		}
 	    }
 
-            putraw($tfix, $dkey, 
-	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-		   $lsize,  $lfree  , $lfreepct
-	           );
+            putraw($tfix, %dstat);
 
             $stime += $ext * 1000;
 	    $last_time = $tfix;
@@ -276,11 +268,8 @@ sub Startup {
 
 	} else {
 
-            putraw($tnow, $dkey, 
-	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-		   $lsize,  $lfree  , $lfreepct
-	           );
+            putraw($tnow, %dstat);
+
 	    $last_time = $tnow;
 
 	    Win32::Sleep($stime);
@@ -290,12 +279,7 @@ sub Startup {
     # 1st loop, last_time always 0
     } else {
 
-        putraw($tnow, $dkey, 
-	       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-	       $writes, $wkbytes, $avgwkbytes, $wtimepct,
-	       $lsize,  $lfree  , $lfreepct
-	       );
-
+        putraw($tnow, %dstat); 
 
         if (!RunningAsService()) {
             # check count, interval
@@ -324,17 +308,14 @@ sub Interactive {
 
 
 sub Install {
-
     $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
     $Config{Description} = "Kronometrix $recid Service";
-
     return;
 }
 
 
 sub remove {
     Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
-
     return;
 }
 
@@ -379,23 +360,20 @@ sub getdisk {
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ($traw, $d, 
-        $r ,  $rkb, $avgrkb, $rt, 
-        $w ,  $wkb, $avgwkb, $wt,
-	$ls,  $lf , $lfp) = @_;
+    my ($traw, %c)  = @_;
 
     if (!RunningAsService()) {
-        printf "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d\n", 
-	       $traw, $d, 
-               $r , $rkb, $avgrkb, $rt, 
-               $w , $wkb, $avgwkb, $wt,
-	       $ls, $lf , $lfp;
+
+        for my $k (sort keys %c) {
+            printf "%s:%s\n",
+                $traw, $c{$k};
+        }
     } else {
-        printf $rawlog "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d\n", 
-	       $traw, $d, 
-               $r , $rkb, $avgrkb, $rt, 
-               $w , $wkb, $avgwkb, $wt,
-	       $ls, $lf , $lfp;
+
+        for my $k (sort keys %c) {
+            printf $rawlog "%s:%s\n",
+                $traw, $c{$k};
+        }
     }
 }
 
@@ -653,7 +631,7 @@ sub get_yesterday {
 #
 sub usage {
     print STDERR <<END;
-USAGE: sysrec [-hV] | [interval [count]]
+USAGE: diskrec [-hV] | [interval [count]]
  eg. 
   diskrec                 # default CLI mode, print per disk stats
   diskrec 1 5             # print per disk stats 5 times, every 1s
