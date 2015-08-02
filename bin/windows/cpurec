@@ -77,8 +77,6 @@ our %Config = (ServiceName => "$recid");
 
 ### MAIN BODY
 
-# cpu properties
-my @cpu_params = qw(PercentIdleTime PercentProcessorTime PercentPriviledgedTime PercentUserTime PercentInterruptTime TimeStamp_Sys100NS);
 
 # read configuration
 my $cdata = open_config($cf);
@@ -100,8 +98,6 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $last_time = 0;
 
-writelog ("info: started");
-
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
     *RunningAsService = sub { return 0 };
@@ -115,7 +111,9 @@ if (RunningAsService()) {
     }
 
     $rawlog = open_file($fkrd);
+    writelog ("info: started");
 }
+
 
 ### SUBROUTINES
 
