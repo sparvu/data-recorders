@@ -135,9 +135,13 @@ sub Startup {
     my $start = Win32::GetTickCount();
 
     # Win32_PerfFormattedData_PerfOS_Processor
-    my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor") or 
-        die "Cannot get wmi0";
+    my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor") 
+        or die "Cannot get wmi0";
 
+    # per-cpu hash data
+    my %cstat;
+
+    # cpuid starts 0, 1st is ALL
     my $id = -1;
     foreach my $obj (in $wcpu) {
         $userpct = $obj->{PercentUserTime};
@@ -146,16 +150,20 @@ sub Startup {
         $syspct = $obj->{PercentPrivilegedTime};
         $irqpct = $obj->{PercentInterruptTime};
         $dpcpct = $obj->{PercentDPCTime};
-	if ($id == -1) {
-            print "cpuALL $userpct $syspct $irqpct $dpcpct $privpct $idlepct\n";
-	} else {
-            print "cpu$id $userpct $syspct $irqpct $dpcpct $privpct $idlepct\n";
+	if ($id >= 0) {
+	    # load cstat
+	    $cstat{$id} =
+	        "cpu$id:$userpct:$syspct:$irqpct:$dpcpct:$privpct:$idlepct";
         }
 	$id++;
     }
 
-    print "\n";
+    # print cstat structure
+    # print "cstat size=" . keys(%cstat) . "\n";
 
+    # for my $k (keys %cstat) {
+    #     print "$cstat{$k}\n";
+    # }
 
     # end payload
     my $end = Win32::GetTickCount() - $start;
@@ -189,11 +197,7 @@ sub Startup {
                 writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            #putraw($tfix, $dkey, 
-	    #       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-	#	   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-	#	   $lsize,  $lfree  , $lfreepct
-	#           );
+            putraw($tfix, %cstat);
 
             $stime -= $delta * 1000;
             $last_time = $tfix;
@@ -211,11 +215,7 @@ sub Startup {
                 writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            #putraw($tfix, $dkey, 
-	    #       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-	#	   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-	#	   $lsize,  $lfree  , $lfreepct
-	#           );
+            putraw($tfix, %cstat);
 
             $stime += $ext * 1000;
 	    $last_time = $tfix;
@@ -224,11 +224,8 @@ sub Startup {
 
 	} else {
 
-            #putraw($tnow, $dkey, 
-	    #       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		#   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-		#   $lsize,  $lfree  , $lfreepct
-	        #   );
+            putraw($tnow, %cstat);
+
 	    $last_time = $tnow;
 
 	    Win32::Sleep($stime);
@@ -238,11 +235,7 @@ sub Startup {
     # 1st loop, last_time always 0
     } else {
 
-       # putraw($tnow, $dkey, 
-#	       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-#	       $writes, $wkbytes, $avgwkbytes, $wtimepct,
-#	       $lsize,  $lfree  , $lfreepct
-#	       );
+        putraw($tnow, %cstat);
 
 
         if (!RunningAsService()) {
@@ -290,23 +283,20 @@ sub remove {
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ($traw, $d, 
-        $r ,  $rkb, $avgrkb, $rt, 
-        $w ,  $wkb, $avgwkb, $wt,
-	$ls,  $lf , $lfp) = @_;
+    my ($traw, %c)  = @_;
 
     if (!RunningAsService()) {
-        printf "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d\n", 
-	       $traw, $d, 
-               $r , $rkb, $avgrkb, $rt, 
-               $w , $wkb, $avgwkb, $wt,
-	       $ls, $lf , $lfp;
+
+	for my $k (sort keys %c) {
+            printf "%s:%s\n",
+	        $traw, $c{$k};
+	}
     } else {
-        printf $rawlog "%s:%s:%d:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d\n", 
-	       $traw, $d, 
-               $r , $rkb, $avgrkb, $rt, 
-               $w , $wkb, $avgwkb, $wt,
-	       $ls, $lf , $lfp;
+
+	for my $k (keys %c) {
+            printf $rawlog "%s:%s",
+	        $traw, $c{$k};
+	}
     }
 }
 
