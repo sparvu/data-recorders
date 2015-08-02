@@ -295,7 +295,7 @@ sub putraw {
     } else {
 
 	for my $k (sort keys %c) {
-            printf $rawlog "%s:%s",
+            printf $rawlog "%s:%s\n",
 	        $traw, $c{$k};
 	}
     }
