@@ -64,7 +64,7 @@ $main::opt_h    = 0;                      # help option
 $main::opt_V    = 0;                      # revision option
 $main::opt_v    = 0;                      # verbose option
 my $loop        = 0;                      # current loop number
-my $recid       = 'diskrec';
+my $recid       = 'cpurec';
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
@@ -129,62 +129,33 @@ sub Startup {
         writelog ("info: main - last_time=$last_time");
     }
 
-    my ($reads,  $rkbytes, $avgrkbytes, $rtimepct,
-        $writes, $wkbytes, $avgwkbytes, $wtimepct );
-    my %dstats;
-    my ($di, $dkey);
+    my ($userpct,  $idlepct , $syspct, $irqpct, $privpct, $dpcpct);
 
     # measure payload
     my $start = Win32::GetTickCount();
 
-    my %diskname = getdisk();
+    # Win32_PerfFormattedData_PerfOS_Processor
+    my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor") or 
+        die "Cannot get wmi0";
 
-    my $l;
-    for my $k (keys %diskname) {
-        $l = $diskname{$k};
-	$di = $k . " " . $l;
-	$l =~ s/\://;
-	$dkey = lc "disk" . $k . "_" . $l;
-
-	# print "disk $k $l\n";
-	# print "di $di\n";
-	# print "dkey=$dkey\n";
-    }
-    # print "Disks: " . keys(%diskname);
-
-    # Inventory data
-    my ($lsize, $lfree, $lfreepct);
-    my $wdinv = $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
-
-    foreach my $obj (in $wdinv) {
-        $lsize = $obj->{Size} / ( 1024 * 1024 * 1024);
+    my $id = -1;
+    foreach my $obj (in $wcpu) {
+        $userpct = $obj->{PercentUserTime};
+        $idlepct = $obj->{PercentIdleTime};
+        $privpct = $obj->{PercentProcessorTime};
+        $syspct = $obj->{PercentPrivilegedTime};
+        $irqpct = $obj->{PercentInterruptTime};
+        $dpcpct = $obj->{PercentDPCTime};
+	if ($id == -1) {
+            print "cpuALL $userpct $syspct $irqpct $dpcpct $privpct $idlepct\n";
+	} else {
+            print "cpu$id $userpct $syspct $irqpct $dpcpct $privpct $idlepct\n";
+        }
+	$id++;
     }
 
-    # Performance Metrics
-    # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
-    # Where Name='0 C:'
-    # my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
-    my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk Where Name='$l:'");
+    print "\n";
 
-    foreach my $obj (in $wdstat) {
-        $reads = $obj->{DiskReadsPerSec};
-        $rkbytes = $obj->{DiskReadBytesPerSec} / 1024;
-        $avgrkbytes = $obj->{AvgDiskBytesPerRead} / 1024;
-        $rtimepct = $obj->{DiskReadsPerSec};
-        $writes = $obj->{DiskWritesPerSec};
-        $wkbytes = $obj->{DiskWriteBytesPerSec} / 1024;
-        $avgwkbytes = $obj->{AvgDiskBytesPerWrite} / 1024;
-        $wtimepct = $obj->{DiskWritesPerSec};
-        $lfree = $obj->{FreeMegaBytes} / 1024;
-        $lfreepct = $obj->{PercentFreeSpace};
-    }
-    print "$di Size: $lsize Free: $lfree GB, Free: $lfreepct%\n";
-
-    #if (defined ($reads) and defined($writes) ) {
-        $dstats{$dkey} = "$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct:$lsize:$lfree:$lfreepct";
-    #}
-
-    # print "dstats size=" .  keys(%dstats);
 
     # end payload
     my $end = Win32::GetTickCount() - $start;
@@ -218,11 +189,11 @@ sub Startup {
                 writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            putraw($tfix, $dkey, 
-	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-		   $lsize,  $lfree  , $lfreepct
-	           );
+            #putraw($tfix, $dkey, 
+	    #       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
+	#	   $writes, $wkbytes, $avgwkbytes, $wtimepct,
+	#	   $lsize,  $lfree  , $lfreepct
+	#           );
 
             $stime -= $delta * 1000;
             $last_time = $tfix;
@@ -240,11 +211,11 @@ sub Startup {
                 writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 	    }
 
-            putraw($tfix, $dkey, 
-	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-		   $lsize,  $lfree  , $lfreepct
-	           );
+            #putraw($tfix, $dkey, 
+	    #       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
+	#	   $writes, $wkbytes, $avgwkbytes, $wtimepct,
+	#	   $lsize,  $lfree  , $lfreepct
+	#           );
 
             $stime += $ext * 1000;
 	    $last_time = $tfix;
@@ -253,11 +224,11 @@ sub Startup {
 
 	} else {
 
-            putraw($tnow, $dkey, 
-	           $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-		   $writes, $wkbytes, $avgwkbytes, $wtimepct,
-		   $lsize,  $lfree  , $lfreepct
-	           );
+            #putraw($tnow, $dkey, 
+	    #       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
+		#   $writes, $wkbytes, $avgwkbytes, $wtimepct,
+		#   $lsize,  $lfree  , $lfreepct
+	        #   );
 	    $last_time = $tnow;
 
 	    Win32::Sleep($stime);
@@ -267,11 +238,11 @@ sub Startup {
     # 1st loop, last_time always 0
     } else {
 
-        putraw($tnow, $dkey, 
-	       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
-	       $writes, $wkbytes, $avgwkbytes, $wtimepct,
-	       $lsize,  $lfree  , $lfreepct
-	       );
+       # putraw($tnow, $dkey, 
+#	       $reads,  $rkbytes, $avgrkbytes, $rtimepct,
+#	       $writes, $wkbytes, $avgwkbytes, $wtimepct,
+#	       $lsize,  $lfree  , $lfreepct
+#	       );
 
 
         if (!RunningAsService()) {
@@ -313,43 +284,6 @@ sub remove {
     Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
 
     return;
-}
-
-
-# getdisk -- get disks logic drive
-#
-sub getdisk {
-
-    my %disk;
-
-    # get physical disks
-    my ($di, $dd);
-    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
-    foreach my $disk (in $wd) {
-        $di = $disk->{Index};
-        $dd = $disk->{DeviceID};
-        $dd =~ s/\\/\\\\/sg;
-        # print "Physical Disk: $di $dd";
-
-        my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . $dd . '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
-
-        my $wpart = $wmi->ExecQuery($qpart);
-
-        foreach my $obj (in $wpart) {
-
-            my $d1 = $obj->{DeviceID};
-	    # print "$d1\n";
-
-            my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
-
-	    foreach my $lobj (in $wdrive) {
-                my $lid = $lobj->{DeviceID};
-	        $disk{$di} = $lid;
-	    }
-        }
-    }
-
-    return %disk;
 }
 
 
@@ -632,26 +566,19 @@ sub usage {
     print STDERR <<END;
 USAGE: sysrec [-hV] | [interval [count]]
  eg. 
-  diskrec                 # default CLI mode, print per disk stats
-  diskrec 1 5             # print per disk stats 5 times, every 1s
-  diskrec --install auto  # run as a service, every 60s
-  diskrec --remove        # stop and remove the service 
+  cpurec                 # default CLI mode, print per disk stats
+  cpurec 1 5             # print per disk stats 5 times, every 1s
+  cpurec --install auto  # run as a service, every 60s
+  cpurec --remove        # stop and remove the service 
 
  FIELDS:
    #01 timestamp  : seconds since Epoch, time
- 
-   #02 reads      : disk reads per sec, rate
-   #03 rkbytes    : disk read KBytes per sec, rate
-   #04 avgrkbytes : average disk KBytes per read, number
-   #05 rtimepct   : disk read time, percentage 
-
-   #05 writes     : disk writes per sec, rate
-   #06 wkbytes    : disk write KBytes per sec, rate
-   #07 avgwkbytes : average disk KBytes per write, number
-   #05 wtimepct   : disk write time, percentage 
-
-   #08 totalkb    : disk KBytes per sec, rate 
-   #09 avgttime   : 
+   #02 userpct    : disk reads per sec, rate
+   #03 syspct     : disk read KBytes per sec, rate
+   #04 irqpct     : average disk KBytes per read, number
+   #05 dpcpct     : disk read time, percentage 
+   #05 privpct    : disk writes per sec, rate
+   #06 idlepct    : disk write KBytes per sec, rate
 END
     exit 0;
 }
