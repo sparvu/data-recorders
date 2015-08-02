@@ -129,7 +129,7 @@ sub Startup {
         writelog ("info: main - last_time=$last_time");
     }
 
-    my ($userpct,  $idlepct , $syspct, $irqpct, $privpct, $dpcpct);
+    my ($userpct,  $idlepct , $syspct, $irqpct, $privpct, $dpcpct, $totalpct);
 
     # measure payload
     my $start = Win32::GetTickCount();
@@ -150,10 +150,11 @@ sub Startup {
         $syspct = $obj->{PercentPrivilegedTime};
         $irqpct = $obj->{PercentInterruptTime};
         $dpcpct = $obj->{PercentDPCTime};
+	$totalpct = 100 - $idlepct;
 	if ($id >= 0) {
 	    # load cstat
 	    $cstat{$id} =
-	        "cpu$id:$userpct:$syspct:$irqpct:$dpcpct:$privpct:$idlepct";
+	        "cpu$id:$userpct:$syspct:$irqpct:$dpcpct:$privpct:$idlepct:$totalpct";
         }
 	$id++;
     }
@@ -293,7 +294,7 @@ sub putraw {
 	}
     } else {
 
-	for my $k (keys %c) {
+	for my $k (sort keys %c) {
             printf $rawlog "%s:%s",
 	        $traw, $c{$k};
 	}
@@ -562,13 +563,15 @@ USAGE: sysrec [-hV] | [interval [count]]
   cpurec --remove        # stop and remove the service 
 
  FIELDS:
-   #01 timestamp  : seconds since Epoch, time
-   #02 userpct    : disk reads per sec, rate
-   #03 syspct     : disk read KBytes per sec, rate
-   #04 irqpct     : average disk KBytes per read, number
-   #05 dpcpct     : disk read time, percentage 
-   #05 privpct    : disk writes per sec, rate
-   #06 idlepct    : disk write KBytes per sec, rate
+   #01 timestamp  : seconds since Epoch, timea
+   #02 cpuid      : CPU id
+   #03 userpct    : userspace cpu utilization, percentage
+   #04 syspct     : system cpu utilization, percentage
+   #05 irqpct     : irq cpu utilization, percentage
+   #06 dpcpct     : deffered procedure calls cpu, percentage 
+   #07 privpct    : priviledged cpu tutilization (dpc+irq), percentage
+   #08 idlepct    : idle cpu utilization, percentage
+   #09 totalpct   : total cpu utilization, percentage
 END
     exit 0;
 }
@@ -578,7 +581,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.15, 2015-08-02 0020
+cpurec: 1.0.15, 2015-08-02 1359
 END
     exit 0;
 }
