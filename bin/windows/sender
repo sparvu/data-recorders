@@ -287,7 +287,6 @@ sub Interactive {
 
 sub Install {
 
-
     $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
     $Config{Description} = "Kronometrix $transid Service";
 

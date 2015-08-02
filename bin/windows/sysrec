@@ -192,7 +192,7 @@ sub Startup {
     if ($verbose) {
         if (RunningAsService()) {
             writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
-	} else 
+	} else {
             print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)";
 	}
     }
