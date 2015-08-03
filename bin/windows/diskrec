@@ -37,15 +37,18 @@ use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
+my ($l, $v, $h, $V) = 0;
+
 Getopt::Long::Configure('bundling');
 my $result = GetOptions (
-                "v|verbose" => \$main::opt_v,
-                "h|help"    => \$main::opt_h,
-                "V|version" => \$main::opt_V
+                "l|logging" => \$l,
+                "v|verbose" => \$v,
+                "h|help"    => \$h,
+                "V|version" => \$V
                 );
 
-usage() if ( $main::opt_h || ! $result );
-revision() if defined $main::opt_V;
+usage() if ( $h || ! $result );
+revision() if defined $V;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -60,9 +63,6 @@ else {
 }
 
 ### Variables
-$main::opt_h    = 0;                      # help option
-$main::opt_V    = 0;                      # revision option
-$main::opt_v    = 0;                      # verbose option
 my $loop        = 0;                      # current loop number
 my $recid       = 'diskrec';
 my $cf          = 'kronometrix.json';     # default json config
@@ -70,7 +70,8 @@ my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
 $|= 1;                                    # autoflush
 
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose = defined $v ? $v : 0;
+my $logging = defined $l ? $l : 0;
 
 our %Config = (ServiceName => "$recid");
 
@@ -93,6 +94,12 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
 my $last_time = 0;
+
+if ($logging) {
+    $rawlog = open_file($fkrd);
+    $log = open_file($fname);
+    writelog ("info: started");
+}
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -124,12 +131,21 @@ sub Startup {
         if (RunningAsService()) {
             writelog ("info: main - last_time=$last_time");
 	} else {
-            print "info: main - last_time=$last_time";
+            writelog ("info: main - last_time=$last_time") if ($logging);
+            print "info: main - last_time=$last_time\n";
 	}
     }
-  
-    my ($reads,  $rkbytes, $avgrkbytes, $rtimepct,
-        $writes, $wkbytes, $avgwkbytes, $wtimepct );
+ 
+
+    # metrics
+    my ($reads,  $rkbytes, $rbusypct,
+        $writes, $wkbytes, $wbusypct,
+	$ql,     $aql,     $busypct,    
+	$iops,   $rwkbytes );
+
+    my ($lsize, $lfree, $lfreepct);
+
+    # disk stats
     my %dstat;
     my ($di, $dkey);
 
@@ -152,9 +168,9 @@ sub Startup {
     # print "Disks: " . keys(%diskname);
 
     # Inventory data
-    my ($lsize, $lfree, $lfreepct);
     my $wdinv = $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
 
+    
     foreach my $obj (in $wdinv) {
         $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
     }
@@ -166,24 +182,30 @@ sub Startup {
     my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk Where Name='$l:'");
 
     foreach my $obj (in $wdstat) {
-        $reads = $obj->{DiskReadsPerSec};
-        $rkbytes = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
-        $avgrkbytes = sprintf "%.2f", $obj->{AvgDiskBytesPerRead} / 1024;
-        $rtimepct = $obj->{PercentDiskReadTime};
-        $writes = $obj->{DiskWritesPerSec};
-        $wkbytes = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
-        $avgwkbytes = sprintf "%.2f", $obj->{AvgDiskBytesPerWrite} / 1024;
-        $wtimepct = $obj->{PercentDiskWriteTime};
-        $lfree = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
+        $reads    = $obj->{DiskReadsPerSec};
+        $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
+        $rbusypct = $obj->{PercentDiskReadTime};
+
+        $writes   = $obj->{DiskWritesPerSec};
+        $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
+        $wbusypct = $obj->{PercentDiskWriteTime};
+
+	$ql       = $obj->{CurrentDiskQueueLength};
+	$aql      = $obj->{AvgDiskQueueLength};
+	$busypct  = $obj->{PercentDiskTime};
+
+	$iops     = $obj->{DiskTransfersPerSec};
+	$rwkbytes = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
+
+        $lfree    = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
         $lfreepct = $obj->{PercentFreeSpace};
     }
     # print "$di Size: $lsize Free: $lfree GB, Free: $lfreepct%\n";
 
     #if (defined ($reads) and defined($writes) ) {
-        $dstat{$dkey} = "$dkey:$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct:$lsize:$lfree:$lfreepct";
+        $dstat{$dkey} = "$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
     #}
 
-    # print "dstat size=" .  keys(%dstat);
 
     # end payload
     my $end = Win32::GetTickCount() - $start;
@@ -202,6 +224,7 @@ sub Startup {
         if (RunningAsService()) {
             writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
 	} else {
+            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)") if ($logging);
             print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)\n";
 	}
     }
@@ -218,6 +241,7 @@ sub Startup {
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
             } else {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
                 print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n"; 
 	    }
 
@@ -226,6 +250,7 @@ sub Startup {
                 if (RunningAsService()) {
                     writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
+                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
                     print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
@@ -245,6 +270,7 @@ sub Startup {
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
             } else {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
                 print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n";
 	    }
 
@@ -253,6 +279,7 @@ sub Startup {
                 if (RunningAsService()) {
                     writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
+                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
                     print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
@@ -360,17 +387,24 @@ sub getdisk {
 sub putraw {
     my ($traw, %c)  = @_;
 
-    if (!RunningAsService()) {
-
-        for my $k (sort keys %c) {
-            printf "%s:%s\n",
-                $traw, $c{$k};
-        }
-    } else {
+    if (RunningAsService()) {
 
         for my $k (sort keys %c) {
             printf $rawlog "%s:%s\n",
                 $traw, $c{$k};
+        }
+
+    } else {
+        if ( $logging ) {
+
+            for my $k (sort keys %c) {
+                printf $rawlog "%s:%s\n", $traw, $c{$k};
+            }
+
+        }
+
+        for my $k (sort keys %c) {
+            printf "%s:%s\n", $traw, $c{$k};
         }
     }
 }
@@ -629,28 +663,31 @@ sub get_yesterday {
 #
 sub usage {
     print STDERR <<END;
-USAGE: diskrec [-hV] | [interval [count]]
+USAGE: diskrec [-lhV] | [interval [count]]
  eg. 
-  diskrec                 # default CLI mode, print per disk stats
-  diskrec 1 5             # print per disk stats 5 times, every 1s
-  diskrec --install auto  # run as a service, every 60s
+  diskrec                 # default CLI mode, print per disk stats stdout
+  diskrec 1 5             # print per disk stats 5 times, every 1s stdout
+  diskrec -l 25           # print per disk stats every 25s stdout and krdlog
+  diskrec --install auto  # run as a service, every 60s, default krdlog
   diskrec --remove        # stop and remove the service 
 
  FIELDS:
    #01 timestamp  : seconds since Epoch, time
- 
+
    #02 reads      : disk reads per sec, rate
    #03 rkbytes    : disk read KBytes per sec, rate
-   #04 avgrkbytes : average disk KBytes per read, number
-   #05 rtimepct   : disk read time, percentage 
+   #04 rbusypct   : busy time servicing read requests, number
 
    #05 writes     : disk writes per sec, rate
    #06 wkbytes    : disk write KBytes per sec, rate
-   #07 avgwkbytes : average disk KBytes per write, number
-   #05 wtimepct   : disk write time, percentage 
+   #07 wbusypct   : busy time servicing write requests, number
 
-   #08 totalkb    : disk KBytes per sec, rate 
-   #09 avgttime   : 
+   #08 ql         : current r+w, including in service, queue length
+   #09 aql        : avg r+w queue length
+   #10 busypct    : busy time r+w requests, number
+
+   #11 iops       : disk read+write requests per second, rate
+   #12 rwkbytes   : read+write Kbytes per second, rate
 END
     exit 0;
 }
@@ -660,12 +697,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.15, 2015-08-02 0020
+diskrec: 1.0.15, 2015-08-03 1353
 END
     exit 0;
 }
-
-
-
-
-
