@@ -161,50 +161,46 @@ sub Startup {
 	$l =~ s/\://;
 	$dkey = lc "disk" . $k . "_" . $l;
 
-	# print "disk $k $l\n";
-	# print "di $di\n";
-	# print "dkey=$dkey\n";
-    }
-    # print "Disks: " . keys(%diskname);
 
-    # Inventory data
-    my $wdinv = $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
+        # Inventory data
+        my $wdinv = 
+	 $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
 
     
-    foreach my $obj (in $wdinv) {
-        $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
+        foreach my $obj (in $wdinv) {
+            $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
+        }
+
+        # Performance Metrics
+        # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
+        # Where Name='0 C:'
+        # my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
+        my $wdstat = 
+	$wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk Where Name='$l:'");
+
+        foreach my $obj (in $wdstat) {
+            $reads    = $obj->{DiskReadsPerSec};
+            $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
+            $rbusypct = $obj->{PercentDiskReadTime};
+
+            $writes   = $obj->{DiskWritesPerSec};
+            $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
+            $wbusypct = $obj->{PercentDiskWriteTime};
+
+    	    $ql       = $obj->{CurrentDiskQueueLength};
+	    $aql      = $obj->{AvgDiskQueueLength};
+	    $busypct  = $obj->{PercentDiskTime};
+
+       	    $iops     = $obj->{DiskTransfersPerSec};
+	    $rwkbytes = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
+
+            $lfree    = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
+            $lfreepct = $obj->{PercentFreeSpace};
+        }
+
+        $dstat{$dkey} = 
+	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
     }
-
-    # Performance Metrics
-    # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
-    # Where Name='0 C:'
-    # my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
-    my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk Where Name='$l:'");
-
-    foreach my $obj (in $wdstat) {
-        $reads    = $obj->{DiskReadsPerSec};
-        $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
-        $rbusypct = $obj->{PercentDiskReadTime};
-
-        $writes   = $obj->{DiskWritesPerSec};
-        $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
-        $wbusypct = $obj->{PercentDiskWriteTime};
-
-	$ql       = $obj->{CurrentDiskQueueLength};
-	$aql      = $obj->{AvgDiskQueueLength};
-	$busypct  = $obj->{PercentDiskTime};
-
-	$iops     = $obj->{DiskTransfersPerSec};
-	$rwkbytes = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
-
-        $lfree    = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
-        $lfreepct = $obj->{PercentFreeSpace};
-    }
-    # print "$di Size: $lsize Free: $lfree GB, Free: $lfreepct%\n";
-
-    #if (defined ($reads) and defined($writes) ) {
-        $dstat{$dkey} = "$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
-    #}
 
 
     # end payload
