@@ -37,15 +37,18 @@ use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
+my ($l, $v, $h, $V) = 0;
+
 Getopt::Long::Configure('bundling');
 my $result = GetOptions (
-                "v|verbose" => \$main::opt_v,
-                "h|help"    => \$main::opt_h,
-                "V|version" => \$main::opt_V
+                "l|logging" => \$l,
+                "v|verbose" => \$v,
+                "h|help"    => \$h,
+                "V|version" => \$V
                 );
 
-usage() if ( $main::opt_h || ! $result );
-revision() if defined $main::opt_V;
+usage() if ( $h || ! $result );
+revision() if defined $V;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -60,9 +63,6 @@ else {
 }
 
 ### Variables
-$main::opt_h    = 0;                      # help option
-$main::opt_V    = 0;                      # revision option
-$main::opt_v    = 0;                      # verbose option
 my $loop        = 0;                      # current loop number
 my $recid       = 'cpurec';
 my $cf          = 'kronometrix.json';     # default json config
@@ -70,7 +70,8 @@ my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
 $|= 1;                                    # autoflush
 
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose = defined $v ? $v : 0;
+my $logging = defined $l ? $l : 0;
 
 our %Config = (ServiceName => "$recid");
 
@@ -94,6 +95,12 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
 my $last_time = 0;
+
+if ($logging) {
+    $rawlog = open_file($fkrd);
+    $log = open_file($fname);
+    writelog ("info: started");
+}
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -125,6 +132,7 @@ sub Startup {
         if (RunningAsService()) {
             writelog ("info: main - last_time=$last_time");
 	} else { 
+            writelog ("info: main - last_time=$last_time") if ($logging);
 	    print "info: main - last_time=$last_time\n";
 	}
     }
@@ -183,6 +191,7 @@ sub Startup {
         if(RunningAsService()) {
             writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
 	} else {
+            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)") if($logging);
             print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)\n";
 	}
     }
@@ -196,9 +205,10 @@ sub Startup {
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
             if (RunningAsService()) {	    
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); } 
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); }
 	    else {
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)";
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if($logging);
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n";
 
 	    }
 
@@ -207,7 +217,8 @@ sub Startup {
                 if (RunningAsService()) {	    
                     writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		}  else {
-                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
+                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if($logging);
+                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 
 	    }
@@ -227,7 +238,8 @@ sub Startup {
             if (RunningAsService()) {	    
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
             } else {
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)";
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if($logging);
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n";
 	    }
 
 	    ### verbose
@@ -235,7 +247,8 @@ sub Startup {
                 if (RunningAsService()) {	    
                     writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)"); 
 		} else {
-                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
+                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if($logging);
+                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
 
@@ -309,17 +322,24 @@ sub remove {
 sub putraw {
     my ($traw, %c)  = @_;
 
-    if (!RunningAsService()) {
-
-	for my $k (sort keys %c) {
-            printf "%s:%s\n",
-	        $traw, $c{$k};
-	}
-    } else {
+    if (RunningAsService()) {
 
 	for my $k (sort keys %c) {
             printf $rawlog "%s:%s\n",
 	        $traw, $c{$k};
+	}
+
+    } else {
+        if ( $logging ) {
+
+	    for my $k (sort keys %c) {
+                printf $rawlog "%s:%s\n", $traw, $c{$k};
+	    }
+
+	}
+
+	for my $k (sort keys %c) {
+            printf "%s:%s\n", $traw, $c{$k};
 	}
     }
 }
@@ -578,16 +598,17 @@ sub get_yesterday {
 #
 sub usage {
     print STDERR <<END;
-USAGE: sysrec [-hV] | [interval [count]]
+USAGE: cpurec [-lhV] | [interval [count]]
  eg. 
-  cpurec                 # default CLI mode, print per disk stats
-  cpurec 1 5             # print per disk stats 5 times, every 1s
-  cpurec --install auto  # run as a service, every 60s
+  cpurec                 # default CLI mode, print per disk stats stdout
+  cpurec 1 5             # print per cpu stats 5 times, every 1s stdout
+  cpurec -l 25           # print per cpu stats, every 25s stdout and krdlog
+  cpurec --install auto  # run as a service, every 60s, default krdlog
   cpurec --remove        # stop and remove the service 
 
  FIELDS:
    #01 timestamp  : seconds since Epoch, timea
-   #02 cpuid      : CPU id
+   #02 cpuid      : cpu id
    #03 userpct    : userspace cpu utilization, percentage
    #04 syspct     : system cpu utilization, percentage
    #05 irqpct     : irq cpu utilization, percentage
@@ -604,7 +625,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.15, 2015-08-02 1359
+cpurec: 1.0.15, 2015-08-03 1319
 END
     exit 0;
 }
