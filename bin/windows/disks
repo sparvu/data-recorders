@@ -32,15 +32,16 @@ use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
+my ($h, $V);
+
 Getopt::Long::Configure('bundling');
 my $result = GetOptions (
-                "v|verbose" => \$main::opt_v,
-                "h|help"    => \$main::opt_h,
-                "V|version" => \$main::opt_V
+                "h|help"    => \$h,
+                "V|version" => \$V
                 );
 
-usage() if ( $main::opt_h || ! $result );
-revision() if defined $main::opt_V;
+usage() if ( $h || ! $result );
+revision() if defined $V;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -55,14 +56,9 @@ else {
 }
 
 ### Variables
-$main::opt_h    = 0;                      # help option
-$main::opt_V    = 0;                      # revision option
-$main::opt_v    = 0;                      # verbose option
 my $loop        = 0;                      # current loop number
 my $recid       = 'disks';
 $|= 1;                                    # autoflush
-
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
 
 
 ### MAIN BODY
@@ -110,6 +106,7 @@ sub usage {
 USAGE: disks [-hV]
  eg. 
   disks 
+END
     exit 0;
 }
 
@@ -118,7 +115,7 @@ USAGE: disks [-hV]
 #
 sub revision {
     print STDERR <<END;
-disks: 1.0.14, 2015-07-24 1420
+disks: 1.0.15, 2015-08-03 1111
 END
     exit 0;
 }

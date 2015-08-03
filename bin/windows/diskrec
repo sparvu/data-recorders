@@ -180,7 +180,7 @@ sub Startup {
     # print "$di Size: $lsize Free: $lfree GB, Free: $lfreepct%\n";
 
     #if (defined ($reads) and defined($writes) ) {
-        $dstat{$dkey} = "$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct:$lsize:$lfree:$lfreepct";
+        $dstat{$dkey} = "$dkey:$reads:$rkbytes:$avgrkbytes:$rtimepct:$writes:$wkbytes:$avgwkbytes:$wtimepct:$lsize:$lfree:$lfreepct";
     #}
 
     # print "dstat size=" .  keys(%dstat);
