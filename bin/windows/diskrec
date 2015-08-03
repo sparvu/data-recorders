@@ -167,13 +167,13 @@ sub Startup {
 
     foreach my $obj (in $wdstat) {
         $reads = $obj->{DiskReadsPerSec};
-        $rkbytes = $obj->{DiskReadBytesPerSec} / 1024;
-        $avgrkbytes = $obj->{AvgDiskBytesPerRead} / 1024;
-        $rtimepct = $obj->{DiskReadsPerSec};
+        $rkbytes = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
+        $avgrkbytes = sprintf "%.2f", $obj->{AvgDiskBytesPerRead} / 1024;
+        $rtimepct = $obj->{PercentDiskReadTime};
         $writes = $obj->{DiskWritesPerSec};
-        $wkbytes = $obj->{DiskWriteBytesPerSec} / 1024;
-        $avgwkbytes = $obj->{AvgDiskBytesPerWrite} / 1024;
-        $wtimepct = $obj->{DiskWritesPerSec};
+        $wkbytes = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
+        $avgwkbytes = sprintf "%.2f", $obj->{AvgDiskBytesPerWrite} / 1024;
+        $wtimepct = $obj->{PercentDiskWriteTime};
         $lfree = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
         $lfreepct = $obj->{PercentFreeSpace};
     }
@@ -202,7 +202,7 @@ sub Startup {
         if (RunningAsService()) {
             writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
 	} else {
-            print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)";
+            print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)\n";
 	}
     }
 
@@ -218,7 +218,7 @@ sub Startup {
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
             } else {
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)"; 
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n"; 
 	    }
 
 	    ### verbose
@@ -226,7 +226,7 @@ sub Startup {
                 if (RunningAsService()) {
                     writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
-                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
+                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
 
@@ -245,7 +245,7 @@ sub Startup {
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
             } else {
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)";
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n";
 	    }
 
 	    ### verbose
@@ -253,7 +253,7 @@ sub Startup {
                 if (RunningAsService()) {
                     writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
-                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
+                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
 

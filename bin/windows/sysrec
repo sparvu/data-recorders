@@ -143,9 +143,10 @@ sub Startup {
     my $start = Win32::GetTickCount();
 
     # cpu statistics
+    # 10 metrics
     my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor");
 
-    my ($cpupct, $userpct, $nicepct, $idlepct, $syspct, $irqpct);
+    my ($cpupct, $userpct, $idlepct, $syspct, $irqpct);
     foreach my $obj (in $wcpu) {
         $cpupct = $obj->{PercentProcessorTime};
         $userpct = $obj->{PercentUserTime};
@@ -168,6 +169,7 @@ sub Startup {
 
 
     # memory statistics
+    # 9 metrics
     my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
 
     my ($memtotal, $memfree, $swaptotal, $swapfree);
@@ -185,11 +187,27 @@ sub Startup {
     my $swapusedpct = sprintf("%.2f", ($swaptotal - $swapfree) / $swaptotal * 100); 
    
     # Disk IO statistics
+    # 8 metrics
+    my ($reads,  $rkbytes, $rbusypct, 
+        $writes, $wkbytes, $wbusypct,
+	$iops, $krw );
 
+    my $wdstat = 
+        $wmi->InstancesOf("Win32_PerfFormattedData_PerfDisk_PhysicalDisk");
+
+    foreach my $obj (in $wdstat) {
+        $reads = $obj->{DiskReadsPerSec};
+        $rkbytes = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
+        $rbusypct = $obj->{PercentDiskReadTime};
+        $writes = $obj->{DiskWritesPerSec};
+        $wkbytes = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
+        $wbusypct = $obj->{PercentDiskWriteTime};
+	$iops  = $obj->{DiskTransfersPerSec};
+	$krw   = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
+    }
 
 
     # NIC IO statistics
-
 
     # end payload
     my $end = Win32::GetTickCount() - $start;
@@ -241,8 +259,14 @@ sub Startup {
 	    }
 
             putraw($tfix,
-	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct, $swapusedpct, $swapused
+	           $cpupct,  $sumpct, $headpct, $userpct, $syspct,
+		   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
+	           $memusedpct,  $memused,     $memfree,  $memtotal, 
+	           $realfreepct, $swapusedpct, $swapused, $swapfree, 
+		   $swaptotal, 
+	           $reads,       $rkbytes,     $rbusypct,
+	           $writes,      $wkbytes,     $wbusypct,
+	           $iops,        $krw
 	           );
 
             $stime -= $delta * 1000;
@@ -272,8 +296,14 @@ sub Startup {
 	    }
 
             putraw($tfix,
-	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,               $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
+	           $cpupct,  $sumpct, $headpct, $userpct, $syspct,
+		   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
+	           $memusedpct,  $memused,     $memfree,  $memtotal, 
+	           $realfreepct, $swapusedpct, $swapused, $swapfree, 
+		   $swaptotal, 
+	           $reads,       $rkbytes,     $rbusypct,
+	           $writes,      $wkbytes,     $wbusypct,
+	           $iops,        $krw
 	           );
 
             $stime += $ext * 1000;
@@ -284,10 +314,16 @@ sub Startup {
 	} else {
 
             putraw($tnow,
-	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,
-	       $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
+	           $cpupct,  $sumpct, $headpct, $userpct, $syspct,
+		   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
+	           $memusedpct,  $memused,     $memfree,  $memtotal, 
+	           $realfreepct, $swapusedpct, $swapused, $swapfree, 
+		   $swaptotal, 
+	           $reads,       $rkbytes,     $rbusypct,
+	           $writes,      $wkbytes,     $wbusypct,
+	           $iops,        $krw
 	           );
+
 	    $last_time = $tnow;
 
 	    Win32::Sleep($stime);
@@ -298,11 +334,15 @@ sub Startup {
     } else {
 
         putraw($tnow,
-	       $cpupct,$sumpct,$headpct,$userpct,$syspct,$idlepct,$irqpct,
-	       $runqsz, $proc, $lwp, $memusedpct, $memused, $memfree, $memtotal,
-	       $realfreepct, $swapusedpct, $swapused, $swapfree, $swaptotal
+	       $cpupct,  $sumpct, $headpct, $userpct, $syspct,
+	       $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
+	       $memusedpct,  $memused,     $memfree,  $memtotal, 
+	       $realfreepct, $swapusedpct, $swapused, $swapfree, 
+	       $swaptotal, 
+	       $reads,       $rkbytes,     $rbusypct,
+	       $writes,      $wkbytes,     $wbusypct,
+	       $iops,        $krw
 	       );
-
 
         if (!RunningAsService()) {
             # check count, interval
@@ -350,31 +390,62 @@ sub remove {
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ($traw, $total, $sum, $head, $user, $sys, $idle, $irq, 
-        $rq, $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, 
-	$supct, $su, $suf, $sut) = @_;
+    my ($traw, 
+        $cpu,   $sum, $head, 
+	$user,  $sys, $idle, 
+	$irq,   $rq,  $prc,  $thr, 
+	$mupct, $mu,  $mf,   $mt,  $mfpct,
+	$supct, $su,  $suf,  $sut,
+        $r,     $rk,  $rb,
+	$w,     $wk,  $wb,
+	$i,     $k
+	) = @_;
 
     if (RunningAsService()) {
 
         printf $rawlog
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d\n",
-        $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
-        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, $supct, $su, $suf, $sut;
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%.2f\n",
+        $traw, 
+        $cpu,   $sum, $head, 
+	$user,  $sys, $idle, 
+	$irq,   $rq,  $prc,  $thr, 
+	$mupct, $mu,  $mf,   $mt,  $mfpct,
+	$supct, $su,  $suf,  $sut,
+        $r,     $rk,  $rb,
+	$w,     $wk,  $wb,
+	$i,     $k;
 
     } else {
 
         if ( $logging ) {
 
-            printf $rawlog "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d\n",
-        $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
-        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, $supct, $su, $suf, $sut;
+            printf $rawlog 
+            "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%.2f\n",
+                $traw, 
+                $cpu,   $sum, $head, 
+        	$user,  $sys, $idle, 
+        	$irq,   $rq,  $prc,  $thr, 
+        	$mupct, $mu,  $mf,   $mt,  $mfpct,
+        	$supct, $su,  $suf,  $sut,
+                $r,     $rk,  $rb,
+	        $w,     $wk,  $wb,
+	        $i,     $k;
 
 	}
 
+
         printf
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d\n",
-        $traw, $total, $sum, $head, $user, $sys, $idle, $irq, $rq,
-        $prc, $thr, $mupct, $mu, $mf, $mt, $mfpct, $supct, $su, $suf, $sut;
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%.2f\n",
+        $traw, 
+        $cpu,   $sum, $head, 
+	$user,  $sys, $idle, 
+	$irq,   $rq,  $prc,  $thr, 
+	$mupct, $mu,  $mf,   $mt,  $mfpct,
+	$supct, $su,  $suf,  $sut,
+        $r,     $rk,  $rb,
+	$w,     $wk,  $wb,
+	$i,     $k;
+
     }
 
     return;
@@ -714,10 +785,12 @@ USAGE: sysrec [-lhvV] | [interval [count]]
   DISK
    #21 reads      : disk read requests per second, rate
    #22 rkbytes    : read bytes per second, in KB, rate
-   #30 writes     : disk write requests per second, rate
-   #31 wkbytes    : write bytes per second, in KB, rate
-   #32 sumrw      : disk read+write requests per second, rate
-   #33 sumrwkb    : read+write Kbytes per second, rate
+   #23 rbusypct   : busy time servicing read requests, number
+   #24 writes     : disk write requests per second, rate
+   #25 wkbytes    : write bytes per second, in KB, rate
+   #26 wbusypct   : busy time servicing write requests, number
+   #27 iops       : disk read+write requests per second, rate
+   #28 rwkbytes   : read+write Kbytes per second, rate
 
   NET
    #34 rxkbytes   : received bytes per seccond, in KB, rate
