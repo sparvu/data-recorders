@@ -37,15 +37,18 @@ use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
+my ($l, $v, $h, $V) = 0;
+
 Getopt::Long::Configure('bundling');
 my $result = GetOptions (
-                "v|verbose" => \$main::opt_v,
-                "h|help"    => \$main::opt_h,
-                "V|version" => \$main::opt_V
+                "l|logging" => \$l,
+                "v|verbose" => \$v,
+                "h|help"    => \$h,
+                "V|version" => \$V
                 );
 
-usage() if ( $main::opt_h || ! $result );
-revision() if defined $main::opt_V;
+usage() if ( $h || ! $result );
+revision() if defined $V;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -60,9 +63,6 @@ else {
 }
 
 ### Variables
-$main::opt_h    = 0;                      # help option
-$main::opt_V    = 0;                      # revision option
-$main::opt_v    = 0;                      # verbose option
 my $loop        = 0;                      # current loop number
 my $recid       = 'hdwrec';
 my $cf          = 'kronometrix.json';     # default json config
@@ -71,10 +71,10 @@ my $hp          = 'NA';                   # hypervisor
 my $stime;                                # sleep timer
 $|= 1;                                    # autoflush
 
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose = defined $v ? $v : 0;
+my $logging = defined $l ? $l : 0;
 
 our %Config = (ServiceName => "$recid");
-
 
 ### MAIN BODY
 
@@ -97,6 +97,12 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
 my $last_time = 0;
+
+if ($logging) {
+    $rawlog = open_file($fkrd);
+    $log = open_file($fname);
+    writelog ("info: started");
+}
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -129,6 +135,7 @@ sub Startup {
         if (RunningAsService()) {
             writelog ("info: main - last_time=$last_time");
 	} else {
+            writelog ("info: main - last_time=$last_time") if ($logging);
             print "info: main - last_time=$last_time";
 	}
     }
@@ -214,6 +221,7 @@ sub Startup {
         if (RunningAsService()) {
             writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
 	} else {
+            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)") if ($logging);
             print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)";
 	}
     }
@@ -228,6 +236,7 @@ sub Startup {
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
             } else {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
                 print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)";
 	    }
 
@@ -236,6 +245,7 @@ sub Startup {
                 if (RunningAsService()) {
                     writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
+                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
                     print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
 		}
 	    }
@@ -255,6 +265,7 @@ sub Startup {
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
             } else {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
                 print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)"; 
 	    }
 
@@ -263,6 +274,7 @@ sub Startup {
                 if (RunningAsService()) {
                     writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
+                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
                     print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
 		}
 
@@ -630,22 +642,47 @@ sub get_yesterday {
 
 sub putraw {
 
-    my ($traw , $host, $hdw, $hp, $os, $relos, $kernel, $pcpu, $vcpu,
-        $memtotal, $swaptotal, $ndisk, $nnic, $uptime ) = @_;
+    my ($traw , 
+        $host,      $hdw,   $hp, 
+	$os,        $relos, $kernel, 
+	$pcpu,      $vcpu,  $memtotal, 
+	$swaptotal, $ndisk, $nnic, $uptime ) = @_;
 
-    if (!RunningAsService()) {
-
-        printf "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-            $traw , $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, $vcpu,
-            $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
-
-    } else {
+    if (RunningAsService()) {
 
         printf $rawlog 
-	    "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
-             $traw , $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, $vcpu,
-             $memtotal, $swaptotal, $ndisk, $nnic, $uptime;
+            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+            $traw , 
+            $host,      $hdw,   $hp, 
+	    lc($os),    $relos, $kernel, 
+	    $pcpu,      $vcpu,  $memtotal, 
+	    $swaptotal, $ndisk, $nnic, $uptime;
+
+
+    } else {
+    
+        if ( $logging ) {
+
+            printf $rawlog 
+                "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+                $traw , 
+                $host,      $hdw,   $hp, 
+	        lc($os),    $relos, $kernel, 
+	        $pcpu,      $vcpu,  $memtotal, 
+	        $swaptotal, $ndisk, $nnic, $uptime;
+	}
+
+
+        printf
+            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
+            $traw , 
+            $host,      $hdw,   $hp, 
+	    lc($os),    $relos, $kernel, 
+	    $pcpu,      $vcpu,  $memtotal, 
+	    $swaptotal, $ndisk, $nnic, $uptime;
     }
+
+    return;
 }
 
 
@@ -654,11 +691,12 @@ sub putraw {
 #
 sub usage {
     print STDERR <<END;
-USAGE: hdwrec [-hV] | [interval [count]]
+USAGE: hdwrec [-lhV] | [interval [count]]
  eg. 
-  hdwrec                 # default CLI mode, print system inventory data
-  hdwrec 1 5             # print system inventory data 5 times, every 1s
-  hdwrec --install auto  # run as a service, every 60s
+  hdwrec                 # default CLI mode, print system inventory data stdout
+  hdwrec 1 5             # print system inventory 5 times, every 1s stdout
+  hdwrec -l 25           # print system inventory, every 25s stdout and krdlog
+  hdwrec --install auto  # run as a service, every 60s, default krdlog
   hdwrec --remove        # stop and remove the service
 
  FIELDS:
@@ -684,7 +722,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.15, 2015-08-02 1558
+hdwrec: 1.0.15, 2015-08-03 1537
 END
     exit 0;
 }
