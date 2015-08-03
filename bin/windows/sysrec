@@ -187,21 +187,27 @@ sub Startup {
     my $swapusedpct = sprintf("%.2f", ($swaptotal - $swapfree) / $swaptotal * 100); 
    
     # Disk IO statistics
-    # 8 metrics
+    # 10 metrics
     my ($reads,  $rkbytes, $rbusypct, 
         $writes, $wkbytes, $wbusypct,
+	$busypct,$aql, 
 	$iops, $krw );
 
     my $wdstat = 
         $wmi->InstancesOf("Win32_PerfFormattedData_PerfDisk_PhysicalDisk");
 
     foreach my $obj (in $wdstat) {
-        $reads = $obj->{DiskReadsPerSec};
-        $rkbytes = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
+        $reads    = $obj->{DiskReadsPerSec};
+        $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
         $rbusypct = $obj->{PercentDiskReadTime};
-        $writes = $obj->{DiskWritesPerSec};
-        $wkbytes = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
+
+        $writes   = $obj->{DiskWritesPerSec};
+        $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
         $wbusypct = $obj->{PercentDiskWriteTime};
+
+	$aql      = $obj->{AvgDiskQueueLength};
+	$busypct  = $obj->{PercentDiskTime};
+
 	$iops  = $obj->{DiskTransfersPerSec};
 	$krw   = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
     }
@@ -266,6 +272,7 @@ sub Startup {
 		   $swaptotal, 
 	           $reads,       $rkbytes,     $rbusypct,
 	           $writes,      $wkbytes,     $wbusypct,
+		   $aql,         $busypct,
 	           $iops,        $krw
 	           );
 
@@ -300,9 +307,10 @@ sub Startup {
 		   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
 	           $memusedpct,  $memused,     $memfree,  $memtotal, 
 	           $realfreepct, $swapusedpct, $swapused, $swapfree, 
-		   $swaptotal, 
+		   $swaptotal,
 	           $reads,       $rkbytes,     $rbusypct,
 	           $writes,      $wkbytes,     $wbusypct,
+		   $aql,         $busypct,
 	           $iops,        $krw
 	           );
 
@@ -321,6 +329,7 @@ sub Startup {
 		   $swaptotal, 
 	           $reads,       $rkbytes,     $rbusypct,
 	           $writes,      $wkbytes,     $wbusypct,
+		   $aql,         $busypct,
 	           $iops,        $krw
 	           );
 
@@ -341,6 +350,7 @@ sub Startup {
 	       $swaptotal, 
 	       $reads,       $rkbytes,     $rbusypct,
 	       $writes,      $wkbytes,     $wbusypct,
+	       $aql,         $busypct,
 	       $iops,        $krw
 	       );
 
@@ -398,13 +408,14 @@ sub putraw {
 	$supct, $su,  $suf,  $sut,
         $r,     $rk,  $rb,
 	$w,     $wk,  $wb,
+	$q,     $b,
 	$i,     $k
 	) = @_;
 
     if (RunningAsService()) {
 
         printf $rawlog
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%.2f\n",
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
         $traw, 
         $cpu,   $sum, $head, 
 	$user,  $sys, $idle, 
@@ -413,6 +424,7 @@ sub putraw {
 	$supct, $su,  $suf,  $sut,
         $r,     $rk,  $rb,
 	$w,     $wk,  $wb,
+	$q,     $b,
 	$i,     $k;
 
     } else {
@@ -420,7 +432,7 @@ sub putraw {
         if ( $logging ) {
 
             printf $rawlog 
-            "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%.2f\n",
+            "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
                 $traw, 
                 $cpu,   $sum, $head, 
         	$user,  $sys, $idle, 
@@ -429,13 +441,14 @@ sub putraw {
         	$supct, $su,  $suf,  $sut,
                 $r,     $rk,  $rb,
 	        $w,     $wk,  $wb,
+	        $q,     $b,
 	        $i,     $k;
 
 	}
 
 
         printf
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%.2f\n",
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
         $traw, 
         $cpu,   $sum, $head, 
 	$user,  $sys, $idle, 
@@ -444,6 +457,7 @@ sub putraw {
 	$supct, $su,  $suf,  $sut,
         $r,     $rk,  $rb,
 	$w,     $wk,  $wb,
+	$q,     $b,
 	$i,     $k;
 
     }
@@ -789,8 +803,10 @@ USAGE: sysrec [-lhvV] | [interval [count]]
    #24 writes     : disk write requests per second, rate
    #25 wkbytes    : write bytes per second, in KB, rate
    #26 wbusypct   : busy time servicing write requests, number
-   #27 iops       : disk read+write requests per second, rate
-   #28 rwkbytes   : read+write Kbytes per second, rate
+   #27 aql        : avg r+w queue length 
+   #28 busypct    : busy time r+w requests, number
+   #29 iops       : disk read+write requests per second, rate
+   #30 rwkbytes   : read+write Kbytes per second, rate
 
   NET
    #34 rxkbytes   : received bytes per seccond, in KB, rate
