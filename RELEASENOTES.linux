@@ -18,9 +18,10 @@ Bug Management System
 Releases
 
   1.0.15 04-08-2015 Release
-    CloudLinux 6.6 hdwrec errors #52
+    raw2day should not use libcurl #55
     diskrec reports zram as a storage device #54
-
+    CloudLinux 6.6 hdwrec errors #52
+   
   1.0.14 28-07-2015 Release
     sender should use HTTP::Tiny #51
     hdwrec on CloudLinux errors #40
