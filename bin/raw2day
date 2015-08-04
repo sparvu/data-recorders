@@ -28,7 +28,6 @@ use File::Copy;
 use Sys::Hostname;
 use File::Basename;
 use Digest::SHA;
-use WWW::Curl::Easy;
 
 
 # Debug Only
@@ -56,7 +55,6 @@ $main::opt_h   = 0;                   # help option
 $main::opt_V   = 0;                   # revision option
 $main::opt_n   = 0;                   # null files option
 $main::opt_c   = 0;                   # null files option
-my ($hproxy, $hproxyport);
 
 my $conf;
 
@@ -377,7 +375,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-raw2day: 1.0.13, 2015-04-24 0000 
+raw2day: 1.0.15, 2015-08-04 1324
 END
     exit 0;
 }
