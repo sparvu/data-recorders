@@ -66,7 +66,7 @@ else {
 my $loop        = 0;                      # current loop number
 my $recid       = 'sysrec';
 my $cf          = 'kronometrix.json';     # default json config
-my $logtime     = '1405';                 # min time check 23:59
+my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
 $|= 1;                                    # autoflush
 
