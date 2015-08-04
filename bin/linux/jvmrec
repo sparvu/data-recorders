@@ -461,7 +461,7 @@ END
 sub revision {
 
     print STDERR <<END;
-jvmrec: 1.0.14, 2015-06-11 2220
+jvmrec: 1.0.15, 2015-08-04 1021
 END
     exit 0;
 }
