@@ -552,14 +552,15 @@ sub rotate {
         push @krd_files, $krd;
     }
 
-    if ($verbose == 1) {
-        printf "%s %d\n", 
-               "info: rotate - copying krd data files:", $#krd_files +1;
+    my $nkrd = $#krd_files + 1;
+
+    if ($verbose) {
+        writelog ("info: rotate - copying krd data files: $nkrd");
     }
 
     my $cnt = 0;
     # check if we have anything to move to daily
-    if (($#krd_files+1) > 0) {
+    if ( $nkrd > 0 ) {
    
         # make daily target dir
         unless(mkdir $dest) {
@@ -567,8 +568,13 @@ sub rotate {
         }
 
         foreach my $rawfile (@krd_files) {
-            move("$rawdir/$rawfile","$dest") or
+            copy("$rawdir/$rawfile","$dest") or
                 writelog ("error: rotate - copying previous daily data, $!");
+
+            # reset to zero
+            open my $ftkrd, ">", "$rawdir/$rawfile";
+            close $ftkrd;
+
             $cnt++;
         }
     }
