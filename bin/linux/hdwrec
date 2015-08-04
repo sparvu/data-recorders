@@ -122,13 +122,38 @@ while (1) {
 
     # get os, relos
     if(my $distro = $dl->distribution_name()) {
+        $os = $distro;
+
         if (defined($dl->distribution_version()) && 
            ($dl->distribution_version()) ne "" ) {
             $relos = $dl->distribution_version();
         } else {
             $relos = "NA";
+            if ($distro eq "redhat") {
+                my $distid;
+                ($os, $relos, $distid) = get_lsb("$lsb");
+                if (defined $os) {
+                    $os = "cloudlinux" if ( $os eq "CloudLinuxServer" );
+                } else {
+                    if (-e "/etc/redhat-release") {
+                        open my $rhelrel, "<", "/etc/redhat-release"
+                          or die "error: cannot find redhat-release: $!\n";
+                        while (<$rhelrel>) {
+                            chomp;
+                            if ($_ =~ /^CloudLinux/o) {
+                                $os="cloudlinux";
+                                $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
+                            } else {
+                                $os = "NA";
+                                $relos = "NA";
+                            }
+                        }
+                        close $rhelrel;
+                    } else { $os = "NA"; $relos = "NA"; }
+                }
+            }
+ 
         }
-        $os = $distro;
     }
 
     # fetch NICS, reset here if NIC is removed/added
@@ -200,7 +225,7 @@ sub get_disks {
         next if ($_ =~ m/^\./);
 
         # exceptions
-        next if ($_ =~ m/^loop|^ram/);
+        next if ($_ =~ m/^loop|^ram|^zram/);
         next if ($_ =~ m/^fd0|^hdc/);
         next if ($_ =~ m/^md(?:[0-9])/);
         next if ($_ =~ m/^sr(?:[0-9])$/);
