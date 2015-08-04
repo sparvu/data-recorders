@@ -2,12 +2,11 @@
 Kronometrix Data Recording
 
 Platforms
-   CentOS release 5.11 (Final) x86_64, i386
-   CentOS release 6.6 (Final) x86_64, i386
-   CentOS Linux release 7.0.1406 (Core) x86_64, i386
-   CloudLinux 5.11 x86_64, i386
+   CentOS release 5,6,7 (Final) x86_64, i386
+   CloudLinux 5,6 x86_64
+   Oracle Linux Server 6 x86_64
    Debian GNU/Linux 7 (wheezy) x86_64, i386
-   Ubuntu Server Edition 10.04+ x86_64, i386
+   Ubuntu Server Edition 10,12,14 x86_64, i386
    Raspbian GNU/Linux 7 (wheezy) armv6, armv7
 
    Note: Kernel: minim 2.6+ x86_64, i386
@@ -17,6 +16,10 @@ Bug Management System
 
 
 Releases
+
+  1.0.15 04-08-2015 Release
+    CloudLinux 6.6 hdwrec errors #52
+    diskrec reports zram as a storage device #54
 
   1.0.14 28-07-2015 Release
     sender should use HTTP::Tiny #51
