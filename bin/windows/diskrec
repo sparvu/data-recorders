@@ -667,11 +667,11 @@ sub usage {
     print STDERR <<END;
 USAGE: diskrec [-lhV] | [interval [count]]
  eg. 
-  diskrec                 # default CLI mode, print per disk stats stdout
-  diskrec 1 5             # print per disk stats 5 times, every 1s stdout
-  diskrec -l 25           # print per disk stats every 25s stdout and krdlog
-  diskrec --install auto  # run as a service, every 60s, default krdlog
-  diskrec --remove        # stop and remove the service 
+  diskrec.exe                 # default CLI mode, print per disk stats stdout
+  diskrec.exe 1 5             # print per disk stats 5 times, every 1s stdout
+  diskrec.exe -l 25           # print per disk stats every 25s stdout, krdlog
+  diskrec.exe --install auto  # run as a service, every 60s, default krdlog
+  diskrec.exe --remove        # stop and remove the service 
 
  FIELDS:
    #01 timestamp  : seconds since Epoch, time

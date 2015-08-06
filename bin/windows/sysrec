@@ -771,11 +771,11 @@ sub usage {
     print STDERR <<END;
 USAGE: sysrec [-lhvV] | [interval [count]]
  eg. 
-  sysrec                 # default CLI mode, print system stats stdout
-  sysrec 1 5             # print system stats 5 times, every 1s stdout
-  sysrec -l 25           # print system stats every 25s stdout and krdlog
-  sysrec --install auto  # run as a service, every 60s, default krdlog
-  sysrec --remove        # stop and remove the service
+  sysrec.exe                 # default CLI mode, print system stats stdout
+  sysrec.exe 1 5             # print system stats 5 times, every 1s stdout
+  sysrec.exe -l 25           # print system stats every 25s stdout and krdlog
+  sysrec.exe --install auto  # run as a service, every 60s, default krdlog
+  sysrec.exe --remove        # stop and remove the service
 
  FIELDS:
   CPU

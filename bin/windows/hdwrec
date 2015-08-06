@@ -699,11 +699,11 @@ sub usage {
     print STDERR <<END;
 USAGE: hdwrec [-lhV] | [interval [count]]
  eg. 
-  hdwrec                 # default CLI mode, print system inventory data stdout
-  hdwrec 1 5             # print system inventory 5 times, every 1s stdout
-  hdwrec -l 25           # print system inventory, every 25s stdout and krdlog
-  hdwrec --install auto  # run as a service, every 60s, default krdlog
-  hdwrec --remove        # stop and remove the service
+  hdwrec.exe                # default CLI mode, print system inventory stdout
+  hdwrec.exe 1 5            # print system inventory 5 times, every 1s stdout
+  hdwrec.exe -l 25          # print system inventory, every 25s stdout, krdlog
+  hdwrec.exe --install auto # run as a service, every 60s, default krdlog
+  hdwrec.exe --remove       # stop and remove the service
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
