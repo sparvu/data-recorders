@@ -1,0 +1,713 @@
+#
+# Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# (http://www.gnu.org/copyleft/gpl.html)
+
+package PerlSvc;
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Date::Calc qw(:all);
+use File::Copy;
+use Time::HiRes qw(time gettimeofday);
+use Win32::OLE ('in');
+use Sys::Hostname;
+use Time::Local;
+use Win32;
+use JSON;
+
+
+# Debug Only
+use Data::Dumper;
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+
+my ($l, $v, $h, $V) = 0;
+
+Getopt::Long::Configure('bundling');
+my $result = GetOptions (
+                "l|logging" => \$l,
+                "v|verbose" => \$v,
+                "h|help"    => \$h,
+                "V|version" => \$V
+                );
+
+usage() if ( $h || ! $result );
+revision() if defined $V;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+### Variables
+my $loop        = 0;                      # current loop number
+my $recid       = 'diskrec';
+my $cf          = 'kronometrix.json';     # default json config
+my $logtime     = '0000';                 # min time check 23:59
+my $stime;                                # sleep timer
+$|= 1;                                    # autoflush
+
+my $verbose = defined $v ? $v : 0;
+my $logging = defined $l ? $l : 0;
+
+our %Config = (ServiceName => "$recid");
+
+
+### MAIN BODY
+
+# read configuration
+my $cdata = open_config($cf);
+
+my ( $blog, $clog, $dlog ) = getlog($cdata);
+
+my $fname = $blog . "\\" . $recid . ".log";
+my $fkrd  = $clog . "\\" . $recid . ".krd";
+
+# log, rawlog files
+my ($log, $rawlog);
+
+# get stats
+my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+    or die "Cannot initialize WMI interface\n";
+
+my $last_time = 0;
+
+if ($logging) {
+    $rawlog = open_file($fkrd);
+    $log = open_file($fname);
+    writelog ("info: started");
+}
+
+unless (defined &ContinueRun) {
+    *ContinueRun = sub { return 1 };
+    *RunningAsService = sub { return 0 };
+    Interactive();
+}
+
+if (RunningAsService()) {
+    if ($interval == 1 && $loop_max == 1) {
+        $interval = 60;
+        $loop_max = 2**32;
+    }
+
+    $rawlog = open_file($fkrd);
+    $log = open_file($fname);
+    writelog ("info: started");
+}
+
+
+### SUBROUTINES
+
+
+sub Startup {
+
+    while(ContinueRun()) {
+
+    ### verbose
+    if ($verbose) {
+        if (RunningAsService()) {
+            writelog ("info: main - last_time=$last_time");
+	} else {
+            writelog ("info: main - last_time=$last_time") if ($logging);
+            print "info: main - last_time=$last_time\n";
+	}
+    }
+ 
+
+    # metrics
+    my ($reads,  $rkbytes, $rbusypct,
+        $writes, $wkbytes, $wbusypct,
+	$ql,     $aql,     $busypct,    
+	$iops,   $rwkbytes );
+
+    my ($lsize, $lfree, $lfreepct);
+
+    # disk stats
+    my %dstat;
+    my ($di, $dkey);
+
+    # measure payload
+    my $start = Win32::GetTickCount();
+
+    my %diskname = getdisk();
+
+    my $l;
+    for my $k (keys %diskname) {
+        $l = $diskname{$k};
+	$di = $k . " " . $l;
+	$l =~ s/\://;
+	$dkey = lc "disk" . $k . "_" . $l;
+
+
+        # Inventory data
+        my $wdinv = 
+	 $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
+
+    
+        foreach my $obj (in $wdinv) {
+            $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
+        }
+
+        # Performance Metrics
+        # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
+        # Where Name='0 C:'
+        # my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
+        my $wdstat = 
+	$wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk Where Name='$l:'");
+
+        foreach my $obj (in $wdstat) {
+            $reads    = $obj->{DiskReadsPerSec};
+            $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
+            $rbusypct = $obj->{PercentDiskReadTime};
+
+            $writes   = $obj->{DiskWritesPerSec};
+            $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
+            $wbusypct = $obj->{PercentDiskWriteTime};
+
+    	    $ql       = $obj->{CurrentDiskQueueLength};
+	    $aql      = $obj->{AvgDiskQueueLength};
+	    $busypct  = $obj->{PercentDiskTime};
+
+       	    $iops     = $obj->{DiskTransfersPerSec};
+	    $rwkbytes = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
+
+            $lfree    = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
+            $lfreepct = $obj->{PercentFreeSpace};
+        }
+
+        $dstat{$dkey} = 
+	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
+    }
+
+
+    # end payload
+    my $end = Win32::GetTickCount() - $start;
+    my $stime = ($interval * 1000) - $end;
+
+    # output time
+    my $tnow = int(gettimeofday);
+
+    # cktime for rotation
+    if (RunningAsService()) {
+        cktime();
+    }
+
+    ### verbose
+    if ($verbose) {
+        if (RunningAsService()) {
+            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+	} else {
+            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)") if ($logging);
+            print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)\n";
+	}
+    }
+
+    # time drift adjustment
+    if ($last_time > 0) {
+
+        my $drift = $tnow - $last_time;
+
+        if ($drift > $interval) {
+	    my $delta = $drift - $interval;
+	    my $tfix = $tnow - $delta;
+	    
+            if (RunningAsService()) {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
+            } else {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n"; 
+	    }
+
+	    ### verbose
+	    if ($verbose) {
+                if (RunningAsService()) {
+                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+		} else {
+                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
+                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
+		}
+	    }
+
+            putraw($tfix, %dstat);
+
+            $stime -= $delta * 1000;
+            $last_time = $tfix;
+
+            Win32::Sleep($stime);
+
+    	} elsif ($drift < $interval) {
+
+            my $ext = $interval - $drift;
+            my $tfix = $tnow + $ext;
+	    
+            if (RunningAsService()) {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
+            } else {
+                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n";
+	    }
+
+	    ### verbose
+	    if ($verbose) {
+                if (RunningAsService()) {
+                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+		} else {
+                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
+                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
+		}
+	    }
+
+            putraw($tfix, %dstat);
+
+            $stime += $ext * 1000;
+	    $last_time = $tfix;
+
+	    Win32::Sleep($stime);
+
+	} else {
+
+            putraw($tnow, %dstat);
+
+	    $last_time = $tnow;
+
+	    Win32::Sleep($stime);
+
+	}
+
+    # 1st loop, last_time always 0
+    } else {
+
+        putraw($tnow, %dstat); 
+
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
+
+        $last_time = $tnow;
+
+        ### Interval
+        Win32::Sleep($stime);
+    }
+
+    if (!RunningAsService()) {
+        # check count, interval
+        last if ++$loop == $loop_max;
+    }
+
+    }
+}
+
+
+sub Interactive {
+    Install();
+    Startup();
+}
+
+
+sub Install {
+    $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
+    $Config{Description} = "Kronometrix $recid Service";
+    return;
+}
+
+
+sub remove {
+    Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
+    return;
+}
+
+
+# getdisk -- get disks logic drive
+#
+sub getdisk {
+
+    my %disk;
+
+    # get physical disks
+    my ($di, $dd);
+    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
+    foreach my $disk (in $wd) {
+        $di = $disk->{Index};
+        $dd = $disk->{DeviceID};
+        $dd =~ s/\\/\\\\/sg;
+        # print "Physical Disk: $di $dd";
+
+        my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . $dd . '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
+
+        my $wpart = $wmi->ExecQuery($qpart);
+
+        foreach my $obj (in $wpart) {
+
+            my $d1 = $obj->{DeviceID};
+	    # print "$d1\n";
+
+            my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
+
+	    foreach my $lobj (in $wdrive) {
+                my $lid = $lobj->{DeviceID};
+	        $disk{$di} = $lid;
+	    }
+        }
+    }
+
+    return %disk;
+}
+
+
+# print_raw - print krd raw data
+#
+sub putraw {
+    my ($traw, %c)  = @_;
+
+    if (RunningAsService()) {
+
+        for my $k (sort keys %c) {
+            printf $rawlog "%s:%s\n",
+                $traw, $c{$k};
+        }
+
+    } else {
+        if ( $logging ) {
+
+            for my $k (sort keys %c) {
+                printf $rawlog "%s:%s\n", $traw, $c{$k};
+            }
+
+        }
+
+        for my $k (sort keys %c) {
+            printf "%s:%s\n", $traw, $c{$k};
+        }
+    }
+}
+
+
+# chklog - check log directory
+#
+sub chklog {
+
+    my ($dir) = @_;
+
+    if (defined $dir) {
+        if (! -d $dir) {
+            print "error: chklog - cannot find $dir log directory";
+	    usage();
+        }
+    } else {
+        print "error: chklog - cannot find $dir log directory";
+	usage();
+    }
+
+    return;
+}
+
+
+# open_data - open data file
+#
+
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+	  die "error: open_file - cannot open $file $!";
+	seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+	  die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+
+# open_config - open JSON configuration file
+#
+sub open_config {
+
+    my ($conf) = @_;
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+	if ( defined $ENV{'KRMX_PREFIX'} ) {
+	    if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+	        open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+	        $json_data = <$fh>;
+	        close $fh;
+	    } else {
+                print "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+	        usage();
+	    }
+	} else {
+	    if ( -e "C:\\Kronometrix\\etc\\$conf" ) {
+		open my $fh, "<", "C:\\Kronometrix\\etc\\$conf";
+		$json_data = <$fh>;
+		close $fh;
+	    } else { 
+	        print "error: open_config - $! $conf \n"; 
+		usage(); 
+	    }
+	} 
+    }
+    
+    my $perl_data = JSON->new->utf8->decode($json_data); 
+    
+    return $perl_data;
+}
+
+
+# getlog - get log directory information
+#
+sub getlog {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    chklog($bpath);
+
+    my $cpath = $data->{'log'}->{'current_path'};
+    chklog($cpath);
+
+    my $dpath = $data->{'log'}->{'daily_path'};
+    chklog($dpath);
+
+    return ( $bpath, $cpath, $dpath );
+}
+
+
+# writelog - write log message
+#
+sub writelog {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+
+# cktime - check midnight time
+#
+sub cktime {
+
+    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = 
+       localtime(time);
+
+    my $tcheck = sprintf ("%02d%02d", $hour, $min);
+
+    my $yesterday = get_yesterday();
+
+    # print "time check: $tcheck";
+
+    if ($tcheck eq $logtime ) {
+        writelog ("info: cktime - start log rotation");
+        close ($rawlog);
+	my $numkrd = rotate($clog, $dlog, $yesterday);
+        writelog ("info: cktime - end log rotation, files rotated: $numkrd");
+        $rawlog = open_file($fkrd);
+    }
+
+    return;
+}
+
+
+## 
+sub rmkrd {
+    my ($file) = @_;
+
+    if ( -e $file ) {
+        if (unlink($file) > 0) { return 0; } else { return 1; }
+    }
+
+    return;
+}
+
+
+## null the raw data
+sub null2krd {
+
+    my($blog, $clog ) = @_;
+
+    opendir(DIR, $clog) or
+        die "error: null2krd - Can't open $clog: $!";
+    my @files = grep {!/^\.+$/} readdir(DIR);
+    close(DIR);
+
+    my @krds;
+    foreach my $krd (@files) {
+        next if $krd !~ /.*\.krd$/;
+        push @krds, $krd;
+    }
+
+    foreach my $krdf (@krds) {
+        copy("$clog/$krdf", "$blog") or
+           die "error: null2krd cannot copy krd file: $krdf $!\n";
+         open my $fh, ">", "$clog/$krdf";
+         close $fh;
+    }
+
+    return;
+}
+
+
+## rotate raw data
+sub rotate {
+
+    my($rawdir, $dailydir, $dstamp) = @_;
+
+    opendir(DIR, $rawdir) or
+        die "error: rotate - Can't open $rawdir: $!";
+    my @files = grep {!/^\.+$/} readdir(DIR);
+    close(DIR);
+
+    my $dest = "$dailydir/$dstamp";
+
+    my @krd_files;
+    my $p = $recid . ".krd";
+
+    foreach my $krd (@files) {
+        next if $krd !~ /^$p$/;
+        push @krd_files, $krd;
+    }
+
+    my $nkrd = $#krd_files + 1;
+    
+    if ($verbose) {
+        writelog ("info: rotate - copying krd data files: $nkrd");
+    }
+
+    my $cnt = 0;
+    # check if we have anything to move to daily
+    if ( $nkrd > 0 ) {
+   
+        # make daily target dir
+        unless(mkdir $dest) {
+            writelog ("warning: rotate - cannot create $dstamp, already exists");
+        }
+
+        foreach my $rawfile (@krd_files) {
+            copy("$rawdir/$rawfile","$dest") or
+                writelog ("error: rotate - copying previous daily data, $!");
+
+	    # reset to zero
+            open my $ftkrd, ">", "$rawdir/$rawfile";
+            close $ftkrd;
+
+            $cnt++;
+        }
+    }
+
+    # return number of raw krd files moved to daily
+    return $cnt;
+}
+
+
+## get yesterday
+sub get_yesterday {
+
+    my ( $yy, $mm, $dd ) = Today();
+    ( $yy, $mm, $dd ) = Add_Delta_Days( $yy, $mm, $dd, -1 );
+
+    # ISO 8601 YYYY-MM-DD
+    my $prevdate = sprintf("%d-%02d-%02d", $yy, $mm, $dd);
+
+    # Debug
+    # print "PREVDATE: $prevdate \n";
+
+    return $prevdate;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: diskrec [-lhV] | [interval [count]]
+ eg. 
+  diskrec                 # default CLI mode, print per disk stats stdout
+  diskrec 1 5             # print per disk stats 5 times, every 1s stdout
+  diskrec -l 25           # print per disk stats every 25s stdout and krdlog
+  diskrec --install auto  # run as a service, every 60s, default krdlog
+  diskrec --remove        # stop and remove the service 
+
+ FIELDS:
+   #01 timestamp  : seconds since Epoch, time
+   #02 diskid     : disk id
+
+   # reads
+   #03 reads      : disk reads per sec, rate
+   #04 rkbytes    : disk read KBytes per sec, rate
+   #05 rbusypct   : busy time servicing read requests, number
+
+   # writes
+   #06 writes     : disk writes per sec, rate
+   #07 wkbytes    : disk write KBytes per sec, rate
+   #08 wbusypct   : busy time servicing write requests, number
+
+   # queue length, throughput
+   #09 ql         : current r+w, including in service, queue length
+   #10 aql        : avg r+w queue length
+   #11 busypct    : busy time r+w requests, number
+   #12 iops       : disk read+write requests per second, rate
+   #13 rwkbytes   : read+write Kbytes per second, rate
+
+   # inventory disk usage
+   #14 size       : volume size in GB, logical drive
+   #15 free       : volume free in GB
+   #16 freepct    : volume free percentage
+END
+    exit 0;
+}
+
+
+# revision - print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+diskrec: 1.0.16, 2015-08-04 1549
+END
+    exit 0;
+}
