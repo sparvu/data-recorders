@@ -64,7 +64,7 @@ else {
 
 ### Variables
 my $loop        = 0;                      # current loop number
-my $recid       = 'diskrec';
+my $recid       = 'nicrec';
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
@@ -138,68 +138,72 @@ sub Startup {
  
 
     # metrics
-    my ($reads,  $rkbytes, $rbusypct,
-        $writes, $wkbytes, $wbusypct,
-	$ql,     $aql,     $busypct,    
-	$iops,   $rwkbytes );
+    my ($rxpkt, $rxkbytes,
+        $txpkt, $txkbytes
+       );
 
-    my ($lsize, $lfree, $lfreepct);
 
     # disk stats
+    my %nstat;
     my %dstat;
-    my ($di, $dkey);
 
     # measure payload
     my $start = Win32::GetTickCount();
 
-    my %diskname = getdisk();
+    # my %diskname = getdisk();
 
-    my $l;
-    for my $k (keys %diskname) {
-        $l = $diskname{$k};
-	$di = $k . " " . $l;
-	$l =~ s/\://;
-	$dkey = lc "disk" . $k . "_" . $l;
+    # getnic();
+
+    # get no of NICs
+    # Win32_NetworkAdapterConfiguration
+    my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+    my $nnic = 0;
+    foreach my $nic (in $wn) {
+        if ( defined($nic->{MACAddress}) and
+             defined($nic->{IPAddress} ) ) {
+
+	    my $nic_id = $nic->{Index};
+
+            # print "NIC Index: $nic_idn\n";
+
+            my $na =
+	    $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter where DeviceID='$nic_id'");
+
+            foreach my $obj (in $na) {
+	        my $ndi      = $obj->{DeviceID};
+	        my $nic_name = lc $obj->{ServiceName} . "_" . $ndi;
+	        # print "index: " . $obj->{Index} . "\n";
+	        # print "description: " . $obj->{Description} . "\n";
+	        # print "Service Name: " . $obj->{ServiceName} . "\n";
+	        # print "PNPDeviceID: " . $obj->{PNPDeviceID} . "\n";
+
+                # get PNPEntity for NIC DeviceID
+                my $pnpq = 'ASSOCIATORS OF ' . 
+		           '{Win32_NetworkAdapter.DeviceID="' . $ndi . 
+			   '"} WHERE ResultClass=Win32_PnpEntity';
+
+                my $pnp = $wmi -> ExecQuery($pnpq);
+		foreach my $po (in $pnp) {
+		    my $pnp_name = $po->{Name};
+		    # print "PNP Name=" . $po->{Name} . "\n";
+
+                    my $nicstat = 
+	                $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
+
+                    foreach my $pn (in $nicstat) {
+                        my $rxkbytes = 
+                          sprintf "%.2f", $pn->{BytesReceivedPerSec} / 1024;
+			
+                        print "$nic_name:$rxkbytes\n";
+		    }
+		}
+
+            }
 
 
-        # Inventory data
-        my $wdinv = 
-	 $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
-
-    
-        foreach my $obj (in $wdinv) {
-            $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
+#        $dstat{$dkey} = 
+#	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
         }
-
-        # Performance Metrics
-        # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
-        # Where Name='0 C:'
-        # my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
-        my $wdstat = 
-	$wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk Where Name='$l:'");
-
-        foreach my $obj (in $wdstat) {
-            $reads    = $obj->{DiskReadsPerSec};
-            $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
-            $rbusypct = $obj->{PercentDiskReadTime};
-
-            $writes   = $obj->{DiskWritesPerSec};
-            $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
-            $wbusypct = $obj->{PercentDiskWriteTime};
-
-    	    $ql       = $obj->{CurrentDiskQueueLength};
-	    $aql      = $obj->{AvgDiskQueueLength};
-	    $busypct  = $obj->{PercentDiskTime};
-
-       	    $iops     = $obj->{DiskTransfersPerSec};
-	    $rwkbytes = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
-
-            $lfree    = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
-            $lfreepct = $obj->{PercentFreeSpace};
-        }
-
-        $dstat{$dkey} = 
-	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
     }
 
 
@@ -341,40 +345,22 @@ sub remove {
 }
 
 
-# getdisk -- get disks logic drive
+# getnic -- get functional NIC TCP/IP
 #
-sub getdisk {
+sub getnic {
 
-    my %disk;
-
-    # get physical disks
-    my ($di, $dd);
-    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
-    foreach my $disk (in $wd) {
-        $di = $disk->{Index};
-        $dd = $disk->{DeviceID};
-        $dd =~ s/\\/\\\\/sg;
-        # print "Physical Disk: $di $dd";
-
-        my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . $dd . '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
-
-        my $wpart = $wmi->ExecQuery($qpart);
-
-        foreach my $obj (in $wpart) {
-
-            my $d1 = $obj->{DeviceID};
-	    # print "$d1\n";
-
-            my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
-
-	    foreach my $lobj (in $wdrive) {
-                my $lid = $lobj->{DeviceID};
-	        $disk{$di} = $lid;
-	    }
+    # get physical NICs
+    # Win32_NetworkAdapterConfiguration
+    my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+    my $nnic = 0;
+    foreach my $nic (in $wn) {
+        if ( defined($nic->{MACAddress}) and
+             defined($nic->{IPAddress} ) ) {
+            print "NIC: $nic->{ServiceName}\n"; 
         }
     }
 
-    return %disk;
+    return;
 }
 
 
