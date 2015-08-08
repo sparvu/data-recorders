@@ -138,21 +138,19 @@ sub Startup {
  
 
     # metrics
-    my ($rxpkt, $rxkbytes,
-        $txpkt, $txkbytes
+    my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
+        $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
+	$ql,    $rxtxpkt,  $rxtxkbytes,$band
        );
 
 
     # disk stats
     my %nstat;
-    my %dstat;
 
     # measure payload
     my $start = Win32::GetTickCount();
 
-    # my %diskname = getdisk();
 
-    # getnic();
 
     # get no of NICs
     # Win32_NetworkAdapterConfiguration
@@ -191,18 +189,31 @@ sub Startup {
 	                $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
 
                     foreach my $pn (in $nicstat) {
-                        my $rxkbytes = 
-                          sprintf "%.2f", $pn->{BytesReceivedPerSec} / 1024;
+
+		        # perf metrics per NIC
+                        $rxpkt     = $pn -> {PacketsReceivedPerSec};
+                        $rxkbytes  = $pn -> {BytesReceivedPerSec};
+                          #sprintf "%.2f", $pn->{BytesReceivedPerSec} / 1024;
+                        $rxpkterr  = $pn -> {PacketsReceivedErrors};
+                        $rxpktdrop = $pn -> {PacketsReceivedDiscarded};
+
+                        $txpkt     = $pn -> {PacketsSentPerSec};
+                        $txkbytes  = 
+                          sprintf "%.2f", $pn->{BytesSentPerSec} / 1024;
+                        $txpkterr  = $pn -> {PacketsOutboundErrors};
+                        $txpktdrop = $pn -> {PacketsOutboundDiscarded};
 			
-                        print "$nic_name:$rxkbytes\n";
+                        $ql        = $pn -> {OutputQueueLength};
+                        $rxtxpkt   = $pn -> {PacketsPerSec};
+                        $rxtxkbytes= $pn -> {BytesTotalPerSec};
+                        $band      = $pn -> {CurrentBandwidth};
+
+                        $nstat{$nic_name} = 
+			 "$nic_name:$rxpkt:$rxkbytes:$rxpkterr:$rxpktdrop:$txpkt:$txkbytes:$txpkterr:$txpktdrop:$ql:$rxtxpkt:$rxtxkbytes:$band";
 		    }
 		}
 
             }
-
-
-#        $dstat{$dkey} = 
-#	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
         }
     }
 
@@ -255,7 +266,7 @@ sub Startup {
 		}
 	    }
 
-            putraw($tfix, %dstat);
+            putraw($tfix, %nstat);
 
             $stime -= $delta * 1000;
             $last_time = $tfix;
@@ -284,7 +295,7 @@ sub Startup {
 		}
 	    }
 
-            putraw($tfix, %dstat);
+            putraw($tfix, %nstat);
 
             $stime += $ext * 1000;
 	    $last_time = $tfix;
@@ -293,7 +304,7 @@ sub Startup {
 
 	} else {
 
-            putraw($tnow, %dstat);
+            putraw($tnow, %nstat);
 
 	    $last_time = $tnow;
 
@@ -304,7 +315,7 @@ sub Startup {
     # 1st loop, last_time always 0
     } else {
 
-        putraw($tnow, %dstat); 
+        putraw($tnow, %nstat); 
 
         if (!RunningAsService()) {
             # check count, interval
@@ -664,22 +675,22 @@ USAGE: nicrec [-lhV] | [interval [count]]
    #02 nicid      : NIC id
 
    # rx received, inbound
-   #03 rxpkt       : rx packets per sec, rate
+   #03 rxpkt       : rx packets per sec, counter
    #04 rxkbytes    : rx KBytes per sec, rate
-   #05 rxpkterr    : rx packets containg errors, number
-   #06 rxpktdrop   : rx drop packets, number
+   #05 rxpkterr    : rx packets containg errors, counter
+   #06 rxpktdrop   : rx drop packets, counter
 
    # tx transmitted, outbound
-   #07 txpkt       : tx packets per sec, rate
+   #07 txpkt       : tx packets per sec, counter
    #08 txkbytes    : tx KBytes per sec, rate
-   #09 txpkterr    : tx packets containg errors, number
-   #10 txpktdrop   : tx drop packets, number
+   #09 txpkterr    : tx packets containg errors, counter
+   #10 txpktdrop   : tx drop packets, counter
 
    # queue length, throughput
-   #11 ql         : length of the output packet queue, packets, number
-   #12 rxtxpkt    : rx+tx packets per second, rate
+   #11 ql         : length of the output packet queue, counter
+   #12 rxtxpkt    : rx+tx packets per second, counter
    #13 rxtxkbytes : rx+tx kbytes per second, rate
-   #14 band       : current bandwidth in bps, number
+   #14 band       : current bandwidth in bps, counter
 
 END
     exit 0;
@@ -690,7 +701,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.16, 2015-08-06 2128
+nicrec: 1.0.16, 2015-08-07 0958
 END
     exit 0;
 }
