@@ -390,12 +390,7 @@ sub Install {
 
 
 sub Remove {
-
-    #close $log;
-    #close $rawlog;
-    #exit 0;
     Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
-
     return;
 }
 
@@ -839,7 +834,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.16, 2015-08-23 1548
+sysrec: 1.0.16, 2015-08-11 2057
 END
     exit 0;
 }

@@ -340,7 +340,7 @@ sub Install {
 }
 
 
-sub remove {
+sub Remove {
 
     Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
 

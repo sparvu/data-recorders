@@ -335,7 +335,7 @@ sub Install {
 }
 
 
-sub remove {
+sub Remove {
     Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
     return;
 }
@@ -707,7 +707,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.16, 2015-08-04 1549
+diskrec: 1.0.16, 2015-08-11 2057
 END
     exit 0;
 }
