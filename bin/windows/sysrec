@@ -389,7 +389,11 @@ sub Install {
 }
 
 
-sub remove {
+sub Remove {
+
+    #close $log;
+    #close $rawlog;
+    #exit 0;
     Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
 
     return;
@@ -648,7 +652,7 @@ sub cktime {
 
     if ($tcheck eq $logtime ) {
         writelog ("info: cktime - start log rotation");
-        close ($rawlog);
+        close $rawlog;
 	my $numkrd = rotate($clog, $dlog, $yesterday);
         writelog ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);

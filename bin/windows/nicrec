@@ -192,8 +192,8 @@ sub Startup {
 
 		        # perf metrics per NIC
                         $rxpkt     = $pn -> {PacketsReceivedPerSec};
-                        $rxkbytes  = $pn -> {BytesReceivedPerSec};
-                          #sprintf "%.2f", $pn->{BytesReceivedPerSec} / 1024;
+                        $rxkbytes  = 
+			  sprintf "%.2f", $pn->{BytesReceivedPerSec} / 1024;
                         $rxpkterr  = $pn -> {PacketsReceivedErrors};
                         $rxpktdrop = $pn -> {PacketsReceivedDiscarded};
 
@@ -663,27 +663,27 @@ sub get_yesterday {
 sub usage {
     print STDERR <<END;
 USAGE: nicrec [-lhV] | [interval [count]]
- eg. 
+ eg.
   nicrec.exe                 # default CLI mode, print per disk stats stdout
   nicrec.exe 1 5             # print per disk stats 5 times, every 1s stdout
   nicrec.exe -l 25           # print per disk stats every 25s stdout, krdlog
   nicrec.exe --install auto  # run as a service, every 60s, default krdlog
-  nicrec.exe --remove        # stop and remove the service 
+  nicrec.exe --remove        # stop and remove the service
 
  FIELDS:
    #01 timestamp  : seconds since Epoch, time
    #02 nicid      : NIC id
 
    # rx received, inbound
-   #03 rxpkt       : rx packets per sec, counter
+   #03 rxpkt       : rx packets per sec, rate
    #04 rxkbytes    : rx KBytes per sec, rate
-   #05 rxpkterr    : rx packets containg errors, counter
+   #05 rxpkterr    : rx packets containg errors, rate 
    #06 rxpktdrop   : rx drop packets, counter
 
    # tx transmitted, outbound
-   #07 txpkt       : tx packets per sec, counter
+   #07 txpkt       : tx packets per sec, rate
    #08 txkbytes    : tx KBytes per sec, rate
-   #09 txpkterr    : tx packets containg errors, counter
+   #09 txpkterr    : tx packets containg errors, rate 
    #10 txpktdrop   : tx drop packets, counter
 
    # queue length, throughput
