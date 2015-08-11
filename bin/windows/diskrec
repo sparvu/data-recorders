@@ -38,13 +38,16 @@ use Data::Dumper;
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
 my ($l, $v, $h, $V) = 0;
+my $recid           = 'diskrec';
+our %Config         = (ServiceName => "$recid");
 
 Getopt::Long::Configure('bundling');
 my $result = GetOptions (
                 "l|logging" => \$l,
                 "v|verbose" => \$v,
                 "h|help"    => \$h,
-                "V|version" => \$V
+                "V|version" => \$V,
+                "n|name=s" => \$Config{ServiceName}
                 );
 
 usage() if ( $h || ! $result );
@@ -64,7 +67,6 @@ else {
 
 ### Variables
 my $loop        = 0;                      # current loop number
-my $recid       = 'diskrec';
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
@@ -72,9 +74,6 @@ $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
-
-our %Config = (ServiceName => "$recid");
-
 
 ### MAIN BODY
 
@@ -336,7 +335,7 @@ sub Install {
 
 
 sub Remove {
-    Getopt::Long::GetOptions('service=s' => \$Config{ServiceName});
+    $Config{ServiceName} = $recid;
     return;
 }
 
