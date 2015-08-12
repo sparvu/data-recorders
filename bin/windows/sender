@@ -68,7 +68,6 @@ else {
 
 ### Variables
 my $loop        = 0;                      # current loop number
-my $transid     = 'sender';               # transport service name
 my $cfile       = 'kronometrix.json';     # configuration file
 my $cdata;                                # configuration data
 my $tcpka       = 0;                      # transport TCP keepalive settings
