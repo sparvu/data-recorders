@@ -39,7 +39,7 @@ usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
 my ($l, $v, $h, $V) = 0;
 my $recid           = 'nicrec';
-our %Config         = (ServiceName => "$recid");
+our %Config         = (ServiceName => $recid);
 
 Getopt::Long::Configure('bundling');
 my $result = GetOptions (
@@ -70,6 +70,7 @@ my $loop        = 0;                      # current loop number
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
+my $last_time   = 0;                      # first counter
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -88,17 +89,15 @@ my $fkrd  = $clog . "\\" . $recid . ".krd";
 # log, rawlog files
 my ($log, $rawlog);
 
-# get stats
-my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-    or die "Cannot initialize WMI interface\n";
-
-my $last_time = 0;
-
 if ($logging) {
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
     writelog ("info: started");
 }
+
+# get stats
+my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+    or die "Cannot initialize WMI interface\n";
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -700,7 +699,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.16, 2015-08-11 2057
+nicrec: 1.0.16, 2015-08-12 2204
 END
     exit 0;
 }

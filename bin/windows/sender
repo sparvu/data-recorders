@@ -40,7 +40,7 @@ usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 # default timeout
 my $transid     = 'sender';               # transport service name
 my $timeout     = 25;
-our %Config     = (ServiceName => "$transid");
+our %Config     = (ServiceName => $transid);
 my ($h, $v, $V);
 
 Getopt::Long::Configure('bundling');
