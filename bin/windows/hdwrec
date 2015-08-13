@@ -37,8 +37,9 @@ use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my ($l, $v, $h, $V) = 0;
 my $recid           = 'hdwrec';
+my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
+my ($l, $v, $h, $V) = 0;
 our %Config         = (ServiceName => $recid);
 
 Getopt::Long::Configure('bundling');
@@ -353,12 +354,10 @@ sub chklog {
 
     if (defined $dir) {
         if (! -d $dir) {
-            print "error: chklog - cannot find $dir log directory";
-	    usage();
+            die "error: chklog - cannot find $dir log directory";
         }
     } else {
-        print "error: chklog - cannot find $dir log directory";
-	usage();
+        die "error: chklog - cannot find $dir log directory";
     }
 
     return;
@@ -408,17 +407,15 @@ sub open_config {
 	        $json_data = <$fh>;
 	        close $fh;
 	    } else {
-                print "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-	        usage();
+                die "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
 	    }
 	} else {
-	    if ( -e "C:\\Kronometrix\\etc\\$conf" ) {
-		open my $fh, "<", "C:\\Kronometrix\\etc\\$conf";
+	    if ( -e "$cprefix\\$conf" ) {
+		open my $fh, "<", "$cprefix\\$conf";
 		$json_data = <$fh>;
 		close $fh;
 	    } else { 
-	        print "error: open_config - $! $conf \n"; 
-		usage(); 
+	        die "error: open_config - $! $conf \n"; 
 	    }
 	} 
     }

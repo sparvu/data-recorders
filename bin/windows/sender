@@ -38,10 +38,11 @@ use JSON;
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
 # default timeout
-my $transid     = 'sender';               # transport service name
-my $timeout     = 25;
-our %Config     = (ServiceName => $transid);
-my ($h, $v, $V);
+my $timeout         = 25;
+my $transid         = 'sender';               # transport service name
+my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
+my ($h, $v, $V);    = 0;
+our %Config         = (ServiceName => $transid);
 
 Getopt::Long::Configure('bundling');
 my $result = GetOptions (
@@ -315,17 +316,15 @@ sub open_config {
 	        $json_data = <$fh>;
 	        close $fh;
 	    } else {
-                print "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-	        usage();
+                die "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
 	    }
 	} else {
-	    if ( -e "C:\\Kronometrix\\etc\\$conf" ) {
-		open my $fh, "<", "C:\\Kronometrix\\etc\\$conf";
+	    if ( -e "$cprefix\\$conf" ) {
+		open my $fh, "<", "$cprefix\\$conf";
 		$json_data = <$fh>;
 		close $fh;
 	    } else { 
-	        print "error: open_config - $! $conf \n"; 
-		usage(); 
+	        die "error: open_config - $! $conf \n"; 
 	    }
 	} 
     }
@@ -517,12 +516,10 @@ sub chklog {
 
     if (defined $dir) {
         if (! -d $dir) {
-            print "error: chklog - cannot find $dir log directory";
-	    usage();
+            die "error: chklog - cannot find $dir log directory";
         }
     } else {
-        print "error: chklog - cannot find $dir log directory";
-	usage();
+        die "error: chklog - cannot find $dir log directory";
     }
 
     return;
