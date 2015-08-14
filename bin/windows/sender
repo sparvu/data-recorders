@@ -286,6 +286,16 @@ sub Interactive {
 
 sub Install {
 
+    # check for proper config file
+    if (! defined $cdata) {
+        die "Cant install $Config{ServiceName} service, exiting...\n";
+    }
+
+    if (! defined $baselog or
+        ! defined $curlog ) {
+        die "Cant install $Config{ServiceName} service, exiting...\n";
+    }
+
     $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
     $Config{Description} = "Kronometrix $transid Service";
 
@@ -516,10 +526,10 @@ sub chklog {
 
     if (defined $dir) {
         if (! -d $dir) {
-            die "error: chklog - cannot find $dir log directory";
+            die "error: chklog - cannot find $dir directory";
         }
     } else {
-        die "error: chklog - cannot find $dir log directory";
+        die "error: chklog - cannot find $dir directory";
     }
 
     return;
