@@ -291,8 +291,7 @@ sub Install {
         die "Cant install $Config{ServiceName} service, exiting...\n";
     }
 
-    if (! defined $baselog or
-        ! defined $curlog ) {
+    if (! defined $curlog) {
         die "Cant install $Config{ServiceName} service, exiting...\n";
     }
 

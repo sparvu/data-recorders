@@ -349,9 +349,7 @@ sub Install {
         die "Cant install $Config{ServiceName} service, exiting...\n";
     }
 
-    if (! defined $blog or
-        ! defined $clog or
-        ! defined $dlog ) {
+    if (! defined $clog) {
         die "Cant install $Config{ServiceName} service, exiting...\n";
     }
 
