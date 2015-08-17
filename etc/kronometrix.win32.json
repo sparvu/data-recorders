@@ -4,7 +4,7 @@
     "base_path" : "C:\\Program Files\\Kronometrix\\log",
     "daily_path" : "C:\\Program Files\\Kronometrix\\log\\daily"
   },
-  "service_sampling_interval" : {
+  "winsvc_sampling_interval" : {
     "sysrec" : "30",
     "cpurec" : "30",
     "diskrec" : "30",
