@@ -111,10 +111,10 @@ unless (defined &ContinueRun) {
 }
 
 if (RunningAsService()) {
-    if ($interval == 1 && $loop_max == 1) {
-        $interval = 60;
-        $loop_max = 2**32;
-    }
+
+    # get service sample interval
+    $interval = getssi($cdata);
+    $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
@@ -435,6 +435,18 @@ sub open_config {
 }
 
 
+# getssi - get service sample interval
+#
+sub getssi {
+    my ($data) = @_;
+
+    my $ssi = $data->{'winsvc_sampling_interval'}->{"$recid"};
+    $ssi = 60 if (! defined $ssi);
+
+    return $ssi;
+}
+
+
 # getlog - get log directory information
 #
 sub getlog {
@@ -701,12 +713,14 @@ sub putraw {
 sub usage {
     print STDERR <<END;
 USAGE: hdwrec [-lhV] | [interval [count]]
+       hdwrec -install auto
+       hdwrec -remove
  eg. 
   hdwrec.exe                # default CLI mode, print system inventory stdout
   hdwrec.exe 1 5            # print system inventory 5 times, every 1s stdout
   hdwrec.exe -l 25          # print system inventory, every 25s stdout, krdlog
-  hdwrec.exe --install auto # run as a service, every 60s, default krdlog
-  hdwrec.exe --remove       # stop and remove the service
+  hdwrec.exe -install auto # run as a service, every 60s, default krdlog
+  hdwrec.exe -remove       # stop and remove the service
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
@@ -731,7 +745,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.16, 2015-08-14 1644
+hdwrec: 1.0.16rc2, 2015-08-18 0112
 END
     exit 0;
 }

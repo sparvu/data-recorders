@@ -110,22 +110,13 @@ unless (defined &ContinueRun) {
 
 if (RunningAsService()) {
 
-    #if ($svc_interval == 0) {
-    #    $interval=60;
-    #} else {
-    #    $interval=$svc_interval;
-    #}
-    #$loop_max = 2**32;
-   
     # get service sample interval
     $interval = getssi($cdata);
-
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
     writelog ("info: started");
-    writelog ("interval=$interval, loop_max=$loop_max");
 }
 
 

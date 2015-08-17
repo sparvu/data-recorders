@@ -744,8 +744,8 @@ OPTIONS:
   sender                 # default mode, transport raw data every 60s
   sender 10              # transport raw data every 10s
   sender -t5 10          # transport raw data every 10s with 5s timeout
-  sender --install auto  # run as a service, every 60s, 25s timeout
-  sender --remove        # stop and remove the service
+  sender -install auto  # run as a service, every 60s, 25s timeout
+  sender -remove        # stop and remove the service
 END
     exit 0;
 }
@@ -753,7 +753,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.16, 2015-08-15 1354
+sender: 1.0.16rc2, 2015-08-18 0116
 END
     exit 0;
 }
