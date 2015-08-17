@@ -150,7 +150,6 @@ sub Startup {
     my $start = Win32::GetTickCount();
 
 
-
     # get no of NICs
     # Win32_NetworkAdapterConfiguration
     my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
@@ -676,26 +675,26 @@ USAGE: nicrec [-lhV] | [interval [count]]
   nicrec.exe --remove        # stop and remove the service
 
  FIELDS:
-   #01 timestamp  : seconds since Epoch, time
-   #02 nicid      : NIC id
+   #01 timestamp   : seconds since Epoch, time
+   #02 nicid       : NIC id
 
    # rx received, inbound
    #03 rxpkt       : rx packets per sec, rate
    #04 rxkbytes    : rx KBytes per sec, rate
-   #05 rxpkterr    : rx packets containg errors, rate 
-   #06 rxpktdrop   : rx drop packets, counter
+   #05 rxerr       : rx packets containg errors, rate 
+   #06 rxdrop      : rx drop packets, counter
 
    # tx transmitted, outbound
    #07 txpkt       : tx packets per sec, rate
    #08 txkbytes    : tx KBytes per sec, rate
-   #09 txpkterr    : tx packets containg errors, rate 
-   #10 txpktdrop   : tx drop packets, counter
+   #09 txerr       : tx packets containg errors, rate 
+   #10 txdrop      : tx drop packets, counter
 
    # queue length, throughput
-   #11 ql         : length of the output packet queue, counter
-   #12 rxtxpkt    : rx+tx packets per second, counter
-   #13 rxtxkbytes : rx+tx kbytes per second, rate
-   #14 band       : current bandwidth in bps, counter
+   #11 ql          : length of the output packet queue, counter
+   #12 rxtxpkt     : rx+tx packets per second, counter
+   #13 rxtxkbytes  : rx+tx kbytes per second, rate
+   #14 band        : current bandwidth in bps, counter
 
 END
     exit 0;
@@ -706,7 +705,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.16, 2015-08-14 1644
+nicrec: 1.0.16, 2015-08-17 1226
 END
     exit 0;
 }
