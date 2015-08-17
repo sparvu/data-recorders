@@ -1,8 +1,15 @@
 {
   "log" : {
-    "current_path" : "C:\\Kronometrix\\log\\current",
-    "base_path" : "C:\\Kronometrix\\log",
-    "daily_path" : "C:\\Kronometrix\\log\\daily"
+    "current_path" : "C:\\Program Files\\Kronometrix\\log\\current",
+    "base_path" : "C:\\Program Files\\Kronometrix\\log",
+    "daily_path" : "C:\\Program Files\\Kronometrix\\log\\daily"
+  },
+  "service_sampling_interval" : {
+    "sysrec" : "30",
+    "cpurec" : "30",
+    "diskrec" : "30",
+    "nicrec" : "30",
+    "hdwrec" : "30"
   },
   "transport" : {
     "data_file" : [
