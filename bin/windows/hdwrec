@@ -195,15 +195,20 @@ sub Startup {
 
 
     # get no of NICs
-    # Win32_NetworkAdapterConfiguration
-    my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
-    my $nnic = 0;
+    my $nicq = 
+      "SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft'";
+    my $wn = $wmi->ExecQuery($nicq);
+    my ($nnic, $pnic, $vnic) = 0;
     foreach my $nic (in $wn) {
-        if ( defined($nic->{MACAddress}) and 
-	     defined($nic->{IPAddress} ) ) {
-            $nnic++;
-	}
+        my $nic_desc = $nic->{Description};
+        my $nic_id = $nic->{Index};
+        if ( $nic_desc =~ /[vV]irtual/ ) { $vnic++ } else { $pnic++; }
+
     }
+
+    # drop Virtual NICs
+    $nnic = $pnic;
+
 
     my $end = Win32::GetTickCount() - $start;
     my $stime = ($interval * 1000) - $end;
@@ -745,7 +750,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.16rc2, 2015-08-18 0112
+hdwrec: 1.0.16rc2, 2015-08-19 1108
 END
     exit 0;
 }
