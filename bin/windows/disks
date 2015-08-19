@@ -76,24 +76,21 @@ foreach my $disk (in $wd) {
     $di = $disk->{Index};
     $dd = $disk->{DeviceID};
     $dd =~ s/\\/\\\\/sg;
-    print "Physical Disk: $di $dd";
 
     my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . $dd . '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
     # print "qpart=$qpart\n";
 
     my $wpart = $wmi->ExecQuery($qpart);
-    # my $wpart = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskDrive.DeviceID='\\\\.\\PHYSICALDRIVE0'} WHERE AssocClass = Win32_DiskDriveToDiskPartition");
 
     foreach my $obj (in $wpart) {
 
         my $d1 = $obj->{DeviceID};
-	# print "$d1\n";
 
         my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
 
 	foreach my $lobj (in $wdrive) {
             my $lid = $lobj->{DeviceID};
-	    print "\n$d1, Logical: $lid";
+	    print "$dd $d1, Logical: $lid\n";
 	}
     }
 }

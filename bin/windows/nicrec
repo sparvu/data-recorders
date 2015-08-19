@@ -135,14 +135,6 @@ sub Startup {
 	}
     }
  
-
-    # metrics
-    # my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
-    #     $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
-    # $ql,    $rxtxpkt,  $rxtxkbytes,$band
-    #   );
-
-
     # NIC stats
     my %nstat;
 
@@ -169,12 +161,6 @@ sub Startup {
             
         next if ( $nic_desc =~ /[vV]irtual/ );
 
-        # if (RunningAsService()) {
-        #    writelog ("NIC Desc: $nic_desc, Index: $nic_id, DeviceID: $ndi, PNPDeviceID=$nic_pnp");
-	#} else {
-        #    print "NIC Desc: $nic_desc, Index: $nic_id, DeviceID: $ndi, PNPDeviceID=$nic_pnp\n";
-	#}
-
         # get PNPEntity for NIC DeviceID
         my $pnpq = 'ASSOCIATORS OF ' . 
 		   '{Win32_NetworkAdapter.DeviceID="' . $ndi . 
@@ -186,11 +172,15 @@ sub Startup {
 	    $pnp_name =~ s/\(/[/g;
 	    $pnp_name =~ s/\)/]/g;
 
-            # Debug Mode
-
-
-
-	    # print "PNP Name=" . $pnp_name . "\n";
+            ### verbose
+            if ($verbose) {
+                if (RunningAsService()) {
+                    writelog ("info: main - NIC Desc: $nic_desc, Index: $nic_id, DeviceID: $ndi, PNPName: $pnp_name");
+	        } else {
+                    writelog ("info: main - NIC Desc: $nic_desc, Index: $nic_id, DeviceID: $ndi, PNPName: $pnp_name") if ($logging);
+                    print "info: main - NIC Desc: $nic_desc, Index: $nic_id, DeviceID: $ndi, PNPName: $pnp_name\n";
+	        }
+            }
             my $nicstat = 
 	      $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
 
@@ -688,8 +678,8 @@ USAGE: nicrec [-lhV] | [interval [count]]
   nicrec.exe                 # default CLI mode, print per disk stats stdout
   nicrec.exe 1 5             # print per disk stats 5 times, every 1s stdout
   nicrec.exe -l 25           # print per disk stats every 25s stdout, krdlog
-  nicrec.exe --install auto  # run as a service, every 60s, default krdlog
-  nicrec.exe --remove        # stop and remove the service
+  nicrec.exe -install auto  # run as a service, every 60s, default krdlog
+  nicrec.exe -remove        # stop and remove the service
 
  FIELDS:
    #01 timestamp   : seconds since Epoch, time
