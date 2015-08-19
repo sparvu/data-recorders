@@ -154,14 +154,25 @@ sub Startup {
 
     my %diskname = getdisk();
 
-    # debug
-    if (RunningAsService()) {
+    ### verbose
+    if ($verbose) {
         my $entries = keys (%diskname);
-        writelog ("Number of disks/logical: $entries");
-        for my $key (keys %diskname) {
-            my $value = $diskname{$key};
-            writelog ("$key => $value");
-        }
+        if (RunningAsService()) {
+            writelog ("info: main - Number of disks/logical: $entries");
+            for my $key (keys %diskname) {
+                my $value = $diskname{$key};
+                writelog ("info: main - $key => $value");
+            }
+
+	} else {
+            writelog ("info: main - Number of disks/logical: $entries")
+	      if ($logging);
+            print "info: main - Number of disks/logical: $entries\n";
+            for my $key (keys %diskname) {
+                my $value = $diskname{$key};
+                print "info: main - $key => $value\n";
+            }
+	}
     }
 
     my $l;
