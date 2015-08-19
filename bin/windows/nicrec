@@ -137,10 +137,10 @@ sub Startup {
  
 
     # metrics
-    my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
-        $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
-	$ql,    $rxtxpkt,  $rxtxkbytes,$band
-       );
+    # my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
+    #     $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
+    # $ql,    $rxtxpkt,  $rxtxkbytes,$band
+    #   );
 
 
     # NIC stats
@@ -149,74 +149,77 @@ sub Startup {
     # measure payload
     my $start = Win32::GetTickCount();
 
-
     # get no of NICs
-    # Win32_NetworkAdapterConfiguration
-    # my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
-    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft' AND NOT PNPDeviceID LIKE 'ROOT'");
+    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft'");
     my $nnic = 0;
+
     foreach my $nic (in $wn) {
-        if ( defined($nic->{MACAddress}) and
-             defined($nic->{IPAddress} ) ) {
 
-	    my $nic_desc = $nic->{Description};
-	    my $nic_id = $nic->{Index};
+        # metrics
+        my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
+            $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
+	    $ql,    $rxtxpkt,  $rxtxkbytes,$band
+           ) = 0;
 
-            writelog ("NIC Desc: $nic_desc, Index: $nic_id") if (RunningAsService());
+        my $nic_desc = $nic->{Description};
+	my $nic_id   = $nic->{Index};
+	my $ndi      = $nic->{DeviceID};
+	my $nic_name = lc $nic->{ServiceName} . "_" . $ndi;
+	my $nic_pnp  = $nic->{PNPDeviceID};
+            
+        next if ( $nic_desc =~ /[vV]irtual/ );
 
-            my $na =
-	    $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter where DeviceID='$nic_id'");
+        # if (RunningAsService()) {
+        #    writelog ("NIC Desc: $nic_desc, Index: $nic_id, DeviceID: $ndi, PNPDeviceID=$nic_pnp");
+	#} else {
+        #    print "NIC Desc: $nic_desc, Index: $nic_id, DeviceID: $ndi, PNPDeviceID=$nic_pnp\n";
+	#}
 
-            foreach my $obj (in $na) {
-	        my $ndi      = $obj->{DeviceID};
-	        my $nic_name = lc $obj->{ServiceName} . "_" . $ndi;
-	        # print "index: " . $obj->{Index} . "\n";
-	        # print "description: " . $obj->{Description} . "\n";
-	        # print "Service Name: " . $obj->{ServiceName} . "\n";
-	        # print "PNPDeviceID: " . $obj->{PNPDeviceID} . "\n";
+        # get PNPEntity for NIC DeviceID
+        my $pnpq = 'ASSOCIATORS OF ' . 
+		   '{Win32_NetworkAdapter.DeviceID="' . $ndi . 
+		   '"} WHERE ResultClass=Win32_PnpEntity';
 
-                # get PNPEntity for NIC DeviceID
-                my $pnpq = 'ASSOCIATORS OF ' . 
-		           '{Win32_NetworkAdapter.DeviceID="' . $ndi . 
-			   '"} WHERE ResultClass=Win32_PnpEntity';
+        my $pnp = $wmi -> ExecQuery($pnpq);
+	foreach my $po (in $pnp) {
+	    my $pnp_name = $po->{Name};
+	    $pnp_name =~ s/\(/[/g;
+	    $pnp_name =~ s/\)/]/g;
 
-                my $pnp = $wmi -> ExecQuery($pnpq);
-		foreach my $po (in $pnp) {
-		    my $pnp_name = $po->{Name};
-		    # print "PNP Name=" . $po->{Name} . "\n";
+            # Debug Mode
 
-                    my $nicstat = 
-	                $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
 
-                    foreach my $pn (in $nicstat) {
 
-		        # perf metrics per NIC
-                        $rxpkt     = $pn -> {PacketsReceivedPerSec};
-                        $rxkbytes  = 
+	    # print "PNP Name=" . $pnp_name . "\n";
+            my $nicstat = 
+	      $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
+
+            foreach my $pn (in $nicstat) {
+
+	        # perf metrics per NIC
+                $rxpkt     = $pn -> {PacketsReceivedPerSec};
+                $rxkbytes  = 
 			  sprintf "%.2f", $pn->{BytesReceivedPerSec} / 1024;
-                        $rxpkterr  = $pn -> {PacketsReceivedErrors};
-                        $rxpktdrop = $pn -> {PacketsReceivedDiscarded};
+                $rxpkterr  = $pn -> {PacketsReceivedErrors};
+                $rxpktdrop = $pn -> {PacketsReceivedDiscarded};
 
-                        $txpkt     = $pn -> {PacketsSentPerSec};
-                        $txkbytes  = 
+                $txpkt     = $pn -> {PacketsSentPerSec};
+                $txkbytes  = 
                           sprintf "%.2f", $pn->{BytesSentPerSec} / 1024;
-                        $txpkterr  = $pn -> {PacketsOutboundErrors};
-                        $txpktdrop = $pn -> {PacketsOutboundDiscarded};
+                $txpkterr  = $pn -> {PacketsOutboundErrors};
+                $txpktdrop = $pn -> {PacketsOutboundDiscarded};
 			
-                        $ql        = $pn -> {OutputQueueLength};
-                        $rxtxpkt   = $pn -> {PacketsPerSec};
-                        $rxtxkbytes= $pn -> {BytesTotalPerSec};
-                        $band      = $pn -> {CurrentBandwidth};
+                $ql        = $pn -> {OutputQueueLength};
+                $rxtxpkt   = $pn -> {PacketsPerSec};
+                $rxtxkbytes= $pn -> {BytesTotalPerSec};
+                $band      = $pn -> {CurrentBandwidth};
 
-                        $nstat{$nic_name} =
-			 "$nic_name:$rxpkt:$rxkbytes:$rxpkterr:$rxpktdrop:$txpkt:$txkbytes:$txpkterr:$txpktdrop:$ql:$rxtxpkt:$rxtxkbytes:$band";
-		    }
-		}
-
+                $nstat{$nic_name} =
+		 "$nic_name:$rxpkt:$rxkbytes:$rxpkterr:$rxpktdrop:$txpkt:$txkbytes:$txpkterr:$txpktdrop:$ql:$rxtxpkt:$rxtxkbytes:$band";
             }
-        }
-    }
+	}
 
+    }
 
     # end payload
     my $end = Win32::GetTickCount() - $start;
@@ -719,7 +722,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.16rc2, 2015-08-18 0112
+nicrec: 1.0.16rc2, 2015-08-19 1359
 END
     exit 0;
 }
