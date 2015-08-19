@@ -155,11 +155,13 @@ sub Startup {
     my %diskname = getdisk();
 
     # debug
-    my $entries = keys (%diskname);
-    writelog ("Number of disks/logical: $entries") if (RunningAsService());
-    for my $key (keys %diskname) {
-        my $value = $diskname{$key};
-        writelog ("$key => $value");
+    if (RunningAsService()) {
+        my $entries = keys (%diskname);
+        writelog ("Number of disks/logical: $entries");
+        for my $key (keys %diskname) {
+            my $value = $diskname{$key};
+            writelog ("$key => $value");
+        }
     }
 
     my $l;
