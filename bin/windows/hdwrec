@@ -445,7 +445,7 @@ sub open_config {
 sub getssi {
     my ($data) = @_;
 
-    my $ssi = $data->{'winsvc_sampling_interval'}->{"$recid"};
+    my $ssi = $data->{'sampling_interval'}->{"$recid"};
     $ssi = 60 if (! defined $ssi);
 
     return $ssi;
@@ -750,7 +750,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.16rc2, 2015-08-19 1108
+hdwrec: 1.0.16, 2015-08-19 1419
 END
     exit 0;
 }
