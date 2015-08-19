@@ -143,7 +143,7 @@ sub Startup {
        );
 
 
-    # disk stats
+    # NIC stats
     my %nstat;
 
     # measure payload
@@ -152,15 +152,17 @@ sub Startup {
 
     # get no of NICs
     # Win32_NetworkAdapterConfiguration
-    my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+    # my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft' AND NOT PNPDeviceID LIKE 'ROOT'");
     my $nnic = 0;
     foreach my $nic (in $wn) {
         if ( defined($nic->{MACAddress}) and
              defined($nic->{IPAddress} ) ) {
 
+	    my $nic_desc = $nic->{Description};
 	    my $nic_id = $nic->{Index};
 
-            # print "NIC Index: $nic_idn\n";
+            writelog ("NIC Desc: $nic_desc, Index: $nic_id") if (RunningAsService());
 
             my $na =
 	    $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter where DeviceID='$nic_id'");
@@ -206,7 +208,7 @@ sub Startup {
                         $rxtxkbytes= $pn -> {BytesTotalPerSec};
                         $band      = $pn -> {CurrentBandwidth};
 
-                        $nstat{$nic_name} = 
+                        $nstat{$nic_name} =
 			 "$nic_name:$rxpkt:$rxkbytes:$rxpkterr:$rxpktdrop:$txpkt:$txkbytes:$txpkterr:$txpktdrop:$ql:$rxtxpkt:$rxtxkbytes:$band";
 		    }
 		}

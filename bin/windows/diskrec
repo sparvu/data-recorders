@@ -154,13 +154,20 @@ sub Startup {
 
     my %diskname = getdisk();
 
+    # debug
+    my $entries = keys (%diskname);
+    writelog ("Number of disks/logical: $entries") if (RunningAsService());
+    for my $key (keys %diskname) {
+        my $value = $diskname{$key};
+        writelog ("$key => $value");
+    }
+
     my $l;
     for my $k (keys %diskname) {
         $l = $diskname{$k};
 	$di = $k . " " . $l;
 	$l =~ s/\://;
 	$dkey = lc "disk" . $k . "_" . $l;
-
 
         # Inventory data
         my $wdinv = 
@@ -364,7 +371,7 @@ sub getdisk {
         $di = $disk->{Index};
         $dd = $disk->{DeviceID};
         $dd =~ s/\\/\\\\/sg;
-        # print "Physical Disk: $di $dd";
+        writelog ("Physical Disk: $di $dd") if (RunningAsService());
 
         my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . $dd . '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
 
@@ -373,7 +380,7 @@ sub getdisk {
         foreach my $obj (in $wpart) {
 
             my $d1 = $obj->{DeviceID};
-	    # print "$d1\n";
+	    writelog ("$d1") if (RunningAsService());
 
             my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
 
