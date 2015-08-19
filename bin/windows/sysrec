@@ -245,6 +245,11 @@ sub Startup {
         my $drift = $tnow - $last_time;
 
         if ($drift > $interval) {
+
+	    # reset drift, check sleep, resume, hibernate
+	    $drift = $interval + 1
+	        if ($drift > (3 * $interval));
+
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    

@@ -384,7 +384,7 @@ sub getdisk {
         $di = $disk->{Index};
         $dd = $disk->{DeviceID};
         $dd =~ s/\\/\\\\/sg;
-        writelog ("Physical Disk: $di $dd") if (RunningAsService());
+        # writelog ("Physical Disk: $di $dd") if (RunningAsService());
 
         my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . $dd . '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
 
@@ -393,7 +393,7 @@ sub getdisk {
         foreach my $obj (in $wpart) {
 
             my $d1 = $obj->{DeviceID};
-	    writelog ("$d1") if (RunningAsService());
+	    # writelog ("$d1") if (RunningAsService());
 
             my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
 

@@ -100,6 +100,7 @@ $cdata = open_config($cfile);
 
 ## hostid
 get_hostid($cdata);
+print "after get_hostid\n";
 
 ## logs
 ($baselog, $curlog) = getlog($cdata);
@@ -443,6 +444,8 @@ sub get_hostid {
     # get hostuuid
     my $h = new_hostid;
 
+    print "Host ID: $h\n";
+
     # populate DSID
     make_dsid($data, $h);
 }
@@ -569,6 +572,7 @@ sub getlog {
     my $cpath = $data->{'log'}->{'current_path'};
     chklog($cpath);
 
+    print "base_path=$bpath, current_path=$cpath\n";
     return ( $bpath, $cpath );
 }
 
