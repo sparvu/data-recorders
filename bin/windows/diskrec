@@ -251,6 +251,11 @@ sub Startup {
         my $drift = $tnow - $last_time;
 
         if ($drift > $interval) {
+
+            # reset drift, check sleep, resume, hibernate
+            $drift = $interval + 1
+              if ($drift > (3 * $interval));
+
 	    my $delta = $drift - $interval;
 	    my $tfix = $tnow - $delta;
 	    
@@ -747,7 +752,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.16, 2015-08-19 1939
+diskrec: 1.0.16, 2015-08-20 1027
 END
     exit 0;
 }
