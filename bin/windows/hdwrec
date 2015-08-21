@@ -70,7 +70,7 @@ else {
 my $loop        = 0;                      # current loop number
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
-my $hp          = 'NA';                   # hypervisor
+my $hv          = 'NA';                   # hypervisor
 my $stime;                                # sleep timer
 my $last_time   = 0;                      # first counter
 $|= 1;                                    # autoflush
@@ -136,7 +136,7 @@ sub Startup {
             writelog ("info: main - last_time=$last_time");
 	} else {
             writelog ("info: main - last_time=$last_time") if ($logging);
-            print "info: main - last_time=$last_time";
+            print "info: main - last_time=$last_time\n";
 	}
     }
 
@@ -165,12 +165,15 @@ sub Startup {
 
     # pcpu, vcpu
     my $wcs = $wmi->InstancesOf("Win32_ComputerSystem");
-    my ($pcpu, $vcpu);
+    my ($pcpu, $vcpu, $hv_mfct, $hv_model);
     foreach my $obj (in $wcs) {
-        $pcpu = $obj->{NumberOfProcessors};
-        $vcpu = $obj->{NumberOfLogicalProcessors};
+        $pcpu     = $obj->{NumberOfProcessors};
+        $vcpu     = $obj->{NumberOfLogicalProcessors};
+        $hv_mfct  = $obj->{Manufacturer};
+        $hv_model = $obj->{Model};
     }
 
+    $hv = printhv($hv_mfct, $hv_model);
 
     # memtotal, swaptotal
     my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
@@ -224,10 +227,10 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
 	} else {
-            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)") if ($logging);
-            print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)";
+            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
+            print "info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
 	}
     }
 
@@ -235,27 +238,32 @@ sub Startup {
         my $drift = $tnow - $last_time;
 
         if ($drift > $interval) {
-	    my $delta = $drift - $interval;
-	    my $tfix = $tnow - $delta;
-	    
+
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
             } else {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)";
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n";
 	    }
 
+            # reset drift, check sleep, resume, hibernate
+            $drift = $interval + 1
+                if ($drift > (3 * $interval));
+
+	    my $delta = $drift - $interval;
+	    my $tfix = $tnow - $delta;
+	    
 	    ### verbose
 	    if ($verbose) {
                 if (RunningAsService()) {
                     writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
                     writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
+                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
 
-            putraw($tfix , $host, $hdw, $hp, $os, $relos, $kernel, $pcpu, 
+            putraw($tfix , $host, $hdw, $hv, $os, $relos, $kernel, $pcpu, 
 	           $vcpu, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
 
             $stime -= $delta * 1000;
@@ -265,14 +273,15 @@ sub Startup {
 
     	} elsif ($drift < $interval) {
 
-            my $ext = $interval - $drift;
-            my $tfix = $tnow + $ext;
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
             } else {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)"; 
+                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n"; 
 	    }
+
+            my $ext = $interval - $drift;
+            my $tfix = $tnow + $ext;
 
 	    ### verbose
 	    if ($verbose) {
@@ -280,12 +289,12 @@ sub Startup {
                     writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
                     writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)";
+                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 
 	    }
 
-            putraw($tfix, $host, $hdw, $hp, $os, $relos, $kernel, $pcpu, 
+            putraw($tfix, $host, $hdw, $hv, $os, $relos, $kernel, $pcpu, 
 	           $vcpu, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
 
             $stime += $ext * 1000;
@@ -295,7 +304,7 @@ sub Startup {
 
 	} else {
 
-            putraw($tnow, $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, 
+            putraw($tnow, $host, $hdw, $hv, lc($os), $relos, $kernel, $pcpu, 
 	           $vcpu, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
 
 	    $last_time = $tnow;
@@ -307,7 +316,7 @@ sub Startup {
     # 1st loop, last_time always 0
     } else {
 
-        putraw($tnow , $host, $hdw, $hp, lc($os), $relos, $kernel, $pcpu, 
+        putraw($tnow , $host, $hdw, $hv, lc($os), $relos, $kernel, $pcpu, 
 	       $vcpu, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
 
         if (!RunningAsService()) {
@@ -357,6 +366,22 @@ sub Install {
 sub Remove {
     $Config{ServiceName} = $recid;
     return;
+}
+
+
+# printhv - print hypervisor 
+#
+sub printhv {
+
+    my ($vendor, $model) = @_;
+    my $hypervisor;
+
+    if    ( $vendor =~ /Xen/i )       { $hypervisor = 'xen';    }
+    elsif ( $vendor =~ /VMware/i )    { $hypervisor = 'esx';    }
+    elsif ( $vendor =~ /Microsoft/i ) { $hypervisor = 'hyperv'; }
+    else                              { $hypervisor = 'NA';     }
+
+    return $hypervisor;
 }
 
 
@@ -669,7 +694,7 @@ sub get_yesterday {
 sub putraw {
 
     my ($traw , 
-        $host,      $hdw,   $hp, 
+        $host,      $hdw,   $hv, 
 	$os,        $relos, $kernel, 
 	$pcpu,      $vcpu,  $memtotal, 
 	$swaptotal, $ndisk, $nnic, $uptime ) = @_;
@@ -679,7 +704,7 @@ sub putraw {
         printf $rawlog 
             "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
             $traw , 
-            $host,      $hdw,   $hp, 
+            $host,      $hdw,   $hv, 
 	    lc($os),    $relos, $kernel, 
 	    $pcpu,      $vcpu,  $memtotal, 
 	    $swaptotal, $ndisk, $nnic, $uptime;
@@ -692,7 +717,7 @@ sub putraw {
             printf $rawlog 
                 "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
                 $traw , 
-                $host,      $hdw,   $hp, 
+                $host,      $hdw,   $hv, 
 	        lc($os),    $relos, $kernel, 
 	        $pcpu,      $vcpu,  $memtotal, 
 	        $swaptotal, $ndisk, $nnic, $uptime;
@@ -702,7 +727,7 @@ sub putraw {
         printf
             "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%d:%d:%s\n",
             $traw , 
-            $host,      $hdw,   $hp, 
+            $host,      $hdw,   $hv, 
 	    lc($os),    $relos, $kernel, 
 	    $pcpu,      $vcpu,  $memtotal, 
 	    $swaptotal, $ndisk, $nnic, $uptime;
@@ -721,9 +746,9 @@ USAGE: hdwrec [-lhV] | [interval [count]]
        hdwrec -install auto
        hdwrec -remove
  eg. 
-  hdwrec.exe                # default CLI mode, print system inventory stdout
-  hdwrec.exe 1 5            # print system inventory 5 times, every 1s stdout
-  hdwrec.exe -l 25          # print system inventory, every 25s stdout, krdlog
+  hdwrec.exe               # default CLI mode, print system inventory stdout
+  hdwrec.exe 1 5           # print system inventory 5 times, every 1s stdout
+  hdwrec.exe -l 25         # print system inventory, every 25s stdout, krdlog
   hdwrec.exe -install auto # run as a service, every 60s, default krdlog
   hdwrec.exe -remove       # stop and remove the service
 
@@ -731,16 +756,17 @@ USAGE: hdwrec [-lhV] | [interval [count]]
   #01 timestamp  : seconds since Epoch, time
   #02 hostname   : hostname
   #03 hdw        : machine hardware name
-  #04 os         : name of the operating system, string
-  #05 relos      : release number of operating system, string
-  #06 kernel     : kernel version and release number
-  #07 pcpu       : number of physical installed CPUs, number
-  #08 vcpu       : number of virtual CPUs, number
-  #09 memtotal   : total physical memory installed, number
-  #10 swaptotal  : total physical swap installed, number
-  #11 disks      : total number of physical disks, number
-  #12 nics       : total number of physical NICs, number
-  #13 uptime     : system uptime, string 
+  #04 hypervisor : name of the hypervisor, string
+  #05 os         : name of the operating system, string
+  #06 relos      : release number of operating system, string
+  #07 kernel     : kernel version and release number
+  #08 pcpu       : number of physical installed CPUs, number
+  #09 vcpu       : number of virtual CPUs, number
+  #10 memtotal   : total physical memory installed, number
+  #11 swaptotal  : total physical swap installed, number
+  #12 disks      : total number of physical disks, number
+  #13 nics       : total number of physical NICs, number
+  #14 uptime     : system uptime, string 
 END
     exit 0;
 }

@@ -158,19 +158,19 @@ sub Startup {
     if ($verbose) {
         my $entries = keys (%diskname);
         if (RunningAsService()) {
-            writelog ("info: main - Number of disks/logical: $entries");
+            writelog ("info: main - Number of disks: $entries");
             for my $key (keys %diskname) {
                 my $value = $diskname{$key};
-                writelog ("info: main - $key => $value");
+                writelog ("info: main - disk$key => $value");
             }
 
 	} else {
-            writelog ("info: main - Number of disks/logical: $entries")
+            writelog ("info: main - Number of disks: $entries")
 	      if ($logging);
-            print "info: main - Number of disks/logical: $entries\n";
+            print "info: main - Number of disks: $entries\n";
             for my $key (keys %diskname) {
                 my $value = $diskname{$key};
-                print "info: main - $key => $value\n";
+                print "info: main - disk$key => $value\n";
             }
 	}
     }
@@ -238,10 +238,10 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
 	} else {
-            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)") if ($logging);
-            print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)\n";
+            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
+            print "info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
 	}
     }
 
@@ -252,13 +252,6 @@ sub Startup {
 
         if ($drift > $interval) {
 
-            # reset drift, check sleep, resume, hibernate
-            $drift = $interval + 1
-              if ($drift > (3 * $interval));
-
-	    my $delta = $drift - $interval;
-	    my $tfix = $tnow - $delta;
-	    
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
             } else {
@@ -266,6 +259,13 @@ sub Startup {
                 print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n"; 
 	    }
 
+            # reset drift, check sleep, resume, hibernate
+            $drift = $interval + 1
+              if ($drift > (3 * $interval));
+
+	    my $delta = $drift - $interval;
+	    my $tfix = $tnow - $delta;
+	    
 	    ### verbose
 	    if ($verbose) {
                 if (RunningAsService()) {
@@ -285,9 +285,6 @@ sub Startup {
 
     	} elsif ($drift < $interval) {
 
-            my $ext = $interval - $drift;
-            my $tfix = $tnow + $ext;
-	    
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
             } else {
@@ -295,6 +292,9 @@ sub Startup {
                 print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n";
 	    }
 
+            my $ext = $interval - $drift;
+            my $tfix = $tnow + $ext;
+	    
 	    ### verbose
 	    if ($verbose) {
                 if (RunningAsService()) {

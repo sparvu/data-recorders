@@ -232,10 +232,10 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)");
+            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
 	} else {
-            writelog ("info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)") if ($logging);
-            print "info: main - elapsed=$end(ms), sleeptime=$stime(ms), timenow=$tnow(epoch)\n";
+            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
+            print "info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
 	}
     }
 
@@ -246,13 +246,6 @@ sub Startup {
 
         if ($drift > $interval) {
 
-	    # reset drift, check sleep, resume, hibernate
-	    $drift = $interval + 1
-	        if ($drift > (3 * $interval));
-
-	    my $delta = $drift - $interval;
-	    my $tfix = $tnow - $delta;
-	    
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
 	    } else {
@@ -260,7 +253,13 @@ sub Startup {
                 print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)";
 	    }
 
+	    # reset drift, check sleep, resume, hibernate
+	    $drift = $interval + 1
+	        if ($drift > (3 * $interval));
 
+	    my $delta = $drift - $interval;
+	    my $tfix = $tnow - $delta;
+	    
 	    ### verbose
 	    if ($verbose) {
                 if (RunningAsService()) {
@@ -290,14 +289,15 @@ sub Startup {
 
     	} elsif ($drift < $interval) {
 
-            my $ext = $interval - $drift;
-            my $tfix = $tnow + $ext;
             if (RunningAsService()) {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
             } else {
                 writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
                 print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n"; 
 	    }
+
+            my $ext = $interval - $drift;
+            my $tfix = $tnow + $ext;
 
 	    ### verbose
 	    if ($verbose) {
