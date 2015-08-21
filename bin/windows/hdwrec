@@ -377,6 +377,7 @@ sub printhv {
     my $hypervisor;
 
     if    ( $vendor =~ /Xen/i )       { $hypervisor = 'xen';    }
+    elsif ( $vendor =~ /QEMU/i )      { $hypervisor = 'kvm';    }
     elsif ( $vendor =~ /VMware/i )    { $hypervisor = 'esx';    }
     elsif ( $vendor =~ /Microsoft/i ) { $hypervisor = 'hyperv'; }
     else                              { $hypervisor = 'NA';     }
@@ -776,7 +777,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.16, 2015-08-20 1026
+hdwrec: 1.0.16, 2015-08-21 1559
 END
     exit 0;
 }
