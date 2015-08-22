@@ -210,7 +210,9 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
-  #02 interface  : interface name, NIC name
+  #02 nicid      : interface name, NIC name
+
+  # rx received, inbound
   #03 rxpkt      : packets received per second, rate
   #04 rxkbytes   : KBytes received per second, rate
   #05 rxerr      : errors while received packets per second, rate
@@ -219,6 +221,8 @@ OPTIONS:
   #08 rxframe    : carrier errors on received packets per second, rate
   #09 rxcompr    : compressed packets received per second, rate
   #10 rxmulti    : multicast packets received per second, rate
+
+  # tx transmitted, outbound
   #11 txpkt      : packets transmitted per second, rate
   #11 txkbytes   : KBytes transmitted per second, rate
   #13 txerr      : errors transmitting packets per second, rate
@@ -227,8 +231,10 @@ OPTIONS:
   #16 txcols     : collisions that were detected per second, rate
   #17 txcarr     : carrier errors on transmitted packets per second, rate
   #18 txcompr    : compressed packets transmitted per second, rate
-  #19 sumrxtxpkt : total packets (received + transmitted) per second, rate 
-  #20 sumrxtxkbs : total KBytes (received + transmitted) per second, rate
+
+  # throughput
+  #19 rxtxpkt    : total packets (received + transmitted) per second, rate 
+  #20 rxtxkbytes : total KBytes (received + transmitted) per second, rate
 END
     exit 0;
 }
@@ -239,7 +245,7 @@ END
 sub revision {
 
     print STDERR <<END;
-nicrec: 1.0.15, 2015-08-04 1021
+nicrec: 1.0.16, 2015-08-22 1544
 END
     exit 0;
 }
