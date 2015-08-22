@@ -100,7 +100,7 @@ while (1) {
 
     ## get stats
     my $arch    = $bhdw->get();
-    my $os      = $bos->get();
+    my $os      = lc $bos->get();
     my $relos   = $brelos->get();
     my $disk    = $bdisk->get();
     my $nic     = $bnic->get();
@@ -144,9 +144,9 @@ while (1) {
             $ht = 0;
         }
     } else {
-        $pcpu = 1;
-        $ncores="NA";
-        $ht = "NA";
+        $pcpu   = 1;
+        $ncores = 'NA';
+        $ht     = 'NA';
     }
 
     # get disks
@@ -162,19 +162,14 @@ while (1) {
     my $u = sprintf("%d", time - $btime);
     my $uptime = sec2human($u);
     
-    # fetch JVMS
-    my $num_jvm = `pgrep java 2>/dev/null | wc -l`;
-    chomp($num_jvm);
-    $num_jvm = "NA" if ($num_jvm == 0);
-
     # swapmem can be NA or value, defaults to string
     # num_jvm can be NA or value, defaults to string
     # HT can be NA or value, defaults to string
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s:%s\n", 
-        time, $host, $arch, $hypervisor, lc($os), $relos,
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s\n", 
+        time, $host, $arch, $hypervisor, $os, $relos,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
-        $num_disk, $num_nic, $num_jvm, $uptime;
+        $num_disk, $num_nic, $uptime;
 
     ### Check for end
     last if ++$loop == $loop_max;
