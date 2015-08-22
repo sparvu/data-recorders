@@ -70,6 +70,8 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
+my $cnt = 0;
+
 while (1) {
 
     # get NIC stats
@@ -111,15 +113,18 @@ while (1) {
         my $cols   = delta($old_col, $col);
         my $pdrop  = delta($old_drop, $drop);
 
-        printf "%.${tp}f:%s:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d\n",
-               time, $n,
-               $rpkt, $rkbyte, $rerr, $rdrop,
-               $tpkt, $tkbyte, $terr,
-               $cols, $pdrop;
+        my $rxtxpkt = $rpkt + $tpkt;
+        my $rxtxkbytes = $rkbyte + $tkbyte;
 
         # save old data
         $old_nicdata{$n} = "$ipkt $ierr $idrop $ibyt $opkt $oerr $obyt $col $drop";
 
+        printf "%.${tp}f:%s:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
+               time, $n,
+               $rpkt, $rkbyte, $rerr, $rdrop,
+               $tpkt, $tkbyte, $terr,
+               $cols, $pdrop,
+               $rxtxpkt, $rxtxkbytes;
     }
 
     ### Check for end
@@ -180,16 +185,25 @@ USAGE: diskrec [-hV] | [interval [count]]
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
-  #02 name       : NIC name, string
-  #05 rxpkt      : rx packets, rate
-  #06 rxkbytes   : rx bytes, rate
-  #07 rxerr      : rx errors, rate 
-  #08 rxdrop     : the number of rx drop packets, rate
-  #09 txpkt      : tx packets, rate
-  #10 txkbytes   : tx bytes, rate
-  #11 txerr      : tx errors, rate 
-  #12 cols       : packets collision, rate 
-  #13 drop       : packets drop, rate
+  #02 nicid      : NIC id, string
+
+  # rx received, inbound
+  #03 rxpkt      : rx packets per sec, rate
+  #04 rxkbytes   : rx KBytes per sec, rate
+  #05 rxerr      : rx packets containing errors, rate 
+  #06 rxdrop     : rx drop packets, number
+
+  # tx transmitted, outbound
+  #07 txpkt      : tx packets per sec, rate
+  #08 txkbytes   : tx KBytes per sec, rate
+  #09 txerr      : tx packets containg errors, rate 
+  #10 txdrop     : tx drop packets, number
+  #11 txcol      : packet collision, rate 
+
+  # throughput
+  #12 rxtxpkt    : rx+tx packets per sec, rate
+  #13 rxtxkbytes : rx+tx KBytes per sec, rate
+
 END
     exit 0;
 }
@@ -198,7 +212,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.14, 2015-07-14 0033
+nicrec: 1.0.16, 2015-08-22 1449
 END
     exit 0;
 }
