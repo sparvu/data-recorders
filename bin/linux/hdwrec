@@ -92,7 +92,7 @@ while (1) {
     my $si  = $stat->sysinfo;
     my $ps  = $stat->procstats;
 
-    # hostname# hostname
+    # hostname
     my $host = hostname;
     $host =~ s/\..*$// if $host =~ /\./;
 
@@ -109,6 +109,12 @@ while (1) {
             close $hv;
         
     }
+
+    # ncores
+    my $ncores = $si->{tcpucount};
+
+    # hyper-threading
+    my $ht = 'NA';
  
     # disks might become available, check disks every sample
     my $num_disk = 0;
@@ -122,7 +128,7 @@ while (1) {
 
     # get os, relos
     if(my $distro = $dl->distribution_name()) {
-        $os = $distro;
+        $os = lc $distro;
 
         if (defined($dl->distribution_version()) && 
            ($dl->distribution_version()) ne "" ) {
@@ -152,7 +158,6 @@ while (1) {
                     } else { $os = "NA"; $relos = "NA"; }
                 }
             }
- 
         }
     }
 
@@ -162,24 +167,18 @@ while (1) {
         $num_nic++ if $i =~ /eth|wlan/;
     }
 
-    # fetch JVMS
-    my $num_jvm = `pgrep java 2>/dev/null | wc -l`;
-    chomp($num_jvm);
-
-    $num_jvm = "NA" if ($num_jvm == 0);
-
     my $memtotal = $si->{memtotal};
     my $swaptotal = $si->{swaptotal};
     $memtotal =~ s/\s+[kK]B$//;
     $swaptotal =~ s/\s+[kK]B$//;
 
     # print metrics
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%.2f:%.2f:%d:%d:%s:%s\n",
-      time, $host, $si->{arch}, $hypervisor, lc($os), $relos,
-      $si->{kernel} . " " . $si->{release},
-      $si->{pcpucount}, $si->{tcpucount},
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
+      time, $host, $si->{arch}, $hypervisor, $os, $relos,
+      $si->{release},
+      $si->{pcpucount}, $ncores, $si->{tcpucount}, $ht,
       $memtotal, $swaptotal, 
-      $num_disk, $num_nic, $num_jvm, $si->{uptime};
+      $num_disk, $num_nic, $si->{uptime};
 
     ### Check for end
     last if ++$loop == $loop_max;
