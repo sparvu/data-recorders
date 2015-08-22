@@ -160,7 +160,7 @@ sub Startup {
 
 
     # os, relos, kernel build
-    my $os = Win32::GetOSName();
+    my $os = lc Win32::GetOSName();
     my ($s, $maj, $min, $build, $id) = Win32::GetOSVersion();
     my $relos = $maj . "." . $min;
     my $kernel = $build;
@@ -271,8 +271,11 @@ sub Startup {
 		}
 	    }
 
-            putraw($tfix , $host, $hdw, $hv, $os, $relos, $kernel, $pcpu, 
-	           $vcpu, $ht, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
+            putraw($tfix, $host,     $hdw,    $hv,
+	           $os,   $relos,    $kernel, 
+	           $pcpu, $ncores,   $vcpu, 
+		   $ht,   $memtotal, $swaptotal, 
+		   $ndisk,$nnic,     $uptime);
 
             $stime -= $delta * 1000;
             $last_time = $tfix;
@@ -302,8 +305,12 @@ sub Startup {
 
 	    }
 
-            putraw($tfix, $host, $hdw, $hv, $os, $relos, $kernel, $pcpu, 
-	           $vcpu, $ht, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
+            putraw($tfix, $host,     $hdw,    $hv,
+	           $os,   $relos,    $kernel, 
+	           $pcpu, $ncores,   $vcpu, 
+		   $ht,   $memtotal, $swaptotal, 
+		   $ndisk,$nnic,     $uptime);
+
 
             $stime += $ext * 1000;
 	    $last_time = $tfix;
@@ -312,8 +319,12 @@ sub Startup {
 
 	} else {
 
-            putraw($tnow, $host, $hdw, $hv, lc($os), $relos, $kernel, $pcpu, 
-	           $vcpu, $ht, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
+
+            putraw($tnow, $host,     $hdw,    $hv,
+	           $os,   $relos,    $kernel, 
+	           $pcpu, $ncores,   $vcpu, 
+		   $ht,   $memtotal, $swaptotal, 
+		   $ndisk,$nnic,     $uptime);
 
 	    $last_time = $tnow;
 
@@ -324,8 +335,12 @@ sub Startup {
     # 1st loop, last_time always 0
     } else {
 
-        putraw($tnow , $host, $hdw, $hv, lc($os), $relos, $kernel, $pcpu, 
-	       $vcpu, $ht, $memtotal, $swaptotal, $ndisk, $nnic, $uptime);
+        putraw($tnow, $host,     $hdw,    $hv,
+	       $os,   $relos,    $kernel, 
+	       $pcpu, $ncores,   $vcpu, 
+	       $ht,   $memtotal, $swaptotal, 
+	       $ndisk,$nnic,     $uptime);
+
 
         if (!RunningAsService()) {
             # check count, interval
@@ -705,18 +720,18 @@ sub putraw {
     my ($traw , 
         $host,      $hdw,       $hv, 
 	$os,        $relos,     $kernel, 
-	$pcpu,      $vcpu,      $ht,
-	$memtotal,  $swaptotal, $ndisk, $nnic, $uptime ) = @_;
+	$pcpu,      $ncores,    $vcpu,   $ht,
+	$memtotal,  $swaptotal, $ndisk,  $nnic, $uptime ) = @_;
 
     if (RunningAsService()) {
 
         printf $rawlog 
-            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%s:%d:%d:%s\n",
+            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
             $traw , 
-            $host,      $hdw,       $hv, 
-	    lc($os),    $relos,     $kernel, 
-	    $pcpu,      $vcpu,      $ht,
-	    $memtotal,  $swaptotal, $ndisk, $nnic, $uptime;
+            $host,      $hdw,       $hv,
+	    $os,        $relos,     $kernel,
+	    $pcpu,      $ncores,    $vcpu,   $ht,
+	    $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime;
 
 
     } else {
@@ -724,22 +739,22 @@ sub putraw {
         if ( $logging ) {
 
             printf $rawlog
-              "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%s:%d:%d:%s\n",
+              "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
               $traw , 
-              $host,      $hdw,       $hv, 
-	      lc($os),    $relos,     $kernel, 
-	      $pcpu,      $vcpu,      $ht,
-	      $memtotal,  $swaptotal, $ndisk, $nnic, $uptime;
+              $host,      $hdw,       $hv,
+	      $os,        $relos,     $kernel,
+	      $pcpu,      $ncores,    $vcpu,   $ht,
+	      $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime;
 	}
 
 
         printf
-          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%s:%s:%s:%d:%d:%s\n",
+          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
           $traw , 
-          $host,      $hdw,       $hv, 
-	  lc($os),    $relos,     $kernel, 
-	  $pcpu,      $vcpu,      $ht,
-	  $memtotal,  $swaptotal, $ndisk, $nnic, $uptime;
+          $host,      $hdw,       $hv,
+	  $os,        $relos,     $kernel,
+	  $pcpu,      $ncores,    $vcpu,   $ht,
+	  $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime;
     }
 
     return;
@@ -770,13 +785,14 @@ USAGE: hdwrec [-lhV] | [interval [count]]
   #06 relos      : release number of operating system, string
   #07 kernel     : kernel version and release number
   #08 pcpu       : number of physical installed CPUs, number
-  #09 vcpu       : number of virtual CPUs, number
-  #10 ht         : hyper-threading ON/OFF, number
-  #11 memtotal   : total physical memory installed, number
-  #12 swaptotal  : total physical swap installed, number
-  #13 disks      : total number of physical disks, number
-  #14 nics       : total number of physical NICs, number
-  #15 uptime     : system uptime, string 
+  #09 cores      : number of physical cores, number
+  #10 vcpu       : number of virtual CPUs, number
+  #11 ht         : hyper-threading ON/OFF, number
+  #12 memtotal   : total physical memory installed, number
+  #13 swaptotal  : total physical swap installed, number
+  #14 disks      : total number of physical disks, number
+  #15 nics       : total number of physical NICs, number
+  #16 uptime     : system uptime, string 
 END
     exit 0;
 }
@@ -786,7 +802,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.16, 2015-08-22 0807
+hdwrec: 1.0.16, 2015-08-22 1356
 END
     exit 0;
 }
