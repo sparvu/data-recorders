@@ -785,7 +785,7 @@ USAGE: hdwrec [-lhV] | [interval [count]]
   #06 relos      : release number of operating system, string
   #07 kernel     : kernel version and release number
   #08 pcpu       : number of physical installed CPUs, number
-  #09 cores      : number of physical cores, number
+  #09 cores      : number of physical CPU cores, number
   #10 vcpu       : number of virtual CPUs, number
   #11 ht         : hyper-threading ON/OFF, number
   #12 memtotal   : total physical memory installed, number
