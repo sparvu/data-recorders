@@ -296,18 +296,16 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #04 hypervisor : name of the hypervisor, string
   #05 os         : name of the operating system, string
   #06 relos      : release number of operating system, string
-  #07 distributor: name of the operating system distributor, string
-  #08 kernel     : kernel version and release number, string
-  #09 pcpu       : number of physical installed CPUs, number
-  #10 cores      : number of physical CPU cores , number
-  #11 vcpu       : number of virtual CPUs, number
-  #12 ht         : hyper-thgreading: 0 off, 1 on , number
-  #13 memtotal   : total physical memory installed, number
-  #14 swaptotal  : total physical swap installed, number
-  #15 disks      : total number of disks, number
-  #16 nics       : total number of NICs, number
-  #17 jvms       : total number of running JVMs, number
-  #18 uptime     : how long the system has been running, string
+  #07 kernel     : kernel version and release number, string
+  #08 pcpu       : number of physical installed CPUs, number
+  #09 cores      : number of physical CPU cores , number
+  #10 vcpu       : number of virtual CPUs, number
+  #11 ht         : hyper-thgreading: 0 off, 1 on , number
+  #12 memtotal   : total physical memory installed, number
+  #13 swaptotal  : total physical swap installed, number
+  #14 disks      : total number of disks, number
+  #15 nics       : total number of NICs, number
+  #16 uptime     : system uptime, string
 END
     exit 0;
 }
@@ -316,7 +314,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.14, 2015-07-14 0032
+hdwrec: 1.0.16, 2015-08-22 1354
 END
     exit 0;
 }
