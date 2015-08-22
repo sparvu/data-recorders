@@ -123,7 +123,7 @@ while (1) {
                time, $n,
                $rpkt, $rkbyte, $rerr, $rdrop,
                $tpkt, $tkbyte, $terr,
-               $cols, $pdrop,
+               $pdrop, $cols,
                $rxtxpkt, $rxtxkbytes;
     }
 
