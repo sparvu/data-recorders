@@ -258,13 +258,14 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #06 relos      : release number of operating system, string
   #07 kernel     : kernel version and release number
   #08 pcpu       : number of physical installed CPUs, number
-  #09 vcpu       : number of virtual CPUs, number
-  #10 memtotal   : total physical memory installed, number
-  #11 swaptotal  : total physical swap installed, number
-  #12 disks      : total number of disks, number
-  #13 nics       : total number of NICs, number
-  #14 jvms       : total number of running JVMs, number
-  #15 uptime     : how long the system has been running, number 
+  #09 cores      : number of physical CPU cores , number
+  #10 vcpu       : number of virtual CPUs, number
+  #11 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
+  #12 memtotal   : total physical memory installed, number
+  #13 swaptotal  : total physical swap installed, number
+  #14 disks      : total number of disks, number
+  #15 nics       : total number of NICs, number
+  #16 uptime     : how long the system has been running, number 
 END
     exit 0;
 }
@@ -274,7 +275,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.15, 2015-08-04 1021
+hdwrec: 1.0.16, 2015-08-22 1419
 END
     exit 0;
 }
