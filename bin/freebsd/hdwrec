@@ -295,7 +295,7 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #08 pcpu       : number of physical installed CPUs, number
   #09 cores      : number of physical CPU cores , number
   #10 vcpu       : number of virtual CPUs, number
-  #11 ht         : hyper-thgreading: 0 off, 1 on , number
+  #11 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
   #12 memtotal   : total physical memory installed, number
   #13 swaptotal  : total physical swap installed, number
   #14 disks      : total number of disks, number
