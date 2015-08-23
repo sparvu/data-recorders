@@ -215,7 +215,7 @@ sub Startup {
 	    $rwkbytes = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
 
             $lfree    = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
-            $lfreepct = $obj->{PercentFreeSpace};
+            $lfreepct = 100 - $obj->{PercentFreeSpace};
         }
 
         $dstat{$dkey} = 
@@ -742,7 +742,7 @@ USAGE: diskrec [-lhV] | [interval [count]]
    # inventory disk usage
    #14 size       : volume size in GB, logical drive
    #15 free       : volume free in GB
-   #16 freepct    : volume free percentage
+   #16 usedpct    : volume used in percentage
 END
     exit 0;
 }
