@@ -200,8 +200,10 @@ sub Startup {
                 $txpktdrop = $pn -> {PacketsOutboundDiscarded};
 			
                 $ql        = $pn -> {OutputQueueLength};
-                $rxtxpkt   = $pn -> {PacketsPerSec};
-                $rxtxkbytes= $pn -> {BytesTotalPerSec};
+                # $rxtxpkt   = $pn -> {PacketsPerSec};
+                $rxtxpkt   = $rxpkt + $txpkt;
+                #$rxtxkbytes= $pn -> {BytesTotalPerSec};
+                $rxtxkbytes= $rxkbytes + $txkbytes;
                 $band      = $pn -> {CurrentBandwidth};
 
                 $nstat{$nic_name} =

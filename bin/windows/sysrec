@@ -217,6 +217,71 @@ sub Startup {
 
     # NIC IO statistics
 
+    # metrics
+    my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
+        $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
+	$ql,    $rxtxpkt,  $rxtxkbytes,$band ) = 0;
+
+    # get no of NICs
+    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft'");
+    my $nnic = 0;
+
+    foreach my $nic (in $wn) {
+
+        my $nic_desc = $nic->{Description};
+	my $nic_id   = $nic->{Index};
+	my $ndi      = $nic->{DeviceID};
+	my $nic_name = lc $nic->{ServiceName} . "_" . $ndi;
+	my $nic_pnp  = $nic->{PNPDeviceID};
+            
+        next if ( $nic_desc =~ /[vV]irtual/ );
+
+        # get PNPEntity for NIC DeviceID
+        my $pnpq = 'ASSOCIATORS OF ' . 
+		   '{Win32_NetworkAdapter.DeviceID="' . $ndi . 
+		   '"} WHERE ResultClass=Win32_PnpEntity';
+
+        my $pnp = $wmi -> ExecQuery($pnpq);
+	foreach my $po (in $pnp) {
+	    my $pnp_name = $po->{Name};
+	    $pnp_name =~ s/\(/[/g;
+	    $pnp_name =~ s/\)/]/g;
+
+            ### verbose
+            if ($verbose) {
+                if (RunningAsService()) {
+                    writelog ("info: main - DeviceID: $ndi, $pnp_name");
+	        } else {
+                    writelog ("info: main - DeviceID: $ndi, $pnp_name") if ($logging);
+                    print "info: main - DeviceID: $ndi, $pnp_name\n";
+	        }
+            }
+            my $nicstat = 
+	      $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
+
+            foreach my $pn (in $nicstat) {
+
+	        # perf metrics per NIC
+                $rxpkt      += $pn -> {PacketsReceivedPerSec};
+                $rxkbytes   += sprintf "%.2f", 
+		                 $pn->{BytesReceivedPerSec} / 1024;
+                $rxpkterr   += $pn -> {PacketsReceivedErrors};
+                $rxpktdrop  += $pn -> {PacketsReceivedDiscarded};
+
+                $txpkt      += $pn -> {PacketsSentPerSec};
+                $txkbytes   += sprintf "%.2f", 
+		                 $pn->{BytesSentPerSec} / 1024;
+                $txpkterr   += $pn -> {PacketsOutboundErrors};
+                $txpktdrop  += $pn -> {PacketsOutboundDiscarded};
+			
+                $rxtxpkt    += $rxpkt + $txpkt;
+                $rxtxkbytes += $rxkbytes + $txkbytes;
+            }
+	}
+    }
+
+
+
     # end payload
     my $end = Win32::GetTickCount() - $start;
     my $stime = ($interval * 1000) - $end;
@@ -279,7 +344,10 @@ sub Startup {
 	           $reads,       $rkbytes,     $rbusypct,
 	           $writes,      $wkbytes,     $wbusypct,
 		   $aql,         $busypct,
-	           $iops,        $krw
+	           $iops,        $krw,
+		   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
+		   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
+                   $rxtxpkt, $rxtxkbytes
 	           );
 
             $stime -= $delta * 1000;
@@ -318,7 +386,10 @@ sub Startup {
 	           $reads,       $rkbytes,     $rbusypct,
 	           $writes,      $wkbytes,     $wbusypct,
 		   $aql,         $busypct,
-	           $iops,        $krw
+	           $iops,        $krw,
+		   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
+		   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
+                   $rxtxpkt, $rxtxkbytes
 	           );
 
             $stime += $ext * 1000;
@@ -337,7 +408,10 @@ sub Startup {
 	           $reads,       $rkbytes,     $rbusypct,
 	           $writes,      $wkbytes,     $wbusypct,
 		   $aql,         $busypct,
-	           $iops,        $krw
+	           $iops,        $krw,
+		   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
+		   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
+                   $rxtxpkt, $rxtxkbytes
 	           );
 
 	    $last_time = $tnow;
@@ -358,7 +432,10 @@ sub Startup {
 	       $reads,       $rkbytes,     $rbusypct,
 	       $writes,      $wkbytes,     $wbusypct,
 	       $aql,         $busypct,
-	       $iops,        $krw
+	       $iops,        $krw,
+	       $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
+	       $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
+               $rxtxpkt, $rxtxkbytes
 	       );
 
         if (!RunningAsService()) {
@@ -424,13 +501,16 @@ sub putraw {
         $r,     $rk,  $rb,
 	$w,     $wk,  $wb,
 	$q,     $b,
-	$i,     $k
+	$i,     $k,
+	$rx,    $rxk, $rxe,  $rxd,
+	$tx,    $txk, $txe,  $txd,
+	$rxtx,  $rxtxk
 	) = @_;
 
     if (RunningAsService()) {
 
         printf $rawlog
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
         $traw, 
         $cpu,   $sum, $head, 
 	$user,  $sys, $idle, 
@@ -440,14 +520,17 @@ sub putraw {
         $r,     $rk,  $rb,
 	$w,     $wk,  $wb,
 	$q,     $b,
-	$i,     $k;
+	$i,     $k,
+	$rx,    $rxk, $rxe,  $rxd,
+	$tx,    $txk, $txe,  $txd,
+	$rxtx,  $rxtxk;
 
     } else {
 
         if ( $logging ) {
 
             printf $rawlog 
-            "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
+            "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
                 $traw, 
                 $cpu,   $sum, $head, 
         	$user,  $sys, $idle, 
@@ -457,13 +540,15 @@ sub putraw {
                 $r,     $rk,  $rb,
 	        $w,     $wk,  $wb,
 	        $q,     $b,
-	        $i,     $k;
-
+	        $i,     $k,
+	        $rx,    $rxk, $rxe,  $rxd,
+        	$tx,    $txk, $txe,  $txd,
+        	$rxtx,  $rxtxk;
 	}
 
 
         printf
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
+        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
         $traw, 
         $cpu,   $sum, $head, 
 	$user,  $sys, $idle, 
@@ -473,7 +558,10 @@ sub putraw {
         $r,     $rk,  $rb,
 	$w,     $wk,  $wb,
 	$q,     $b,
-	$i,     $k;
+	$i,     $k,
+	$rx,    $rxk, $rxe,  $rxd,
+	$tx,    $txk, $txe,  $txd,
+	$rxtx,  $rxtxk;
 
     }
 
@@ -835,23 +923,30 @@ USAGE: sysrec [-lhvV] | [interval [count]]
    #24 writes     : disk write requests per second, rate
    #25 wkbytes    : write bytes per second, in KB, rate
    #26 wbusypct   : busy time servicing write requests, number
+
+   # throughput
    #27 aql        : avg r+w queue length 
    #28 busypct    : busy time r+w requests, number
    #29 iops       : disk read+write requests per second, rate
    #30 rwkbytes   : read+write Kbytes per second, rate
 
-  NET
-   #34 rxkbytes   : received bytes per seccond, in KB, rate
-   #35 txkbytes   : transmitted bytes per second, in KB, rate 
-   #36 sumrxtxkbs : received + transmitted bytes per second, in KB, rate
-   #37 rxerr      : number of errors while received pkt per second, rate
-   #38 txerr      : number of errors while transmitting pkt per second, rate
-   #39 rxdrop     : number of rx packets that were dropped per second, rate
-   #40 txdrop     : number of tx packets that were dropped per second, rate
- 
-   #41 avg1       : LA of the last minute, number
-   #42 avg5       : LA of the last 5 minutes, number
-   #43 avg15      : LA of the last 15 minutes, number
+  NIC
+   # rx received, inbound
+   #31 rxpkt       : rx packets per sec, rate
+   #32 rxkbytes    : rx KBytes per sec, rate
+   #33 rxerr       : rx packets containg errors, rate
+   #34 rxdrop      : rx drop packets, counter
+
+   # tx transmitted, outbound
+   #35 txpkt       : tx packets per sec, rate
+   #36 txkbytes    : tx KBytes per sec, rate
+   #37 txerr       : tx packets containg errors, rate
+   #38 txdrop      : tx drop packets, counter
+
+   # throughput
+   #39 rxtxpkt     : rx+tx packets per second, counter
+   #40 rxtxkbytes  : rx+tx KBytes per second, rate
+
 END
     exit 0;
 }
@@ -861,7 +956,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.16, 2015-08-20 0052
+sysrec: 1.0.16, 2015-08-24 1002
 END
     exit 0;
 }
