@@ -694,20 +694,20 @@ USAGE: nicrec [-lhV] | [interval [count]]
 
    # rx received, inbound
    #03 rxpkt       : rx packets per sec, rate
-   #04 rxkbytes    : rx KBytes per sec, rate
+   #04 rxkbytes    : rx KB per sec, rate
    #05 rxerr       : rx packets containg errors, rate 
    #06 rxdrop      : rx drop packets, counter
 
    # tx transmitted, outbound
    #07 txpkt       : tx packets per sec, rate
-   #08 txkbytes    : tx KBytes per sec, rate
+   #08 txkbytes    : tx KB per sec, rate
    #09 txerr       : tx packets containg errors, rate 
    #10 txdrop      : tx drop packets, counter
 
    # queue length, throughput
    #11 ql          : length of the output packet queue, counter
    #12 rxtxpkt     : rx+tx packets per second, counter
-   #13 rxtxkbytes  : rx+tx KBytes per second, rate
+   #13 rxtxkbytes  : rx+tx KB per second, rate
    #14 band        : current bandwidth in bps, counter
 
 END
@@ -719,7 +719,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.16, 2015-08-22 1456
+nicrec: 1.0.16, 2015-08-25 0121
 END
     exit 0;
 }

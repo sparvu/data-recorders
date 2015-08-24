@@ -907,45 +907,45 @@ USAGE: sysrec [-lhvV] | [interval [count]]
 
   MEM
    #12 memusedpct : size of used memory in percent, number
-   #13 memused    : size of used memory in kilobytes, number
-   #14 memfree    : size of free memory in kilobytes, number
-   #15 memtotal   : size of memory in kilobytes, number
+   #13 memused    : size of used memory in KB, number
+   #14 memfree    : size of free memory in KB, number
+   #15 memtotal   : size of memory in KB, number
    #16 realfreepct: size of memory real free in percent of total memory, number
    #17 swapusedpct: size of used swap space in percent, number
-   #18 swapused   : size of swap space is used is kilobytes, number
-   #19 swapfree   : size of swap space is free in kilobytes, number
-   #20 swaptotal  : size of swap space in kilobytes, number
+   #18 swapused   : size of swap space is used is KB, number
+   #19 swapfree   : size of swap space is free in KB, number
+   #20 swaptotal  : size of swap space in KB, number
 
   DISK
    #21 reads      : disk read requests per second, rate
-   #22 rkbytes    : read bytes per second, in KB, rate
+   #22 rkbytes    : read KB per second, in KB, rate
    #23 rbusypct   : busy time servicing read requests, number
    #24 writes     : disk write requests per second, rate
-   #25 wkbytes    : write bytes per second, in KB, rate
+   #25 wkbytes    : write KB per second, rate
    #26 wbusypct   : busy time servicing write requests, number
 
    # throughput
    #27 aql        : avg r+w queue length 
    #28 busypct    : busy time r+w requests, number
    #29 iops       : disk read+write requests per second, rate
-   #30 rwkbytes   : read+write Kbytes per second, rate
+   #30 rwkbytes   : read+write KB per second, rate
 
   NIC
    # rx received, inbound
    #31 rxpkt       : rx packets per sec, rate
-   #32 rxkbytes    : rx KBytes per sec, rate
+   #32 rxkbytes    : rx KB per sec, rate
    #33 rxerr       : rx packets containg errors, rate
    #34 rxdrop      : rx drop packets, counter
 
    # tx transmitted, outbound
    #35 txpkt       : tx packets per sec, rate
-   #36 txkbytes    : tx KBytes per sec, rate
+   #36 txkbytes    : tx KB per sec, rate
    #37 txerr       : tx packets containg errors, rate
    #38 txdrop      : tx drop packets, counter
 
    # throughput
    #39 rxtxpkt     : rx+tx packets per second, counter
-   #40 rxtxkbytes  : rx+tx KBytes per second, rate
+   #40 rxtxkbytes  : rx+tx KB per second, rate
 
 END
     exit 0;
@@ -956,7 +956,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.16, 2015-08-24 1002
+sysrec: 1.0.16, 2015-08-24 1132
 END
     exit 0;
 }
