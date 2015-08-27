@@ -302,19 +302,20 @@ sub Install {
             die "Cant install $Config{ServiceName} service, exiting...\n";
         }
 
-        if (! defined $clog ) {
+        if (! defined $curlog ) {
             die "Cant install $Config{ServiceName} service, exiting...\n";
         }
     }
 
     $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
-    $Config{Description} = "Kronometrix $recid Service";
+    $Config{Description} = "Kronometrix $transid Service";
 
     return;
 }
 
 
 sub Remove {
+
     $Config{ServiceName} = $transid;
     return;
 }
