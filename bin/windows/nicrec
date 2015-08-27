@@ -33,7 +33,8 @@ use JSON;
 
 
 # Debug Only
-use Data::Dumper;
+# use Data::Dumper;
+
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
@@ -51,8 +52,8 @@ my $result = GetOptions (
                 "n|name=s" => \$Config{ServiceName}
                 );
 
-usage() if ( $h || ! $result );
-revision() if defined $V;
+usage() if (defined $h || ! $result);
+revision() if (defined $V);
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -342,24 +343,31 @@ sub Startup {
 
 
 sub Interactive {
+
     Install();
-    Startup();
+
+    if (( ! defined $h ) and (! defined $V)) {
+        Startup();
+    }
 }
 
 
 sub Install {
 
-    # check for proper config file
-    if (! defined $cdata) {
-        die "Cant install $Config{ServiceName} service, exiting...\n";
-    }
+    if (RunningAsService()) {
+        # check for proper config file
+        if (! defined $cdata) {
+            die "Cant install $Config{ServiceName} service, exiting...\n";
+        }
 
-    if (! defined $clog) {
-        die "Cant install $Config{ServiceName} service, exiting...\n";
+        if (! defined $clog ) {
+            die "Cant install $Config{ServiceName} service, exiting...\n";
+        }
     }
 
     $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
     $Config{Description} = "Kronometrix $recid Service";
+
     return;
 }
 
@@ -686,9 +694,9 @@ sub usage {
     print STDERR <<END;
 USAGE: nicrec [-lhV] | [interval [count]]
  eg.
-  nicrec.exe                 # default CLI mode, print per disk stats stdout
-  nicrec.exe 1 5             # print per disk stats 5 times, every 1s stdout
-  nicrec.exe -l 25           # print per disk stats every 25s stdout, krdlog
+  nicrec.exe                # default CLI mode, print per disk stats stdout
+  nicrec.exe 1 5            # print per disk stats 5 times, every 1s stdout
+  nicrec.exe -l 25          # print per disk stats every 25s stdout, krdlog
   nicrec.exe -install auto  # run as a service, every 60s, default krdlog
   nicrec.exe -remove        # stop and remove the service
 
@@ -715,7 +723,7 @@ USAGE: nicrec [-lhV] | [interval [count]]
    #14 band        : current bandwidth in bps, counter
 
 END
-    exit 0;
+    return;
 }
 
 
@@ -723,7 +731,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.16, 2015-08-25 2333
+nicrec: 1.0.16, 2015-08-27 1643
 END
-    exit 0;
+    return;
 }

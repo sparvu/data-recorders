@@ -54,7 +54,7 @@ my $result = GetOptions (
                 );
 
 usage() if ($h || ! $result);
-revision() if defined $V;
+revision() if (defined $V);
 
 # process [interval]
 my $interval;
@@ -285,24 +285,30 @@ sub Startup {
 
 
 sub Interactive {
+
     Install();
-    Startup();
+
+    if (( ! defined $h ) and (! defined $V)) {
+        Startup();
+    }
 }
 
 
 sub Install {
 
-    # check for proper config file
-    if (! defined $cdata) {
-        die "Cant install $Config{ServiceName} service, exiting...\n";
-    }
+    if (RunningAsService()) {
+        # check for proper config file
+        if (! defined $cdata) {
+            die "Cant install $Config{ServiceName} service, exiting...\n";
+        }
 
-    if (! defined $curlog) {
-        die "Cant install $Config{ServiceName} service, exiting...\n";
+        if (! defined $clog ) {
+            die "Cant install $Config{ServiceName} service, exiting...\n";
+        }
     }
 
     $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
-    $Config{Description} = "Kronometrix $transid Service";
+    $Config{Description} = "Kronometrix $recid Service";
 
     return;
 }
@@ -747,19 +753,19 @@ OPTIONS:
   interval                 : max number of seconds between samples, default 60s 
 
  eg, 
-  sender                 # default mode, transport raw data every 60s
-  sender 10              # transport raw data every 10s
-  sender -t5 10          # transport raw data every 10s with 5s timeout
+  sender                # default mode, transport raw data every 60s
+  sender 10             # transport raw data every 10s
+  sender -t5 10         # transport raw data every 10s with 5s timeout
   sender -install auto  # run as a service, every 60s, 25s timeout
   sender -remove        # stop and remove the service
 END
-    exit 0;
+    return;
 }
 
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.16, 2015-08-27 1422
+sender: 1.0.16, 2015-08-27 1655
 END
-    exit 0;
+    return;
 }

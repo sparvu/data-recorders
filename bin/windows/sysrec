@@ -31,9 +31,9 @@ use Time::Local;
 use Win32;
 use JSON;
 
-
 # Debug Only
-use Data::Dumper;
+# use Data::Dumper;
+
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
@@ -51,7 +51,7 @@ my $result = GetOptions (
                 "n|name=s"      => \$Config{ServiceName}
                 );
 
-usage() if ($h || ! $result);
+usage() if (defined $h || ! $result);
 revision() if (defined $V);
 
 # process [[interval [count]]
@@ -313,7 +313,7 @@ sub Startup {
                 writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)"); 
 	    } else {
                 writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)")  if ($logging);
-                print "warning: drift detected, drift=$drift(s), interval=$interval(s)";
+                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n";
 	    }
 
 	    # reset drift, check sleep, resume, hibernate
@@ -461,20 +461,26 @@ sub Startup {
 
 
 sub Interactive {
+
     Install();
-    Startup();
+
+    if (( ! defined $h ) and (! defined $V)) {
+        Startup();
+    }
 }
 
 
 sub Install {
 
-    # check for proper config file
-    if (! defined $cdata) { 
-        die "Cant install $Config{ServiceName} service, exiting...\n"; 
-    }
+    if (RunningAsService()) {
+        # check for proper config file
+        if (! defined $cdata) { 
+            die "Cant install $Config{ServiceName} service, exiting...\n"; 
+        }
 
-    if (! defined $clog ) {
-        die "Cant install $Config{ServiceName} service, exiting...\n"; 
+        if (! defined $clog ) {
+            die "Cant install $Config{ServiceName} service, exiting...\n"; 
+        }
     }
 
     $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
@@ -487,7 +493,6 @@ sub Install {
 sub Remove {
 
     $Config{ServiceName} = $recid;
-
     return;
 }
 
@@ -883,14 +888,18 @@ sub get_yesterday {
 # usage - print usage and exit.
 #
 sub usage {
+
+#    $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
+#    $Config{Description} = "Kronometrix $recid Service";
+
     print STDERR <<END;
 USAGE: sysrec [-lhvV] | [interval [count]]
        sysrec -install auto 
        sysrec -remove
  eg. 
-  sysrec.exe                 # default CLI mode, print system stats stdout
-  sysrec.exe 1 5             # print system stats 5 times, every 1s stdout
-  sysrec.exe -l 25           # print system stats every 25s stdout and krdlog
+  sysrec.exe                # default CLI mode, print system stats stdout
+  sysrec.exe 1 5            # print system stats 5 times, every 1s stdout
+  sysrec.exe -l 25          # print system stats every 25s stdout and krdlog
   sysrec.exe -install auto  # run as a service, every 60s, default krdlog
   sysrec.exe -remove        # stop and remove the service
 
@@ -951,7 +960,7 @@ USAGE: sysrec [-lhvV] | [interval [count]]
    #40 rxtxkbytes  : rx+tx KB per second, rate
 
 END
-    exit 0;
+    return;
 }
 
 
@@ -959,7 +968,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.16, 2015-08-25 2328
+sysrec: 1.0.16, 2015-08-27 1619
 END
-    exit 0;
+    return;
 }
