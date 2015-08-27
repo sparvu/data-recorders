@@ -129,10 +129,10 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: main - last_time=$last_time");
+            writelog ("info: last_time=$last_time");
 	} else {
-            writelog ("info: main - last_time=$last_time") if ($logging);
-            print "info: main - last_time=$last_time\n";
+            writelog ("info: last_time=$last_time") if ($logging);
+            print "info: last_time=$last_time\n";
 	}
     }
  
@@ -158,19 +158,19 @@ sub Startup {
     if ($verbose) {
         my $entries = keys (%diskname);
         if (RunningAsService()) {
-            writelog ("info: main - Number of disks: $entries");
+            writelog ("info: Number of disks: $entries");
             for my $key (keys %diskname) {
                 my $value = $diskname{$key};
-                writelog ("info: main - disk$key => $value");
+                writelog ("info: disk$key => $value");
             }
 
 	} else {
-            writelog ("info: main - Number of disks: $entries")
+            writelog ("info: Number of disks: $entries")
 	      if ($logging);
-            print "info: main - Number of disks: $entries\n";
+            print "info: Number of disks: $entries\n";
             for my $key (keys %diskname) {
                 my $value = $diskname{$key};
-                print "info: main - disk$key => $value\n";
+                print "info: disk$key => $value\n";
             }
 	}
     }
@@ -238,10 +238,10 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
+            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
 	} else {
-            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
-            print "info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
+            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
+            print "info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
 	}
     }
 
@@ -253,10 +253,10 @@ sub Startup {
         if ($drift > $interval) {
 
             if (RunningAsService()) {
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
+                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)"); 
             } else {
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n"; 
+                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
+                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n"; 
 	    }
 
             # reset drift, check sleep, resume, hibernate
@@ -269,10 +269,10 @@ sub Startup {
 	    ### verbose
 	    if ($verbose) {
                 if (RunningAsService()) {
-                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
-                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
+                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
+                    print "info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
 
@@ -286,10 +286,10 @@ sub Startup {
     	} elsif ($drift < $interval) {
 
             if (RunningAsService()) {
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)");
+                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)");
             } else {
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n";
+                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
+                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n";
 	    }
 
             my $ext = $interval - $drift;
@@ -298,10 +298,10 @@ sub Startup {
 	    ### verbose
 	    if ($verbose) {
                 if (RunningAsService()) {
-                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
-                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
+                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
+                    print "info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
 
@@ -343,6 +343,10 @@ sub Startup {
         last if ++$loop == $loop_max;
     }
 
+    }
+
+    if (RunningAsService()) {
+        writelog ("info: stopped");
     }
 }
 
@@ -752,7 +756,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.16, 2015-08-25 0120
+diskrec: 1.0.16, 2015-08-25 2331
 END
     exit 0;
 }

@@ -100,7 +100,6 @@ $cdata = open_config($cfile);
 
 ## hostid
 get_hostid($cdata);
-print "after get_hostid\n";
 
 ## logs
 ($baselog, $curlog) = getlog($cdata);
@@ -119,7 +118,7 @@ writelog ("info: started");
 
 # cd krd raw data directory
 chdir("$curlog")
-  or die "error: main - cannot open raw data directory, $!\n";
+  or die "error: cannot open raw data directory, $!\n";
 
 foreach (@dbs) {
     my $n = $_ . "rec.krd";
@@ -148,7 +147,7 @@ unless (defined &ContinueRun) {
 
 if (!RunningAsService()) {
     if ($verbose) {
-        print "appliance hash: " . keys(%appliance) . ".\n";
+        print "appliance: " . keys(%appliance) . ".\n";
         for my $key ( keys %appliance ) {
             my $value = $appliance{$key};
             print "$key => $value\n";
@@ -168,13 +167,13 @@ sub Startup {
 
     # timeout - do something else here, if you need to
     unless ($nfound) {
-        writelog("info: main - no krd raw data found, checking...")
+        writelog("info: no krd raw data found, checking...")
           if ( $verbose == 1 );
     }
     else {
 
         ## raw data arrival
-        writelog("info: main - krd raw data found")
+        writelog("info: krd raw data found")
         if ( $verbose == 1 );
 
         my $rcode = 0;
@@ -258,12 +257,12 @@ sub Startup {
                 my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
                 my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
 
-                # writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
+                # writelog("info: $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
                 #) if ( $verbose == 1 );
 
                 if ($lid eq $lmoid ) {
                     
-                    # writelog("debug: main - before sending ... $lid/$msgid => $hname:$port:$sid:$tid");
+                    # writelog("debug: before sending ... $lid/$msgid => $hname:$port:$sid:$tid");
                     send_data( $http, $hname, $sid, $tid, $dsid,
                         $msgid, $devid, $proto, $port, $delta );
                 }
@@ -276,6 +275,12 @@ sub Startup {
     }    # else raw data
 
     }    # while loop
+
+
+    if (RunningAsService()) {
+        writelog ("info: stopped");
+    }
+
 }
 
 
@@ -444,8 +449,6 @@ sub get_hostid {
     # get hostuuid
     my $h = new_hostid;
 
-    print "Host ID: $h\n";
-
     # populate DSID
     make_dsid($data, $h);
 }
@@ -572,7 +575,6 @@ sub getlog {
     my $cpath = $data->{'log'}->{'current_path'};
     chklog($cpath);
 
-    print "base_path=$bpath, current_path=$cpath\n";
     return ( $bpath, $cpath );
 }
 
@@ -757,7 +759,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.16rc2, 2015-08-18 0116
+sender: 1.0.16, 2015-08-27 1422
 END
     exit 0;
 }

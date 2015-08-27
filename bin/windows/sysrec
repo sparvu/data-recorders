@@ -130,10 +130,10 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: main - last_time=$last_time");
+            writelog ("info: last_time=$last_time");
 	} else {
-            writelog ("info: main - last_time=$last_time") if ($logging);
-            print "info: main - last_time=$last_time\n";
+            writelog ("info: last_time=$last_time") if ($logging);
+            print "info: last_time=$last_time\n";
 	}
     }
 
@@ -250,10 +250,10 @@ sub Startup {
             ### verbose
             if ($verbose) {
                 if (RunningAsService()) {
-                    writelog ("info: main - DeviceID: $ndi, $pnp_name");
+                    writelog ("info: DeviceID: $ndi, $pnp_name");
 	        } else {
-                    writelog ("info: main - DeviceID: $ndi, $pnp_name") if ($logging);
-                    print "info: main - DeviceID: $ndi, $pnp_name\n";
+                    writelog ("info: DeviceID: $ndi, $pnp_name") if ($logging);
+                    print "info: DeviceID: $ndi, $pnp_name\n";
 	        }
             }
             my $nicstat = 
@@ -280,8 +280,6 @@ sub Startup {
 	}
     }
 
-
-
     # end payload
     my $end = Win32::GetTickCount() - $start;
     my $stime = ($interval * 1000) - $end;
@@ -297,10 +295,10 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
+            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
 	} else {
-            writelog ("info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
-            print "info: main - elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
+            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
+            print "info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
 	}
     }
 
@@ -312,10 +310,10 @@ sub Startup {
         if ($drift > $interval) {
 
             if (RunningAsService()) {
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
+                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)"); 
 	    } else {
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)")  if ($logging);
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)";
+                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)")  if ($logging);
+                print "warning: drift detected, drift=$drift(s), interval=$interval(s)";
 	    }
 
 	    # reset drift, check sleep, resume, hibernate
@@ -328,10 +326,10 @@ sub Startup {
 	    ### verbose
 	    if ($verbose) {
                 if (RunningAsService()) {
-                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else { 
-                    writelog ("info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: main - delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
+                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
+                    print "info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
 
@@ -358,10 +356,10 @@ sub Startup {
     	} elsif ($drift < $interval) {
 
             if (RunningAsService()) {
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)"); 
+                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)"); 
             } else {
-                writelog ("warning: main - drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: main - drift detected, drift=$drift(s), interval=$interval(s)\n"; 
+                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
+                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n"; 
 	    }
 
             my $ext = $interval - $drift;
@@ -370,10 +368,10 @@ sub Startup {
 	    ### verbose
 	    if ($verbose) {
                 if (RunningAsService()) {
-                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
+                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
 		} else {
-                    writelog ("info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: main - ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
+                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
+                    print "info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
 		}
 	    }
 
@@ -455,6 +453,10 @@ sub Startup {
     }
 
     }
+
+    if (RunningAsService()) {
+        writelog ("info: stopped");
+    }
 }
 
 
@@ -483,6 +485,7 @@ sub Install {
 
 
 sub Remove {
+
     $Config{ServiceName} = $recid;
 
     return;
@@ -956,7 +959,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.16, 2015-08-24 1132
+sysrec: 1.0.16, 2015-08-25 2328
 END
     exit 0;
 }
