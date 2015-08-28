@@ -5,82 +5,105 @@ README Kronometrix Data Recording
 1.Supported Operating Systems
 
   We support the following Windows based operating systems:
-    Windows 2008 Server 64bit 
-    Windows 7 Professional 64bit
+    Windows 2008 R2 Server 64bit
+    Windows 2012 R2 Server 64bit
+    Windows 7, 8, 10 64bit
 
 
 2.Package Content
 
-  Kronometrix 1.0 FreeBSD edition contains, all data records and the 
-  transport utility. Along with these come the manual pages and 
-  documentation, all for free:
+  Kronometrix 1.0.16 Windows edition contains, all data records and the 
+  transport utility and additional tools:
 
     - agents: sysrec, cpurec, diskrec, nicrec, hdwrec
 
     - transport: sender at the moment uses HTTP protocol
 
-    - documentation: manual pages
+    - disks.exe: utility to return and physical to logical disks
+
+    - nics.exe: utility to return all physical NICs
 
 
 3.Prerequisites
 
-  o 
+  There are no pre-requisites at this moment for Windows release. 
 
 
 4.Install
+  
+  Please run the installation package:
+    kdr-1.0.16-win-x64.exe as Administrator or user with administrator rights
+
+  Software will install automatically under: 
+    C:\Program Files\Kronometrix
 
 
 5.Uninstall
+
+  Please run uninstall.exe found under C:\Program Files\Kronometrix directory.
+  The unistall will take care of stopping and removing all data recorders 
+  from the system.
 
 
 6.Start procedure
 
   6.1 Agents
 
-    We can start all agents, data recorders using kronometrix/etc/agents 
-    script. Make sure before running that you are logged as krmx user
+    We can start all data recorders using each recorder file, using 
+    install option. This will run and install the data recorder as a Windows
+    service. Make sure before running that you are logged as Administrator 
+    user or have a Command Prompt as Administrator.
 
-    As krmx user:
-      $ /opt/kronometrix/etc/agents start
+    As Administrator user:
+      c:\Program Files\Kronometrix\bin>sysrec.exe -install auto
+      c:\Program Files\Kronometrix\bin>cpurec.exe -install auto
+      c:\Program Files\Kronometrix\bin>diskrec.exe -install auto
+      c:\Program Files\Kronometrix\bin>nicrec.exe -install auto
+      c:\Program Files\Kronometrix\bin>hdwrec.exe -install auto
 
-    As root:
-      # /etc/rc.d/kronometrix start
 
-  6.1 Transport
+  6.2 Transport
   
-    We can start sender, the transport utility kronometrix/etc/transport
-    script. Make sure before running that you are logged as krmx user
+    We can start sender, the transport utility, by running the utility 
+    using install option. Make sure before running that you are logged 
+    as Administrator user or have a Command Prompt as Administrator.
 
-    As krmx user:
-      $ /opt/kronometrix/etc/transport start
-
-    As root:
-      # /etc/rc.d/kronometrix_transport start
+    As Administrator user:
+      c:\Program Files\Kronometrix\bin>sender.exe -install auto
 
 
 7.Stop procedure
 
   7.1 Agents
   
-    We can stop all agents, data recorders using kronometrix/etc/agents 
-    script. Make sure before running that you are logged as krmx user
+    We can stop all data recorders running each recorder file, using 
+    remove option. This will run and remove the data recorders from
+    operating system. Make sure before running that you are logged 
+    as Administrator user or have a Command Prompt as Administrator.
 
-    As krmx user:
-      $ /opt/kronometrix/etc/agents stop
+    As Administrator user:
+      c:\Program Files\Kronometrix\bin>sysrec.exe -remove
+      c:\Program Files\Kronometrix\bin>cpurec.exe -remove
+      c:\Program Files\Kronometrix\bin>diskrec.exe -remove
+      c:\Program Files\Kronometrix\bin>nicrec.exe -remove
+      c:\Program Files\Kronometrix\bin>hdwrec.exe -remove
 
-    As root:
-      # /etc/rc.d/kronometrix stop
 
   7.2 Transport
   
-    We can start sender, the transport utility kronometrix/etc/transport
-    script. Make sure before running that you are logged as krmx user
+    We can stop the transport utility running the utility file, using 
+    remove option. This will run and remove the transport utility from
+    operating system. Make sure before running that you are logged 
+    as Administrator user or have a Command Prompt as Administrator.
 
-    As krmx user:
-      $ /opt/kronometrix/etc/transport stop
+    As Administrator user:
+      c:\Program Files\Kronometrix\bin>sender.exe -remove
 
-    As root:
-      # /etc/rc.d/kronometrix_transport stop
+
+   Note: Please wait, the stop procedure might take some time to complete. If
+   you notice that the operation takes long time, more 60-120 seconds,
+   use sc and taskkill utility to stop and remove the Kronometrix services or
+   transport utility from Windows.
 
 
 8.Raw data
@@ -88,25 +111,24 @@ README Kronometrix Data Recording
   Kronometrix data recorders will write the raw data under the main
   prefix installation directory:
  
-    /opt/kronometrix/log/current
+    C:\Program Files\Kronometrix\log\current 
 
   For every data recorder, one raw data file, having .krd extension
   will be created and updated. Every night, we rotate these krd files
   and store them under:
 
-    /opt/kronometrix/log/daily
+    C:\Program Files\Kronometrix\log\daily
 
 
 9.Configuration
 
-  All data recorders do not need extra configuration except the transport
-  utility, sender. It is recommended to dont change or alter data recorders
-  configuration, since they are already configured.
+  All data recorders and transport utility use kronometrix.json as the main
+  configuration file. 
 
   9.1 kronometrix.json
 
-    This is the main configuration file used by the sender transport
-    utility. All data recorders wont use or consult this file. 
+    This is the main configuration file used by the data recorders and 
+    sender, the transport utility. 
 
     Logging section
 
@@ -146,12 +168,3 @@ README Kronometrix Data Recording
 
         o dsid: to be let empty, will be computed
 
-      
-  9.2 Log rotation
-
-
-Notes
-
-  Kronometrix uses its own logrotate job in order to be flexible and dont 
-  conflict with other operating system jobs. raw2day as well is called after 
-  the log rotation has taken place ! 
