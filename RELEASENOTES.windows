@@ -1,0 +1,22 @@
+
+Kronometrix Data Recording
+
+Platforms
+    Windows 2008 R2 Server 64bit
+    Windows 2012 R2 Server 64bit
+    Windows 7, 8, 10 64bit
+
+Bug Management System
+  https://github.com/kronometrix/recording/issues
+
+
+Releases
+
+  1.0.16 28-08-2015 Release
+    diskrec data message changes #53
+    kronometrix.json on windows should support service interval #56 
+    sender should use HTTP::Tiny #51
+    sysrec does not honor interval count options #49
+    sysrec on windows cannot run as a service #48
+    kronometrix.json default settings #47
+    time drifts on win32 platform #35
