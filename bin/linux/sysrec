@@ -354,24 +354,33 @@ USAGE: sysrec [-hV] | [interval [count]]
 
   DISK
    #28 reads      : disk read requests per second, rate
-   #29 rkbytes    : read bytes per second, in KB, rate
+   #29 rkbytes    : read KB per second, rate
    #30 writes     : disk write requests per second, rate
-   #31 wkbytes    : write bytes per second, in KB, rate
-   #32 sumrw      : disk read+write requests per second, rate
-   #33 sumrwkb    : read+write Kbytes per second, rate
+   #31 wkbytes    : write KB per second, rate
+   #32 iops       : disk read+write requests per second, rate
+   #33 rwkbytes   : read+write KB per second, rate
 
-  NET
-   #34 rxkbytes   : received bytes per seccond, in KB, rate
-   #35 txkbytes   : transmitted bytes per second, in KB, rate 
-   #36 sumrxtxkb  : received + transmitted bytes per second, in KB, rate
-   #37 rxerr      : number of errors while received pkt per second, rate
-   #38 txerr      : number of errors while transmitting pkt per second, rate
+  NIC
+   # rx received, inbound
+   #34 rxpkt      : rx packets per sec, rate
+   #35 rxkbytes   : rx KB per sec, rate
+   #36 rxerr      : rx packets containing errors, rate
    #39 rxdrop     : number of rx packets that were dropped per second, rate
+   
+   # tx transmitted, outbound
+   #34 txpkt      : tx packets per sec, rate
+   #35 txkbytes   : tx KB per sec, rate
+   #38 txerr      : tx packets containing errors, rate
    #40 txdrop     : number of tx packets that were dropped per second, rate
+
+   # throughput
+   #36 rxtxpkt     : rx+tx packets per sec, rate
+   #36 rxtxkbytes  : rx+tx KB per sec, rate
  
    #41 avg1       : LA of the last minute, number
    #42 avg5       : LA of the last 5 minutes, number
    #43 avg15      : LA of the last 15 minutes, number
+
 END
     exit 0;
 }
