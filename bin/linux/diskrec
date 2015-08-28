@@ -50,6 +50,7 @@ else {
 
 ###  Variables
 my $sb   = "/sys/block";
+my $ds   = "/proc/diskstats";
 my $loop = 0;        # current loop number
 $main::opt_h = 0;    # help option
 $main::opt_V = 0;    # revision option
@@ -94,23 +95,53 @@ if ( $interval =~ /\./ ) {
 
 while ( 1 ) {
 
-    ### get disks
-    my $rdisks = get_disks();
+    my $stat    = $lxs->get;
+
+    # get the diskid
+    my @rdisks = sort $stat->diskstats;
+
+    #use Data::Dumper;
+    #print Dumper(@disks);
+    #my $ref = df ("/");
+    #if(defined($ref)) {
+    #    printf "Total: %.2f\n", $ref->{blocks} / 1024 / 1024;
+    #    printf "Total free: %.2f\n", $ref->{bfree} / 1024 / 1024;
+    #    printf "Total avail to me: %.2f\n", $ref->{bavail} / 1024 / 1024;
+    #    printf "Used: %.2f\n", $ref->{used} / 1024 / 1024;
+    #    printf "Free percent: %.2f Used: %.2f\n", 100 - $ref->{per}, $ref->{per};
+    #}
+
+    #my @sfs = $fs->special_filesystems();
+#
+#    my $f1 = Sys::Filesystem->filesystems(device => "/dev/root");
+
+    # Dump $lx variable
+    #use Data::Dumper;
+    #print Dumper($f1);
+    #print $f1;
+
 
     ### loop over all disks
-    foreach my $d (@$rdisks) {
+    foreach my $d (@rdisks) {
         my ( $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt ) = 0;
-
 
         # filter by disk
         if ( $disk_sem == 1 ) {
             next if ( all { $_ ne $d } @def_disks);
         }
 
+
+        #exceptions
+        next if ($d =~ m/^loop|^ram|^zram/);
+        next if ($d =~ m/^fd0|^hdc/);
+        next if ($d =~ m/^md(?:[0-9])/);
+        next if ($d =~ m/^sr(?:[0-9])$/);
+
+        #print "Disk: $d\n";
+
         my $print_time = time();
 
         ### Get Stats
-        my $stat    = $lxs->get;
         my $disk    = $stat->diskstats;
 
         ### verbose
@@ -119,28 +150,32 @@ while ( 1 ) {
         }
 
         if ( defined( $disk->{$d}{rdreq} ) ) {
-            $readReq += $disk->{$d}{rdreq};
+            $readReq = $disk->{$d}{rdreq};
         }
 
         if ( defined( $disk->{$d}{wrtreq} ) ) {
-            $writeReq += $disk->{$d}{wrtreq};
+            $writeReq = $disk->{$d}{wrtreq};
         }
 
         if ( defined( $disk->{$d}{ttreq} ) ) {
-            $totReq += $disk->{$d}{ttreq};
+            $totReq = $disk->{$d}{ttreq};
         }
 
         if ( defined( $disk->{$d}{rdbyt} ) ) {
-            $readByt += ( $disk->{$d}{rdbyt} / 1024 );
+            $readByt = ( $disk->{$d}{rdbyt} / 1024 );
         }
 
         if ( defined( $disk->{$d}{wrtbyt} ) ) {
-            $writeByt += ( $disk->{$d}{wrtbyt} / 1024 );
+            $writeByt = ( $disk->{$d}{wrtbyt} / 1024 );
         }
 
         if ( defined( $disk->{$d}{ttbyt} ) ) {
-            $totByt += ( $disk->{$d}{ttbyt} / 1024 );
+            $totByt = ( $disk->{$d}{ttbyt} / 1024 );
         }
+
+        my $lsize = 'NA';
+        my $lfree = 'NA';
+        my $lused = 'NA';
 
         ### verbose
         if ($verbose) {
@@ -148,8 +183,9 @@ while ( 1 ) {
             print "  total bytes:  $totByt ( reads: $readByt writes: $writeByt) \n";
         }
 
-        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
-            $print_time, $d, $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt;
+        
+        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%s:%s:%s\n",
+            $print_time, $d, $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt, $lsize, $lfree, $lused;
 
     }
 
@@ -160,37 +196,6 @@ while ( 1 ) {
     ### Interval
     pause;
 
-}
-
-
-# get_disks - return the attached disks on the system.
-#
-sub get_disks {
-
-    my @d;
-
-    # get disks
-    opendir(my $dh, $sb) 
-        or die "Error: Cannot find block directory: $!\n";
-
-    while(readdir $dh) {
-        # discard parent dir
-        next if ($_ =~ m/^\./);
-
-        # exceptions
-        next if ($_ =~ m/^loop|^ram|^zram/);
-        next if ($_ =~ m/^fd0|^hdc/);
-        next if ($_ =~ m/^md(?:[0-9])/);
-        next if ($_ =~ m/^sr(?:[0-9])$/);
-        
-        # print disks
-        # print "Disk: $_\n";
-        push @d, "$_";
-    }
-    closedir $dh;
-
-    # return array ref
-    return \@d;
 }
 
 
@@ -212,12 +217,24 @@ OPTIONS:
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
   #02 name       : disk name, LUN name
-  #03 reads      : read requests per second, rate
-  #04 rkbytes    : read KBytes per second, rate
-  #05 writes     : write requests per second, rate
-  #06 wkbytes    : write KBytes per second, rate
-  #07 sumrws     : total read + write requests per second, rate
-  #08 sumrwkbs   : total read + write bytes per second, in KB, rate
+
+  # reads
+  #03 reads      : disk reads per second, rate
+  #04 rkbytes    : read KB per second, rate
+
+  # writes
+  #05 writes     : disk writes per second, rate
+  #06 wkbytes    : write KB per second, rate
+
+  # throughput
+  #07 iops       : disk read+write requests per second, rate
+  #08 rwkbytes   : read+write KB per second, rate
+
+  # inventory
+  #09 size       : volume, mountpoint size in GB
+  #10 free       : volume, mountpoint free in GB
+  #11 usedpct    : volume, mountpoint used in percentage
+
 END
     exit 0;
 }
@@ -227,7 +244,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.16, 2015-08-30 1356
+diskrec: 1.0.16, 2015-08-30 1403
 END
     exit 0;
 }

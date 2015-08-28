@@ -21,6 +21,7 @@ Releases
     diskrec data message changes #53
     on some Linux platforms we cant run data recorders #58 
     backup job does not work correctly in Linux #57
+    update curl-7.44.0
 
   1.0.15 04-08-2015 Release
     raw2day should not use libcurl #55
