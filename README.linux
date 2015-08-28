@@ -8,7 +8,7 @@ README Kronometrix Data Recording
     CentOS release 5.11 (Final) x86_64, i386
     CentOS release 6.6 (Final) x86_64, i386
     CentOS Linux release 7.0.1406 (Core) x86_64, i386
-    CloudLinux 5.11 x86_64, i386
+    CloudLinux 5, 6 x86_64, i386
     Debian GNU/Linux 7 (wheezy) x86_64, i386
     Ubuntu Server Edition 10.04+ x86_64, i386
     Raspbian GNU/Linux 7 (wheezy) armv6
@@ -41,6 +41,18 @@ README Kronometrix Data Recording
   o Ubuntu/Debian based systems enable cron:
       # update-rc.d cron defaults
       # chkconfig --list cron
+
+  o CloudLinux will require additional settings to allow user krmx to
+    access /proc interface. 
+
+    Add the following for the /etc/sysctl.conf
+
+      # allow krmx to access /proc
+      fs.proc_can_see_other_uid=1
+      fs.proc_super_gid=5000
+
+    See here for more information:
+    http://docs.cloudlinux.com/index.html?virtualized__proc_filesystem.html
 
 
 4.Install
