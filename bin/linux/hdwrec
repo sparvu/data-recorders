@@ -227,6 +227,7 @@ sub get_disks {
         next if ($_ =~ m/^loop|^ram|^zram/);
         next if ($_ =~ m/^fd0|^hdc/);
         next if ($_ =~ m/^md(?:[0-9])/);
+        next if ($_ =~ m/^dm-(?:[0-9])/);
         next if ($_ =~ m/^sr(?:[0-9])$/);
 
         # print disks

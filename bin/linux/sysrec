@@ -212,15 +212,6 @@ while (1) {
     # exclude from runqa_sz current process
     $rqsz--;
 
-    # print metrics
-    # sdrd 0737 43 fields
-    # timestamp %.${tp}f:
-    # cpu %.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:
-    # mem %.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:
-    # disk %d:%d:%d:%.2f:%.2f:%.2f:
-    # net %.2f:%.2f:%.2f:%d:%d:%d:%d:
-    # oth %.2f:%.2f:%.2f
-
     printf
          "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f\n",
           time,
