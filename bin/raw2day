@@ -375,7 +375,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-raw2day: 1.0.15, 2015-08-04 1324
+raw2day: 1.0.16, 2015-08-31 0130
 END
     exit 0;
 }
