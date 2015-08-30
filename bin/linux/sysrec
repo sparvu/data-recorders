@@ -83,10 +83,10 @@ if ( $interval =~ /\./ ) {
 
 while (1) {
 
-    my ( $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt ) = 0;
+    my ( $reads, $rkbytes, $writes, $wkbytes, $iops, $rwkbytes ) = 0;
 
     # net stats
-    my ( $rxByt, $txByt, $ntByt, $rxerr, $txerr, $rxdrp, $txdrp ) = 0;
+    my ( $rxpkt, $rxkbytes, $rxerr, $rxdrop, $txpkt, $txkbytes, $txerr, $txdrop, $ntByt, $rxtxpkt, $rxtxkbytes ) = 0;
 
     # runq size and task count
     my ( $rqsz, $tcount ) = 0;
@@ -128,27 +128,27 @@ while (1) {
         # print "\nDisk: $_ \n";
 
         if ( defined( $disk->{$_}{rdreq} ) ) {
-            $readReq += $disk->{$_}{rdreq};
-        }
-
-        if ( defined( $disk->{$_}{wrtreq} ) ) {
-            $writeReq += $disk->{$_}{wrtreq};
-        }
-
-        if ( defined( $disk->{$_}{ttreq} ) ) {
-            $totReq += $disk->{$_}{ttreq};
+            $reads += $disk->{$_}{rdreq};
         }
 
         if ( defined( $disk->{$_}{rdbyt} ) ) {
-            $readByt += ( $disk->{$_}{rdbyt} / 1024 );
+            $rkbytes += ( $disk->{$_}{rdbyt} / 1024 );
+        }
+
+        if ( defined( $disk->{$_}{wrtreq} ) ) {
+            $writes += $disk->{$_}{wrtreq};
         }
 
         if ( defined( $disk->{$_}{wrtbyt} ) ) {
-            $writeByt += ( $disk->{$_}{wrtbyt} / 1024 );
+            $wkbytes += ( $disk->{$_}{wrtbyt} / 1024 );
+        }
+
+        if ( defined( $disk->{$_}{ttreq} ) ) {
+            $iops += $disk->{$_}{ttreq};
         }
 
         if ( defined( $disk->{$_}{ttbyt} ) ) {
-            $totByt += ( $disk->{$_}{ttbyt} / 1024 );
+            $rwkbytes += ( $disk->{$_}{ttbyt} / 1024 );
         }
 
         ### Debug
@@ -167,39 +167,55 @@ while (1) {
     foreach (@nics) {
 
         # skip here the non eth NICs
-        next if $_ !~ /^eth.*/;
+        next if $_ !~ /^eth|^wlan/;
 
         #
         # print "NIC: $_ \n";
+
+        # rx
+        if ( defined( $nic->{$_}{rxpcks} ) ) {
+            $rxpkt += ( $nic->{$_}{rxpcks} );
+        }
+
         if ( defined( $nic->{$_}{rxbyt} ) ) {
-            $rxByt += ( $nic->{$_}{rxbyt} / 1024 );
-        }
-
-        if ( defined( $nic->{$_}{txbyt} ) ) {
-            $txByt += ( $nic->{$_}{txbyt} / 1024 );
-        }
-
-        if ( defined( $nic->{$_}{ttbyt} ) ) {
-            $ntByt += ( $nic->{$_}{ttbyt} / 1024 );
+            $rxkbytes += ( $nic->{$_}{rxbyt} / 1024 );
         }
 
         if ( defined( $nic->{$_}{rxerrs} ) ) {
             $rxerr += ( $nic->{$_}{rxerrs} );
         }
 
+        if ( defined( $nic->{$_}{rxdrop} ) ) {
+            $rxdrop += ( $nic->{$_}{rxdrop} );
+        }
+
+        # tx
+        if ( defined( $nic->{$_}{txpcks} ) ) {
+            $txpkt += ( $nic->{$_}{txpcks} );
+        }
+
+        if ( defined( $nic->{$_}{txbyt} ) ) {
+            $txkbytes += ( $nic->{$_}{txbyt} / 1024 );
+        }
+
         if ( defined( $nic->{$_}{txerrs} ) ) {
             $txerr += ( $nic->{$_}{txerrs} );
         }
 
-        if ( defined( $nic->{$_}{rxdrop} ) ) {
-            $rxdrp += ( $nic->{$_}{rxdrop} );
-        }
-
         if ( defined( $nic->{$_}{txdrop} ) ) {
-            $txdrp += ( $nic->{$_}{txdrop} );
+            $txdrop += ( $nic->{$_}{txdrop} );
+        }
+ 
+        # throughput
+        if ( defined( $nic->{$_}{ttbyt} ) ) {
+            $rxtxkbytes += ( $nic->{$_}{ttbyt} / 1024 );
         }
 
     }
+
+    $rxtxpkt = $rxpkt + $txpkt;
+    # $rxtxkbytes = $rxkbytes + $txkbytes;
+
 
     # get runq_sz and process count from /proc/loadavg
     open my $plavg, '<', '/proc/loadavg'
@@ -213,7 +229,7 @@ while (1) {
     $rqsz--;
 
     printf
-         "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f\n",
+         "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
           time,
           $cpu->{total},  $ncpu,        $hcpu, 
           $cpu->{user},   $cpu->{nice}, $cpu->{system},  $cpu->{idle},
@@ -227,12 +243,13 @@ while (1) {
           $mem->{swapfree},    $mem->{swaptotal},
           $mem->{swapcached},
 
-          $readReq, $readByt, 
-          $writeReq, $writeByt,
-          $totReq, $totByt,
+          $reads,  $rkbytes,
+          $writes, $wkbytes,
+          $iops,   $rwkbytes,
 
-          $rxByt,   $txByt,    $ntByt,
-          $rxerr, $txerr, $rxdrp, $txdrp,
+          $rxpkt, $rxkbytes, $rxerr, $rxdrop,
+          $txpkt, $txkbytes, $txerr, $txdrop,
+          $rxtxpkt, $rxtxkbytes,
 
           $la->{avg_1}, $la->{avg_5}, $la->{avg_15};
 
@@ -356,21 +373,21 @@ USAGE: sysrec [-hV] | [interval [count]]
    #34 rxpkt      : rx packets per sec, rate
    #35 rxkbytes   : rx KB per sec, rate
    #36 rxerr      : rx packets containing errors, rate
-   #39 rxdrop     : number of rx packets that were dropped per second, rate
+   #37 rxdrop     : number of rx packets that were dropped per second, rate
    
    # tx transmitted, outbound
-   #34 txpkt      : tx packets per sec, rate
-   #35 txkbytes   : tx KB per sec, rate
-   #38 txerr      : tx packets containing errors, rate
-   #40 txdrop     : number of tx packets that were dropped per second, rate
+   #38 txpkt      : tx packets per sec, rate
+   #39 txkbytes   : tx KB per sec, rate
+   #40 txerr      : tx packets containing errors, rate
+   #41 txdrop     : number of tx packets that were dropped per second, rate
 
    # throughput
-   #36 rxtxpkt     : rx+tx packets per sec, rate
-   #36 rxtxkbytes  : rx+tx KB per sec, rate
+   #42 rxtxpkt    : rx+tx packets per sec, rate
+   #43 rxtxkbytes : rx+tx KB per sec, rate
  
-   #41 avg1       : LA of the last minute, number
-   #42 avg5       : LA of the last 5 minutes, number
-   #43 avg15      : LA of the last 15 minutes, number
+   #44 avg1       : LA of the last minute, number
+   #45 avg5       : LA of the last 5 minutes, number
+   #46 avg15      : LA of the last 15 minutes, number
 
 END
     exit 0;
