@@ -80,11 +80,11 @@ README Kronometrix Data Recording
 
   DEB package
 
-    # dpkg -i /var/tmp/kronometrix-1.0.9-debian7.8-amd64.deb
-      Selecting previously unselected package kronometrix.
-      (Reading database ... 31233 files and directories currently installed.)
-      Unpacking kronometrix(from .../kronometrix-1.0.9-debian7.8-amd64.deb) ...
-      Setting up kronometrix (1.0.9) ...
+    # dpkg -i kdr-1.0.16-debian7.8-amd64.deb 
+      Selecting previously unselected package kdr.
+      (Reading database ... 199477 files and directories currently installed.)
+      Unpacking kdr (from kdr-1.0.16-debian7.8-amd64.deb) ...
+      Setting up kdr (1.0.16) ...
 
 
 4.Uninstall
@@ -97,10 +97,10 @@ README Kronometrix Data Recording
 
   DEB package
 
-    # dpkg -P kronometrix
+    # dpkg -P kdr
       (Reading database ... 33706 files and directories currently installed.)
-      Removing kronometrix ...
-      dpkg: warning: while removing kronometrix, directory 
+      Removing kdr ...
+      dpkg: warning: while removing kdr, directory 
       '/opt/kronometrix/log/current' not empty so not removed
 
 
@@ -115,7 +115,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/agents start
 
     As root:
-      # /etc/init.d/kdr start
+      # /etc/init.d/kdr_agents start
 
   5.1 Transport
   
@@ -140,7 +140,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/agents stop
 
     As root:
-      # /etc/init.d/kdr stop
+      # /etc/init.d/kdr_agents stop
 
   6.2 Transport
   
