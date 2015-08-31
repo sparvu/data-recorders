@@ -2,12 +2,12 @@
 
 # echo "preinst: preparing to install package"
 # initial installation
-if [ -f /etc/init.d/kronometrix ]; then
-    /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+if [ -f /etc/init.d/kdr_agents ]; then
+    /etc/init.d/kdr_agents stop >/dev/null 2>&1 || :
 fi
 
-if [ -f /etc/init.d/kronometrix_transport ]; then
-        /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
+if [ -f /etc/init.d/kdr_transport ]; then
+        /etc/init.d/kdr_transport stop >/dev/null 2>&1 || :
 fi
 
 if ! getent group krmx >/dev/null; then

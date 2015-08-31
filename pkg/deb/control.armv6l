@@ -1,4 +1,4 @@
-Package: kronometrix
+Package: kdr
 Architecture: armhf
 Section: utils
 Priority: extra

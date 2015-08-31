@@ -1,24 +1,24 @@
 #!/bin/sh
 
-update-rc.d -f kronometrix remove >/dev/null 2>&1 || : 
-update-rc.d -f kronometrix_transport remove >/dev/null 2>&1 || :
+update-rc.d -f kdr_agents remove >/dev/null 2>&1 || : 
+update-rc.d -f kdr_transport remove >/dev/null 2>&1 || :
 
 # check for old installs
-if [ -f /etc/init.d/kronometrix_transport ]; then
-    /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
-    update-rc.d -f kronometrix_transport remove >/dev/null 2>&1 || :
-    rm -f /etc/init.d/kronometrix_transport || :
+if [ -f /etc/init.d/kdr_transport ]; then
+    /etc/init.d/kdr_transport stop >/dev/null 2>&1 || :
+    update-rc.d -f kdr_transport remove >/dev/null 2>&1 || :
+    rm -f /etc/init.d/kdr_transport || :
 fi
 
 # uinstall
-if [ -f /etc/init.d/kronometrix ]; then
-    /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
-    rm -f /etc/init.d/kronometrix || :
+if [ -f /etc/init.d/kdr_agents ]; then
+    /etc/init.d/kdr_agents stop >/dev/null 2>&1 || :
+    rm -f /etc/init.d/kdr_agents || :
 fi
 
-if [ -f /etc/init.d/kronometrix_transport ]; then
-    /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
-    rm -f /etc/init.d/kronometrix_transport || :
+if [ -f /etc/init.d/kdr_transport ]; then
+    /etc/init.d/kdr_transport stop >/dev/null 2>&1 || :
+    rm -f /etc/init.d/kdr_transport || :
 fi
 
 # wipeout krmx crontab

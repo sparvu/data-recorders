@@ -1,4 +1,4 @@
-Package: kronometrix
+Package: kdr
 Architecture: amd64
 Section: utils
 Priority: extra
