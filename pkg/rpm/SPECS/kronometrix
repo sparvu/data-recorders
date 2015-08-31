@@ -22,7 +22,7 @@
 
 
 Summary: Kronometrix Data Recording
-Name: kronometrix
+Name: kdr
 Version: 1.0.16
 Release: 0
 Group: System/Monitoring/Tools
@@ -39,7 +39,7 @@ All in a simple package: consistent data recording across various types of syste
 
 
 %prep
-%setup -n kronometrix
+%setup -n kdr
 # In the prep section the tar.gz file gets unpacked to a directory.
 # the directory is
 
