@@ -3,7 +3,7 @@
 # chkconfig: 2345 96 10
 # description: kronometrix data recording services
 #
-# /etc/init.d/kronometrix
+# /etc/init.d/kdr
 #
 #  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
 #

@@ -65,9 +65,9 @@ README Kronometrix Data Recording
 
   RPM package
 
-    # rpm -ihv kronometrix-1.0.9-x86_64.rpm 
-      Preparing...        ########################################### [100%]
-          1:kronometrix   ########################################### [100%]
+    # rpm -ihv kdr-1.0.16-centos5.11-x86_64.rpm 
+       Preparing...     ########################################### [100%]
+          1:kdr         ########################################### [100%]
 
     # ps -o uid,pid,cmd -u krmx
       UID   PID CMD
@@ -91,7 +91,7 @@ README Kronometrix Data Recording
 
   RPM package
 
-    # rpm -e kronometrix 
+    # rpm -e kdr
     # ps -o uid,pid,cmd -u krmx
 
 
@@ -115,7 +115,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/agents start
 
     As root:
-      # /etc/init.d/kronometrix start
+      # /etc/init.d/kdr start
 
   5.1 Transport
   
@@ -126,7 +126,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/transport start
 
     As root:
-      # /etc/init.d/kronometrix_transport start
+      # /etc/init.d/kdr_transport start
 
 
 6.Stop procedure
@@ -140,7 +140,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/agents stop
 
     As root:
-      # /etc/init.d/kronometrix stop
+      # /etc/init.d/kdr stop
 
   6.2 Transport
   
@@ -151,7 +151,7 @@ README Kronometrix Data Recording
       $ /opt/kronometrix/etc/transport stop
 
     As root:
-      # /etc/init.d/kronometrix_transport stop
+      # /etc/init.d/kdr_transport stop
 
 
 7.Raw data

@@ -39,7 +39,7 @@ All in a simple package: consistent data recording across various types of syste
 
 
 %prep
-%setup -n kdr
+%setup -n kronometrix
 # In the prep section the tar.gz file gets unpacked to a directory.
 # the directory is
 
