@@ -77,12 +77,12 @@ rm -rf "$RPM_BUILD_ROOT"
 %pre
 if [ $1 -eq 1 ]; then
     # initial installation
-    if [ -f /etc/init.d/kronometrix ]; then
-        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+    if [ -f /etc/init.d/kdr ]; then
+        /etc/init.d/kdr stop >/dev/null 2>&1 || :
     fi
 
-    if [ -f /etc/init.d/kronometrix_transport ]; then
-        /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
+    if [ -f /etc/init.d/kdr_transport ]; then
+        /etc/init.d/kdr_transport stop >/dev/null 2>&1 || :
     fi
 
     if ! getent group krmx >/dev/null; then
@@ -98,13 +98,13 @@ if [ $1 -eq 1 ]; then
     fi
 elif [ $1 -eq 2 ]; then
     # upgrade
-    if [ -f /etc/init.d/kronometrix ]; then
-        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
+    if [ -f /etc/init.d/kdr ]; then
+        /etc/init.d/kdr stop >/dev/null 2>&1 || :
     fi
 
     # check for old installs
-    if [ -f /etc/init.d/kronometrix_transport ]; then
-        /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
+    if [ -f /etc/init.d/kdr_transport ]; then
+        /etc/init.d/kdr_transport stop >/dev/null 2>&1 || :
     fi
 
     if ! getent group krmx >/dev/null; then
@@ -124,17 +124,17 @@ fi
 if [ $1 -eq 1 ]; then
     # initial installation, after tasks
     chown -R krmx:krmx /opt/kronometrix || :
-    if [ ! -L /etc/init.d/kronometrix ]; then
-        ln -s /opt/kronometrix/etc/rc/kronometrix /etc/init.d/kronometrix || :
+    if [ ! -L /etc/init.d/kdr ]; then
+        ln -s /opt/kronometrix/etc/rc/kdr /etc/init.d/kdr || :
     fi
 
-    if [ ! -L /etc/init.d/kronometrix_transport ]; then
-        ln -s /opt/kronometrix/etc/rc/kronometrix_transport /etc/init.d/kronometrix_transport || :
+    if [ ! -L /etc/init.d/kdr_transport ]; then
+        ln -s /opt/kronometrix/etc/rc/kdr_transport /etc/init.d/kdr_transport || :
     fi
-    chkconfig --add kronometrix || :
-    chkconfig --add kronometrix_transport || :
-    /etc/init.d/kronometrix start >/dev/null 2>&1 || :
-    # /etc/init.d/kronometrix.transport start || :
+    chkconfig --add kdr || :
+    chkconfig --add kdr_transport || :
+    /etc/init.d/kdr start >/dev/null 2>&1 || :
+    # /etc/init.d/kdr.transport start || :
     chown -R krmx:krmx /opt/kronometrix/log || :
 
     # cronjobs
@@ -156,8 +156,8 @@ if [ $1 -eq 1 ]; then
 elif [ $1 -eq 2 ]; then
     # upgrade
     chown -R krmx:krmx /opt/kronometrix || :
-    /etc/init.d/kronometrix start >/dev/null 2>&1 || :
-    # /etc/init.d/kronometrix.transport start || :
+    /etc/init.d/kdr start >/dev/null 2>&1 || :
+    # /etc/init.d/kdr.transport start || :
 
     chown -R krmx:krmx /opt/kronometrix || :
 fi
@@ -165,28 +165,28 @@ fi
 # before removal
 %preun
 if [ $1 -eq 0 ]; then
-    chkconfig kronometrix off || :
-    chkconfig kronometrix_transport off || :
-    chkconfig --del kronometrix || :
-    chkconfig --del kronometrix_transport || :
+    chkconfig kdr off || :
+    chkconfig kdr_transport off || :
+    chkconfig --del kdr || :
+    chkconfig --del kdr_transport || :
 
     # check for old installs
-    if [ -f /etc/init.d/kronometrix_transport ]; then
-        /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
-        chkconfig kronometrix_transport off || :
-        chkconfig --del kronometrix_transport || :
-        rm -f /etc/init.d/kronometrix_transport || :
+    if [ -f /etc/init.d/kdr_transport ]; then
+        /etc/init.d/kdr_transport stop >/dev/null 2>&1 || :
+        chkconfig kdr_transport off || :
+        chkconfig --del kdr_transport || :
+        rm -f /etc/init.d/kdr_transport || :
     fi
 
     # uinstall
-    if [ -f /etc/init.d/kronometrix ]; then
-        /etc/init.d/kronometrix stop >/dev/null 2>&1 || :
-        rm -f /etc/init.d/kronometrix || :
+    if [ -f /etc/init.d/kdr ]; then
+        /etc/init.d/kdr stop >/dev/null 2>&1 || :
+        rm -f /etc/init.d/kdr || :
     fi
 
-    if [ -f /etc/init.d/kronometrix_transport ]; then
-        /etc/init.d/kronometrix_transport stop >/dev/null 2>&1 || :
-        rm -f /etc/init.d/kronometrix_transport || :
+    if [ -f /etc/init.d/kdr_transport ]; then
+        /etc/init.d/kdr_transport stop >/dev/null 2>&1 || :
+        rm -f /etc/init.d/kdr_transport || :
     fi
 
     # wipeout krmx crontab
