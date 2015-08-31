@@ -2,13 +2,17 @@
 Kronometrix Data Recording
 
 Platforms
-   FreeBSD 10, 10.1 amd64, i386
+   FreeBSD 10.x amd64, i386
 
 Bug Management System
   https://github.com/kronometrix/recording/issues
 
 
 Releases
+
+  1.0.16 31-08-2015 Release
+    diskrec data message changes #53
+    update curl-7.44.0
 
   1.0.15 06-08-2015 Release
     raw2day should not use libcurl #55

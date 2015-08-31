@@ -301,6 +301,7 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #14 disks      : total number of disks, number
   #15 nics       : total number of NICs, number
   #16 uptime     : system uptime, string
+
 END
     exit 0;
 }

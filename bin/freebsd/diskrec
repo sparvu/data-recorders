@@ -125,15 +125,27 @@ USAGE: diskrec [-hV] | [interval [count]]
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
-  #02 name       : disk name, string
+  #02 diskid     : disk name
+
+  # reads
   #03 reads      : read requests per second, rate
   #04 rkbytes    : read KBytes per seconds, rate 
+
+  # writes
   #05 writes     : write requests per second, rate
   #06 wkbytes    : write KBytes per seconds, rate 
+ 
+  # queue length, throughput
   #08 queue      : the number of not yet completed transactions, rate
   #07 service    : service time per transaction in miliseconds, number
   #09 diskutil   : the percentage of time the device had one or more 
                    transactions outstanding, number
+
+  # inventory
+  #10 size       : volume size in GB, partition
+  #11 free       : volume free in GB
+  #12 freepct    : volume free percentage
+
 END
     exit 0;
 }
@@ -142,7 +154,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.14, 2015-07-14 0030
+diskrec: 1.0.16, 2015-08-22 1557
 END
     exit 0;
 }
