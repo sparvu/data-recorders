@@ -26,8 +26,8 @@
 
 . /etc/rc.subr
 
-name=kdr
-rcvar=kdr_enable
+name=kdr_agents
+rcvar=kdr_agents_enable
 
 load_rc_config ${name}
 
@@ -36,33 +36,33 @@ start_cmd="${name}_start"
 stop_cmd="${name}_stop"
 status_cmd="${name}_status"
 
-: ${kdr_enable="YES"}
-: ${kdr_user="krmx"}
-: ${kdr_flags=""}
-: ${kdr_args=""}
+: ${kdr_agents_enable="YES"}
+: ${kdr_agents_user="krmx"}
+: ${kdr_agents_flags=""}
+: ${kdr_agents_args=""}
 
-kdr_start() {
+kdr_agents_start() {
     unset "${rc_arg}_cmd"
     local cmd
-    kdr_args="start"
-    cmd="${command} ${kdr_args}"
-    su -m ${kdr_user} -c "${cmd}" 
+    kdr_agents_args="start"
+    cmd="${command} ${kdr_agents_args}"
+    su -m ${kdr_agents_user} -c "${cmd}" 
 }
 
 
-kdr_stop() {
+kdr_agents_stop() {
     local cmd
-    kdr_args="stop"
-    cmd="${command} ${kdr_args}"
-    su -m ${kdr_user} -c "${cmd}" 
+    kdr_agents_args="stop"
+    cmd="${command} ${kdr_agents_args}"
+    su -m ${kdr_agents_user} -c "${cmd}" 
 }
 
 
-kdr_status() {
+kdr_agents_status() {
     local cmd
-    kdr_args="status"
-    cmd="${command} ${kdr_args}"
-    su -m ${kdr_user} -c "${cmd}" 
+    kdr_agents_args="status"
+    cmd="${command} ${kdr_agents_args}"
+    su -m ${kdr_agents_user} -c "${cmd}" 
 }
 
 
