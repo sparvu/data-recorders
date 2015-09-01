@@ -137,6 +137,7 @@ USAGE: cpurec [-hV] | [interval [count]]
                    when running in a virtualized environment, number
   #10 idlepct    : cpu utilization, idle state, number
   #11 totalpct   : total cpu utilization, number
+
 END
     exit 0;
 }
@@ -146,7 +147,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.16, 2015-08-30 1356
+cpurec: 1.0.16, 2015-09-01 1107
 END
     exit 0;
 }
