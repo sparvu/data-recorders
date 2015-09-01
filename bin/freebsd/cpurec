@@ -220,6 +220,7 @@ USAGE: cpurec [-hV] | [interval [count]]
   #06 irqpct     : cpu percentage servicing interrupts, number
   #07 idlepct    : cpu utilization, idle state, number
   #08 totalpct   : total cpu utilization, number
+
 END
     exit 0;
 }

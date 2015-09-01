@@ -214,16 +214,23 @@ while (1) {
 
     }
 
-    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f\n",
+    my $rxtxpkt    = $rxpkt   + $txpkt;
+    my $rxtxkbytes = $rxkbyte + $txkbyte;
+
+
+    printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
             time, $cpupct, $sumpct, $headpct,
             $user, $nice, $sys, $intr, $idle,
             $vm[0], $vm[1], $vm[2], $vm[3], $vm[4],
             $vm[5], $vm[6], $vm[7], $vm[8], $vm[9], $vm[10],
             $vm[11], $vm[12], $vm[13], $vm[14], $vm[15],
             $vm[16], $vm[17], $vm[18], $vm[19], $vm[20],
-            $ds[0], $ds[1], $ds[2], $ds[3], $ds[4], $ds[5], 
-            $ds[6], $rxpkt, $rxkbyte, $rxerr, $rxdrop,
+            $ds[0], $ds[1], $ds[2], $ds[3], 
+            $ds[4], $ds[5], $ds[6], 
+            $ds[7], $ds[8], 
+            $rxpkt, $rxkbyte, $rxerr, $rxdrop,
             $txpkt, $txkbyte, $txerr, $cols, $pdrop,
+            $rxtxpkt, $rxtxkbytes,
             $la->[0], $la->[1], $la->[2];
 
 
@@ -387,7 +394,7 @@ sub get_diskstat {
 
     my $iostat = "/usr/sbin/iostat";
 
-    my ($reads,$kbreads,$writes,$kbwrites,$qlen,$svc,$busy) = 0;
+    my ($reads,$kbreads,$writes,$kbwrites,$qlen,$svc,$busy,$iops,$rwkbytes) = 0;
 
     my $diskcount = 0;
 
@@ -437,8 +444,12 @@ sub get_diskstat {
     $svc      /= $diskcount;
     $busy     /= $diskcount;
 
+    $iops      = $reads + $writes;
+    $rwkbytes  = $kbreads + $kbwrites;
+
     my @stats;
-    push(@stats, $reads, $kbreads, $writes, $kbwrites, $qlen, $svc, $busy);
+    push(@stats, $reads, $kbreads, $writes, $kbwrites, 
+                 $qlen, $svc, $busy, $iops, $rwkbytes);
 
     return @stats; 
 }
@@ -502,6 +513,9 @@ sub get_nicstat {
     # turn to KB
     my $rxkbyte = sprintf("%.2f", $rxbyte / 1024);
     my $txkbyte = sprintf("%.2f", $txbyte / 1024); 
+
+    my $rxtxpkt    = $rxpkt   + $txpkt;
+    my $rxtxkbytes = $rxkbyte + $txkbyte;
  
     ## debug 
     # printf "%.${tp}f:%d:%d:%d:%d:%d:%d:%d:%d:%d\n",
@@ -511,7 +525,8 @@ sub get_nicstat {
     #           $cols, $drops;
 
     my @stats;
-    my $payload = "$rxpkt:$rxerr:$rxdrop:$rxkbyte:$txpkt:$txerr:$txkbyte:$cols:$drop";
+    my $payload = 
+      "$rxpkt:$rxkbyte:$rxerr:$rxdrop:$txpkt:$txkbyte:$txerr:$cols:$drop";
     push @stats, $payload;
 
     return @stats;
@@ -564,32 +579,40 @@ USAGE: sysrec [-hV] | [interval [count]]
 
   DISK
    #31 reads      : read requests per second, rate
-   #32 rkbytes    : read KBytes per second,rate
+   #32 rkbytes    : read KB per second,rate
    #33 writes     : write requests per second, rate
-   #34 wkbytes    : write KBytes per second, rate
-   #xx sumrw      : disk read+write requests per second, rate
-   #xx sumrwkb    : read+write Kbytes per second, rate
+   #34 wkbytes    : write KB per second, rate
+
+   # throughput
    #35 queue      : the number of not yet completed transactions, rate
    #36 service    : service time per transaction in miliseconds, number 
    #37 diskutil   : the percentage of time the device had one or more 
                      transactions outstanding, number
+   #38 iops       : disk read+write requests per second, rate
+   #39 rwkbytes   : read+write KB per second, rate
+   
+  NIC
+   # rx received, inbound
+   #40 rxpkt      : rx packets per second, rate
+   #41 rxkbytes   : rx KB per second, rate
+   #42 rxerr      : rx packets containing errors, rate
+   #43 rxdrop     : rx drop packets per second, rate
 
-  NET
-   #38 rxpkt      : received packets per second, rate
-   #39 rxkbytes   : received Kbytes per seccond, rate
-   #42 txpkt      : transmitted packets per second, rate
-   #43 txkbytes   : transmitted Kbytes per second, rate 
-   #42 sumrxtxpkt : received+transmitted packets per second, rate
-   #42 sumrxtxkb  : received+transmitted packets per second, rate
-   #40 rxerr      : number of errors while received pkt per second, rate
-   #41 rxdrop     : number of rx packets that were dropped per second, rate
-   #44 txerr      : number of errors while transmitting pkt per second, rate
-   #45 cols       : number of collisions, rate
-   #46 drop       : number of dropped packets per second, rate
+   # tx transmitted, outbound
+   #44 txpkt      : transmitted packets per second, rate
+   #45 txkbytes   : transmitted KB per second, rate 
+   #46 txerr      : number of errors while transmitting pkt per second, rate
+   #47 cols       : number of collisions, rate
+   #48 drop       : number of dropped packets per second, rate
+   
+   # throughput
+   #49 rxtxpkt    : rx+tx packets per second, rate
+   #50 rxtxkbytes : rx+tx KB per second, rate
 
-   #47 avg1       : LA of the last minute, number
-   #48 avg5       : LA of the last 5 minutes, number
-   #49 avg15      : LA of the last 15 minutes, number
+   #51 avg1       : LA of the last minute, number
+   #52 avg5       : LA of the last 5 minutes, number
+   #53 avg15      : LA of the last 15 minutes, number
+
 END
     exit 0;
 }
@@ -598,7 +621,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.14, 2015-07-14 0033
+sysrec: 1.0.16, 2015-09-01 1040
 END
     exit 0;
 }
