@@ -39,45 +39,45 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
     chown -R krmx:krmx /opt/kronometrix
 
     # install kornometrix service
-    grep "^kronometrix_enable" ${RC_CONF} >/dev/null 2>&1
+    grep "^kdr_agents_enable" ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 1 ]; then
 
         # add the service
-        echo "kronometrix_enable=\"YES\"" >> ${RC_CONF}
+        echo "kdr_agents_enable=\"YES\"" >> ${RC_CONF}
         if [ $? -eq 1 ]; then
-            echo "Error: cannot activate service: kronometrix, exit now"
+            echo "Error: cannot activate service: kdr_agents, exit now"
             exit 1
         fi
     fi
 
-    grep "^kronometrix_user" ${RC_CONF} >/dev/null 2>&1 
+    grep "^kdr_user" ${RC_CONF} >/dev/null 2>&1 
     if [ $? -eq 1 ]; then
-        echo "kronometrix_user=\"krmx\"" >> ${RC_CONF}
+        echo "kdr_user=\"krmx\"" >> ${RC_CONF}
         if [ $? -eq 1 ]; then
-            echo "Error: cannot activate service: kronometrix_user, exit now"
+            echo "Error: cannot activate service: kdr_user, exit now"
             exit 1
         fi
     fi
 
-    grep "^kronometrix_transport_enable" ${RC_CONF} >/dev/null 2>&1
+    grep "^kdr_transport_enable" ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 1 ]; then
 
         # add the service
-        echo "kronometrix_transport_enable=\"YES\"" >> ${RC_CONF}
+        echo "kdr_transport_enable=\"YES\"" >> ${RC_CONF}
         if [ $? -eq 1 ]; then
-            echo "Error: cannot activate service: kronometrix_transport, exit now"
+            echo "Error: cannot activate service: kdr_transport, exit now"
             exit 1
         fi
     fi
 
     # start and link the service
-    if [ ! -L /etc/rc.d/kronometrix ]; then
-        ln -s /opt/kronometrix/etc/rc/kronometrix /etc/rc.d/kronometrix
+    if [ ! -L /etc/rc.d/kdr_agents ]; then
+        ln -s /opt/kronometrix/etc/rc/kdr_agents /etc/rc.d/kdr_agents
     fi
 
-    if [ ! -L /etc/rc.d/kronometrix_transport ]; then
-        ln -s /opt/kronometrix/etc/rc/kronometrix_transport /etc/rc.d/kronometrix_transport
+    if [ ! -L /etc/rc.d/kdr_transport ]; then
+        ln -s /opt/kronometrix/etc/rc/kdr_transport /etc/rc.d/kdr_transport
     fi
 
-    /etc/rc.d/kronometrix onestart >/dev/null
+    /etc/rc.d/kdr_agents onestart >/dev/null
 fi

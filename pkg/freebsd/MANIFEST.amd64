@@ -1,4 +1,4 @@
-name: "kronometrix"
+name: "kdr"
 version: "1.0.12"
 origin: "sysutils/kronometrix"
 comment: "A time-series data monitoring and analysis system"

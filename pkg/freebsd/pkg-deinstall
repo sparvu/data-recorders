@@ -1,8 +1,8 @@
 #!/bin/sh
 
 if [ "X$2" == "XDEINSTALL" ]; then
-    /etc/rc.d/kronometrix_transport onestop >/dev/null 2>&1
-    /etc/rc.d/kronometrix onestop >/dev/null 2>&1
+    /etc/rc.d/kdr_transport onestop >/dev/null 2>&1
+    /etc/rc.d/kdr_agents onestop >/dev/null 2>&1
 
     # make a copy of kronometrix.json
     if [ -f /opt/kronometrix/etc/kronometrix.json ]; then
@@ -17,11 +17,11 @@ fi
 
 if [ "X$2" == "XPOST-DEINSTALL" ]; then
 
-    [ -L /etc/rc.d/kronometrix_transport ] && rm /etc/rc.d/kronometrix_transport 
-    [ -L /etc/rc.d/kronometrix ] && rm /etc/rc.d/kronometrix
+    [ -L /etc/rc.d/kdr_transport ] && rm /etc/rc.d/kdr_transport 
+    [ -L /etc/rc.d/kdr_agents ] && rm /etc/rc.d/kdr_agents
 
     # uninstall service
-    SVC=kronometrix
+    SVC=kdr
     RC_CONF=/etc/rc.conf
     DATE=`date +"%Y%m%d_%H%M%S"`
 
@@ -42,10 +42,10 @@ if [ "X$2" == "XPOST-DEINSTALL" ]; then
         mv ${RC_CONF}.${DATE}.tmp ${RC_CONF}.${DATE}
     fi
 
-    grep "^${SVC}_enable=\"YES\"" ${RC_CONF} >/dev/null 2>&1
+    grep "^${SVC}_agents_enable=\"YES\"" ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         # remove the service
-        grep -v "^${SVC}_enable=\"YES\"" ${RC_CONF}.${DATE} > ${RC_CONF}.${DATE}.tmp
+        grep -v "^${SVC}_agents_enable=\"YES\"" ${RC_CONF}.${DATE} > ${RC_CONF}.${DATE}.tmp
         mv ${RC_CONF}.${DATE}.tmp ${RC_CONF}.${DATE}
     fi
 
