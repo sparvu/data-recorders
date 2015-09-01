@@ -95,6 +95,9 @@ sub get_diskstat {
     my $iostat = "/usr/sbin/iostat";
     my $pt     = time;
 
+    my ($iops, $rwk) = (0, 0);
+    my ($size, $free, $usedpct) = ('NA', 'NA', 'NA');
+
     open my $fh, "-|", "$iostat", "-x", "$t", "2"
       or die "cannot execute '$iostat' - $!";
 
@@ -110,10 +113,16 @@ sub get_diskstat {
 
         my ($name,$xr,$xw,$xbr,$xbw,$q,$s,$b) = split /\s+/, $_;
 
-        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
-               $pt, $name, $xr, $xbr, $xw, $xbw, $q, $s, $b;
+        # throughput
+        $iops = $xr  + $xw;
+        $rwk  = $xbr + $xbw;
+
+        printf "%.${tp}f:%s:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%s:%s:%s\n",
+               $pt, $name, $xr, $xbr, $xw, $xbw, $q, $s, $b, 
+               $iops, $rwk, $size, $free, $usedpct;
     }    
 }
+
 
 # usage - print usage and exit.
 #
@@ -129,22 +138,24 @@ USAGE: diskrec [-hV] | [interval [count]]
 
   # reads
   #03 reads      : read requests per second, rate
-  #04 rkbytes    : read KBytes per seconds, rate 
+  #04 rkbytes    : read KB per seconds, rate 
 
   # writes
   #05 writes     : write requests per second, rate
-  #06 wkbytes    : write KBytes per seconds, rate 
+  #06 wkbytes    : write KB per seconds, rate 
  
   # queue length, throughput
   #08 queue      : the number of not yet completed transactions, rate
   #07 service    : service time per transaction in miliseconds, number
   #09 diskutil   : the percentage of time the device had one or more 
                    transactions outstanding, number
+  #10 iops       : disk reads+write requests per second, rate
+  #11 rwkbytes   : read+write KB per second, rate
 
   # inventory
-  #10 size       : volume size in GB, partition
-  #11 free       : volume free in GB
-  #12 freepct    : volume free percentage
+  #12 size       : volume size in GB, partition
+  #13 free       : volume free in GB
+  #14 usedpct    : volume free percentage
 
 END
     exit 0;
@@ -154,7 +165,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.16, 2015-08-22 1557
+diskrec: 1.0.16, 2015-09-01 1028
 END
     exit 0;
 }
