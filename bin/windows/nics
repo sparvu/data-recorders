@@ -72,8 +72,8 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 # get no of NICs
 my $nicq = 
-  "SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft'
-   AND NOT PNPDeviceID LIKE 'ROOT\\'";
+  "SELECT * from Win32_NetworkAdapter";
+#  "SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft' AND NOT PNPDeviceID LIKE 'ROOT\'";
 
 my $wn = $wmi->ExecQuery($nicq);
 
@@ -83,12 +83,15 @@ my $vnic = 0;
 
 foreach my $nic (in $wn) {
 
+    my $nic_man = $nic->{Manufacturer};
+    my $nic_pnp = $nic->{PNPDeviceID};
     my $nic_desc = $nic->{Description};
     my $nic_id = $nic->{Index};
 
-    if ( $nic_desc =~ /[vV]irtual/ ) { $vnic++ } else { $pnic++; }
+    if ( ($nic_man =~ /Microsoft/) or ($nic_pnp =~ /ROOT\//) ) { $vnic++; } 
+    else { $pnic++; }
     
-    print "NIC: $nic_desc, Index: $nic_id\n";
+    print "NIC: $nic_desc, ID: $nic_id, Vendor: $nic_man, PNP: $nic_pnp\n";
 
 }
 
