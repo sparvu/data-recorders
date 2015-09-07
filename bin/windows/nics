@@ -72,7 +72,8 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 # get no of NICs
 my $nicq = 
-  "SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft'";
+  "SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft'
+   AND NOT PNPDeviceID LIKE 'ROOT\\'";
 
 my $wn = $wmi->ExecQuery($nicq);
 
@@ -110,7 +111,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nics: 1.0.16, 2015-08-19 1102
+nics: 1.0.17, 2015-09-07 1645
 END
     exit 0;
 }
