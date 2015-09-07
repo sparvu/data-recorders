@@ -96,7 +96,7 @@ foreach my $nic (in $wn) {
 }
 
 $nnic = $vnic + $pnic;
-print "Total NICs: $nnic, Physical: $pnic, Virtual: $vnic \n";
+print "\nTotal NICs: $nnic, Physical: $pnic, Virtual: $vnic \n";
 
 # usage - print usage and exit.
 #
