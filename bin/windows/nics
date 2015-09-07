@@ -91,7 +91,7 @@ foreach my $nic (in $wn) {
     if ( ($nic_man =~ /Microsoft/) or ($nic_pnp =~ /ROOT\//) ) { $vnic++; } 
     else { $pnic++; }
     
-    print "NIC: $nic_desc, ID: $nic_id, Vendor: $nic_man, PNP: $nic_pnp\n";
+    print "NIC:$nic_desc, ID:$nic_id, Vendor:$nic_man, PNP:$nic_pnp\n";
 
 }
 
