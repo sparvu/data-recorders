@@ -12,6 +12,9 @@ Bug Management System
 
 Releases
 
+  1.0.17 30-09-2015 Release
+    hdwrec reports wrong number of physical NICs #60
+
   1.0.16 28-08-2015 Release
     diskrec data message changes #53
     kronometrix.json on windows should support service interval #56 
