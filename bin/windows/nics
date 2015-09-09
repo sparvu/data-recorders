@@ -66,6 +66,12 @@ $|= 1;                                    # autoflush
 
 ### MAIN BODY
 
+
+# physical ids
+my $pdev  = 'PCI|USB';
+my $vdev  = 'ROOT|SW|\{';
+my $vid   = 'Microsoft|VMWare|VirtualBox';
+
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
@@ -83,20 +89,30 @@ my $vnic = 0;
 
 foreach my $nic (in $wn) {
 
-    my $nic_man = $nic->{Manufacturer};
-    my $nic_pnp = $nic->{PNPDeviceID};
-    my $nic_desc = $nic->{Description};
-    my $nic_id = $nic->{Index};
+    my $vendor = $nic->{Manufacturer};
+    my $pnp    = $nic->{PNPDeviceID};
+    my $desc   = $nic->{Description};
+    my $id     = $nic->{Index};
 
-    if ( ($nic_man =~ /Microsoft/) or ($nic_pnp =~ /ROOT\//) ) { $vnic++; } 
-    else { $pnic++; }
-    
-    print "NIC:$nic_desc, ID:$nic_id, Vendor:$nic_man, PNP:$nic_pnp\n";
+    #if ( ($nic_vendor =~ /Microsoft/) and ($nic_pnp =~ /ROOT|SW/) ) 
+    #{ $vnic++; } 
+    #else { $pnic++; }
 
+    if (defined $vendor and defined $pnp) {
+        if    ( $vendor =~ /$vid/i and $pnp !~ /$pdev/i ) { $vnic++; }
+        elsif ( $vendor !~ /$vid/i and $pnp =~ /$vdev/i ) { $vnic++; }
+        else  { $pnic++; }
+    } else { 
+        print "Warning: $id, $desc missing vendor and pnp information \n";
+	$vendor = 'NA';
+	$pnp    = 'NA';
+    }
+
+    print "$id, $desc, $vendor, $pnp\n";
 }
 
 $nnic = $vnic + $pnic;
-print "\nTotal NICs: $nnic, Physical: $pnic, Virtual: $vnic \n";
+print "\nNICs: $nnic, Physical: $pnic, Virtual: $vnic \n";
 
 # usage - print usage and exit.
 #
@@ -114,7 +130,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nics: 1.0.17, 2015-09-07 1645
+nics: 1.0.17, 2015-09-08 1334
 END
     exit 0;
 }

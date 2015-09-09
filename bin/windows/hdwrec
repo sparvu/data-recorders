@@ -75,6 +75,10 @@ my $hv          = 'NA';                   # hypervisor
 my $ht          = 'NA';                   # hyper-threading
 my $stime;                                # sleep timer
 my $last_time   = 0;                      # first counter
+# physical,virtual ids
+my $pdev        = 'PCI|USB';
+my $vdev        = 'ROOT|SW|\{';
+my $vid         = 'Microsoft|VMWare|VirtualBox';
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -206,17 +210,36 @@ sub Startup {
     }
 
 
-    # get no of NICs
-    my $nicq = 
-      "SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft'";
-    my $wn = $wmi->ExecQuery($nicq);
-    my ($nnic, $pnic, $vnic) = 0;
-    foreach my $nic (in $wn) {
-        my $nic_desc = $nic->{Description};
-        my $nic_id = $nic->{Index};
-        if ( $nic_desc =~ /[vV]irtual/ ) { $vnic++ } else { $pnic++; }
 
+    # get no of NICs
+    my $nicq = "SELECT * from Win32_NetworkAdapter";
+
+    my $wn = $wmi->ExecQuery($nicq);
+
+    my $nnic = 0;
+    my $pnic = 0;
+    my $vnic = 0;
+
+    foreach my $nic (in $wn) {
+
+        my $vendor = $nic->{Manufacturer};
+        my $pnp    = $nic->{PNPDeviceID};
+        my $desc   = $nic->{Description};
+        my $id     = $nic->{Index};
+
+        if (defined $vendor and defined $pnp) {
+            if    ( $vendor =~ /$vid/i and $pnp !~ /$pdev/i ) { $vnic++; }
+            elsif ( $vendor !~ /$vid/i and $pnp =~ /$vdev/i ) { $vnic++; }
+            else  { $pnic++; }
+        } else {
+            #print "Warning: $id, $desc missing vendor and pnp information \n"
+            $vendor = 'NA';
+            $pnp    = 'NA';
+        }
+
+        #print "$id, $desc, $vendor, $pnp\n";
     }
+
 
     # drop Virtual NICs
     $nnic = $pnic;
