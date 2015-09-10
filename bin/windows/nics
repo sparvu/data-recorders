@@ -93,10 +93,6 @@ foreach my $nic (in $wn) {
     my $desc   = $nic->{Description};
     my $id     = $nic->{Index};
 
-    #if ( ($nic_vendor =~ /Microsoft/) and ($nic_pnp =~ /ROOT|SW/) ) 
-    #{ $vnic++; } 
-    #else { $pnic++; }
-
     if (defined $vendor and defined $pnp) {
         if    ( $vendor =~ /$vid/i and $pnp !~ /$pdev/i ) { $vnic++; }
         elsif ( $vendor !~ /$vid/i and $pnp =~ /$vdev/i ) { $vnic++; }
