@@ -179,6 +179,17 @@ sub Startup {
              my $pnp = $wmi -> ExecQuery($pnpq);
 	     foreach my $po (in $pnp) {
 	         my $pnp_name = $po->{Name};
+
+                 ### verbose
+                 if ($verbose) {
+                     if (RunningAsService()) {
+                         writelog ("info: PNPName: $pnp_name");
+	             } else {
+                         writelog ("info: PNPName: $pnp_name") if ($logging);
+                         print "info: PNPName: $pnp_name\n";
+	             }
+                 }
+
 	         $pnp_name =~ s/\(/[/g;
 	         $pnp_name =~ s/\)/]/g;
 
