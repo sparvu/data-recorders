@@ -79,7 +79,6 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 # get no of NICs
 my $nicq = 
   "SELECT * from Win32_NetworkAdapter";
-#  "SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft' AND NOT PNPDeviceID LIKE 'ROOT\'";
 
 my $wn = $wmi->ExecQuery($nicq);
 
