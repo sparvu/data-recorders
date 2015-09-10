@@ -162,12 +162,13 @@ sub Startup {
         my $nic_desc   = $nic->{Description};
 	my $nic_index  = $nic->{Index};
 	my $nic_devid  = $nic->{DeviceID};
-	my $nic_name = lc $nic->{ServiceName} . "_" . $nic_devid;
 
         if (defined $nic_vendor and defined $nic_pnp) {
             if ( $nic_vendor =~ /$vid/i and $nic_pnp !~ /$pdev/i ) { next; }
 	 elsif ( $nic_vendor !~ /$vid/i and $nic_pnp =~ /$vdev/i ) { next; }
           else { 
+	
+	     my $nic_name = lc $nic->{ServiceName} . "_" . $nic_devid;
 	  
 	  
              # get PNPEntity for NIC DeviceID
