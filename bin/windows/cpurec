@@ -655,7 +655,7 @@ USAGE: cpurec [-lhV] | [interval [count]]
    #04 syspct     : system cpu utilization, percentage
    #05 irqpct     : irq cpu utilization, percentage
    #06 dpcpct     : deffered procedure calls cpu, percentage 
-   #07 privpct    : priviledged cpu tutilization (dpc+irq), percentage
+   #07 privpct    : priviledged cpu utilization (dpc+irq), percentage
    #08 idlepct    : idle cpu utilization, percentage
    #09 totalpct   : total cpu utilization, percentage
 END
@@ -667,7 +667,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.16, 2015-08-27 1621
+cpurec: 1.0.17, 2015-09-12 0034
 END
     return;
 }
