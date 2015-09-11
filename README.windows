@@ -5,26 +5,26 @@ README Kronometrix Data Recording
 1.Supported Operating Systems
 
   We support the following Windows based operating systems:
-    Windows 2008 R2 Server 64bit
-    Windows 2012 R2 Server 64bit
-    Windows 7, 8, 10 64bit
+
+    Windows 2008, 2012 R2 Server x64
+    Windows 7, 8, 10 x64
 
 
 2.Package Content
 
-  Kronometrix 1.0.16 Windows edition contains, all data records and the 
+  Kronometrix Windows edition contains, all data records and the 
   transport utility and additional tools:
 
     - agents: sysrec, cpurec, diskrec, nicrec, hdwrec
 
     - transport: sender at the moment uses HTTP protocol
 
-    - disks.exe: utility to return and physical to logical disks
+    - disks.exe: utility to return all disks attached to the system
 
     - nics.exe: utility to return all physical NICs
 
 
-3.Prerequisites
+3.Pre-requisites
 
   There are no pre-requisites at this moment for Windows release. 
 
