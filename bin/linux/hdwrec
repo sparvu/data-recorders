@@ -172,6 +172,22 @@ while (1) {
     $memtotal =~ s/\s+[kK]B$//;
     $swaptotal =~ s/\s+[kK]B$//;
 
+    $old_host = $host; 
+    $old_arch = $si->{arch};
+    $old_hypv = $hypervisor;
+    $old_os   = $os;
+    $old_relos= $relos;
+    $old_rel  = $si->{release};
+    $old_pcpu = $si->pcpucount};
+    $old_ncore= $ncores;
+    $old_tcpu = $si->{tcpucount};
+    $old_ht   = $ht;
+    $old_mem  = $memtotal;
+    $old_swap = $swaptotal;
+    $old_disk = $num_disk;
+    $old_nic  = $num_nic;
+
+
     # print metrics
     printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
       time, $host, $si->{arch}, $hypervisor, $os, $relos,
@@ -276,7 +292,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.16, 2015-08-30 1403
+hdwrec: 1.0.17, 2015-09-13 0900
 END
     exit 0;
 }

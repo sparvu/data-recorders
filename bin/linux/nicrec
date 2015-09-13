@@ -246,7 +246,7 @@ END
 sub revision {
 
     print STDERR <<END;
-nicrec: 1.0.16, 2015-08-28 1617
+nicrec: 1.0.17, 2015-09-13 0901
 END
     exit 0;
 }
