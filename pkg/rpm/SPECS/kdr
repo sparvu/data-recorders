@@ -131,8 +131,8 @@ if [ $1 -eq 1 ]; then
     if [ ! -L /etc/init.d/kdr_transport ]; then
         ln -s /opt/kronometrix/etc/rc/kdr_transport /etc/init.d/kdr_transport || :
     fi
-    chkconfig --add kdr_agents || :
-    chkconfig --add kdr_transport || :
+    chkconfig --add kdr_agents >/dev/null 2>&1 || :
+    chkconfig --add kdr_transport >/dev/null 2>&1 || :
     /etc/init.d/kdr_agents start >/dev/null 2>&1 || :
     # /etc/init.d/kdr_transport start || :
     chown -R krmx:krmx /opt/kronometrix/log || :
