@@ -23,7 +23,7 @@
 
 Summary: Kronometrix Data Recording
 Name: kdr
-Version: 1.0.16
+Version: 1.0.17
 Release: 0
 Group: System/Monitoring/Tools
 License: GPL
@@ -165,16 +165,16 @@ fi
 # before removal
 %preun
 if [ $1 -eq 0 ]; then
-    chkconfig kdr_agents off || :
-    chkconfig kdr_transport off || :
-    chkconfig --del kdr_agents || :
-    chkconfig --del kdr_transport || :
+    chkconfig kdr_agents off  >/dev/null 2>&1 || :
+    chkconfig kdr_transport off  >/dev/null 2>&1 || :
+    chkconfig --del kdr_agents  >/dev/null 2>&1 || : 
+    chkconfig --del kdr_transport  >/dev/null 2>&1 || :
 
     # check for old installs
     if [ -f /etc/init.d/kdr_transport ]; then
         /etc/init.d/kdr_transport stop >/dev/null 2>&1 || :
-        chkconfig kdr_transport off || :
-        chkconfig --del kdr_transport || :
+        chkconfig kdr_transport off  >/dev/null 2>&1 || :
+        chkconfig --del kdr_transport  >/dev/null 2>&1 || :
         rm -f /etc/init.d/kdr_transport || :
     fi
 
