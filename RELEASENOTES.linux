@@ -19,9 +19,11 @@ Bug Management System
 Releases
 
   1.0.17 30-09-2015 Release
+    CPAN update September 2015 #65
     installing kdr on SLES 11 64bit warnings #61
     removing kdr package on SLES warnings #64
     hdwrec inventory message rational usage #63
+    SSL support for Linux, FreeBSD #50
     deb kdr pkg warnings #44
 
   1.0.16 30-08-2015 Release
