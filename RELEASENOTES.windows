@@ -2,9 +2,8 @@
 Kronometrix Data Recording
 
 Platforms
-    Windows 2008 R2 Server 64bit
-    Windows 2012 R2 Server 64bit
-    Windows 7, 8, 10 64bit
+    Windows 2008,2012 R2 Server x64
+    Windows 7,8,10 x64
 
 Bug Management System
   https://github.com/kronometrix/recording/issues
@@ -13,8 +12,9 @@ Bug Management System
 Releases
 
   1.0.17 30-09-2015 Release
+    Windows ProgramData relocation for raw data #66
     hdwrec reports wrong number of physical NICs #60
-     
+    Windows 10 rec reports wrong os #59
 
   1.0.16 28-08-2015 Release
     diskrec data message changes #53
