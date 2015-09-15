@@ -73,6 +73,9 @@ my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
 my $last_time   = 0;                      # first counter
+my $pdev        = 'PCI|USB';
+my $vdev        = 'ROOT|SW|\{';
+my $vid         = 'Microsoft|VMWare|VirtualBox';
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -223,61 +226,70 @@ sub Startup {
 	$ql,    $rxtxpkt,  $rxtxkbytes,$band ) = 0;
 
     # get no of NICs
-    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter where Manufacturer != 'Microsoft'");
+    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter");
     my $nnic = 0;
 
     foreach my $nic (in $wn) {
 
-        my $nic_desc = $nic->{Description};
-	my $nic_id   = $nic->{Index};
-	my $ndi      = $nic->{DeviceID};
-	my $nic_name = lc $nic->{ServiceName} . "_" . $ndi;
-	my $nic_pnp  = $nic->{PNPDeviceID};
-            
-        next if ( $nic_desc =~ /[vV]irtual/ );
+        my $nic_vendor = $nic->{Manufacturer};
+	my $nic_pnp    = $nic->{PNPDeviceID};
+	my $nic_desc   = $nic->{Description};
+	my $nic_index  = $nic->{Index};
+	my $nic_devid  = $nic->{DeviceID};
 
-        # get PNPEntity for NIC DeviceID
-        my $pnpq = 'ASSOCIATORS OF ' . 
-		   '{Win32_NetworkAdapter.DeviceID="' . $ndi . 
-		   '"} WHERE ResultClass=Win32_PnpEntity';
+        if (defined $nic_vendor and defined $nic_pnp) {
+	    if ( $nic_vendor =~ /$vid/i and $nic_pnp !~ /$pdev/i ) { next; }
+         elsif ( $nic_vendor !~ /$vid/i and $nic_pnp =~ /$vdev/i ) { next; }
+	  else {
 
-        my $pnp = $wmi -> ExecQuery($pnpq);
-	foreach my $po (in $pnp) {
-	    my $pnp_name = $po->{Name};
-	    $pnp_name =~ s/\(/[/g;
-	    $pnp_name =~ s/\)/]/g;
+	        my $nic_name = lc $nic->{ServiceName} . "_" . $nic_devid;
 
-            ### verbose
-            if ($verbose) {
-                if (RunningAsService()) {
-                    writelog ("info: DeviceID: $ndi, $pnp_name");
-	        } else {
-                    writelog ("info: DeviceID: $ndi, $pnp_name") if ($logging);
-                    print "info: DeviceID: $ndi, $pnp_name\n";
-	        }
-            }
-            my $nicstat = 
-	      $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
+		# get PNPEntity for NIC DeviceID
+		my $pnpq = 'ASSOCIATORS OF ' .
+		           '{Win32_NetworkAdapter.DeviceID="' . $nic_devid .
+			   '"} WHERE ResultClass=Win32_PnpEntity';
 
-            foreach my $pn (in $nicstat) {
+                my $pnp = $wmi -> ExecQuery($pnpq);
+                foreach my $po (in $pnp) {
+	            my $pnp_name = $po->{Name};
+		    $pnp_name =~ s/\(/[/g; 
+		    $pnp_name =~ s/\)/]/g; 
+		    $pnp_name =~ s/\//_/g; 
+		    $pnp_name =~ s/\\/_/g; 
+		    $pnp_name =~ s/\#/_/g;
 
-	        # perf metrics per NIC
-                $rxpkt      += $pn -> {PacketsReceivedPerSec};
-                $rxkbytes   += sprintf "%.2f", 
-		                 $pn->{BytesReceivedPerSec} / 1024;
-                $rxpkterr   += $pn -> {PacketsReceivedErrors};
-                $rxpktdrop  += $pn -> {PacketsReceivedDiscarded};
+                    ### verbose
+		    if ($verbose) {
+			if (RunningAsService()) {
+                            writelog ("info: DeviceID: $nic_devid, $pnp_name");
+			} else { 
+			    writelog ("info: DeviceID: $nic_devid $pnp_name") if ($logging);
+                            print "info: DeviceID: $nic_devid, $pnp_name\n"; 
+			}
+		    }
 
-                $txpkt      += $pn -> {PacketsSentPerSec};
-                $txkbytes   += sprintf "%.2f", 
-		                 $pn->{BytesSentPerSec} / 1024;
-                $txpkterr   += $pn -> {PacketsOutboundErrors};
-                $txpktdrop  += $pn -> {PacketsOutboundDiscarded};
+                    my $nicstat = $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
+
+		    foreach my $pn (in $nicstat) {
+	                # perf metrics per NIC
+                        $rxpkt      += $pn -> {PacketsReceivedPerSec};
+                        $rxkbytes   += sprintf "%.2f", 
+		                         $pn->{BytesReceivedPerSec} / 1024;
+                        $rxpkterr   += $pn -> {PacketsReceivedErrors};
+                        $rxpktdrop  += $pn -> {PacketsReceivedDiscarded};
+
+                        $txpkt      += $pn -> {PacketsSentPerSec};
+                        $txkbytes   += sprintf "%.2f", 
+		                         $pn->{BytesSentPerSec} / 1024;
+                        $txpkterr   += $pn -> {PacketsOutboundErrors};
+                        $txpktdrop  += $pn -> {PacketsOutboundDiscarded};
 			
-                $rxtxpkt    += $rxpkt + $txpkt;
-                $rxtxkbytes += $rxkbytes + $txkbytes;
-            }
-	}
+                        $rxtxpkt    += $rxpkt + $txpkt;
+                        $rxtxkbytes += $rxkbytes + $txkbytes;
+                    }
+	        }
+	    }    
+        } else { next; }
     }
 
     # end payload
@@ -968,7 +980,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.17, 2015-09-12 0719
+sysrec: 1.0.17, 2015-09-15 1532
 END
     return;
 }
