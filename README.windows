@@ -111,13 +111,13 @@ README Kronometrix Data Recording
   Kronometrix data recorders will write the raw data under the main
   prefix installation directory:
  
-    C:\Program Files\Kronometrix\log\current 
+    C:\ProgramData\Kronometrix\log\current 
 
   For every data recorder, one raw data file, having .krd extension
   will be created and updated. Every night, we rotate these krd files
   and store them under:
 
-    C:\Program Files\Kronometrix\log\daily
+    C:\ProgramData\Kronometrix\log\daily
 
 
 9.Configuration
