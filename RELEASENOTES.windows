@@ -12,6 +12,7 @@ Bug Management System
 Releases
 
   1.0.17 30-09-2015 Release
+    windows installer should check on current installations #67
     Windows ProgramData relocation for raw data #66
     hdwrec reports wrong number of physical NICs #60
     Windows 10 rec reports wrong os #59
