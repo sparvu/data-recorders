@@ -191,13 +191,17 @@ sub Startup {
     # memtotal, swaptotal
     my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
     my ($memtotal, $swaptotal, $freemem, $lastboot, $currtime);
+    my ($osver, $osname);
     foreach my $obj (in $wos) {
+        $osver     = $obj->{Version};
+        $osname    = $obj->{Caption};
         $memtotal  = $obj->{TotalVisibleMemorySize};
         $swaptotal = $obj->{SizeStoredInPagingFiles};
         $freemem   = $obj->{FreePhysicalMemory};
 	$lastboot  = $obj->{LastBootUptime};
 	$currtime  = $obj->{LocalDateTime};
     }
+
 
     my $uptime = get_uptime ($lastboot, $currtime);
 
@@ -243,6 +247,18 @@ sub Startup {
 
     # drop Virtual NICs
     $nnic = $pnic;
+
+
+    # os, relos, kernel correction win2012, win10
+    my @winver = split /\./, $osver;
+    my $r = $winver[0] . "." . $winver[1];
+    my $k = $winver[2];
+    if ( $r ne $relos ) {
+        $relos = $r; 
+        my ($newos) = $osname =~ m {(\d+(\.\d+)?)}x;
+        if ( $k ne $kernel ) { $kernel = $k; }
+	if ( $newos ne $os ) { $os = "win" . $newos; }
+    }
 
 
     my $end = Win32::GetTickCount() - $start;
