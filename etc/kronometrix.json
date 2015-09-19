@@ -56,14 +56,14 @@
         "port" : 80,
         "keepalive" : 0,
         "name" : "Kronometrix Appliance",
-        "host" : "hostname",
+        "host" : "change me",
         "protocol" : "http",
         "description" : "Kronometrix Appliance Details",
         "cpd" : [
           {
             "dsid" : "",
-            "sid"  : "00000000000000000000000000001230",
-            "tid"  : "4563931ecfa8f07d39b367a70c1c4f34"
+            "sid"  : "change me",
+            "tid"  : "change me"
           }
         ]
       }
