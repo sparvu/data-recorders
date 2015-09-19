@@ -1,8 +1,8 @@
 {
   "log" : {
-    "current_path" : "C:\\Program Files\\Kronometrix\\log\\current",
-    "base_path" : "C:\\Program Files\\Kronometrix\\log",
-    "daily_path" : "C:\\Program Files\\Kronometrix\\log\\daily"
+    "current_path" : "C:\\ProgramData\\Kronometrix\\log\\current",
+    "base_path" : "C:\\ProgramData\\Kronometrix\\log",
+    "daily_path" : "C:\\ProgramData\\Kronometrix\\log\\daily"
   },
   "sampling_interval" : {
     "sysrec" : "60",
@@ -63,14 +63,14 @@
         "port" : 80,
         "keepalive" : 0,
         "name" : "Kronometrix Appliance",
-        "host" : "hostname",
+        "host" : "change me",
         "protocol" : "http",
         "description" : "Kronometrix Appliance Details",
         "cpd" : [
           {
             "dsid" : "",
-            "sid"  : "00000000000000000000000000000000",
-            "tid"  : "00000000000000000000000000000000"
+            "sid"  : "change me",
+            "tid"  : "change me"
           }
         ]
       }
