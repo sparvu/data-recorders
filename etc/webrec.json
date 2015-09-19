@@ -1,53 +1,50 @@
 {
-  "transport" : {
+  "workloads" : [
+    {
+      "keepalive" : 0,
+      "name" : "production",
+      "description" : "Main Website Transactions",
 
-    "workloads" : [
-      {
-        "keepalive" : 0,
-        "name" : "production",
-        "description" : "Main Website Transactions",
-
-        "proxy" : {
-          "hostname" : "proxy.domain",
-          "port" : 8080,
-          "username" : "",
-          "password" : ""
-        },
-
-        "transactions" : [
-          {
-            "id" : "main",
-            "method" : "GET",
-            "scheme" : "http",
-            "host" : "www.fi",
-            "port" : "80",
-            "path" : "/"
-          },
-          {
-            "id" : "about",
-            "method" : "GET",
-            "scheme" : "http",
-            "host" : "www.fi",
-            "port" : "80",
-            "path" : "/about.html"
-          }
-        ]
+      "proxy" : {
+        "hostname" : "proxy.domain",
+        "port" : 8080,
+        "username" : "",
+        "password" : ""
       },
-      {
-        "keepalive" : 0,
-        "name" : "demo",
-        "description" : "Demo Website Transactions",
-        "transactions" : [
-          {
-            "id" : "main",
-            "method" : "GET",
-            "scheme" : "http",
-            "host" : "www.fi",
-            "port" : "80",
-            "path"  : "/"
-          }
-        ]
-      }
-    ]
+
+      "transactions" : [
+        {
+          "id" : "main",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "about",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.fi",
+          "port" : "80",
+          "path" : "/about.html"
+        }
+      ]
+    },
+    {
+      "keepalive" : 0,
+      "name" : "demo",
+      "description" : "Demo Website Transactions",
+      "transactions" : [
+        {
+          "id" : "main",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.fi",
+          "port" : "80",
+          "path"  : "/"
+        }
+      ]
+    }
   }
 }
