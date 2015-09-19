@@ -4,14 +4,12 @@
       "keepalive" : 0,
       "name" : "production",
       "description" : "Main Website Transactions",
-
       "proxy" : {
         "hostname" : "proxy.domain",
         "port" : 8080,
         "username" : "",
         "password" : ""
       },
-
       "transactions" : [
         {
           "id" : "main",
