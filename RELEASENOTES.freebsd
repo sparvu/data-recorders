@@ -10,6 +10,9 @@ Bug Management System
 
 Releases
 
+  1.0.17 30-09-2015 Release
+    new webrec data message #53
+
   1.0.16 31-08-2015 Release
     diskrec data message changes #53
     update curl-7.44.0

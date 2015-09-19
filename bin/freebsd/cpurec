@@ -229,7 +229,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.14, 2015-07-14 0030
+cpurec: 1.0.17, 2015-09-19 1352
 END
     exit 0;
 }
