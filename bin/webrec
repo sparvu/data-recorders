@@ -22,9 +22,9 @@ use strict;
 use warnings;
 use JSON;
 use File::Basename;
-use UUID::Tiny ':std';
 use Digest::SHA;
 use WWW::Curl::Easy;
+use File::Temp qw/tempfile/;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
@@ -33,15 +33,12 @@ use Tie::IxHash;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('t:hvV') or usage();
+getopts('hvV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
 my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
-
-# timeout
-my $timeout = defined $main::opt_t ? $main::opt_t : 25;
 
 # process [interval [count]],
 my ( $interval, $loop_max );
@@ -58,12 +55,14 @@ else {
 ###  Variables
 $main::opt_h = 0;          # help option
 $main::opt_V = 0;          # revision option
+my $loop = 0;              # current loop number
 my $cfile = 'webrec.json'; # configuration file
 my $cdata;                 # configuration data
 my $tcpka = 0;             # transport TCP keepalive settings
 my $tp = 0;                # time precision
 
 local $| = 1;
+
 
 ### MAIN BODY #
 
@@ -99,20 +98,54 @@ my $osname = "$^O";
 $cdata = open_config($cfile);
 
 # workloads
-tie my %wrks, "Tie::IxHash";
-%wrks = get_workloads($cdata);
+tie my %work, "Tie::IxHash";
+%work = get_workload($cdata);
 
-print "workloads hash: " . keys(%wrks) . ".\n";
-for my $key (keys %wrks ) {
-    my $value = $wrks{$key};
-    print "$key => $value\n";
+# get it as verbose
+print "Total workload requests: " . keys(%work) . ".\n";
+
+if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
+    die "Error: No SSL support";
 }
-exit 0;
+
+$http->setopt(CURLOPT_NOPROGRESS, 1);
+$http->setopt(CURLOPT_FOLLOWLOCATION, 1);
+$http->setopt(CURLOPT_TIMEOUT, 30);
+
+my $head = tempfile();
+$http->setopt(CURLOPT_WRITEHEADER, $head);
+
+my $body = tempfile();
+$http->setopt(CURLOPT_FILE, $body);
+
+my @myheaders;
+$myheaders[0] = "User-Agent: Kronometrix 1.1/webrec";
+
+$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
+$http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
+
+$http->setopt(CURLOPT_FORBID_REUSE, 1);
+$http->setopt(CURLOPT_FRESH_CONNECT, 1);
+$http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
 
 # main loop
 while (1) {
+    for my $key (keys %work) {
+        my $value = $work{$key};
+        my ( $workload, $desc, $name, $id ) = split ( /:/, $key );
+        my ( $scheme, $hostname, $port, $url ) = split( /:/, $value );
+        print "$key => $value\n";
+        process_request ($http, $workload, $name, $id, $value);
+    }
 
-}    # while loop
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+}
+
 
 
 ### Subroutines
@@ -212,7 +245,7 @@ sub reload_config {
     get_hostid($cdata);
 
     ## appliance destination
-    %wrks = get_workloads($cdata);
+    %work = get_workload($cdata);
 
     return;
 }
@@ -234,97 +267,6 @@ sub get_devid {
     return $device_id;
 }
 
-# get hostuuid
-sub new_hostid {
-
-    # host UUID
-    my $hb  = BSD::Sysctl->new('kern.hostuuid');
-    my $hid = $hb->get();
-    chop($hid);
-
-    # return new host UUID
-    return $hid;
-}
-
-# get hostid
-sub get_hostid {
-
-    my ($data) = @_;
-
-    # get hostuuid
-    my $h = new_hostid;
-
-    # populate DSID
-    make_dsid($data, $h);
-}
-
-# make data source ids, dsid
-sub make_dsid {
-
-    my ($data, $huuid) = @_;
-    my @lmo = ('cpd', 'amd', 'wcd');
-
-    # sid - subscription id
-    # dsid - data source id
-    # get all sids and generate dsid for each
-    # dsid must be unique per sid
-
-    my @applx = @{ $data->{'workloads'} };
-
-    # populate dsid for each appliance and lmo
-    foreach my $appliance (@applx) {
-        my ($sid, $tid, $dsid);
-
-        my $host  = $appliance->{'host'};
-        my $port  = $appliance->{'port'};
-
-        # last call, look for subscription id, sid
-
-        foreach my $mo (@lmo) {
-
-            if ($appliance->{"$mo"}) {
-
-                my @sub = @{ $appliance->{"$mo"} };
-
-                foreach my $sd (@sub) {
-
-                    # get sid, tid
-                    $sid = $sd ->{'sid'};
-                    $tid = $sd ->{'tid'};
-
-                    # get dsid
-                    $dsid = $sd ->{'dsid'};
-                   
-                    if ($dsid eq "" ) {
-
-                        if ( $sid ne "" ) {
-                            my $str = $huuid . $sid;
-                            $dsid = create_uuid_as_string(UUID_V5,$str);
-                            chomp($dsid);
-                            # print "sid=$sid tid=$tid dsid=$dsid\n";
-                            $sd->{'dsid'} = $dsid;
-                            write_config( $cfile, $data );
-                        } else {
-                            exit 1;
-                        }
-                    } else {
-                        my $str = $huuid . $sid;
-                        my $dsid_man = create_uuid_as_string(UUID_V5,$str);
-                        chomp($dsid_man);
-
-                        if ( $dsid ne $dsid_man ) {
-                            # we need to update json file
-                            # print "Not OK: $dsid => $dsid_man\n";
-                            $sd->{'dsid'} = $dsid_man;
-                            write_config( $cfile, $data );
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 
 # get logs
 sub get_log {
@@ -337,7 +279,7 @@ sub get_log {
 
 
 # get workloads defintion
-sub get_workloads {
+sub get_workload {
 
     my ($data) = @_;
     tie my %appl, "Tie::IxHash";
@@ -363,7 +305,7 @@ sub get_workloads {
             my $prt = $req -> {'port'};
             my $url = $req -> {'path'};
 
-            print "$name:$desc:$id:$met => $scm://$hst:$prt$url\n";
+            # print "$name:$desc:$id:$met => $scm://$hst:$prt$url\n";
             my $keyapp = $name . ":" . $desc . ":" . $id . ":" . $met;
             $appl{$keyapp} = "$scm://$hst:$prt$url";
         }
@@ -371,6 +313,67 @@ sub get_workloads {
 
     return %appl;
 }
+
+
+sub process_request {
+
+    my ($http, $w, $n, $id, $url) = @_;
+
+    if ($id eq "POST") {
+#        $http->setopt(CURLOPT_POST,       1 );
+#        $http->setopt(CURLOPT_POSTFIELDS, $post );
+#        $http->setopt(CURLOPT_SSL_VERIFYPEER,0); # do verify
+#        $http->setopt(CURLOPT_SSL_VERIFYHOST,0); # check name
+#        $http->setopt(CURLOPT_URL, $url);
+#        my $retcode = $http->perform();
+#
+#        # Get the results
+#        $responseCode =  $http->getinfo(CURLINFO_HTTP_CODE);
+##        $loadTime = $http->getinfo(CURLINFO_TOTAL_TIME);
+#        $connectTime = $http->getinfo(CURLINFO_CONNECT_TIME);
+#        $dnsTime = $http->getinfo(CURLINFO_NAMELOOKUP_TIME);
+#        $protocolTime = $http->getinfo(CURLINFO_PRETRANSFER_TIME);
+#        $pageSize = $http->getinfo(CURLINFO_SIZE_DOWNLOAD);
+#        $pktime = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dnsTime);
+##
+#        if ($retcode == 0) {
+#            print_results ( $url,          $responseCode, 
+#                            $loadTime,     $connectTime, $dnsTime,
+#                            $protocolTime, $pageSize,    $packetTime );
+    } elsif ($id eq "GET") {
+
+        $http->setopt(CURLOPT_URL, $url);
+        my $retcode = $http->perform();
+        ## Get the results
+        my $responseCode =  $http->getinfo(CURLINFO_HTTP_CODE);
+        my $loadTime = $http->getinfo(CURLINFO_TOTAL_TIME);
+        my $connectTime = $http->getinfo(CURLINFO_CONNECT_TIME);
+        my $dnsTime = $http->getinfo(CURLINFO_NAMELOOKUP_TIME);
+        my $protocolTime = $http->getinfo(CURLINFO_PRETRANSFER_TIME);
+        my $pageSize = $http->getinfo(CURLINFO_SIZE_DOWNLOAD);
+        my $firstPktTime = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dnsTime);
+
+        if ($retcode == 0) { 
+            my $response_code = $http->getinfo(CURLINFO_HTTP_CODE);
+            print "$w:$n:$url, R=$loadTime, C=$connectTime, DNS=$dnsTime, PROTO=$protocolTime, SIZE=$pageSize, FPKT=$firstPktTime, Status: $response_code\n"; 
+        } else { print "$w:$n:$url error processing request \r"; }
+
+    } else {
+            print "Error: cannot process request: $url\n";
+    }
+}
+
+
+#
+#sub print_results {
+#
+#    my ( $url, $status, $r, $c, $d, $p, $s, $pkt ) = @_;
+#
+#    print "URL: $url, R=$r, C=$c, DNS=$d, PROTO=$p, SIZE=$s, FPKT=$pkt, 
+#           Status: $status\n"; 
+#
+##    return;
+#}
 
 
 ## auxiliares
@@ -390,72 +393,6 @@ sub writelog {
     return;
 }
 
-sub send_data {
-
-    my (
-        $curl,  $dest,   $sid,   $token, $dsid,
-        $msg_id, $dev_id, $proto, $port,  $delta
-    ) = @_;
-    my $response;
-
-    ## http://server:port/api/private/send_data
-    my $url = "$proto://" . $dest . ":" . $port . "/api/private/send_data";
-
-    my ($hash, $post);
-
-    if ( $msg_id =~ /cpurec|diskrec|nicrec/ ) {
-        $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
-        $post   = "$msg_id:$sid:$dsid:$delta:$hash";
-    } else {
-        $hash   = sha256krd("$msg_id:$sid:$dsid:$dev_id:$delta");
-        $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
-    }
-    writelog("info: send_data - $post data to be delivered")
-        if ( $verbose_flag == 1 );
-
-    $curl->setopt( CURLOPT_NOPROGRESS, 1 );
-    $curl->setopt(CURLOPT_TIMEOUT, 30);
-    my $head = tempfile();
-    $curl->setopt( CURLOPT_WRITEHEADER, $head );
-    $curl->setopt( CURLOPT_URL,         $url );
-
-    my @myheaders;
-    $myheaders[0] = "Token: $token";
-    $myheaders[1] = "User-Agent: Kronometrix/1.0.0";
-
-    $curl->setopt( CURLOPT_HTTPHEADER, \@myheaders );
-
-    $curl->setopt( CURLOPT_POST,       1 );
-    $curl->setopt( CURLOPT_POSTFIELDS, $post );
-    $curl->setopt( CURLOPT_WRITEDATA,  \$response );
-
-    my $retcode = $curl->perform;
-
-    if ( $retcode == 0 ) {
-        if ( $verbose_flag == 1 ) {
-            writelog("info: send_data - $msg_id krd data delivered");
-        }
-    }
-    else {
-        writelog(
-            "error: send_data - cant send $msg_id krd data, transport error");
-    }
-
-    return $retcode;
-}
-
-# NIST SHA-256 message digest for krd raw data
-sub sha256krd {
-    my ($message) = @_;
-
-    # compute SHA-256
-    my $state = Digest::SHA->new(256);
-
-    $state->add($message);
-    my $digest = $state->hexdigest;
-
-    return $digest;
-}
 
 # usage - print usage and exit.
 sub usage {
@@ -477,7 +414,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.0.17, 2015-09-30 1437
+webrec: 1.0.17, 2015-09-20 1939
 END
     exit 0;
 }
