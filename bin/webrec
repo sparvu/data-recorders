@@ -21,15 +21,13 @@
 use strict;
 use warnings;
 use JSON;
-use File::Basename;
-use Digest::SHA;
-use WWW::Curl::Easy;
-use File::Temp qw/tempfile/;
+use File::Temp qw(tempfile);
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
-use HTTP::Response;
 use Tie::IxHash;
+use HTTP::Response;
+use WWW::Curl::Easy;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -53,9 +51,9 @@ else {
 }
 
 ###  Variables
+my $loop = 0;              # current loop number
 $main::opt_h = 0;          # help option
 $main::opt_V = 0;          # revision option
-my $loop = 0;              # current loop number
 my $cfile = 'webrec.json'; # configuration file
 my $cdata;                 # configuration data
 my $tcpka = 0;             # transport TCP keepalive settings
@@ -88,18 +86,12 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
-# daemon name
-my $dname = basename($0);
-
-# osname
-my $osname = "$^O";
-
 # read configuration
 $cdata = open_config($cfile);
 
 # workloads
-tie my %work, "Tie::IxHash";
-%work = get_workload($cdata);
+#tie my %work, "Tie::IxHash";
+my %work = get_workload($cdata);
 
 # get it as verbose
 print "Total workload requests: " . keys(%work) . ".\n";
@@ -110,34 +102,39 @@ if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
 
 $http->setopt(CURLOPT_NOPROGRESS, 1);
 $http->setopt(CURLOPT_FOLLOWLOCATION, 1);
-$http->setopt(CURLOPT_TIMEOUT, 30);
+#$http->setopt(CURLOPT_TIMEOUT, 60);
 
-my $head = tempfile();
-$http->setopt(CURLOPT_WRITEHEADER, $head);
+#my $head = tempfile();
+#$http->setopt(CURLOPT_WRITEHEADER, $head);
 
-my $body = tempfile();
-$http->setopt(CURLOPT_FILE, $body);
+#my $body = tempfile();
+#$http->setopt(CURLOPT_FILE, $body);
 
-my @myheaders;
-$myheaders[0] = "User-Agent: Kronometrix 1.1/webrec";
+#my @myheaders;
+#$myheaders[0] = "User-Agent: Kronometrix 1.0/webrec";
 
-$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
-$http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
+#$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
+#$http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
 
-$http->setopt(CURLOPT_FORBID_REUSE, 1);
-$http->setopt(CURLOPT_FRESH_CONNECT, 1);
-$http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
+#$http->setopt(CURLOPT_FORBID_REUSE, 1);
+#$http->setopt(CURLOPT_FRESH_CONNECT, 1);
+#$http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
 
 # main loop
 while (1) {
+
+    print "Entering loop = $loop loop_max=$loop_max\n";
+
     for my $key (keys %work) {
         my $value = $work{$key};
         my ( $workload, $desc, $name, $id ) = split ( /:/, $key );
         my ( $scheme, $hostname, $port, $url ) = split( /:/, $value );
         print "$key => $value\n";
         process_request ($http, $workload, $name, $id, $value);
+        # sleep .5;
     }
 
+    print "after requests ...\n";
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -250,39 +247,13 @@ sub reload_config {
     return;
 }
 
-# get_devid, returns device_id
-sub get_devid {
-
-    my ( $pos, $krd ) = @_;
-    my $device_id;
-
-    my @krd = split( /:/, $krd );
-
-    $device_id = $krd[$pos];
-
-    writelog("info: get_devid - devid=$device_id")
-      if ( $verbose_flag == 1 );
-
-    # device_id
-    return $device_id;
-}
-
-
-# get logs
-sub get_log {
-    my ($data) = @_;
-    my $bpath = $data->{'log'}->{'base_path'};
-    my $cpath = $data->{'log'}->{'current_path'};
-
-    return ( $bpath, $cpath );
-}
-
 
 # get workloads defintion
 sub get_workload {
 
     my ($data) = @_;
-    tie my %appl, "Tie::IxHash";
+    #tie my %appl, "Tie::IxHash";
+    my %appl;
 
     my @temp = @{ $data->{'workloads'} };
 
@@ -342,38 +313,44 @@ sub process_request {
 #                            $protocolTime, $pageSize,    $packetTime );
     } elsif ($id eq "GET") {
 
+        my $treq = time;
+        print "Time: $treq\n";
         $http->setopt(CURLOPT_URL, $url);
         my $retcode = $http->perform();
+
         ## Get the results
-        my $responseCode =  $http->getinfo(CURLINFO_HTTP_CODE);
-        my $loadTime = $http->getinfo(CURLINFO_TOTAL_TIME);
-        my $connectTime = $http->getinfo(CURLINFO_CONNECT_TIME);
-        my $dnsTime = $http->getinfo(CURLINFO_NAMELOOKUP_TIME);
-        my $protocolTime = $http->getinfo(CURLINFO_PRETRANSFER_TIME);
-        my $pageSize = $http->getinfo(CURLINFO_SIZE_DOWNLOAD);
-        my $firstPktTime = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dnsTime);
+        my $response =  $http->getinfo(CURLINFO_HTTP_CODE);
+        my $load     = $http->getinfo(CURLINFO_TOTAL_TIME);
+        my $connect  = $http->getinfo(CURLINFO_CONNECT_TIME);
+        my $dns      = $http->getinfo(CURLINFO_NAMELOOKUP_TIME);
+        my $proto    = $http->getinfo(CURLINFO_PRETRANSFER_TIME);
+        my $pagesz   = $http->getinfo(CURLINFO_SIZE_DOWNLOAD);
+        my $firstpkt = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dns);
 
         if ($retcode == 0) { 
-            my $response_code = $http->getinfo(CURLINFO_HTTP_CODE);
-            print "$w:$n:$url, R=$loadTime, C=$connectTime, DNS=$dnsTime, PROTO=$protocolTime, SIZE=$pageSize, FPKT=$firstPktTime, Status: $response_code\n"; 
+            print "before putraw...\n";
+            putraw ($treq, $w, $n, $load, $connect, $dns, $proto, $pagesz, $firstpkt, $response);
+ 
         } else { print "$w:$n:$url error processing request \r"; }
 
     } else {
-            print "Error: cannot process request: $url\n";
+            print "Error: cannot process request: $url \n";
     }
+
+    print "ending process_request...\n";
 }
 
 
 #
-#sub print_results {
-#
-#    my ( $url, $status, $r, $c, $d, $p, $s, $pkt ) = @_;
-#
-#    print "URL: $url, R=$r, C=$c, DNS=$d, PROTO=$p, SIZE=$s, FPKT=$pkt, 
-#           Status: $status\n"; 
-#
-##    return;
-#}
+sub putraw {
+
+    my ( $timereq, $workload, $reqname,  $ttime, $ctime, $dtime, $ptime, $psize, $fpkt, $resp ) = @_;
+
+    printf "%f:%s:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
+                $timereq, $workload, $reqname,
+                $ttime  , $ctime   , $dtime  , $ptime,
+                $fpkt   , $psize   , $resp;
+}
 
 
 ## auxiliares

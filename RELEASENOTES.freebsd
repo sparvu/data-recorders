@@ -11,6 +11,9 @@ Bug Management System
 Releases
 
   1.0.17 30-09-2015 Release
+    perl 5.20.3 update linux, freebsd, sunos #69
+    CPAN update September 2015 #65
+    SSL support for Linux, FreeBSD #50
     new webrec data message #53
 
   1.0.16 31-08-2015 Release
