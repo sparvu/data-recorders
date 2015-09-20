@@ -29,7 +29,7 @@ use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use HTTP::Response;
-
+use Tie::IxHash;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -63,13 +63,7 @@ my $cdata;                 # configuration data
 my $tcpka = 0;             # transport TCP keepalive settings
 my $tp = 0;                # time precision
 
-## configuration
-my ( $baselog, $curlog, $slog );
-my @dbs;
-my %workload;
-
 local $| = 1;
-
 
 ### MAIN BODY #
 
@@ -104,24 +98,21 @@ my $osname = "$^O";
 # read configuration
 $cdata = open_config($cfile);
 
-# get OS host UUID
-# get_hostid($cdata);
+# workloads
+tie my %wrks, "Tie::IxHash";
+%wrks = get_workloads($cdata);
 
-# appliance destination
-%workloads = get_appliance($cdata);
-
-print "appliance hash: " . keys(%workload) . ".\n";
-for my $key ( keys %workload ) {
-    my $value = $workload{$key};
+print "workloads hash: " . keys(%wrks) . ".\n";
+for my $key (keys %wrks ) {
+    my $value = $wrks{$key};
     print "$key => $value\n";
 }
+exit 0;
 
 # main loop
 while (1) {
 
-
 }    # while loop
-
 
 
 ### Subroutines
@@ -221,7 +212,7 @@ sub reload_config {
     get_hostid($cdata);
 
     ## appliance destination
-    %workload = get_appliance($cdata);
+    %wrks = get_workloads($cdata);
 
     return;
 }
@@ -278,7 +269,7 @@ sub make_dsid {
     # get all sids and generate dsid for each
     # dsid must be unique per sid
 
-    my @applx = @{ $data->{'transport'}->{'appliance'} };
+    my @applx = @{ $data->{'workloads'} };
 
     # populate dsid for each appliance and lmo
     foreach my $appliance (@applx) {
@@ -334,10 +325,10 @@ sub make_dsid {
     }
 }
 
+
 # get logs
 sub get_log {
     my ($data) = @_;
-
     my $bpath = $data->{'log'}->{'base_path'};
     my $cpath = $data->{'log'}->{'current_path'};
 
@@ -345,51 +336,36 @@ sub get_log {
 }
 
 
-# get appliance information
-sub get_appliance {
+# get workloads defintion
+sub get_workloads {
 
     my ($data) = @_;
-    my %appl;
+    tie my %appl, "Tie::IxHash";
 
-    my @lmo = ('cpd', 'amd', 'wcd');
-
-    my @temp = @{ $data->{'transport'}->{'appliance'} };
+    my @temp = @{ $data->{'workloads'} };
 
     foreach my $f (@temp) {
         my ($sid, $tid, $dsid);
 
-        my $ka    = $f->{'keepalive'};
-        my $proto = $f->{'protocol'};
-        my $host  = $f->{'host'};
-        my $port  = $f->{'port'};
+        # my $proto = $f->{'protocol'};
+        # my $port  = $f->{'port'};
+        my $ka      = $f->{'keepalive'};
+        my $name    = $f->{'name'};
+        my $desc    = $f->{'description'};
 
-        # last call, look for subscription
+        my @reqs = @{ $f->{'requests'} };
 
-        foreach my $mo (@lmo) {
+        foreach my $req (@reqs) {
+            my $id  = $req -> {'id'};
+            my $met = $req -> {'method'};
+            my $scm = $req -> {'scheme'};
+            my $hst = $req -> {'host'};
+            my $prt = $req -> {'port'};
+            my $url = $req -> {'path'};
 
-            if ($f->{"$mo"}) {
-
-                my @sub = @{ $f->{"$mo"} };
-
-                foreach my $sd (@sub) {
-
-                    # get sid, tid, dsid
-                    $sid  = $sd ->{'sid'};
-                    $tid  = $sd ->{'tid'};
-                    $dsid = $sd ->{'dsid'};
-
-                    if ( defined($host)
-                         and defined($sid)
-                         and defined($dsid)
-                         and defined($tid)
-                         and defined($proto)
-                         and defined($port)
-                         and defined($ka) ) {
-                        my $keyapp = $mo . ":" . $host . ":" . $port . ":" . $sid;
-                        $appl{$keyapp} = "$dsid:$tid:$proto:$ka";
-                    }
-                }
-            }
+            print "$name:$desc:$id:$met => $scm://$hst:$prt$url\n";
+            my $keyapp = $name . ":" . $desc . ":" . $id . ":" . $met;
+            $appl{$keyapp} = "$scm://$hst:$prt$url";
         }
     }
 
@@ -484,9 +460,8 @@ sub sha256krd {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: sender [-t secs] [-hvV] | [interval]
+USAGE: webrec [-t secs] [-hvV] | [interval]
 OPTIONS:
-  -t        : timeout in seconds
   -h        : help information
   -h        : verbose information
   -V        : release version
@@ -502,7 +477,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.0.16, 2015-08-31 0131
+webrec: 1.0.17, 2015-09-30 1437
 END
     exit 0;
 }
