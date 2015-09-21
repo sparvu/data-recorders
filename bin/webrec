@@ -94,7 +94,7 @@ tie my %work, "Tie::IxHash";
 %work = get_workload($cdata);
 
 # get it as verbose
-print "Total workload requests: " . keys(%work) . ".\n";
+# print "Total workload requests: " . keys(%work) . ".\n";
 
 if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
     die "Error: No SSL support";
@@ -126,11 +126,11 @@ while (1) {
 
     for my $key (keys %work) {
         my $value = $work{$key};
-        my ( $workload, $desc, $name, $id ) = split ( /:/, $key );
+        my ( $workload, $desc, $name, $id, $d ) = split ( /:/, $key );
         my ( $scheme, $hostname, $port, $url ) = split( /:/, $value );
         #print "$key => $value\n";
         process_request ($http, $workload, $name, $id, $value);
-        # sleep .5;
+        sleep $d;
     }
 
     ### Check for end
@@ -262,6 +262,7 @@ sub get_workload {
         my $ka      = $f->{'keepalive'};
         my $name    = $f->{'name'};
         my $desc    = $f->{'description'};
+        my $delay   = $f->{'delay'};
 
         my @reqs = @{ $f->{'requests'} };
 
@@ -274,7 +275,9 @@ sub get_workload {
             my $url = $req -> {'path'};
 
             # print "$name:$desc:$id:$met => $scm://$hst:$prt$url\n";
-            my $keyapp = $name . ":" . $desc . ":" . $id . ":" . $met;
+            my $keyapp = $name . ":" . $desc . ":" . 
+                         $id   . ":" . $met  . ":" . $delay;
+
             $appl{$keyapp} = "$scm://$hst:$prt$url";
         }
     }
@@ -339,7 +342,7 @@ sub putraw {
 
     my ( $timereq, $workload, $reqname,  $ttime, $ctime, $dtime, $ptime, $psize, $fpkt, $resp ) = @_;
 
-    printf "%f:%s:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
+    printf "%.${tp}f:%s:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
                 $timereq, $workload, $reqname,
                 $ttime  , $ctime   , $dtime  , $ptime,
                 $fpkt   , $psize   , $resp;
@@ -375,8 +378,20 @@ OPTIONS:
   interval  : maximum number of seconds between samples, default 60, will 
               never spend more than that without checking data
 
- e.g. webrec    check and send krd raw data, every 60 secs
-      webrec 60 check and send krd raw data, every 10 secs
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 workid     : workload name
+  #03 reqid      : request id
+
+  # stats
+  #04 ttime      : total time
+  #05 ctime      : connect time
+  #06 dnstime    : DNS time
+  #07 ptime      : protocol time
+  #08 fpkt       : first packet time
+  #09 psize      : page size
+  #10 status     : response status code
+ 
 END
     exit 0;
 }
@@ -384,7 +399,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.0.17, 2015-09-20 1939
+webrec: 1.0.17, 2015-09-21 1614
 END
     exit 0;
 }
