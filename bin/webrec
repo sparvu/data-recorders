@@ -90,8 +90,8 @@ if ( $interval =~ /\./ ) {
 $cdata = open_config($cfile);
 
 # workloads
-#tie my %work, "Tie::IxHash";
-my %work = get_workload($cdata);
+tie my %work, "Tie::IxHash";
+%work = get_workload($cdata);
 
 # get it as verbose
 print "Total workload requests: " . keys(%work) . ".\n";
@@ -102,39 +102,36 @@ if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
 
 $http->setopt(CURLOPT_NOPROGRESS, 1);
 $http->setopt(CURLOPT_FOLLOWLOCATION, 1);
+$http->setopt(CURLOPT_NOSIGNAL, 1);
 #$http->setopt(CURLOPT_TIMEOUT, 60);
 
-#my $head = tempfile();
-#$http->setopt(CURLOPT_WRITEHEADER, $head);
+my $head = tempfile();
+$http->setopt(CURLOPT_WRITEHEADER, $head);
 
-#my $body = tempfile();
-#$http->setopt(CURLOPT_FILE, $body);
+my $body = tempfile();
+$http->setopt(CURLOPT_FILE, $body);
 
-#my @myheaders;
-#$myheaders[0] = "User-Agent: Kronometrix 1.0/webrec";
+my @myheaders;
+$myheaders[0] = "User-Agent: Kronometrix 1.0/webrec";
 
-#$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
-#$http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
+$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
+$http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
 
-#$http->setopt(CURLOPT_FORBID_REUSE, 1);
-#$http->setopt(CURLOPT_FRESH_CONNECT, 1);
-#$http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
+$http->setopt(CURLOPT_FORBID_REUSE, 1);
+$http->setopt(CURLOPT_FRESH_CONNECT, 1);
+$http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
 
 # main loop
 while (1) {
-
-    print "Entering loop = $loop loop_max=$loop_max\n";
 
     for my $key (keys %work) {
         my $value = $work{$key};
         my ( $workload, $desc, $name, $id ) = split ( /:/, $key );
         my ( $scheme, $hostname, $port, $url ) = split( /:/, $value );
-        print "$key => $value\n";
+        #print "$key => $value\n";
         process_request ($http, $workload, $name, $id, $value);
         # sleep .5;
     }
-
-    print "after requests ...\n";
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -252,8 +249,8 @@ sub reload_config {
 sub get_workload {
 
     my ($data) = @_;
-    #tie my %appl, "Tie::IxHash";
-    my %appl;
+    tie my %appl, "Tie::IxHash";
+    #my %appl;
 
     my @temp = @{ $data->{'workloads'} };
 
@@ -314,7 +311,6 @@ sub process_request {
     } elsif ($id eq "GET") {
 
         my $treq = time;
-        print "Time: $treq\n";
         $http->setopt(CURLOPT_URL, $url);
         my $retcode = $http->perform();
 
@@ -328,7 +324,6 @@ sub process_request {
         my $firstpkt = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dns);
 
         if ($retcode == 0) { 
-            print "before putraw...\n";
             putraw ($treq, $w, $n, $load, $connect, $dns, $proto, $pagesz, $firstpkt, $response);
  
         } else { print "$w:$n:$url error processing request \r"; }
@@ -336,8 +331,6 @@ sub process_request {
     } else {
             print "Error: cannot process request: $url \n";
     }
-
-    print "ending process_request...\n";
 }
 
 
