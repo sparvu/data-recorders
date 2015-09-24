@@ -373,24 +373,51 @@ sub usage {
 USAGE: webrec [-t secs] [-hvV] | [interval]
 OPTIONS:
   -h        : help information
-  -h        : verbose information
+  -v        : verbose information
   -V        : release version
-  interval  : maximum number of seconds between samples, default 60, will 
-              never spend more than that without checking data
+  interval  : maximum number of seconds between samples
 
  FIELDS:
-  #01 timestamp  : seconds since Epoch, time
-  #02 workid     : workload name
-  #03 reqid      : request id
+  #01 timestamp : seconds since Epoch, time
 
-  # stats
-  #04 ttime      : total time
-  #05 ctime      : connect time
-  #06 dnstime    : DNS time
-  #07 ptime      : protocol time
-  #08 fpkt       : first packet time
-  #09 psize      : page size
-  #10 status     : response status code
+  #02 workload  : workload name
+
+  #03 reqid     : request id
+
+  #04 ttime     : total time, in seconds, that the full operation lasted
+
+  #05 ctime     : connect time, in seconds, it took from the start 
+                  until the TCP connect to the remote host (or proxy) 
+                  was completed
+
+  #06 dnstime   : namelookup time, in seconds, it took from the start 
+                  until the name resolving was completed
+
+  #07 ptime     : protocol time, in seconds, it took from the start 
+                  until the file transfer was just about to begin. 
+                  Includes all pre-transfer commands and negotiations 
+                  that are specific to the particular protocol(s) 
+                  involved
+
+  #08 fpkt      : first packet time, in seconds, it took from the start 
+                  until the first byte was just about to be 
+                  transferred. This includes time_pretransfer and also 
+                  the time the server needed to calculate the result
+
+  #09 psize     : page size, the total amount of bytes that were 
+                  downloaded
+
+  #10 status    : response status code, the numerical response code 
+                  that was found in the last retrieved HTTP(S) transfer
+
+ NOTES
+ webrec reports TTFB (time to first byte) for one or many 
+ HTTP workloads, applications, as an indication of the 
+ responsiveness. TTFB measures the duration from the virtual 
+ user making an HTTP request to the first byte of the page 
+ being received by the browser. This time is made up of the 
+ socket connection time, the time taken to send the HTTP request, 
+ and the time taken to get the first byte of the page.
  
 END
     exit 0;
