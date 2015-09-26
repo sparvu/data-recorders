@@ -370,7 +370,7 @@ sub writelog {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: webrec [-t secs] [-hvV] | [interval]
+USAGE: webrec [-hvV] | [interval]
 OPTIONS:
   -h        : help information
   -v        : verbose information
@@ -379,27 +379,21 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-
   #02 workload  : workload name
-
   #03 reqid     : request id
 
   #04 ttime     : total time, in seconds, that the full operation lasted
-
   #05 ctime     : connect time, in seconds, it took from the start 
                   until the TCP connect to the remote host (or proxy) 
                   was completed
-
   #06 dnstime   : namelookup time, in seconds, it took from the start 
                   until the name resolving was completed
-
   #07 ptime     : protocol time, in seconds, it took from the start 
                   until the file transfer was just about to begin. 
                   Includes all pre-transfer commands and negotiations 
                   that are specific to the particular protocol(s) 
                   involved
-
-  #08 fpkt      : first packet time, in seconds, it took from the start 
+  #08 fpktime   : first packet time, in seconds, it took from the start 
                   until the first byte was just about to be 
                   transferred. This includes time_pretransfer and also 
                   the time the server needed to calculate the result
@@ -426,7 +420,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.0.17, 2015-09-21 1614
+webrec: 1.0.17, 2015-09-26 1140
 END
     exit 0;
 }

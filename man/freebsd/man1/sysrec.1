@@ -1,6 +1,6 @@
 .TH sysrec 1  "$Date: 2014-04-27 #$" "USER COMMANDS"
 .SH NAME
-sysrec \- system Recorder. Uses perl
+sysrec \- System Recorder. Uses perl
 .SH SYNOPSIS
 .B sysrec
 [-hV] | [interval [count]]
@@ -9,26 +9,21 @@ sysrec \- system Recorder. Uses perl
 sysrec records the following system performance parameters: cpu, memory
 utilization, disk and network throughput, errors and system load averages. 
 The recorder reports several key metrics across all devices, being the 
-main recorder of SDR, responsible for overall system performance. 
-This will be the first place to check how your system performs in the long run.
+main recorder of KDR, responsible for overall system performance. 
+This will be the first place to check how your system(s) are performing.
 
 .PP
-The recorder uses Sys::Statistics::Linux to fetch all metrics. 
-The raw data is already prepared and formatted for SDR analysis process. 
+The raw data is already prepared and formatted for analysis process. 
 The recorder runs continuously.
 
 
 .SH OS
-Linux 2.6+
+FreeBSD 10
 
 .SH OPTIONS
 .SS
 \-h
 print help information
-
-.SS
-\-x
-print additional memory statistics
 
 .SS
 \-V
@@ -51,190 +46,224 @@ executes every 5 seconds
 .SS sysrec 5 10
 executes 10 times sampled every 5 seconds
 
-.SS sysrec .5
-executes every 0.5 seconds
-
 .PP
 .SH FIELDS
-sysrec outputs utilization and specific metrics 
-character \: separated.
-The format is selected to match easy SDR Reporting side and 
-RRD module for storage and further analysis.
+sysrec krd format is a CSV type of format, where all fields are 
+\: separated.
 
 .TP
 #1 timestamp
-the time in seconds since Epoch. If interval is
-less than a second the time will be expressed in
-milliseconds since Epoch.
+the time in seconds since Epoch. If interval is less than a second 
+the time will be expressed in milliseconds since Epoch.
 
 .TP
 #2 cpupct
-cpu utilization, across all cpus, percentage, gauge
+cpu utilization, percentage, across all cpus, number
 
 .TP
 #03 sumpct
-sum of all cpus utilization, percentage, gauge
+sum of all cpus utilization, percentage, number
 
 .TP
 #04 headpct
-headroom cpu available, all cpus, percentage, gauge
+headroom cpu available, all cpus, number
 
 .TP
 #05 userpct
-cpu utilization user space in percent, gauge
+cpu utilization, user space in percent, number
 
 .TP
 #06 nicepct
-cpu utilization user space with nice priority, gauge
+cpu utilization, user space with nice priority, number
 
 .TP
-#07 sysct
-cpu utilization system space, gauge
+#07 syspct
+cpu utilization, system space, number
 
 .TP
-#08 idlepct
-cpu utilization idle state, gauge
+#08 irqpct
+cpu percentage servicing interrupts, number
 
 .TP
-#09 iowaitcpt
-cpu percentage in idle state because an I/O operation is waiting 
-to complete, gauge
+#09 idlepct
+cpu utilization, idle state, number
 
 .TP
-#10 irqpct
-cpu percentage servicing interrupts, gauge
+#10 runqsz
+run queue length, tasks waiting for run time, number
 
 .TP
-#11 softirqpct
-cpu percentage servicing softirqs, gauge
+#11 blocked
+processes blocked for resources, number
 
 .TP
-#12 stealpct
-cpu percentage of time spent in other operating systems when running in a virtualized environment, gauge
+#12 pagewait
+processes blocked for paging, number
 
 .TP
-#13 runqsz
-run queue length, number of tasks waiting for run time
+#13 diskwait
+processes blocked for disk io, number
 
 .TP
-#14 plistsz
-number of tasks in the task list
+#14 sleeping
+processes sleeping, number 
 
 .TP
-#15 memusedper
-Total size of used memory in percent
+#15 memusedpct
+size of used memory in percent, number
 
 .TP
 #16 memused
-Total size of used memory in kilobytes
+size of used memory in kilobytes, number
 
 .TP
-#17 memfree
-Total size of free memory in kilobytes
+#17 memavailpct
+size of available memory in kilobytes, number
 
 .TP
-#18 memtotal
-Total size of memory in kilobytes
+#18 memavail
+size of available memory in kilobytes, number
 
 .TP
-#19 buffers
-Total size of buffers used from memory in kilobytes
+#19 memtotal
+size of memory in kilobytes, number
 
 .TP
-#20 cached
-Total size of cached memory in kilobytes
+#20 active
+size of active memory pages in kilobytes, number
 
 .TP
-#21 realfree
-Total size of memory is real free, (memfree + buffers + cached)
+#21 inactive
+size of inactive memory pages in kilobytes, number
 
 .TP
-#22 realfreeper
-Total size of memory is real free in percent of total memory
+#22 wired
+size of wired memory pages in kilobytes, number
  
 .TP
-#23 swapusedper
-Total size of used swap space in percent
+#23 cache
+size of memory pages on cache queue in kilobytes, number
 
 .TP
-#24 swapused
-Total size of swap space is used is kilobytes
+#24 free
+size of free memory pages in kilobytes, number
 
 .TP
-#25 swapfree
-Total size of swap space is free in kilobytes
+#25 realfree
+size of real free memory in kilobytes, number (inactive + cache + free)
 
 .TP
-#26 swaptotal
-Total size of swap space in kilobytes
+#26 realfreepct
+size of real free memory in percent of total memory, number
 
 .TP
-#27 swapcached
-Memory that once was swapped out, is swapped back in but still also is in the swapfile
+#27 swapin
+swap pager pageins, rate
 
 .TP
-#28 readReq
-Total disk read requests across all disks, counter
+#28 swappgsin
+swap pager pages paged in, rate
 
 .TP
-#29 writeReq
-Total disk write requests, counter
+#29 swapout
+swap pager pageouts, rate
 
 .TP
-#30 totReq
-Total disk read+write requests, counter
+#30 swappgsout
+swap pager pages paged out, rate
 
 .TP
-#31 readByt
-Total read bytes / sec across all disks, in KB
+#31 reads
+read requests per second, rate
 
 .TP
-#32 writeByt
-Total write bytes / sec across all disks, in KB
+#32 rkbytes
+read KB per second, rate
 
 .TP
-#33 totByt
-Total read+write bytes / sec across all disks, in KB
+#33 writes
+write requests per second, rate
 
 .TP
-#34 rxByt
-Total network received bytes /sec across all NICs, in KB
+#34 wkbytes
+write KB per second, rate
 
 .TP
-#35 txByt
-Total network transmitted bytes /sec across all NICs, in KB
+#35 queue
+the number of not yet completed transactions, rate
 
 .TP
-#36 ntByt
-Total network received + transmitted bytes /sec across all NICs, in KB
+#36 service
+service time per transaction in miliseconds, number
 
 .TP
-#37 rxerr 
-Number of errors that happend while received packets/second
+#37 diskutil
+the percentage of time the device had one or more transactions 
+outstanding, number
 
 .TP
-#38 txerr 
-Number of errors that happend while transmitting packets/second
+#38 iops
+disk read+write requests per second, rate
 
 .TP
-#39 rxdrp
-Number of rx packets that were dropped per second
+#39 rwkbytes
+read+write KB per second, rate
 
 .TP
-#40 txdrp
-Number of tx packets that were dropped per second
+#40 rxpkt
+rx packets per second, rate
 
 .TP
-#41 avg_1
-LA of the last minute
+#41 rxkbytes
+rx KB per second, rate
 
 .TP
-#42 avg_5
-LA of the last 5 minutes
+#42 rxerr
+rx packets containing errors, rate
 
 .TP
-#43 avg_15
-LA of the last 15 minutes
+#43 rxdrop
+rx drop packets per second, rate
+
+.TP
+#44 txpkt
+tx packets per second, rate
+
+.TP
+#45 txkbytes
+tx KB per second, rate
+
+.TP
+#46 txerr
+tx packets containing errors, rate
+
+.TP
+#47 cols
+number of collisions, rate
+
+.TP
+#48 drops
+number of dropped packets per seconds, rate
+
+.TP
+#49 rxtxpkt
+rx+tx packets per second, rate
+
+.TP
+#50 rxtxkbytes
+rx+tx KB per second, rate
+
+.TP
+#51 avg1
+LA of the last minute, number
+
+.TP
+#52 avg5
+LA of the last 5 minutes, number
+
+.TP
+#53 avg15
+LA of the last 15 minutes, number
 
 .PP
 .SH NOTES
@@ -242,15 +271,13 @@ This recorder supports interval values lower than second !
 Running the recorder with values lower than second for long
 periods of time will add an overhead in terms of cpu utilization.
 The lower the interval value the higher the cpu utilization. We do
-not recommend using values lower than second for long historical
+not recommend using values lower than 60 seconds (60s) for capacity 
+planning, performance analysis or other type of long historical data 
 recordings !
 
 .PP
-sysrec records up to 43 metrics under Linux OS x64 and x86 platforms.
-
-.PP
 .SH DOCUMENTATION
-See SDR documentation for more details.
+See Kronometrix Handbook for more details.
 
 .SH EXIT
 sysrec will run continuously until is stopped by the master script 
