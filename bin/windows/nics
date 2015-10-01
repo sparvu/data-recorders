@@ -125,7 +125,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nics: 1.0.17, 2015-09-08 1334
+nics: 1.0.17, 2015-10-01 1153
 END
     exit 0;
 }

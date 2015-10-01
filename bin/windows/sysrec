@@ -73,7 +73,7 @@ my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
 my $last_time   = 0;                      # first counter
-my $pdev        = 'PCI|USB';
+my $pdev        = 'PCI|USB|VMBUS';
 my $vdev        = 'ROOT|SW|\{';
 my $vid         = 'Microsoft|VMWare|VirtualBox';
 $|= 1;                                    # autoflush
@@ -980,7 +980,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.17, 2015-09-15 1532
+sysrec: 1.0.17, 2015-10-01 1154
 END
     return;
 }
