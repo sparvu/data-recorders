@@ -68,7 +68,7 @@ $|= 1;                                    # autoflush
 
 
 # physical ids
-my $pdev  = 'PCI|USB';
+my $pdev  = 'PCI|USB|VMBUS';
 my $vdev  = 'ROOT|SW|\{';
 my $vid   = 'Microsoft|VMWare|VirtualBox';
 
