@@ -76,7 +76,7 @@ my $ht          = 'NA';                   # hyper-threading
 my $stime;                                # sleep timer
 my $last_time   = 0;                      # first counter
 # physical,virtual ids
-my $pdev        = 'PCI|USB';
+my $pdev        = 'PCI|USB|VMBUS';
 my $vdev        = 'ROOT|SW|\{';
 my $vid         = 'Microsoft|VMWare|VirtualBox';
 $|= 1;                                    # autoflush
@@ -855,7 +855,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.17, 2015-09-18 1348
+hdwrec: 1.0.17, 2015-10-01 1207
 END
     return;
 }
