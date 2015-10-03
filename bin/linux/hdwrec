@@ -164,7 +164,8 @@ while (1) {
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
     foreach my $i (split /, /, $si->{interfaces} ) {
-        $num_nic++ if $i =~ /eth|wlan/;
+        print "Interface: $i\n";
+        $num_nic++ if $i !~ /lo/;
     }
 
     my $memtotal = $si->{memtotal};
@@ -276,7 +277,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.17, 2015-09-13 0900
+hdwrec: 1.0.17, 2015-10-03 1850
 END
     exit 0;
 }
