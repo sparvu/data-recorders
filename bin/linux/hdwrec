@@ -164,7 +164,7 @@ while (1) {
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
     foreach my $i (split /, /, $si->{interfaces} ) {
-        print "Interface: $i\n";
+        # print "Interface: $i\n";
         $num_nic++ if $i !~ /lo/;
     }
 

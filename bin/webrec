@@ -381,7 +381,6 @@ OPTIONS:
   #01 timestamp : seconds since Epoch, time
   #02 workload  : workload name
   #03 reqid     : request id
-
   #04 ttime     : total time, in seconds, that the full operation lasted
   #05 ctime     : connect time, in seconds, it took from the start 
                   until the TCP connect to the remote host (or proxy) 
@@ -420,7 +419,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.0.17, 2015-09-26 1140
+webrec: 1.0.17, 2015-10-03 1855
 END
     exit 0;
 }
