@@ -5,9 +5,9 @@ README Kronometrix Data Recording
 1.Supported Operating Systems
 
   We support the following Linux based operating systems:
-    CentOS release 5.11 (Final) x86_64, i386
-    CentOS release 6.6 (Final) x86_64, i386
-    CentOS Linux release 7.0.1406 (Core) x86_64, i386
+    CentOS release 5 (Final) x86_64, i386
+    CentOS release 6 (Final) x86_64, i386
+    CentOS Linux release 7 (Core) x86_64, i386
     CloudLinux 5, 6 x86_64, i386
     Debian GNU/Linux 7 (wheezy) x86_64, i386
     Ubuntu Server Edition 10.04+ x86_64, i386
