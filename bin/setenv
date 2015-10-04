@@ -59,9 +59,9 @@ NETREC_CUR=${KRMX_CURRENT}/netrec.krd
 JVMREC_CUR=${KRMX_CURRENT}/jvmrec.krd
 HDWREC_CUR=${KRMX_CURRENT}/hdwrec.krd
 PROCREC_CUR=${KRMX_CURRENT}/procrec.krd
-VWSREC_CUR=${KRMX_CURRENT}/vwsrec.krd
 VMWREC_CUR=${KRMX_CURRENT}/vmwrec.krd
 XENREC_CUR=${KRMX_CURRENT}/xenrec.krd
+WEBREC_CUR=${KRMX_CURRENT}/webrec.krd
 WSREC_CUR=${KRMX_CURRENT}/wsrec.krd
 
 
@@ -75,8 +75,8 @@ JVMREC_LOG=${KRMX_LOG}/jvmrec.log
 HDWREC_LOG=${KRMX_LOG}/hdwrec.log
 PROCREC_LOG=${KRMX_LOG}/procrec.log
 VMWREC_LOG=${KRMX_LOG}/vmwrec.log
-VWSREC_LOG=${KRMX_LOG}/vwsrec.log
 XENREC_LOG=${KRMX_LOG}/xenrec.log
+WEBREC_CUR=${KRMX_CURRENT}/webrec.krd
 WSREC_LOG=${KRMX_LOG}/wsrec.log
 
 
