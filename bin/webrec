@@ -112,7 +112,7 @@ my $body = tempfile();
 $http->setopt(CURLOPT_FILE, $body);
 
 my @myheaders;
-$myheaders[0] = "User-Agent: Kronometrix 1.0/webrec";
+$myheaders[0] = "User-Agent: Kronometrix_Linux/1.0";
 
 $http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
 $http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
