@@ -5,7 +5,7 @@ README Kronometrix Data Recording
 1.Supported Operating Systems
 
   We support the following FreeBSD based operating systems:
-    FreeBSD 10, 10.1 amd64, i386
+    FreeBSD 10, 10.1, 10.2 amd64, i386
 
 
 2.Package Content
