@@ -45,6 +45,22 @@
           "path" : "/recording/design.html"
         }
       ]
+    },
+    {
+      "keepalive" : 0,
+      "name" : "wwwfi",
+      "description" : "Main Website",
+      "delay" : 0.1,
+      "requests" : [
+        {
+          "id" : "main",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.fi",
+          "port" : "80",
+          "path" : "/"
+        }
+      ]
     }
   ]
 }
