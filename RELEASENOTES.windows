@@ -11,7 +11,8 @@ Bug Management System
 
 Releases
 
-  1.0.17 01-10-2015 Release
+  1.0.17 27-10-2015 Release
+    sender transport POST compliance #72
     NIC detection on Hyper-V deployments #70
     windows silent installation support #68
     windows installer should check on current installations #67
