@@ -18,7 +18,8 @@ Bug Management System
 
 Releases
 
-  1.0.17 30-09-2015 Release
+  1.0.17 27-09-2015 Release
+    sender transport POST compliance #72
     hdwrec CentOS7 systemd based NICs not detectable #71
     perl 5.20.3 update linux, freebsd, sunos #69
     CPAN update September 2015 #65

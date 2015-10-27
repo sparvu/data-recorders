@@ -223,11 +223,6 @@ while (1) {
                 $devid = 'system';
                 $msgid  = "$osname-zonerec";
             }
-            elsif ( $_->{"input"} =~ /webrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid  = "$osname-webrec";
-            }
             elsif ( $_->{"input"} =~ /hdwrec/ ) {
                 $lmoid = 'cpd';
                 $devid = 'system';
@@ -243,6 +238,12 @@ while (1) {
                 $devid = 'system';
                 $msgid  = "$osname-wsrec";
             }
+            elsif ( $_->{"input"} =~ /webrec/ ) {
+                $lmoid = 'cpd';
+                $devid = get_devid( 1, $delta );
+                $msgid = "http-ttfb";
+            }
+
 
             # each appliance
             for my $key ( keys %appliance ) {
@@ -630,6 +631,7 @@ sub writelog {
     return;
 }
 
+
 sub send_data {
 
     my (
@@ -643,7 +645,7 @@ sub send_data {
 
     my ($hash, $post);
 
-    if ( $msg_id =~ /cpurec|diskrec|nicrec/ ) {
+    if ( $msg_id =~ /cpurec|diskrec|nicrec|ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
     } else {
@@ -673,6 +675,7 @@ sub send_data {
     return;
 }
 
+
 # NIST SHA-256 message digest for krd raw data
 sub sha256krd {
     my ($message) = @_;
@@ -685,6 +688,7 @@ sub sha256krd {
 
     return $digest;
 }
+
 
 # usage - print usage and exit.
 sub usage {
