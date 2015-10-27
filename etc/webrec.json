@@ -2,7 +2,7 @@
   "workloads" : [
     {
       "keepalive" : 0,
-      "name" : "kronometrix",
+      "name" : "korg",
       "description" : "Main Website",
       "delay" : 0.1,
       "proxy" : {
@@ -48,7 +48,7 @@
     },
     {
       "keepalive" : 0,
-      "name" : "wwwfi",
+      "name" : "kcom",
       "description" : "Main Website",
       "delay" : 0.1,
       "requests" : [
@@ -56,7 +56,7 @@
           "id" : "main",
           "method" : "GET",
           "scheme" : "http",
-          "host" : "www.fi",
+          "host" : "www.kronometrix.com",
           "port" : "80",
           "path" : "/"
         }
