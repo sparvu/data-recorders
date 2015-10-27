@@ -76,7 +76,7 @@ HDWREC_LOG=${KRMX_LOG}/hdwrec.log
 PROCREC_LOG=${KRMX_LOG}/procrec.log
 VMWREC_LOG=${KRMX_LOG}/vmwrec.log
 XENREC_LOG=${KRMX_LOG}/xenrec.log
-WEBREC_CUR=${KRMX_CURRENT}/webrec.krd
+WEBREC_LOG=${KRMX_LOG}/webrec.log
 WSREC_LOG=${KRMX_LOG}/wsrec.log
 
 
