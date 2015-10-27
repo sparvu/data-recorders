@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/webrec -p $RES >> ${WEBREC_CUR} 2>> ${WEBREC_LOG} &
+${KRMX_BIN}/webrec $RES >> ${WEBREC_CUR} 2>> ${WEBREC_LOG} &
 echo "$!" > ${KRMX_LOG}/webrec.pid
