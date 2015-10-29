@@ -18,7 +18,7 @@ Bug Management System
 
 Releases
 
-  1.0.17 27-09-2015 Release
+  1.0.17 29-10-2015 Release
     sender transport POST compliance #72
     hdwrec CentOS7 systemd based NICs not detectable #71
     perl 5.20.3 update linux, freebsd, sunos #69
@@ -28,6 +28,7 @@ Releases
     hdwrec inventory message rational usage #63
     SSL support for Linux, FreeBSD #50
     deb kdr pkg warnings #44
+    update curl-7.45.0
 
   1.0.16 30-08-2015 Release
     diskrec data message changes #53
