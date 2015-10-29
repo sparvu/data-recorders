@@ -402,23 +402,16 @@ sub get_devid {
 # process host uuid file
 sub process_hid {
 
-    my ($dbusfile) = @_;
+    my ($hostuuid) = @_;
     my $host_uuid;
 
-    open my $fh, "<", "$dbusfile"
-        or die "error: cannot open $dbusfile: $!\n";
+    open my $fh, "<", "$hostuuid"
+        or die "error: cannot open $hostuuid: $!\n";
 
-    my @mid = <$fh>;
+    $/ = undef;
+    $host_uuid = <$fh>;
 
     close $fh;
-
-    foreach my $h (@mid) {
-        substr( $h, 8,  0 ) = '-';
-        substr( $h, 13, 0 ) = '-';
-        substr( $h, 18, 0 ) = '-';
-        substr( $h, 23, 0 ) = '-';
-        $host_uuid = $h;
-    }
 
     return $host_uuid;
 }
@@ -436,6 +429,7 @@ sub new_hostid {
     chop($hid);
 
     if ( $hid eq "00000000-0000-0000-0000-000000000000" ) {
+
         if ( -e $etcid ) {
             $hid = process_hid ("$etcid");
         } else { 
