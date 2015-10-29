@@ -399,13 +399,50 @@ sub get_devid {
 }
 
 
+# process host uuid file
+sub process_hid {
+
+    my ($dbusfile) = @_;
+    my $host_uuid;
+
+    open my $fh, "<", "$dbusfile"
+        or die "error: cannot open $dbusfile: $!\n";
+
+    my @mid = <$fh>;
+
+    close $fh;
+
+    foreach my $h (@mid) {
+        substr( $h, 8,  0 ) = '-';
+        substr( $h, 13, 0 ) = '-';
+        substr( $h, 18, 0 ) = '-';
+        substr( $h, 23, 0 ) = '-';
+        $host_uuid = $h;
+    }
+
+    return $host_uuid;
+}
+
+
 # get hostuuid
 sub new_hostid {
+
+    # machine-id
+    my $etcid = '/etc/hostid';
 
     # host UUID
     my $hb  = BSD::Sysctl->new('kern.hostuuid');
     my $hid = $hb->get();
     chop($hid);
+
+    if ( $hid eq "00000000-0000-0000-0000-000000000000" ) {
+        if ( -e $etcid ) {
+            $hid = process_hid ("$etcid");
+        } else { 
+            my $str = rand(time) . $osname;
+            $hid = create_uuid_as_string(UUID_V5,$str);
+        }
+    }
 
     # return new host UUID
     return $hid;
@@ -676,7 +713,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.17, 2015-10-27 2224
+sender: 1.0.17, 2015-10-29 1335
 END
     exit 0;
 }
