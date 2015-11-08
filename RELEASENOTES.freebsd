@@ -11,6 +11,9 @@ Bug Management System
 
 Releases
 
+  1.0.18 30-11-2015 Release
+    sysrec nic rxtxkbytes is always 0 on freebsd #75
+
   1.0.17 29-10-2015 Release
     perl 5.20.3 update linux, freebsd, sunos #69
     CPAN update September 2015 #65
