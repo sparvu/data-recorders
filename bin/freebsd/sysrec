@@ -116,7 +116,7 @@ while (1) {
 
     ## CPU stats
     my @cpudata = get_cpustat();
-    # print @cpudata;
+    # print "CPU: @cpudata\n";
     
     my ($cpupct,$sumpct,$headpct,$user,$nice,$sys,$intr,$idle);
 
@@ -178,8 +178,9 @@ while (1) {
 
     ## nic stats
     my @ns = get_nicstat();
+    # print "NIC: @ns\n";
 
-    my ($rxpkt,$rxerr,$rxdrop,$rxkbyte,$txpkt,$txerr,$txkbyte,$cols,$pdrop);
+    my ($rxpkt,$rxerr,$rxdrop,$rxbyte,$txpkt,$txerr,$txbyte,$cols,$pdrop);
 
     foreach (@ns) {
  
@@ -200,11 +201,11 @@ while (1) {
         $rxpkt  = delta($old_ipkt, $ipkt);
         $rxerr  = delta($old_ierr, $ierr);
         $rxdrop = delta($old_idrop, $idrop);
-        $rxkbyte = delta($old_ibyt, $ibyt);
+        $rxbyte = delta($old_ibyt, $ibyt);
 
         $txpkt  = delta($old_opkt, $opkt);
         $txerr  = delta($old_oerr, $oerr);
-        $txkbyte = delta($old_obyt, $obyt);
+        $txbyte = delta($old_obyt, $obyt);
 
         $cols  = delta($old_col, $col);
         $pdrop = delta($old_drop, $drop);
@@ -214,9 +215,12 @@ while (1) {
 
     }
 
-    my $rxtxpkt    = $rxpkt   + $txpkt;
-    my $rxtxkbytes = $rxkbyte + $txkbyte;
+    my $rxtxpkt = $rxpkt + $txpkt;
 
+    # turn to KB
+    my $rxkbyte    = sprintf("%.2f", $rxbyte / 1000);
+    my $txkbyte    = sprintf("%.2f", $txbyte / 1000);
+    my $rxtxkbytes = sprintf("%.2f", $rxkbyte + $txkbyte);
 
     printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
             time, $cpupct, $sumpct, $headpct,
@@ -232,7 +236,6 @@ while (1) {
             $txpkt, $txkbyte, $txerr, $cols, $pdrop,
             $rxtxpkt, $rxtxkbytes,
             $la->[0], $la->[1], $la->[2];
-
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -495,7 +498,6 @@ sub get_nicstat {
 
         # droped
         $drop += $d;
-
     }
 
     $rxpkt  /= $nicount;
@@ -510,13 +512,6 @@ sub get_nicstat {
     $cols   /= $nicount;
     $drop   /= $nicount;
 
-    # turn to KB
-    my $rxkbyte = sprintf("%.2f", $rxbyte / 1024);
-    my $txkbyte = sprintf("%.2f", $txbyte / 1024); 
-
-    my $rxtxpkt    = $rxpkt   + $txpkt;
-    my $rxtxkbytes = $rxkbyte + $txkbyte;
- 
     ## debug 
     # printf "%.${tp}f:%d:%d:%d:%d:%d:%d:%d:%d:%d\n",
     #           time,
@@ -526,7 +521,8 @@ sub get_nicstat {
 
     my @stats;
     my $payload = 
-      "$rxpkt:$rxkbyte:$rxerr:$rxdrop:$txpkt:$txkbyte:$txerr:$cols:$drop";
+      "$rxpkt:$rxerr:$rxdrop:$rxbyte:$txpkt:$txerr:$txbyte:$cols:$drop";
+
     push @stats, $payload;
 
     return @stats;
@@ -621,7 +617,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.17, 2015-09-19 1353
+sysrec: 1.0.18, 2015-11-08 1353
 END
     exit 0;
 }
