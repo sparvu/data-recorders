@@ -403,14 +403,15 @@ sub get_devid {
 # process host uuid file
 sub process_hid {
 
-    my ($hostuuid) = @_;
+    my ($fuuid) = @_;
     my $host_uuid;
 
-    open my $fh, "<", "$hostuuid"
-        or die "error: cannot open $hostuuid: $!\n";
+    open my $fh, "<", "$fuuid"
+        or die "error: cannot open $fuuid: $!\n";
 
-    $/ = undef;
-    $host_uuid = <$fh>;
+    while (my $line = <$fh>) {
+        $host_uuid .= $line;
+    }
 
     close $fh;
 
