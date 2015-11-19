@@ -414,32 +414,28 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-  #02 id        : the request id, the workload name and HTTP request
 
-  #03 ttime     : total time, in seconds, that the full operation lasted
+  #02 workload  : the workload name
 
-  #04 ctime     : connect time, in seconds, it took from the start 
-                  until the TCP connect to the remote host (or proxy) 
-                  was completed
+  #03 request   : the HTTP request name
 
-  #05 dnstime   : namelookup time, in seconds, it took from the start 
-                  until the name resolving was completed
+  #04 ttime     : total time, entire operation lasted, seconds
 
-  #06 prototime : protocol time, in seconds, it took from the start 
-                  until the file transfer was just about to begin. 
-                  Includes all pre-transfer commands and negotiations 
-                  that are specific to the particular protocol(s) 
-                  involved
+  #05 ctime     : connect time it took from the start until the TCP 
+                  connect to the remote host (or proxy) was completed, seconds
 
-  #07 pktime    : first packet time, in seconds, it took from the start 
-                  until the first byte was just about to be 
-                  transferred. This includes time_pretransfer and also 
-                  the time the server needed to calculate the result
+  #06 dnstime   : namelookup time, it took from the start until the name 
+                  resolving was completed, seconds
 
-  #08 psize     : page size, the total amount of bytes that were 
-                  downloaded
+  #07 ptime :     protocol time, it took from the start until the file 
+                  transfer was just about to begin, seconds
 
-  #09 status    : response status code, the numerical response code 
+  #08 pktime    : first packet time, it took from the start until the first 
+                  byte was just about to be transferred, seconds
+
+  #09 size      : page size, the total amount of bytes that were downloaded
+
+  #10 status    : response status code, the numerical response code 
                   that was found in the last retrieved HTTP(S) transfer
 
  NOTES
@@ -456,7 +452,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.0.17, 2015-10-20 1621
+webrec: 1.0.18, 2015-11-19 1658
 END
     exit 0;
 }
