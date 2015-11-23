@@ -154,7 +154,7 @@ foreach (@dbs) {
 # init HTTP transport
 my $http = HTTP::Tiny->new(
           keep_alive => $tcpka,
-          agent => "User-Agent: Kronometrix/1.3.1 (kdr 1.0.17 sender $osname)");
+          agent => "User-Agent: Kronometrix/1.3.1 (kdr 1.0.18 sender $osname)");
 
 # main loop
 while (1) {
@@ -709,7 +709,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.17, 2015-10-30 1612
+sender: 1.0.18, 2015-11-23 1615
 END
     exit 0;
 }
