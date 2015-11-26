@@ -188,65 +188,89 @@ while (1) {
             my $devid;
             my $lmoid;
 
+            my $sysrec_on = 0;
+            my $cpurec_on = 0;
+            my $diskrec_on = 0;
+            my $nicrec_on = 0;
+            my $hdwrec_on = 0;
+            my $webrec_on = 0;
+            my $procrec_on = 0;
+            my $netrec_on = 0;
+            my $zonerec_on = 0;
+            my $jvmrec_on = 0;
+
+
             if ( $_->{"input"} =~ /sysrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-sysrec";
+                $sysrec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = 'system';
+                #$msgid = "$osname-sysrec";
             }
             elsif ( $_->{"input"} =~ /cpurec/ ) {
-                $lmoid = 'cpd';
-                $devid = get_devid( 1, $delta );
-                $msgid = "$osname-cpurec";
+                $cpurec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = get_devid( 1, $delta );
+                #$msgid = "$osname-cpurec";
             }
             elsif ( $_->{"input"} =~ /diskrec/ ) {
-                $lmoid = 'cpd';
-                $devid = get_devid( 1, $delta );
-                $msgid = "$osname-diskrec";
+                $diskrec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = get_devid( 1, $delta );
+                #$msgid = "$osname-diskrec";
             }
             elsif ( $_->{"input"} =~ /nicrec/ ) {
-                $lmoid = 'cpd';
-                $devid = get_devid( 1, $delta );
-                $msgid = "$osname-nicrec";
+                $nicrec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = get_devid( 1, $delta );
+                #$msgid = "$osname-nicrec";
             }
             elsif ( $_->{"input"} =~ /netrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-netrec";
+                $netrec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = 'system';
+                #$msgid = "$osname-netrec";
             }
             elsif ( $_->{"input"} =~ /jvmrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-jvmrec";
+                $jvmrec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = 'system';
+                #$msgid = "$osname-jvmrec";
             }
             elsif ( $_->{"input"} =~ /procrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-procrec";
+                $procrec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = 'system';
+                #$msgid = "$osname-procrec";
             }
             elsif ( $_->{"input"} =~ /zonerec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-zonerec";
+                $zonerec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = 'system';
+                #$msgid = "$osname-zonerec";
             }
             elsif ( $_->{"input"} =~ /hdwrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-hdwrec";
+                $hdwrec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = 'system';
+                #$msgid = "$osname-hdwrec";
             }
             elsif ( $_->{"input"} =~ /xenrec/ ) {
-                $lmoid = 'cpd';
-                $devid = 'system';
-                $msgid = "$osname-xenrec";
+                $xenrec_on = 1;
+                #$lmoid = 'cpd';
+                #$devid = 'system';
+                #$msgid = "$osname-xenrec";
             }
             elsif ( $_->{"input"} =~ /wsrec/ ) {
-                $lmoid = 'wcd';
-                $devid = 'system';
-                $msgid = "$osname-wsrec";
+                $wsrec_on = 1;
+                #$lmoid = 'wcd';
+                #$devid = 'system';
+                #$msgid = "$osname-wsrec";
             }
             elsif ( $_->{"input"} =~ /webrec/ ) {
-                $lmoid = 'cpd';
-                $devid = get_devid( 1, $delta );
-                $msgid = "http-ttfb";
+                $webrec_on = 1;
+                #$lmoid = 'wpd';
+                #$devid = get_devid( 1, $delta );
+                #$msgid = "http-ttfb";
             }
 
             # each appliance
@@ -256,11 +280,14 @@ while (1) {
                 ## value format
                 # cpd:hostname2:443:00000000000000000000000000000000
                 # lmo:host:port:sid => $token:$proto:$ka
-                my ( $lid, $hname, $port, $sid ) = split ( /:/, $key );
-                my ( $dsid, $tid, $proto, $ka ) = split( /:/, $value );
 
-                writelog("info: main - $lid => $hname:$port:$sid  value=$dsid:$tid:$proto:$ka"
-                ) if ( $verbose == 1 );
+                my $keyapp = $mo . ":" . $sid . ":" . "$tid" . ":" . $dsid;
+                $appl{$keyapp} = "$proto:$host:$port:$ka";
+
+                my ( $lid, $sid, $tid, $dsid ) = split ( /:/, $key );
+                my ( $proto, $hname, $port, $ka ) = split( /:/, $value );
+
+                writelog("info: main - $lid => $sid:$tid:$dsid value=$proto:$hname:$port:$ka ) if ( $verbose == 1 );
 
                 if ($lid eq $lmoid ) {
                     
@@ -491,7 +518,7 @@ sub make_dsid {
 
                 my @sub = @{ $appliance->{"$mo"} };
 
-                if ( $mo ne 'wpd' ) { 
+                #if ( $mo ne 'wpd' ) { 
 
                     foreach my $sd (@sub) {
 
@@ -528,69 +555,8 @@ sub make_dsid {
                             }
                         }
                     }
-                } else {
-
-                    # wpd
-                    
-                    # fetch workload(s) webrec.json
-                    # compute dsid based on workload and sid
-  
-                    my $wdata = open_config($wfile);
-                    my @workload = get_workload($wdata);
-                   
-                    my $nw   = scalar @workload;
-                    my $nwpd = scalar @sub;
- 
-                    # print "workloads: @workload, $nw, $nwpd\n";
-
-                    my $k=0;
-                 
-                    foreach my $sd (@sub) {
-
-                        my $work = $workload[$k];
-
-                        print "processing sid=$sid, tid=$tid work=$work\n";
-
-                        # get sid, tid
-                        $sid = $sd ->{'sid'};
-                        $tid = $sd ->{'tid'};
-
-                        # get dsid
-                        $dsid = $sd ->{'dsid'};
-                   
-                        if ($dsid eq "" ) {
-
-                            if ( $sid ne "" ) {
-                                my $str = $work . $sid;
-                                $dsid = create_uuid_as_string(UUID_V5,$str);
-                                chomp($dsid);
-                                print "sid=$sid tid=$tid dsid=$dsid\n";
-                                $sd->{'dsid'} = $dsid;
-                                write_config($cfile, $data);
-                                
-                            } else {
-                                exit 1;
-                            }
-                        } else {
-                            my $str = $work . $sid;
-                            my $dsid_man = create_uuid_as_string(UUID_V5,$str);
-                            chomp($dsid_man);
-
-                            if ( $dsid ne $dsid_man ) {
-                                # we need to update json file
-                                # print "Not OK: $dsid => $dsid_man\n";
-                                $sd->{'dsid'} = $dsid_man;
-                                write_config( $cfile, $data );
-                            }
-                        }
-
-                        $k++;
-                    }
-
- 
-                } 
+                #}
             }
-        
         }
     }
 }
@@ -667,8 +633,8 @@ sub get_appliance {
                          and defined($proto)
                          and defined($port)
                          and defined($ka) ) {
-                        my $keyapp = $mo . ":" . $sid . ":" . $dsid;
-                        $appl{$keyapp} = "$tid:$host:$port:$proto:$ka";
+                        my $keyapp = $mo . ":" . $sid . ":" . "$tid" . ":" . $dsid;
+                        $appl{$keyapp} = "$proto:$host:$port:$ka";
                     }
                 }
             }
@@ -797,7 +763,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.18, 2015-11-23 1615
+sender: 1.0.18, 2015-11-26 1304
 END
     exit 0;
 }
