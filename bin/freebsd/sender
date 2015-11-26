@@ -59,13 +59,15 @@ else {
 }
 
 ###  Variables
-$main::opt_h = 0;    # help option
-$main::opt_V = 0;    # revision option
-my $cfile = 'kronometrix.json';    # configuration file
-my $cdata;                 # configuration data
-my $tcpka = 0;             # transport TCP keepalive settings
-my $sid   = "";            # subscription id
-my $token = "NA";          # token id
+$main::opt_h = 0;               # help option
+$main::opt_V = 0;               # revision option
+my $wfile = 'webrec.json';      # webrec configuration file
+my $cfile = 'kronometrix.json'; # configuration file
+my $cdata;                      # configuration data
+my $wdata;                      # webrec configuration data
+my $tcpka = 0;                  # transport TCP keepalive settings
+my $sid   = "";                 # subscription id
+my $token = "NA";               # token id
 my @files;
 
 ## configuration
@@ -85,6 +87,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
+my $agent = "Kronometrix/1.3.2 (kdr 1.0.18 sender $osname)";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -107,6 +110,8 @@ for my $key ( keys %appliance ) {
     my $value = $appliance{$key};
     print "$key => $value\n";
 }
+
+exit 0;
 
 # SIGHUP handler
 $SIG{HUP} = \&reload_config;
@@ -154,7 +159,7 @@ foreach (@dbs) {
 # init HTTP transport
 my $http = HTTP::Tiny->new(
           keep_alive => $tcpka,
-          agent => "User-Agent: Kronometrix/1.3.1 (kdr 1.0.18 sender $osname)");
+          agent => "User-Agent: $agent");
 
 # main loop
 while (1) {
@@ -260,8 +265,8 @@ while (1) {
                 if ($lid eq $lmoid ) {
                     
                     # writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
-                    send_data( $http, $hname, $sid, $tid, $dsid,
-                        $msgid, $devid, $proto, $port, $delta );
+                    # send_data( $http, $hname, $sid, $tid, $dsid,
+                    #     $msgid, $devid, $proto, $port, $delta );
                 }
             }
             print "\n" . $_->{"input"} . " payload[" . $delta . "]"
@@ -462,7 +467,7 @@ sub get_hostid {
 sub make_dsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('cpd', 'amd', 'wcd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'wcd', 'wpd');
 
     # sid - subscription id
     # dsid - data source id
@@ -486,41 +491,106 @@ sub make_dsid {
 
                 my @sub = @{ $appliance->{"$mo"} };
 
-                foreach my $sd (@sub) {
+                if ( $mo ne 'wpd' ) { 
 
-                    # get sid, tid
-                    $sid = $sd ->{'sid'};
-                    $tid = $sd ->{'tid'};
+                    foreach my $sd (@sub) {
 
-                    # get dsid
-                    $dsid = $sd ->{'dsid'};
+                        # get sid, tid
+                        $sid = $sd ->{'sid'};
+                        $tid = $sd ->{'tid'};
+
+                        # get dsid
+                        $dsid = $sd ->{'dsid'};
                    
-                    if ($dsid eq "" ) {
+                        if ($dsid eq "" ) {
 
-                        if ( $sid ne "" ) {
-                            my $str = $huuid . $sid;
-                            $dsid = create_uuid_as_string(UUID_V5,$str);
-                            chomp($dsid);
-                            # print "sid=$sid tid=$tid dsid=$dsid\n";
-                            $sd->{'dsid'} = $dsid;
-                            write_config( $cfile, $data );
+                            # we ensure we have sid defined
+                            if ( $sid ne "" ) {
+                                my $str = $huuid . $sid;
+                                $dsid = create_uuid_as_string(UUID_V5,$str);
+                                chomp($dsid);
+                                # print "sid=$sid tid=$tid dsid=$dsid\n";
+                                $sd->{'dsid'} = $dsid;
+                                write_config( $cfile, $data );
+                            } else {
+                                exit 1;
+                            }
                         } else {
-                            exit 1;
-                        }
-                    } else {
-                        my $str = $huuid . $sid;
-                        my $dsid_man = create_uuid_as_string(UUID_V5,$str);
-                        chomp($dsid_man);
+                            my $str = $huuid . $sid;
+                            my $dsid_man = create_uuid_as_string(UUID_V5,$str);
+                            chomp($dsid_man);
 
-                        if ( $dsid ne $dsid_man ) {
-                            # we need to update json file
-                            # print "Not OK: $dsid => $dsid_man\n";
-                            $sd->{'dsid'} = $dsid_man;
-                            write_config( $cfile, $data );
+                            if ( $dsid ne $dsid_man ) {
+                                # we need to update json file
+                                # print "Not OK: $dsid => $dsid_man\n";
+                                $sd->{'dsid'} = $dsid_man;
+                                write_config( $cfile, $data );
+                            }
                         }
                     }
-                }
+                } else {
+
+                    # wpd
+                    
+                    # fetch workload(s) webrec.json
+                    # compute dsid based on workload and sid
+  
+                    my $wdata = open_config($wfile);
+                    my @workload = get_workload($wdata);
+                   
+                    my $nw   = scalar @workload;
+                    my $nwpd = scalar @sub;
+ 
+                    # print "workloads: @workload, $nw, $nwpd\n";
+
+                    my $k=0;
+                 
+                    foreach my $sd (@sub) {
+
+                        my $work = $workload[$k];
+
+                        print "processing sid=$sid, tid=$tid work=$work\n";
+
+                        # get sid, tid
+                        $sid = $sd ->{'sid'};
+                        $tid = $sd ->{'tid'};
+
+                        # get dsid
+                        $dsid = $sd ->{'dsid'};
+                   
+                        if ($dsid eq "" ) {
+
+                            if ( $sid ne "" ) {
+                                my $str = $work . $sid;
+                                $dsid = create_uuid_as_string(UUID_V5,$str);
+                                chomp($dsid);
+                                print "sid=$sid tid=$tid dsid=$dsid\n";
+                                $sd->{'dsid'} = $dsid;
+                                write_config($cfile, $data);
+                                
+                            } else {
+                                exit 1;
+                            }
+                        } else {
+                            my $str = $work . $sid;
+                            my $dsid_man = create_uuid_as_string(UUID_V5,$str);
+                            chomp($dsid_man);
+
+                            if ( $dsid ne $dsid_man ) {
+                                # we need to update json file
+                                # print "Not OK: $dsid => $dsid_man\n";
+                                $sd->{'dsid'} = $dsid_man;
+                                write_config( $cfile, $data );
+                            }
+                        }
+
+                        $k++;
+                    }
+
+ 
+                } 
             }
+        
         }
     }
 }
@@ -563,7 +633,7 @@ sub get_appliance {
     my ($data) = @_;
     my %appl;
 
-    my @lmo = ('cpd', 'amd', 'wcd');
+    my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd');
 
     my @temp = @{ $data->{'transport'}->{'appliance'} };
 
@@ -597,8 +667,8 @@ sub get_appliance {
                          and defined($proto)
                          and defined($port)
                          and defined($ka) ) {
-                        my $keyapp = $mo . ":" . $host . ":" . $port . ":" . $sid;
-                        $appl{$keyapp} = "$dsid:$tid:$proto:$ka";
+                        my $keyapp = $mo . ":" . $sid . ":" . $dsid;
+                        $appl{$keyapp} = "$tid:$host:$port:$proto:$ka";
                     }
                 }
             }
@@ -606,6 +676,24 @@ sub get_appliance {
     }
 
     return %appl;
+}
+
+
+# get workload 
+sub get_workload {
+
+    my ($data) = @_;
+    my @w;
+
+    my @temp = @{ $data->{'workloads'} };
+
+    foreach my $f (@temp) {
+
+        push @w, $f->{'name'};
+ 
+    }
+
+    return @w;
 }
 
 

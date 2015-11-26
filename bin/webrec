@@ -377,8 +377,8 @@ sub putraw {
 
     my $devid = $workload . "_" . $reqname;
 
-    printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
-                $timereq, $devid,
+    printf "%.${tp}f:%s:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
+                $timereq, $workload, $reqname,
                 $ttime  , $ctime   , $dtime  , $ptime,
                 $fpkt   , $psize   , $resp;
 }
