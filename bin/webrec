@@ -375,10 +375,16 @@ sub putraw {
 
     my ( $timereq, $workload, $reqname,  $ttime, $ctime, $dtime, $ptime, $psize, $fpkt, $resp ) = @_;
 
-    my $devid = $workload . "_" . $reqname;
+    my $devid;
 
-    printf "%.${tp}f:%s:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
-                $timereq, $workload, $reqname,
+    if ($workload) {
+        $devid = $workload . "_" . $reqname;
+    } else { 
+        $devid = $reqname;
+    }
+
+    printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
+                $timereq, $devid,
                 $ttime  , $ctime   , $dtime  , $ptime,
                 $fpkt   , $psize   , $resp;
 }
@@ -415,27 +421,25 @@ OPTIONS:
  FIELDS:
   #01 timestamp : seconds since Epoch, time
 
-  #02 workload  : the workload name
+  #02 request   : the HTTP request name
 
-  #03 request   : the HTTP request name
+  #03 ttime     : total time, entire operation lasted, seconds
 
-  #04 ttime     : total time, entire operation lasted, seconds
-
-  #05 ctime     : connect time it took from the start until the TCP 
+  #04 ctime     : connect time it took from the start until the TCP 
                   connect to the remote host (or proxy) was completed, seconds
 
-  #06 dnstime   : namelookup time, it took from the start until the name 
+  #05 dnstime   : namelookup time, it took from the start until the name 
                   resolving was completed, seconds
 
-  #07 ptime :     protocol time, it took from the start until the file 
+  #06 ptime :     protocol time, it took from the start until the file 
                   transfer was just about to begin, seconds
 
-  #08 pktime    : first packet time, it took from the start until the first 
+  #07 pktime    : first packet time, it took from the start until the first 
                   byte was just about to be transferred, seconds
 
-  #09 size      : page size, the total amount of bytes that were downloaded
+  #08 size      : page size, the total amount of bytes that were downloaded
 
-  #10 status    : response status code, the numerical response code 
+  #09 status    : response status code, the numerical response code 
                   that was found in the last retrieved HTTP(S) transfer
 
  NOTES

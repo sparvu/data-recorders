@@ -198,80 +198,22 @@ while (1) {
             my $netrec_on = 0;
             my $zonerec_on = 0;
             my $jvmrec_on = 0;
+            my $xenrec_on = 0;
+            my $wsrec_on = 0;
 
 
-            if ( $_->{"input"} =~ /sysrec/ ) {
-                $sysrec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = 'system';
-                #$msgid = "$osname-sysrec";
-            }
-            elsif ( $_->{"input"} =~ /cpurec/ ) {
-                $cpurec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = get_devid( 1, $delta );
-                #$msgid = "$osname-cpurec";
-            }
-            elsif ( $_->{"input"} =~ /diskrec/ ) {
-                $diskrec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = get_devid( 1, $delta );
-                #$msgid = "$osname-diskrec";
-            }
-            elsif ( $_->{"input"} =~ /nicrec/ ) {
-                $nicrec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = get_devid( 1, $delta );
-                #$msgid = "$osname-nicrec";
-            }
-            elsif ( $_->{"input"} =~ /netrec/ ) {
-                $netrec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = 'system';
-                #$msgid = "$osname-netrec";
-            }
-            elsif ( $_->{"input"} =~ /jvmrec/ ) {
-                $jvmrec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = 'system';
-                #$msgid = "$osname-jvmrec";
-            }
-            elsif ( $_->{"input"} =~ /procrec/ ) {
-                $procrec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = 'system';
-                #$msgid = "$osname-procrec";
-            }
-            elsif ( $_->{"input"} =~ /zonerec/ ) {
-                $zonerec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = 'system';
-                #$msgid = "$osname-zonerec";
-            }
-            elsif ( $_->{"input"} =~ /hdwrec/ ) {
-                $hdwrec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = 'system';
-                #$msgid = "$osname-hdwrec";
-            }
-            elsif ( $_->{"input"} =~ /xenrec/ ) {
-                $xenrec_on = 1;
-                #$lmoid = 'cpd';
-                #$devid = 'system';
-                #$msgid = "$osname-xenrec";
-            }
-            elsif ( $_->{"input"} =~ /wsrec/ ) {
-                $wsrec_on = 1;
-                #$lmoid = 'wcd';
-                #$devid = 'system';
-                #$msgid = "$osname-wsrec";
-            }
-            elsif ( $_->{"input"} =~ /webrec/ ) {
-                $webrec_on = 1;
-                #$lmoid = 'wpd';
-                #$devid = get_devid( 1, $delta );
-                #$msgid = "http-ttfb";
-            }
+            if ( $_->{"input"} =~ /sysrec/  ) { $sysrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /cpurec/  ) { $cpurec_on  = 1; }
+         elsif ( $_->{"input"} =~ /diskrec/ ) { $diskrec_on = 1; }
+         elsif ( $_->{"input"} =~ /nicrec/  ) { $nicrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /netrec/  ) { $netrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /jvmrec/  ) { $jvmrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /procrec/ ) { $procrec_on = 1; } 
+         elsif ( $_->{"input"} =~ /zonerec/ ) { $zonerec_on = 1; }
+         elsif ( $_->{"input"} =~ /hdwrec/  ) { $hdwrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /xenrec/  ) { $xenrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /wsrec/   ) { $wsrec_on   = 1; }
+         elsif ( $_->{"input"} =~ /webrec/ )  { $webrec_on  = 1; }
 
             # each appliance
             for my $key ( keys %appliance ) {
@@ -281,25 +223,141 @@ while (1) {
                 # cpd:hostname2:443:00000000000000000000000000000000
                 # lmo:host:port:sid => $token:$proto:$ka
 
-                my $keyapp = $mo . ":" . $sid . ":" . "$tid" . ":" . $dsid;
-                $appl{$keyapp} = "$proto:$host:$port:$ka";
-
                 my ( $lid, $sid, $tid, $dsid ) = split ( /:/, $key );
                 my ( $proto, $hname, $port, $ka ) = split( /:/, $value );
 
-                writelog("info: main - $lid => $sid:$tid:$dsid value=$proto:$hname:$port:$ka ) if ( $verbose == 1 );
-
-                if ($lid eq $lmoid ) {
-                    
-                    # writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
-                    # send_data( $http, $hname, $sid, $tid, $dsid,
-                    #     $msgid, $devid, $proto, $port, $delta );
+                if ($verbose == 1) {
+                    writelog("info: main - $lid => $sid:$tid:$dsid value=$proto:$hname:$port:$ka");
                 }
+
+                if ($sysrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-sysrec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-sysrec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-sysrec"; }
+
+                } elsif ($cpurec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-cpurec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-cpurec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-cpurec"; }
+
+                } elsif ($diskrec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-diksrec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-diskrec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-diskrec"; }
+
+                } elsif ($nicrec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-nicrec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-nicrec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-nicrec"; }
+
+                } elsif ($netrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-netrec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-netrec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-netrec"; }
+
+                } elsif ($jvmrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-jvmrec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-jvmrec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-jvmrec"; }
+
+                } elsif ($procrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-procrec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-procrec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-procrec"; }
+
+                } elsif ($zonerec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-zonerec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-zonerec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-zonerec"; }
+
+                } elsif ($hdwrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-hdwrec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-hdwrec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-hdwrec"; }
+
+                } elsif ($xenrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-xenrec"; }
+                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-xenrec"; }
+                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-xenrec"; }
+
+                } elsif ($wsrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'wcd') { $msgid = "cpd-$osname-wsrec"; }
+
+                } elsif ($webrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'wpd') { $msgid = "cpd-$osname-xenrec"; }
+
+                }
+
+                #writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
+                #send_data( $http, $hname, $sid, $tid, $dsid, $msgid, 
+                #$devid, $proto, $port, $delta );
+                #}
             }
+
             print "\n" . $_->{"input"} . " payload[" . $delta . "]"
               if ( $verbose == 1 );
 
-        }    # for
+        } # for
 
     }    # else raw data
 
