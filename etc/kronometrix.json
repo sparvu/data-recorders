@@ -65,20 +65,6 @@
             "sid"  : "change me",
             "tid"  : "change me"
           }
-        ],
-        "wpd" : [
-          {
-            "dsid" : "",
-            "sid"  : "change me",
-            "tid"  : "change me"
-          }
-        ],
-        "dpd" : [
-          {
-            "dsid" : "",
-            "sid"  : "change me",
-            "tid"  : "change me"
-          }
         ]
       }
     ]
