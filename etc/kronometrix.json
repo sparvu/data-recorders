@@ -1,6 +1,6 @@
 {
-  "log" : {
-    "current_path" : "/opt/kronometrix/log/current",
+  "ldg" : {
+    ecurrent_path" : "/opt/kronometrix/log/current",
     "base_path" : "/opt/kronometrix/log",
     "daily_path" : "/opt/kronometrix/log/daily"
   },
@@ -49,6 +49,10 @@
       {
         "file" : "wsrec.krd",
         "name" : "ws"
+      },
+      {
+        "file" : "webrec.krd",
+        "name" : "web"
       }
     ],
     "appliance" : [

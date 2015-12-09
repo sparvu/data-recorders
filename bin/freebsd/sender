@@ -61,7 +61,6 @@ else {
 ###  Variables
 $main::opt_h = 0;               # help option
 $main::opt_V = 0;               # revision option
-my $wfile = 'webrec.json';      # webrec configuration file
 my $cfile = 'kronometrix.json'; # configuration file
 my $cdata;                      # configuration data
 my $wdata;                      # webrec configuration data
@@ -111,8 +110,6 @@ for my $key ( keys %appliance ) {
     print "$key => $value\n";
 }
 
-exit 0;
-
 # SIGHUP handler
 $SIG{HUP} = \&reload_config;
 
@@ -144,7 +141,6 @@ chdir("$curlog")
 
 foreach (@dbs) {
     my $n = $_ . "rec.krd";
-    print "name=$n\n";
     push(
         @files,
         File::Tail->new(
@@ -188,19 +184,18 @@ while (1) {
             my $devid;
             my $lmoid;
 
-            my $sysrec_on = 0;
-            my $cpurec_on = 0;
+            my $sysrec_on  = 0;
+            my $cpurec_on  = 0;
             my $diskrec_on = 0;
-            my $nicrec_on = 0;
-            my $hdwrec_on = 0;
-            my $webrec_on = 0;
+            my $nicrec_on  = 0;
+            my $hdwrec_on  = 0;
             my $procrec_on = 0;
-            my $netrec_on = 0;
+            my $netrec_on  = 0;
             my $zonerec_on = 0;
-            my $jvmrec_on = 0;
-            my $xenrec_on = 0;
-            my $wsrec_on = 0;
-
+            my $jvmrec_on  = 0;
+            my $xenrec_on  = 0;
+            my $wsrec_on   = 0;
+            my $webrec_on  = 0;
 
             if ( $_->{"input"} =~ /sysrec/  ) { $sysrec_on  = 1; }
          elsif ( $_->{"input"} =~ /cpurec/  ) { $cpurec_on  = 1; }
@@ -229,6 +224,9 @@ while (1) {
                 if ($verbose == 1) {
                     writelog("info: main - $lid => $sid:$tid:$dsid value=$proto:$hname:$port:$ka");
                 }
+ 
+                # ready to fire data
+                my $f = 0;
 
                 if ($sysrec_on) {
 
@@ -236,9 +234,9 @@ while (1) {
                     $devid = "system";
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-sysrec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-sysrec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-sysrec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-sysrec";     }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-sysrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-sysrec"; }
 
                 } elsif ($cpurec_on) {
 
@@ -246,9 +244,9 @@ while (1) {
                     $devid = get_devid(1, $delta);
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-cpurec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-cpurec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-cpurec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-cpurec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-cpurec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-cpurec"; }
 
                 } elsif ($diskrec_on) {
 
@@ -256,9 +254,9 @@ while (1) {
                     $devid = get_devid(1, $delta);
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-diksrec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-diskrec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-diskrec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-diskrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-diskrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-diskrec"; }
 
                 } elsif ($nicrec_on) {
 
@@ -266,9 +264,9 @@ while (1) {
                     $devid = get_devid(1, $delta);
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-nicrec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-nicrec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-nicrec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-nicrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-nicrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-nicrec"; }
 
                 } elsif ($netrec_on) {
 
@@ -276,9 +274,9 @@ while (1) {
                     $devid = "system";
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-netrec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-netrec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-netrec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-netrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-netrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-netrec"; }
 
                 } elsif ($jvmrec_on) {
 
@@ -286,9 +284,9 @@ while (1) {
                     $devid = "system";
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-jvmrec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-jvmrec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-jvmrec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-jvmrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-jvmrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-jvmrec"; }
 
                 } elsif ($procrec_on) {
 
@@ -296,9 +294,9 @@ while (1) {
                     $devid = "system";
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-procrec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-procrec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-procrec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-procrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-procrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-procrec"; }
 
                 } elsif ($zonerec_on) {
 
@@ -306,9 +304,9 @@ while (1) {
                     $devid = "system";
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-zonerec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-zonerec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-zonerec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-zonerec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-zonerec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-zonerec"; }
 
                 } elsif ($hdwrec_on) {
 
@@ -316,9 +314,9 @@ while (1) {
                     $devid = "system";
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-hdwrec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-hdwrec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-hdwrec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-hdwrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-hdwrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-hdwrec"; }
 
                 } elsif ($xenrec_on) {
 
@@ -326,9 +324,9 @@ while (1) {
                     $devid = "system";
 
                     # message id
-                    if ($lid eq 'cpd') { $msgid = "cpd-$osname-xenrec"; }
-                 elsif ($lid eq 'wpd') { $msgid = "wpd-$osname-xenrec"; }
-                 elsif ($lid eq 'dpd') { $msgid = "dpd-$osname-xenrec"; }
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-xenrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-xenrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-xenrec"; }
 
                 } elsif ($wsrec_on) {
 
@@ -336,22 +334,22 @@ while (1) {
                     $devid = "system";
 
                     # message id
-                    if ($lid eq 'wcd') { $msgid = "cpd-$osname-wsrec"; }
+                    if ($lid eq 'wcd') { $f=1; $msgid = "$osname-wsrec"; }
 
                 } elsif ($webrec_on) {
 
                     # device id
-                    $devid = "system";
+                    $devid = get_devid(1, $delta);
 
                     # message id
-                    if ($lid eq 'wpd') { $msgid = "cpd-$osname-xenrec"; }
+                    if ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-ttfb"; }
 
                 }
 
-                #writelog("debug: main - $lid/$msgid => $hname:$port:$sid:$tid");
-                #send_data( $http, $hname, $sid, $tid, $dsid, $msgid, 
-                #$devid, $proto, $port, $delta );
-                #}
+                if($f) {
+                    send_data ($http, $hname, $sid, $tid, $dsid, $msgid,
+                               $devid, $proto, $port, $delta);
+                }
             }
 
             print "\n" . $_->{"input"} . " payload[" . $delta . "]"
@@ -752,7 +750,7 @@ sub send_data {
 
     my ($hash, $post);
 
-    if ( $msg_id =~ /cpurec|diskrec|nicrec|http/ ) {
+    if ( $msg_id =~ /cpurec|diskrec|nicrec|ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
     } else {
@@ -821,7 +819,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.18, 2015-11-26 1304
+sender: 1.0.18, 2015-12-09 1055
 END
     exit 0;
 }
