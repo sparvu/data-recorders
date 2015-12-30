@@ -24,7 +24,7 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday);
+use Time::HiRes qw(time gettimeofday sleep);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -141,7 +141,9 @@ sub Startup {
     }
 
     # measure payload
-    my $start = Win32::GetTickCount();
+    # my $start = Win32::GetTickCount();
+    #my $start = int (gettimeofday * 1000);
+    my $start = int (gettimeofday);
 
     # cpu statistics
     # 10 metrics
@@ -293,11 +295,11 @@ sub Startup {
     }
 
     # end payload
-    my $end = Win32::GetTickCount() - $start;
-    my $stime = ($interval * 1000) - $end;
+    # my $end = Win32::GetTickCount() - $start;
+    my $end = int(gettimeofday);
+    my $payload = $end - $start;
 
-    # output time
-    my $tnow = int(gettimeofday);
+    my $stime = $interval - $payload;
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -307,162 +309,37 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
+            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$end(epoch)");
 	} else {
-            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
-            print "info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
+            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$end(epoch)") if ($logging);
+            print "info: elapsed=$end(ms), sleep=$stime(ms), timenow=$end(epoch)\n";
 	}
     }
 
-    # time drift adjustment
-    if ($last_time > 0) {
-
-        my $drift = $tnow - $last_time;
-
-        if ($drift > $interval) {
-
-            if (RunningAsService()) {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)"); 
-	    } else {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)")  if ($logging);
-                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n";
-	    }
-
-	    # reset drift, check sleep, resume, hibernate
-	    $drift = $interval + 1
-	        if ($drift > (3 * $interval));
-
-	    my $delta = $drift - $interval;
-	    my $tfix = $tnow - $delta;
-	    
-	    ### verbose
-	    if ($verbose) {
-                if (RunningAsService()) {
-                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
-		} else { 
-                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
-		}
-	    }
-
-            putraw($tfix,
-	           $cpupct,  $sumpct, $headpct, $userpct, $syspct,
-		   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
-	           $memusedpct,  $memused,     $memfree,  $memtotal, 
-	           $realfreepct, $swapusedpct, $swapused, $swapfree, 
-		   $swaptotal, 
-	           $reads,       $rkbytes,     $rbusypct,
-	           $writes,      $wkbytes,     $wbusypct,
-		   $aql,         $busypct,
-	           $iops,        $krw,
-		   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
-		   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
-                   $rxtxpkt, $rxtxkbytes
-	           );
-
-            $stime -= $delta * 1000;
-            $last_time = $tfix;
-
-            Win32::Sleep($stime);
-
-    	} elsif ($drift < $interval) {
-
-            if (RunningAsService()) {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)"); 
-            } else {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n"; 
-	    }
-
-            my $ext = $interval - $drift;
-            my $tfix = $tnow + $ext;
-
-	    ### verbose
-	    if ($verbose) {
-                if (RunningAsService()) {
-                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
-		} else {
-                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
-		}
-	    }
-
-            putraw($tfix,
-	           $cpupct,  $sumpct, $headpct, $userpct, $syspct,
-		   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
-	           $memusedpct,  $memused,     $memfree,  $memtotal, 
-	           $realfreepct, $swapusedpct, $swapused, $swapfree, 
-		   $swaptotal,
-	           $reads,       $rkbytes,     $rbusypct,
-	           $writes,      $wkbytes,     $wbusypct,
-		   $aql,         $busypct,
-	           $iops,        $krw,
-		   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
-		   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
-                   $rxtxpkt, $rxtxkbytes
-	           );
-
-            $stime += $ext * 1000;
-	    $last_time = $tfix;
-
-	    Win32::Sleep($stime);
-
-	} else {
-
-            putraw($tnow,
-	           $cpupct,  $sumpct, $headpct, $userpct, $syspct,
-		   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
-	           $memusedpct,  $memused,     $memfree,  $memtotal, 
-	           $realfreepct, $swapusedpct, $swapused, $swapfree, 
-		   $swaptotal, 
-	           $reads,       $rkbytes,     $rbusypct,
-	           $writes,      $wkbytes,     $wbusypct,
-		   $aql,         $busypct,
-	           $iops,        $krw,
-		   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
-		   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
-                   $rxtxpkt, $rxtxkbytes
-	           );
-
-	    $last_time = $tnow;
-
-	    Win32::Sleep($stime);
-
-	}
-
-    # 1st loop, last_time always 0
-    } else {
-
-        putraw($tnow,
-	       $cpupct,  $sumpct, $headpct, $userpct, $syspct,
-	       $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
-	       $memusedpct,  $memused,     $memfree,  $memtotal, 
-	       $realfreepct, $swapusedpct, $swapused, $swapfree, 
-	       $swaptotal, 
-	       $reads,       $rkbytes,     $rbusypct,
-	       $writes,      $wkbytes,     $wbusypct,
-	       $aql,         $busypct,
-	       $iops,        $krw,
-	       $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
-	       $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
-               $rxtxpkt, $rxtxkbytes
-	       );
-
-        if (!RunningAsService()) {
-            # check count, interval
-            last if ++$loop == $loop_max;
-        }
-
-        $last_time = $tnow;
-
-        ### Interval
-        Win32::Sleep($stime);
-    }
+    putraw($end,
+	   $cpupct,  $sumpct, $headpct, $userpct, $syspct,
+	   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
+	   $memusedpct,  $memused,     $memfree,  $memtotal, 
+	   $realfreepct, $swapusedpct, $swapused, $swapfree, 
+	   $swaptotal, 
+	   $reads,       $rkbytes,     $rbusypct,
+	   $writes,      $wkbytes,     $wbusypct,
+	   $aql,         $busypct,
+	   $iops,        $krw,
+	   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
+	   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
+           $rxtxpkt, $rxtxkbytes
+	   );
 
     if (!RunningAsService()) {
         # check count, interval
         last if ++$loop == $loop_max;
     }
+
+
+    ### Interval
+    sleep($stime);
+
 
     }
 
@@ -980,7 +857,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.17, 2015-10-01 1154
+sysrec: 1.0.18, 2015-11-08 2110
 END
     return;
 }
