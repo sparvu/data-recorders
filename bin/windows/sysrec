@@ -24,7 +24,7 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday sleep);
+use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -143,7 +143,7 @@ sub Startup {
     # measure payload
     # my $start = Win32::GetTickCount();
     #my $start = int (gettimeofday * 1000);
-    my $start = int (gettimeofday);
+    my $start = [gettimeofday];
 
     # cpu statistics
     # 10 metrics
@@ -290,16 +290,16 @@ sub Startup {
                         $rxtxkbytes += $rxkbytes + $txkbytes;
                     }
 	        }
-	    }    
+	    }
         } else { next; }
     }
 
     # end payload
     # my $end = Win32::GetTickCount() - $start;
-    my $end = int(gettimeofday);
-    my $payload = $end - $start;
-
-    my $stime = $interval - $payload;
+    my $tnow = int(gettimeofday);
+    my $tsec = [gettimeofday];
+    my $end   = tv_interval ($start, $tsec);
+    my $stime = $interval - $end;
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -316,7 +316,7 @@ sub Startup {
 	}
     }
 
-    putraw($end,
+    putraw($tnow,
 	   $cpupct,  $sumpct, $headpct, $userpct, $syspct,
 	   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
 	   $memusedpct,  $memused,     $memfree,  $memtotal, 
