@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use Getopt::Long;
 use File::Copy;
-use Time::HiRes qw(time gettimeofday);
+use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -125,7 +125,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nics: 1.0.17, 2015-10-01 1153
+nics: 1.0.18, 2015-12-31 1324
 END
     exit 0;
 }

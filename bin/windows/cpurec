@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+# Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,7 +24,7 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday);
+use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -667,7 +667,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.17, 2015-09-12 0034
+cpurec: 1.0.18, 2015-12-31 1315
 END
     return;
 }
