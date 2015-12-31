@@ -72,7 +72,6 @@ my $loop        = 0;                      # current loop number
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
-my $last_time   = 0;                      # first counter
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -126,17 +125,6 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    ### verbose
-    if ($verbose) {
-        if (RunningAsService()) {
-            writelog ("info: last_time=$last_time");
-	} else {
-            writelog ("info: last_time=$last_time") if ($logging);
-            print "info: last_time=$last_time\n";
-	}
-    }
- 
-
     # metrics
     my ($reads,  $rkbytes, $rbusypct,
         $writes, $wkbytes, $wbusypct,
@@ -150,7 +138,7 @@ sub Startup {
     my ($di, $dkey);
 
     # measure payload
-    my $start = Win32::GetTickCount();
+    my $start = [gettimeofday];
 
     my %diskname = getdisk();
 
@@ -177,16 +165,21 @@ sub Startup {
 
     my $l;
     for my $k (keys %diskname) {
+
+        print "inside for disk\n";
+
         $l = $diskname{$k};
 	$di = $k . " " . $l;
 	$l =~ s/\://;
 	$dkey = lc "disk" . $k . "_" . $l;
 
+        print "dkey=$dkey\n";
+        print "l=$l\n";
+
         # Inventory data
         my $wdinv = 
 	 $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
 
-    
         foreach my $obj (in $wdinv) {
             $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
         }
@@ -218,17 +211,19 @@ sub Startup {
             $lfreepct = 100 - $obj->{PercentFreeSpace};
         }
 
+        print "info: $dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct\n";
+
+       
         $dstat{$dkey} = 
 	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
     }
 
-
     # end payload
-    my $end = Win32::GetTickCount() - $start;
-    my $stime = ($interval * 1000) - $end;
-
-    # output time
-    my $tnow = int(gettimeofday);
+    # my $end = Win32::GetTickCount() - $start;
+    my $tnow  = int(gettimeofday);
+    my $tsec  = [gettimeofday];
+    my $end   = tv_interval ($start, $tsec);
+    my $stime = $interval - $end;
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -245,103 +240,16 @@ sub Startup {
 	}
     }
 
-    # time drift adjustment
-    if ($last_time > 0) {
-
-        my $drift = $tnow - $last_time;
-
-        if ($drift > $interval) {
-
-            if (RunningAsService()) {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)"); 
-            } else {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n"; 
-	    }
-
-            # reset drift, check sleep, resume, hibernate
-            $drift = $interval + 1
-              if ($drift > (3 * $interval));
-
-	    my $delta = $drift - $interval;
-	    my $tfix = $tnow - $delta;
-	    
-	    ### verbose
-	    if ($verbose) {
-                if (RunningAsService()) {
-                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
-		} else {
-                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
-		}
-	    }
-
-            putraw($tfix, %dstat);
-
-            $stime -= $delta * 1000;
-            $last_time = $tfix;
-
-            Win32::Sleep($stime);
-
-    	} elsif ($drift < $interval) {
-
-            if (RunningAsService()) {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)");
-            } else {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n";
-	    }
-
-            my $ext = $interval - $drift;
-            my $tfix = $tnow + $ext;
-	    
-	    ### verbose
-	    if ($verbose) {
-                if (RunningAsService()) {
-                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
-		} else {
-                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
-		}
-	    }
-
-            putraw($tfix, %dstat);
-
-            $stime += $ext * 1000;
-	    $last_time = $tfix;
-
-	    Win32::Sleep($stime);
-
-	} else {
-
-            putraw($tnow, %dstat);
-
-	    $last_time = $tnow;
-
-	    Win32::Sleep($stime);
-
-	}
-
-    # 1st loop, last_time always 0
-    } else {
-
-        putraw($tnow, %dstat); 
-
-        if (!RunningAsService()) {
-            # check count, interval
-            last if ++$loop == $loop_max;
-        }
-
-        $last_time = $tnow;
-
-        ### Interval
-        Win32::Sleep($stime);
-    }
+    putraw($tnow, %dstat);
 
     if (!RunningAsService()) {
         # check count, interval
         last if ++$loop == $loop_max;
     }
+
+
+    ### Interval
+    sleep($stime);
 
     }
 
@@ -764,7 +672,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.18, 2015-12-31 1317
+diskrec: 1.0.18, 2015-12-31 2218
 END
     return;
 }

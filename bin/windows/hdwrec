@@ -74,7 +74,6 @@ my $logtime     = '0000';                 # min time check 23:59
 my $hv          = 'NA';                   # hypervisor
 my $ht          = 'NA';                   # hyper-threading
 my $stime;                                # sleep timer
-my $last_time   = 0;                      # first counter
 # physical,virtual ids
 my $pdev        = 'PCI|USB|VMBUS';
 my $vdev        = 'ROOT|SW|\{';
@@ -135,23 +134,12 @@ sub Startup {
 
     while(ContinueRun()) {
 
-
-    ### verbose
-    if ($verbose) {
-        if (RunningAsService()) {
-            writelog ("info: last_time=$last_time");
-	} else {
-            writelog ("info: last_time=$last_time") if ($logging);
-            print "info: last_time=$last_time\n";
-	}
-    }
-
     # hostname# hostname
     my $host = lc(hostname);
     $host =~ s/\..*$// if $host =~ /\./;
 
     # measure payload
-    my $start = Win32::GetTickCount();
+    my $start = [gettimeofday];
 
     my $wproc = $wmi->InstancesOf("Win32_Processor");
     my ($hdw, $ncores);
@@ -213,8 +201,6 @@ sub Startup {
         $ndisk++;
     }
 
-
-
     # get no of NICs
     my $nicq = "SELECT * from Win32_NetworkAdapter";
 
@@ -248,7 +234,6 @@ sub Startup {
     # drop Virtual NICs
     $nnic = $pnic;
 
-
     # os, relos, kernel correction win2012, win10
     my @winver = split /\./, $osver;
     my $r = $winver[0] . "." . $winver[1];
@@ -260,12 +245,12 @@ sub Startup {
 	if ( $newos ne $os ) { $os = "win" . $newos; }
     }
 
-
-    my $end = Win32::GetTickCount() - $start;
-    my $stime = ($interval * 1000) - $end;
-
-    # output time
-    my $tnow = int(gettimeofday);
+    # end payload
+    # my $end = Win32::GetTickCount() - $start;
+    my $tnow  = int(gettimeofday);
+    my $tsec  = [gettimeofday];
+    my $end   = tv_interval ($start, $tsec);
+    my $stime = $interval - $end;
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -282,125 +267,23 @@ sub Startup {
 	}
     }
 
-    if ($last_time > 0) {
-        my $drift = $tnow - $last_time;
 
-        if ($drift > $interval) {
+    putraw($tnow, $host,     $hdw,    $hv,
+	   $os,   $relos,    $kernel, 
+	   $pcpu, $ncores,   $vcpu, 
+	   $ht,   $memtotal, $swaptotal, 
+	   $ndisk,$nnic,     $uptime);
 
-            if (RunningAsService()) {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)");
-            } else {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n";
-	    }
-
-            # reset drift, check sleep, resume, hibernate
-            $drift = $interval + 1
-                if ($drift > (3 * $interval));
-
-	    my $delta = $drift - $interval;
-	    my $tfix = $tnow - $delta;
-	    
-	    ### verbose
-	    if ($verbose) {
-                if (RunningAsService()) {
-                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
-		} else {
-                    writelog ("info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: delta=$delta(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
-		}
-	    }
-
-            putraw($tfix, $host,     $hdw,    $hv,
-	           $os,   $relos,    $kernel, 
-	           $pcpu, $ncores,   $vcpu, 
-		   $ht,   $memtotal, $swaptotal, 
-		   $ndisk,$nnic,     $uptime);
-
-            $stime -= $delta * 1000;
-            $last_time = $tfix;
-
-            Win32::Sleep($stime);
-
-    	} elsif ($drift < $interval) {
-
-            if (RunningAsService()) {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)"); 
-            } else {
-                writelog ("warning: drift detected, drift=$drift(s), interval=$interval(s)") if ($logging);
-                print "warning: drift detected, drift=$drift(s), interval=$interval(s)\n"; 
-	    }
-
-            my $ext = $interval - $drift;
-            my $tfix = $tnow + $ext;
-
-	    ### verbose
-	    if ($verbose) {
-                if (RunningAsService()) {
-                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)");
-		} else {
-                    writelog ("info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)") if ($logging);
-                    print "info: ext=$ext(s), timenow=$tnow(epoch), timefix=$tfix(epoch)\n";
-		}
-
-	    }
-
-            putraw($tfix, $host,     $hdw,    $hv,
-	           $os,   $relos,    $kernel, 
-	           $pcpu, $ncores,   $vcpu, 
-		   $ht,   $memtotal, $swaptotal, 
-		   $ndisk,$nnic,     $uptime);
-
-
-            $stime += $ext * 1000;
-	    $last_time = $tfix;
-
-	    Win32::Sleep($stime);
-
-	} else {
-
-
-            putraw($tnow, $host,     $hdw,    $hv,
-	           $os,   $relos,    $kernel, 
-	           $pcpu, $ncores,   $vcpu, 
-		   $ht,   $memtotal, $swaptotal, 
-		   $ndisk,$nnic,     $uptime);
-
-	    $last_time = $tnow;
-
-	    Win32::Sleep($stime);
-
-	}
-
-    # 1st loop, last_time always 0
-    } else {
-
-        putraw($tnow, $host,     $hdw,    $hv,
-	       $os,   $relos,    $kernel, 
-	       $pcpu, $ncores,   $vcpu, 
-	       $ht,   $memtotal, $swaptotal, 
-	       $ndisk,$nnic,     $uptime);
-
-
-        if (!RunningAsService()) {
-            # check count, interval
-            last if ++$loop == $loop_max;
-        }
-
-        $last_time = $tnow;
-
-        ### Interval
-        Win32::Sleep($stime);
-    }
-
-    
     if (!RunningAsService()) {
         # check count, interval
         last if ++$loop == $loop_max;
     }
 
-    }
+    ### Interval
+    sleep($stime);
 
+    }
+    
     if (RunningAsService()) {
         writelog ("info: stopped");
     }

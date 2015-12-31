@@ -578,7 +578,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.18, 2015-12-31 1315
+cpurec: 1.0.18, 2015-12-31 2212
 END
     return;
 }
