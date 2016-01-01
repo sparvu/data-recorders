@@ -196,8 +196,30 @@ sub Startup {
 	}
     }
 
+    if ($last_time > 0) {
 
-    putraw($tnow, %cstat);
+        putraw($tnow, %cstat);
+
+        $last_time = $tnow;
+
+        ### Interval
+        sleep($stime);
+
+    } else {
+
+        putraw($tnow, %cstat);
+
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
+
+        $last_time = $tnow;
+
+        sleep($stime);
+
+	next;
+    }
 
 
     if (!RunningAsService()) {
@@ -206,10 +228,7 @@ sub Startup {
     }
 
 
-    ### Interval
-    sleep($stime);
-
-    }
+    } # while loop
 
     if (RunningAsService()) {
         writelog ("info: stopped");

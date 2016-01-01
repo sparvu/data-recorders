@@ -301,12 +301,6 @@ sub Startup {
     my $end   = tv_interval ($start, $tsec);
     my $stime = $interval - $end;
 
-    print "interval=$interval\n";
-    print "stime=$stime\n";
-    print "end=$end\n";
-    print "loop_max=$loop_max\n";
-    print "last_time=$last_time\n";
-
     # cktime for rotation
     if (RunningAsService()) {
         cktime();
