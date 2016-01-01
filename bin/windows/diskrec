@@ -72,6 +72,7 @@ my $loop        = 0;                      # current loop number
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
+my $last_time   = 0;                      # first counter
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -124,6 +125,17 @@ if (RunningAsService()) {
 sub Startup {
 
     while(ContinueRun()) {
+
+    ### verbose
+    if ($verbose) {
+        if (RunningAsService()) {
+	    writelog ("info: last_time=$last_time");
+	} else {
+	    writelog ("info: last_time=$last_time") if ($logging);
+	    print "info: last_time=$last_time\n";
+	}
+    }
+
 
     my %dstat;
     my ($di, $dkey);
@@ -248,7 +260,31 @@ sub Startup {
 	}
     }
 
-    putraw($tnow, %dstat);
+    if ($last_time > 0) {
+
+        putraw($tnow, %dstat);
+
+	$last_time = $tnow;
+
+        ### Interval
+        sleep($stime);
+
+    } else {
+
+        putraw($tnow, %dstat);
+
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
+
+	$last_time = $tnow;
+
+        ### Interval
+        sleep($stime);
+
+	next;
+    }
 
     if (!RunningAsService()) {
         # check count, interval
@@ -256,10 +292,7 @@ sub Startup {
     }
 
 
-    ### Interval
-    sleep($stime);
-
-    }
+    } # while loop
 
     if (RunningAsService()) {
         writelog ("info: stopped");

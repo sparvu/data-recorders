@@ -75,6 +75,7 @@ my $stime;                                # sleep timer
 my $pdev        = 'PCI|USB|VMBUS';
 my $vdev        = 'ROOT|SW|\{';
 my $vid         = 'Microsoft|VMWare|VirtualBox';
+my $last_time   = 0;                      # first counter
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -127,6 +128,16 @@ if (RunningAsService()) {
 sub Startup {
 
     while(ContinueRun()) {
+
+    ### verbose
+    if ($verbose) {
+        if (RunningAsService()) {
+	    writelog ("info: last_time=$last_time");
+        } else {
+	    writelog ("info: last_time=$last_time") if ($logging);
+	    print "info: last_time=$last_time\n";
+	}
+    }
 
     # NIC stats
     my %nstat;
@@ -251,18 +262,38 @@ sub Startup {
 	}
     }
 
+    if ($last_time > 0) {
 
-    putraw($tnow, %nstat); 
+        putraw($tnow, %nstat); 
+
+	$last_time = $tnow;
+
+        ### Interval
+        sleep($stime);
+
+    } else { 
+
+        putraw($tnow, %nstat); 
+
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
+
+	$last_time = $tnow;
+
+        ### Interval
+        sleep($stime);
+        
+	next;
+    }
 
     if (!RunningAsService()) {
         # check count, interval
         last if ++$loop == $loop_max;
     }
 
-    ### Interval
-    sleep($stime);
-
-    }
+    } # while loop
 
     if (RunningAsService()) {
         writelog ("info: stopped");
@@ -659,7 +690,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.18, 2015-12-31 2309
+nicrec: 1.0.18, 2015-01-01 1318
 END
     return;
 }
