@@ -78,6 +78,7 @@ my $stime;                                # sleep timer
 my $pdev        = 'PCI|USB|VMBUS';
 my $vdev        = 'ROOT|SW|\{';
 my $vid         = 'Microsoft|VMWare|VirtualBox';
+my $last_time   = 0;                      # first counter
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -133,6 +134,17 @@ if (RunningAsService()) {
 sub Startup {
 
     while(ContinueRun()) {
+
+    ### verbose
+    if ($verbose) {
+        if (RunningAsService()) {
+	    writelog ("info: last_time=$last_time");
+        } else {
+	    writelog ("info: last_time=$last_time") if ($logging);
+	    print "info: last_time=$last_time\n";
+	}
+    }
+
 
     # hostname# hostname
     my $host = lc(hostname);
@@ -267,22 +279,49 @@ sub Startup {
 	}
     }
 
+    if ($last_time > 0) {
 
-    putraw($tnow, $host,     $hdw,    $hv,
-	   $os,   $relos,    $kernel, 
-	   $pcpu, $ncores,   $vcpu, 
-	   $ht,   $memtotal, $swaptotal, 
-	   $ndisk,$nnic,     $uptime);
+        putraw($tnow, $host,     $hdw,    $hv,
+	       $os,   $relos,    $kernel, 
+	       $pcpu, $ncores,   $vcpu, 
+	       $ht,   $memtotal, $swaptotal, 
+	       $ndisk,$nnic,     $uptime);
+
+        $last_time = $tnow;
+
+        ### Interval
+        sleep($stime);
+
+    } else {
+
+        putraw($tnow, $host,     $hdw,    $hv,
+	       $os,   $relos,    $kernel, 
+	       $pcpu, $ncores,   $vcpu, 
+	       $ht,   $memtotal, $swaptotal, 
+	       $ndisk,$nnic,     $uptime);
+
+
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
+
+        $last_time = $tnow;
+
+        ### Interval
+        sleep($stime);
+
+        next;
+    }
+
 
     if (!RunningAsService()) {
         # check count, interval
         last if ++$loop == $loop_max;
     }
 
-    ### Interval
-    sleep($stime);
 
-    }
+    } # while loop
     
     if (RunningAsService()) {
         writelog ("info: stopped");
@@ -738,7 +777,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.18, 2015-12-31 1320
+hdwrec: 1.0.18, 2016-01-01 1330
 END
     return;
 }

@@ -713,7 +713,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.18, 2015-12-31 2218
+diskrec: 1.0.18, 2016-01-01 1329
 END
     return;
 }
