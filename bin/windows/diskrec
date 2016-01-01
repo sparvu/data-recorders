@@ -125,15 +125,6 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    # metrics
-    my ($reads,  $rkbytes, $rbusypct,
-        $writes, $wkbytes, $wbusypct,
-	$ql,     $aql,     $busypct,    
-	$iops,   $rwkbytes );
-
-    my ($lsize, $lfree, $lfreepct);
-
-    # disk stats
     my %dstat;
     my ($di, $dkey);
 
@@ -164,6 +155,17 @@ sub Startup {
     }
 
     my $l;
+
+
+    # metrics
+    my ($reads,  $rkbytes, $rbusypct,
+        $writes, $wkbytes, $wbusypct,
+	$ql,     $aql,     $busypct,    
+	$iops,   $rwkbytes );
+
+    my ($lsize, $lfree, $lfreepct);
+
+
     for my $k (keys %diskname) {
 
         print "inside for disk\n";
@@ -183,6 +185,8 @@ sub Startup {
         foreach my $obj (in $wdinv) {
             $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
         }
+
+	print "lsize=$lsize\n";
 
         # Performance Metrics
         # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
@@ -224,6 +228,10 @@ sub Startup {
     my $tsec  = [gettimeofday];
     my $end   = tv_interval ($start, $tsec);
     my $stime = $interval - $end;
+
+    print "interval=$interval\n";
+    print "stime=$stime\n";
+
 
     # cktime for rotation
     if (RunningAsService()) {

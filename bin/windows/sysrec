@@ -142,7 +142,7 @@ sub Startup {
 
     # measure payload
     # my $start = Win32::GetTickCount();
-    #my $start = int (gettimeofday * 1000);
+    # my $start = int (gettimeofday * 1000);
     my $start = [gettimeofday];
 
     # cpu statistics
@@ -301,6 +301,12 @@ sub Startup {
     my $end   = tv_interval ($start, $tsec);
     my $stime = $interval - $end;
 
+    print "interval=$interval\n";
+    print "stime=$stime\n";
+    print "end=$end\n";
+    print "loop_max=$loop_max\n";
+    print "last_time=$last_time\n";
+
     # cktime for rotation
     if (RunningAsService()) {
         cktime();
@@ -316,7 +322,9 @@ sub Startup {
 	}
     }
 
-    putraw($tnow,
+    if ($last_time > 0) {
+
+        putraw($tnow,
 	   $cpupct,  $sumpct, $headpct, $userpct, $syspct,
 	   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
 	   $memusedpct,  $memused,     $memfree,  $memtotal, 
@@ -331,17 +339,48 @@ sub Startup {
            $rxtxpkt, $rxtxkbytes
 	   );
 
+	$last_time=$tnow;
+
+        ### Interval
+        sleep($stime);
+
+    } else {
+
+        putraw($tnow,
+	       $cpupct,  $sumpct, $headpct, $userpct, $syspct,
+	       $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
+	       $memusedpct,  $memused,     $memfree,  $memtotal, 
+	       $realfreepct, $swapusedpct, $swapused, $swapfree, 
+	       $swaptotal, 
+	       $reads,       $rkbytes,     $rbusypct,
+	       $writes,      $wkbytes,     $wbusypct,
+	       $aql,         $busypct,
+	       $iops,        $krw,
+	       $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
+	       $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
+               $rxtxpkt, $rxtxkbytes
+	       );
+
+        if (!RunningAsService()) {
+            # check count, interval
+            last if ++$loop == $loop_max;
+        }
+
+	$last_time=$tnow;
+	     
+	sleep($stime);
+
+	next;
+
+    }
+
     if (!RunningAsService()) {
         # check count, interval
         last if ++$loop == $loop_max;
     }
 
 
-    ### Interval
-    sleep($stime);
-
-
-    }
+    } # while loop
 
     if (RunningAsService()) {
         writelog ("info: stopped");
