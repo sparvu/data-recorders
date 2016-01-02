@@ -180,15 +180,11 @@ sub Startup {
 
     for my $k (keys %diskname) {
 
-        print "inside for disk\n";
-
         $l = $diskname{$k};
 	$di = $k . " " . $l;
 	$l =~ s/\://;
 	$dkey = lc "disk" . $k . "_" . $l;
 
-        print "dkey=$dkey\n";
-        print "l=$l\n";
 
         # Inventory data
         my $wdinv = 
@@ -197,8 +193,6 @@ sub Startup {
         foreach my $obj (in $wdinv) {
             $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
         }
-
-	print "lsize=$lsize\n";
 
         # Performance Metrics
         # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
@@ -227,8 +221,6 @@ sub Startup {
             $lfreepct = 100 - $obj->{PercentFreeSpace};
         }
 
-        print "info: $dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct\n";
-
        
         $dstat{$dkey} = 
 	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
@@ -241,8 +233,9 @@ sub Startup {
     my $end   = tv_interval ($start, $tsec);
     my $stime = $interval - $end;
 
-    print "interval=$interval\n";
-    print "stime=$stime\n";
+    # print "interval=$interval\n";
+    # print "end=$end\n";
+    # print "stime=$stime\n";
 
 
     # cktime for rotation
