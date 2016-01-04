@@ -102,7 +102,7 @@ sub usage {
     print STDERR <<END;
 USAGE: disks [-hV]
  eg. 
-  disks 
+  disks.exe
 END
     exit 0;
 }
@@ -112,7 +112,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-disks: 1.0.18, 2015-12-31 1323
+disks: 1.0.18, 2016-01-04 1504
 END
     exit 0;
 }
