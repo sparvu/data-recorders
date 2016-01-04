@@ -299,7 +299,10 @@ sub Startup {
     my $tnow = int(gettimeofday);
     my $tsec = [gettimeofday];
     my $end   = tv_interval ($start, $tsec);
-    my $stime = $interval - $end;
+
+    # we default to interval
+    my $stime = $interval;
+    if ( $end < $interval ) { $stime = $interval - $end; }
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -890,7 +893,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.18, 2016-01-01 1328
+sysrec: 1.0.18, 2016-01-04 1425
 END
     return;
 }
