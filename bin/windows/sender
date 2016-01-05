@@ -30,6 +30,8 @@ use Digest::SHA;
 use Getopt::Long;
 use Time::HiRes qw(time);
 use Win32::OLE ('in');
+use Win32::Registry;
+use Win32::TieRegistry;
 use HTTP::Tiny;
 use JSON;
 
@@ -81,6 +83,7 @@ my @dbs;
 my %appliance;                            # appliance coordinates
 $|= 1;                                    # autoflush
 
+
 my $verbose = defined $v ? $v : 0;
 
 ### MAIN BODY #
@@ -93,8 +96,8 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-$osname = "win" if $osname eq "MSWin32";
-my $agent = "Kronometrix/1.3.2 (kdr 1.0.18 sender $osname)";
+$osname    = "win" if $osname eq "MSWin32";
+my $agent  = "Kronometrix/1.3.2 (kdr 1.0.18 sender $osname)";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -174,8 +177,7 @@ sub Startup {
     else {
 
         ## raw data arrival
-        writelog("info: krd raw data found")
-        if ( $verbose == 1 );
+        writelog("info: krd raw data found") if ( $verbose == 1 );
 
         my $rcode = 0;
         foreach (@pending) {
@@ -186,7 +188,6 @@ sub Startup {
             my $msgid;
             my $devid;
             my $lmoid;
-
 
             my $sysrec_on  = 0;
             my $cpurec_on  = 0;
@@ -367,8 +368,8 @@ sub Startup {
         writelog ("info: stopped");
     }
 
-
-}    # while loop
+    }    # while loop
+}
 
 
 sub Interactive {
@@ -452,36 +453,14 @@ sub write_config {
     # JSON Object
     my $json_data = JSON->new->utf8->pretty->encode($perl_data);
 
-    # we will parse now the file
-    if ( defined $ENV{'KRMX_PREFIX'} ) {
-        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
-            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
-
-            # print $fh encode_json($data);
-            print $fh $json_data;
-            close $fh;
-            move(
-                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
-                "$ENV{'KRMX_PREFIX'}/etc/$conf"
-            ) or die "Error: cannot update $conf: $!";
-
-        }
-        else {
-            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-            usage();
-        }
-    }
-    else {
-	if ( -e "$cprefix\\$conf" ) {
-	    open my $fh, ">", "$cprefix\\$conf.tmp";
-            print $fh $json_data;
-            close $fh;
-            move( "$cprefix\\$conf.tmp", "$cprefix\\$conf" )
-              or die "Error: cannot update $conf: $!";
-        }
-        else {
+    if ( -e "$cprefix\\$conf" ) {
+        open my $fh, ">", "$cprefix\\$conf.tmp";
+             print $fh $json_data;
+             close $fh;
+        move( "$cprefix\\$conf.tmp", "$cprefix\\$conf" )
+             or die "Error: cannot update $conf: $!";
+    } else {
             die "error: write_config - $! $cprefix\\$conf \n";
-        }
     }
 }
 
@@ -511,8 +490,7 @@ sub new_hostid {
 
     # get stats
     my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-      or die "Cannot initialize WMI interface\n";
-
+          or die "Cannot initialize WMI interface\n";
 
     my $wcsp = $wmi->InstancesOf("Win32_ComputerSystemProduct");
     foreach my $obj (in $wcsp) {
@@ -552,7 +530,7 @@ sub get_hostid {
 sub make_dsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('amd', 'cpd', 'dpd', 'wcd', 'wpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'wcd', 'wpd', 'bdt');
 
     # sid - subscription id
     # dsid - data source id
@@ -809,7 +787,6 @@ sub send_data {
     }
 
     return;
-
 }
 
 
