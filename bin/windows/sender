@@ -158,7 +158,12 @@ if (!RunningAsService()) {
     # get verbose mode
     my $vset = get_verbose($cdata);
     $verbose = 1 if ($vset); 
+
     writelog ("info: started");
+
+    if ($verbose) {
+        writelog ("info: verbose mode enabled");
+    } else { writelog ("info: verbose mode disabled"); }
 }
 
 ### Subroutines
