@@ -2,7 +2,8 @@
   "log" : {
     "current_path" : "C:\\ProgramData\\Kronometrix\\log\\current",
     "base_path" : "C:\\ProgramData\\Kronometrix\\log",
-    "daily_path" : "C:\\ProgramData\\Kronometrix\\log\\daily"
+    "daily_path" : "C:\\ProgramData\\Kronometrix\\log\\daily",
+    "sender" : "verbose"
   },
   "sampling_interval" : {
     "sysrec" : "60",
