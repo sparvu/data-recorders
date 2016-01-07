@@ -1,6 +1,6 @@
 {
-  "ldg" : {
-    ecurrent_path" : "/opt/kronometrix/log/current",
+  "log" : {
+    "current_path" : "/opt/kronometrix/log/current",
     "base_path" : "/opt/kronometrix/log",
     "daily_path" : "/opt/kronometrix/log/daily"
   },
