@@ -30,8 +30,6 @@ use Digest::SHA;
 use Getopt::Long;
 use Time::HiRes qw(time);
 use Win32::OLE ('in');
-use Win32::Registry;
-use Win32::TieRegistry;
 use HTTP::Tiny;
 use JSON;
 
@@ -118,8 +116,6 @@ my $log = open_file($slog);
 ## appliance destination
 %appliance = get_appliance($cdata);
 
-writelog ("info: started");
-
 # cd krd raw data directory
 chdir("$curlog")
   or die "error: cannot open raw data directory, $!\n";
@@ -157,6 +153,13 @@ if (!RunningAsService()) {
             print "$key => $value\n";
         }
     }
+} else {
+
+    # get verbose mode
+    my $vset = get_verbose($cdata);
+    $verbose = 1 if ($vset); 
+
+    writelog ("info: started");
 }
 
 ### Subroutines
@@ -651,6 +654,24 @@ sub getlog {
 }
 
 
+# get_verbose - get log verbose mode information
+#
+sub get_verbose {
+
+    my ($data) = @_;
+    my $sv = 0;
+
+    my $vlog = $data->{'log'}->{'sender'};
+
+    if ($vlog) {
+
+        if ($vlog eq 'verbose') { $sv = 1; }
+    }
+
+    return $sv;
+}
+
+
 # get datafile
 sub get_datafile {
 
@@ -827,7 +848,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.18, 2016-01-04 1506
+sender: 1.0.18, 2016-01-07 1200
 END
     return;
 }
