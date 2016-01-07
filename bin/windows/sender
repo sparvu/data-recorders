@@ -158,7 +158,6 @@ if (!RunningAsService()) {
     # get verbose mode
     my $vset = get_verbose($cdata);
     $verbose = 1 if ($vset); 
-
     writelog ("info: started");
 }
 
@@ -367,11 +366,12 @@ sub Startup {
 
     }    # else raw data
 
+    }    # while loop
+
     if (RunningAsService()) {
         writelog ("info: stopped");
     }
 
-    }    # while loop
 }
 
 
@@ -665,7 +665,7 @@ sub get_verbose {
 
     if ($vlog) {
 
-        if ($vlog eq 'verbose') { $sv = 1; }
+        if ($vlog =~ /^verbose$/i) { $sv = 1; }
     }
 
     return $sv;
