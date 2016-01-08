@@ -11,6 +11,12 @@ Bug Management System
 
 Releases
 
+  1.0.18 10-01-2016 Release
+    sender does not honor verbose settings as service #84 
+    diskrec windows not reporting all disks #83 
+    sender should be aware of web monitoring dsid #77 
+    windows services running, no krd data available #76 
+
   1.0.17 27-10-2015 Release
     sender transport POST compliance #72
     NIC detection on Hyper-V deployments #70

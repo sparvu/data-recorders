@@ -183,7 +183,8 @@ sub Startup {
         $l = $diskname{$k};
 	$di = $k . " " . $l;
 	$l =~ s/\://;
-	$dkey = lc "disk" . $k . "_" . $l;
+	#$dkey = lc "disk" . $k . "_" . $l;
+	$dkey = lc "disk" . $k;
 
 
         # Inventory data
@@ -343,7 +344,9 @@ sub getdisk {
     # get physical disks
     my ($di, $dd);
     my $wd = $wmi->InstancesOf("Win32_DiskDrive");
+
     foreach my $disk (in $wd) {
+
         $di = $disk->{Index};
         $dd = $disk->{DeviceID};
         $dd =~ s/\\/\\\\/sg;
@@ -362,7 +365,9 @@ sub getdisk {
 
 	    foreach my $lobj (in $wdrive) {
                 my $lid = $lobj->{DeviceID};
-	        $disk{$di} = $lid;
+		my $lv = $lid =~ s/\://r;
+		$lv = $di . $lv;
+	        $disk{$lv} = "$lid";
 	    }
         }
     }
@@ -710,7 +715,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.18, 2016-01-04 1427
+diskrec: 1.0.18, 2016-01-08 1039
 END
     return;
 }
