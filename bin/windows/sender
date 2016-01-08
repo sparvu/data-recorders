@@ -108,7 +108,8 @@ get_hostid($cdata);
 $slog = $baselog . "\\sender.log";
 
 # open log file
-my $log = open_file($slog);
+my $log;
+# my $log = open_file($slog);
 
 ## datafile
 @dbs = get_datafile($cdata);
@@ -144,7 +145,6 @@ unless (defined &ContinueRun) {
     Interactive();
 }
 
-
 if (!RunningAsService()) {
     if ($verbose) {
         print "appliance: " . keys(%appliance) . ".\n";
@@ -154,6 +154,9 @@ if (!RunningAsService()) {
         }
     }
 } else {
+
+    # open log file
+    $log = open_file($slog);
 
     # get verbose mode
     my $vset = get_verbose($cdata);
@@ -834,11 +837,11 @@ sub usage {
     print STDERR <<END;   
 USAGE: sender [-t secs] [-hvV] | [interval]
 OPTIONS:
-  -h | --help              : help information
-  -v | --verbose           : verbose information
-  -V | --version           : release version
-  -t secs | --timeout secs : timeout in seconds, default 25s
-  interval                 : max number of seconds between samples, default 60s 
+  -h | --help           : help information
+  -v | --verbose        : verbose information
+  -V | --version        : release version
+  -t | --timeout secs   : timeout in seconds, default 25s
+  interval              : max number of seconds between samples, default 60s 
 
  eg, 
   sender                # default mode, transport raw data every 60s
@@ -853,7 +856,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.18, 2016-01-07 1200
+sender: 1.0.18, 2016-01-08 1332
 END
     return;
 }
