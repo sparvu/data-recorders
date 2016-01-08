@@ -258,7 +258,6 @@ sub Startup {
     }
 
     # end payload
-    # my $end = Win32::GetTickCount() - $start;
     my $tnow  = int(gettimeofday);
     my $tsec  = [gettimeofday];
     my $end   = tv_interval ($start, $tsec);
@@ -780,7 +779,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.18, 2016-01-04 1430
+hdwrec: 1.0.18, 2016-01-08 1058
 END
     return;
 }

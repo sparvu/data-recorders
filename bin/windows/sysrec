@@ -141,8 +141,6 @@ sub Startup {
     }
 
     # measure payload
-    # my $start = Win32::GetTickCount();
-    # my $start = int (gettimeofday * 1000);
     my $start = [gettimeofday];
 
     # cpu statistics
@@ -221,7 +219,6 @@ sub Startup {
 
 
     # NIC IO statistics
-
     # metrics
     my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
         $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
@@ -295,7 +292,6 @@ sub Startup {
     }
 
     # end payload
-    # my $end = Win32::GetTickCount() - $start;
     my $tnow = int(gettimeofday);
     my $tsec = [gettimeofday];
     my $end   = tv_interval ($start, $tsec);
@@ -893,7 +889,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.18, 2016-01-04 1425
+sysrec: 1.0.18, 2016-01-08 1053
 END
     return;
 }

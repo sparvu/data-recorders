@@ -228,7 +228,6 @@ sub Startup {
     }
 
     # end payload
-    # my $end = Win32::GetTickCount() - $start;
     my $tnow  = int(gettimeofday);
     my $tsec  = [gettimeofday];
     my $end   = tv_interval ($start, $tsec);
@@ -236,12 +235,6 @@ sub Startup {
     # we default to interval
     my $stime = $interval;
     if ( $end < $interval ) { $stime = $interval - $end; } 
-
-
-    # print "interval=$interval\n";
-    # print "end=$end\n";
-    # print "stime=$stime\n";
-
 
     # cktime for rotation
     if (RunningAsService()) {

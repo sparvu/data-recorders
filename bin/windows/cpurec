@@ -167,15 +167,7 @@ sub Startup {
 	$id++;
     }
 
-    # print cstat structure
-    # print "cstat size=" . keys(%cstat) . "\n";
-
-    # for my $k (keys %cstat) {
-    #     print "$cstat{$k}\n";
-    # }
-
     # end payload
-    # my $end = Win32::GetTickCount() - $start;
     my $tnow = int(gettimeofday);
     my $tsec = [gettimeofday];
     my $end   = tv_interval ($start, $tsec);
@@ -600,7 +592,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.18, 2016-01-04 1427
+cpurec: 1.0.18, 2016-01-08 1054
 END
     return;
 }
