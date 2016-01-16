@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -244,7 +244,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.17, 2015-09-13 0859
+diskrec: 1.1, 2015-12-04 1610
 END
     exit 0;
 }

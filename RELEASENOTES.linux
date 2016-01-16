@@ -18,6 +18,14 @@ Bug Management System
 
 Releases
 
+  1.0.18 10-01-2016 Release
+    diskrec should be able to report per mount point disk space usage #79
+    sender should be aware of web monitoring dsid #77
+    diskrec data message changes #53
+    webrec - HTTP recorder #8
+    update curl-7.46.0
+    update openssl-1.0.2e
+
   1.0.17 29-10-2015 Release
     sender transport POST compliance #72
     hdwrec CentOS7 systemd based NICs not detectable #71
