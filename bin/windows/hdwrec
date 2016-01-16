@@ -789,7 +789,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.19rc1, 2016-01-15 2240
+hdwrec: 1.0.19rc1, 2016-01-16 1311
 END
     return;
 }

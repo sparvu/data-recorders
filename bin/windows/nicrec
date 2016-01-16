@@ -251,13 +251,21 @@ sub Startup {
     }
 
     # end payload
-    my $tnow = int(gettimeofday);
-    my $tsec = [gettimeofday];
-    my $end   = tv_interval ($start, $tsec);
+    my $tnow = [gettimeofday];
+    my $elapsed = tv_interval ($start, $tnow);
 
     # we default to interval
-    my $stime = $interval;
-    if ( $end < $interval ) { $stime = $interval - $end; }
+    my $stime = 1;
+    if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
+    else {
+        if (RunningAsService()) {
+	    writelog ("warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)");
+	} else {
+	    if ($interval > 1) {
+	        writelog ("warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)") if ($logging);
+		print "warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)\n"; }
+        }
+    }
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -267,35 +275,37 @@ sub Startup {
     ### verbose
     if ($verbose) {
         if (RunningAsService()) {
-            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)");
+            writelog ("info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)");
 	} else {
-            writelog ("info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)") if ($logging);
-            print "info: elapsed=$end(ms), sleep=$stime(ms), timenow=$tnow(epoch)\n";
+            writelog ("info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)") if ($logging);
+            print "info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)\n";
 	}
     }
 
     if ($last_time > 0) {
 
-        putraw($tnow, %nstat); 
+        putraw($$tnow[0], %nstat); 
 
-	$last_time = $tnow;
+	$last_time = $$tnow[0];
 
         ### Interval
-        sleep($stime);
+	select (undef, undef, undef, $stime);
+        #sleep($stime);
 
     } else { 
 
-        putraw($tnow, %nstat); 
+        putraw($$tnow[0], %nstat); 
 
         if (!RunningAsService()) {
             # check count, interval
             last if ++$loop == $loop_max;
         }
 
-	$last_time = $tnow;
+	$last_time = $$tnow[0];
 
         ### Interval
-        sleep($stime);
+	select (undef, undef, undef, $stime);
+        #sleep($stime);
         
 	next;
     }
@@ -702,7 +712,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.19rc1, 2016-01-15 2239
+nicrec: 1.0.19rc1, 2016-01-16 1311
 END
     return;
 }
