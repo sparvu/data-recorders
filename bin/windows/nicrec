@@ -22,6 +22,7 @@ package PerlSvc;
 use strict;
 use warnings;
 use Getopt::Long;
+use Win32::Process;
 use Date::Calc qw(:all);
 use File::Copy;
 use Time::HiRes qw(time gettimeofday sleep tv_interval);
@@ -118,6 +119,15 @@ if (RunningAsService()) {
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
+
+    my $curentProcess;
+
+    my $pid = Win32::Process::GetCurrentProcessID();
+
+    if (Win32::Process::Open($curentProcess, $pid, 0)) {
+        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+    }
+
     writelog ("info: started");
 }
 
@@ -692,7 +702,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.18, 2016-01-08 1057
+nicrec: 1.0.19rc1, 2016-01-15 2239
 END
     return;
 }

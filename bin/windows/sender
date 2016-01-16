@@ -22,6 +22,7 @@ package PerlSvc;
 use strict;
 use warnings;
 use File::Tail;
+use Win32::Process;
 use File::Temp qw(tempfile);
 use File::Copy;
 use File::Basename;
@@ -95,7 +96,7 @@ my $dname = basename($0);
 # osname
 my $osname = "$^O";
 $osname    = "win" if $osname eq "MSWin32";
-my $agent  = "Kronometrix/1.3.2 (kdr 1.0.18 sender $osname)";
+my $agent  = "Kronometrix/1.3.2 (kdr 1.0.19 sender $osname)";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -161,6 +162,14 @@ if (!RunningAsService()) {
     # get verbose mode
     my $vset = get_verbose($cdata);
     $verbose = 1 if ($vset); 
+
+    my $curentProcess;
+
+    my $pid = Win32::Process::GetCurrentProcessID();
+
+    if (Win32::Process::Open($curentProcess, $pid, 0)) {
+        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+    }
 
     writelog ("info: started");
 
@@ -856,7 +865,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.18, 2016-01-08 1332
+sender: 1.0.19rc1, 2016-01-15 2241
 END
     return;
 }
