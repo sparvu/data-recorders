@@ -185,7 +185,7 @@ sub Startup {
     my $elapsed = tv_interval ($start, $tnow);
 
     # we default to interval
-    my $stime = 1;
+    my $stime = 5;
     if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
     else {
         if (RunningAsService()) {
@@ -219,8 +219,7 @@ sub Startup {
         $last_time = $$tnow[0];
 
         ### Interval
-	select (undef, undef, undef, $stime); 
-	#sleep($stime);
+	sleep($stime);
 
     } else {
 
@@ -234,8 +233,7 @@ sub Startup {
         $last_time = $$tnow[0];
 
         ### Interval
-	select (undef, undef, undef, $stime);
-        #sleep($stime);
+        sleep($stime);
 
 	next;
     }
@@ -616,7 +614,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.19rc1, 2016-01-16 1300
+cpurec: 1.0.19rc2, 2016-01-17 2219
 END
     return;
 }
