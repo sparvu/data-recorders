@@ -126,7 +126,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
@@ -294,9 +294,9 @@ sub Startup {
     my $tnow = [gettimeofday];
 
     # cktime for rotation
-    #if (RunningAsService()) {
-    #    cktime();
-    #}
+    if (RunningAsService()) {
+        cktime();
+    }
 
     if ($last_time > 0) {
 
@@ -768,7 +768,7 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-            writelog ("warning: rotate - cannot create $dstamp, already exists");
+            writelog ("warning: rotate - $dstamp dir: $!");
         }
 
         foreach my $rawfile (@krd_files) {
@@ -887,7 +887,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.19rc3, 2016-01-18 1348
+sysrec: 1.0.19rc3, 2016-01-18 1553
 END
     return;
 }
