@@ -142,19 +142,6 @@ sub Startup {
 
     k_sleep();
 
-    ### verbose
-    if ($verbose) {
-        if (RunningAsService()) {
-            writelog ("info: last_time=$last_time");
-	} else {
-            writelog ("info: last_time=$last_time") if ($logging);
-            print "info: last_time=$last_time\n";
-	}
-    }
-
-    # measure payload
-    #my $start = [gettimeofday];
-
     # cpu statistics
     # 10 metrics
     my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor")
@@ -305,35 +292,11 @@ sub Startup {
 
     # end payload
     my $tnow = [gettimeofday];
-    #my $elapsed = tv_interval ($start, $tnow);
-
-    # we default to interval
-    #my $stime = 5;
-    #if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
-    #else {
-    #    if (RunningAsService()) {
-    #        writelog ("warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)");
-#	} else {
-#	    if ($interval > 1) {
-#            writelog ("warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)") if ($logging);
-#            print "warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)\n"; }
-#	}
-#    }
 
     # cktime for rotation
-    if (RunningAsService()) {
-        cktime();
-    }
-
-    ### verbose
-    #if ($verbose) {
-    #    if (RunningAsService()) {
-    #        writelog ("info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)");
-#	} else {
-#            writelog ("info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)") if ($logging);
-#            print "info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)\n";
-#	}
-#    }
+    #if (RunningAsService()) {
+    #    cktime();
+    #}
 
     if ($last_time > 0) {
 
@@ -924,7 +887,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.19rc2, 2016-01-17 2219
+sysrec: 1.0.19rc3, 2016-01-18 1348
 END
     return;
 }
