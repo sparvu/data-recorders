@@ -22,7 +22,6 @@ package PerlSvc;
 use strict;
 use warnings;
 use Getopt::Long;
-#use Win32::Process;
 use Date::Calc qw(:all);
 use File::Copy;
 use Time::HiRes qw(time gettimeofday usleep tv_interval);
@@ -30,6 +29,7 @@ use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
 use Win32;
+use Win32::Process;
 use JSON;
 
 # Debug Only
