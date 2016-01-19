@@ -1,5 +1,5 @@
 
-Kronometrix Data Recording
+Kronometrix Data Recording (KDR)
 
 Platforms
     Windows 2008R2,2012R2 Server x64
@@ -39,4 +39,4 @@ Releases
     sysrec does not honor interval count options #49
     sysrec on windows cannot run as a service #48
     kronometrix.json default settings #47
-    ime drifts on win32 platform #35
+    time drifts on win32 platform #35
