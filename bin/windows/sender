@@ -22,7 +22,6 @@ package PerlSvc;
 use strict;
 use warnings;
 use File::Tail;
-use Win32::Process;
 use File::Temp qw(tempfile);
 use File::Copy;
 use File::Basename;
@@ -31,6 +30,7 @@ use Digest::SHA;
 use Getopt::Long;
 use Time::HiRes qw(time);
 use Win32::OLE ('in');
+use Win32::Process;
 use HTTP::Tiny;
 use JSON;
 
@@ -865,7 +865,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.0.19rc1, 2016-01-16 1328
+sender: 1.0.19, 2016-01-19 1629
 END
     return;
 }

@@ -2,14 +2,20 @@
 Kronometrix Data Recording
 
 Platforms
-    Windows 2008R2, 2012R2 Server x64
-    Windows 7, 8, 10 x64
+    Windows 2008R2,2012R2 Server x64
+    Windows 7,8,10 x64
 
 Bug Management System
   https://github.com/kronometrix/recording/issues
 
 
 Releases
+
+  1.0.19 20-01-2016 Release
+    windows recorders time management #87 
+    win recorders, reduce the number of time system calls #86 
+    win recorders dont get cpu time #85 
+    update perl 5.20.3
 
   1.0.18 10-01-2016 Release
     sender does not honor verbose settings as service #84 
@@ -33,4 +39,4 @@ Releases
     sysrec does not honor interval count options #49
     sysrec on windows cannot run as a service #48
     kronometrix.json default settings #47
-    time drifts on win32 platform #35
+    ime drifts on win32 platform #35
