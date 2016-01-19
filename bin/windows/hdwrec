@@ -22,14 +22,14 @@ package PerlSvc;
 use strict;
 use warnings;
 use Getopt::Long;
-use Win32::Process;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday sleep tv_interval); 
+use Time::HiRes qw(time gettimeofday usleep tv_interval); 
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
 use Win32;
+use Win32::Process;
 use JSON;
 
 
@@ -145,23 +145,11 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    ### verbose
-    if ($verbose) {
-        if (RunningAsService()) {
-	    writelog ("info: last_time=$last_time");
-        } else {
-	    writelog ("info: last_time=$last_time") if ($logging);
-	    print "info: last_time=$last_time\n";
-	}
-    }
-
+    k_sleep();
 
     # hostname# hostname
     my $host = lc(hostname);
     $host =~ s/\..*$// if $host =~ /\./;
-
-    # measure payload
-    my $start = [gettimeofday];
 
     my $wproc = $wmi->InstancesOf("Win32_Processor");
     my ($hdw, $ncores);
@@ -270,34 +258,10 @@ sub Startup {
 
     # end payload
     my $tnow = [gettimeofday];
-    my $elapsed = tv_interval ($start, $tnow);
-
-    # we default to interval
-    my $stime = 5;
-    if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
-    else {
-        if (RunningAsService()) {
-	    writelog ("warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)");
-	} else {
-	    if ($interval > 1) {
-	        writelog ("warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)") if ($logging);
-	        print "warn: elapsed time > interval, elapsed=$elapsed(s), interval=$interval(s)\n"; }
-	}
-    }
 
     # cktime for rotation
     if (RunningAsService()) {
         cktime();
-    }
-
-    ### verbose
-    if ($verbose) {
-        if (RunningAsService()) {
-            writelog ("info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)");
-	} else {
-            writelog ("info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)") if ($logging);
-            print "info: elapsed=$elapsed(s), sleep=$stime(s), now=$$tnow[0](epoch)\n";
-	}
     }
 
     if ($last_time > 0) {
@@ -310,8 +274,6 @@ sub Startup {
 
         $last_time = $$tnow[0];
 
-        ### Interval
-        sleep($stime);
 
     } else {
 
@@ -328,9 +290,6 @@ sub Startup {
         }
 
         $last_time = $$tnow[0];
-
-        ### Interval
-        sleep($stime);
 
         next;
     }
@@ -383,6 +342,19 @@ sub Install {
 sub Remove {
 
     $Config{ServiceName} = $recid;
+    return;
+}
+
+
+# k_sleep - sleeps exact number of usec
+#
+sub k_sleep {
+
+    my $t = [gettimeofday];
+    my $next = (int($t->[0]/$interval) + 1) * $interval;
+    my $delta = tv_interval ($t, [$next, 0]);
+    usleep($delta * 1_000_000);
+
     return;
 }
 
@@ -798,7 +770,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.19rc2, 2016-01-17 2220
+hdwrec: 1.0.19, 2016-01-19 1622
 END
     return;
 }
