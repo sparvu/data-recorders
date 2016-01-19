@@ -518,7 +518,7 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-            writelog ("warning: rotate - cannot create $dstamp, already exists");
+            writelog ("warning: rotate - $dstamp dir: $!");
         }
 
         foreach my $rawfile (@krd_files) {
