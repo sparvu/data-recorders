@@ -317,9 +317,6 @@ sub Startup {
 
 	$last_time=$$tnow[0];
 
-        ### Interval
-        #sleep($interval);
-
     } else {
 
         putraw($$tnow[0],
@@ -343,10 +340,6 @@ sub Startup {
         }
 
 	$last_time=$$tnow[0];
-
- 
-        ### Interval
-	#sleep($interval);
          
 	next;
 
