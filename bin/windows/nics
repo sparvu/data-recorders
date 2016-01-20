@@ -31,7 +31,8 @@ use Win32;
 
 
 # Debug Only
-use Data::Dumper;
+#use Data::Dumper;
+
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
@@ -125,7 +126,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nics: 1.0.18, 2016-01-04 1505
+nics: 1.0.19, 2016-01-20 1317
 END
     exit 0;
 }
