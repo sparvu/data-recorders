@@ -28,7 +28,6 @@ use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
-use Win32;
 use Win32::Process;
 use JSON;
 
@@ -141,7 +140,7 @@ sub Startup {
 
     k_sleep();
  
-    my ($userpct,  $idlepct , $syspct, $irqpct, $privpct, $dpcpct, $totalpct);
+    my ($id, $userpct,  $idlepct , $syspct, $irqpct, $privpct, $dpcpct, $totalpct);
 
     # Win32_PerfFormattedData_PerfOS_Processor
     my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor") 
@@ -150,9 +149,8 @@ sub Startup {
     # per-cpu hash data
     my %cstat;
 
-    # cpuid starts 0, 1st is ALL
-    my $id = -1;
     foreach my $obj (in $wcpu) {
+        $id = $obj->{Name};
         $userpct = $obj->{PercentUserTime};
         $idlepct = $obj->{PercentIdleTime};
         $privpct = $obj->{PercentProcessorTime};
@@ -160,12 +158,12 @@ sub Startup {
         $irqpct = $obj->{PercentInterruptTime};
         $dpcpct = $obj->{PercentDPCTime};
 	$totalpct = 100 - $idlepct;
-	if ($id >= 0) {
-	    # load cstat
-	    $cstat{$id} =
+
+	next if $id =~ /_Total/;
+
+	# load cstat
+	$cstat{$id} =
          "cpu$id:$userpct:$syspct:$irqpct:$dpcpct:$privpct:$idlepct:$totalpct";
-        }
-	$id++;
     }
 
 
@@ -587,7 +585,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.19, 2016-01-19 1122
+cpurec: 1.0.19, 2016-01-20 1258
 END
     return;
 }

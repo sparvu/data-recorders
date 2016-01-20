@@ -28,7 +28,6 @@ use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
-use Win32;
 use Win32::Process;
 use JSON;
 
@@ -880,7 +879,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.19, 2016-01-18 1553
+sysrec: 1.0.19, 2016-01-20 0955
 END
     return;
 }
