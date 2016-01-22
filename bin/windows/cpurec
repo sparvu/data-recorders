@@ -33,7 +33,7 @@ use JSON;
 
 
 # Debug Only
-# use Data::Dumper;
+#use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -102,6 +102,12 @@ if ($logging) {
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
+
+my $key = 'Name';
+
+my @cpustats = qw(PercentIdleTime PercentProcessorTime PercentPrivilegedTime PercentUserTime PercentInterruptTime PercentDPCTime TimeStamp_Sys100NS);
+
+
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
     *RunningAsService = sub { return 0 };
@@ -126,8 +132,6 @@ if (RunningAsService()) {
     }
 
     writelog ("info: started");
-
-
 }
 
 
@@ -136,39 +140,69 @@ if (RunningAsService()) {
 
 sub Startup {
 
-    while(ContinueRun()) {
 
-    k_sleep();
- 
-    my ($id, $userpct,  $idlepct , $syspct, $irqpct, $privpct, $dpcpct, $totalpct);
+    my $hash1 = {};
 
-    # Win32_PerfFormattedData_PerfOS_Processor
-    my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor") 
-        or die "Cannot get wmi0";
+    my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+        or die "Failed to get instance object\n";
 
-    # per-cpu hash data
-    my %cstat;
-
-    foreach my $obj (in $wcpu) {
-        $id = $obj->{Name};
-        $userpct = $obj->{PercentUserTime};
-        $idlepct = $obj->{PercentIdleTime};
-        $privpct = $obj->{PercentProcessorTime};
-        $syspct = $obj->{PercentPrivilegedTime};
-        $irqpct = $obj->{PercentInterruptTime};
-        $dpcpct = $obj->{PercentDPCTime};
-	$totalpct = 100 - $idlepct;
-
-	next if $id =~ /_Total/;
-
-	# load cstat
-	$cstat{$id} =
-         "cpu$id:$userpct:$syspct:$irqpct:$dpcpct:$privpct:$idlepct:$totalpct";
+    my $w32;
+    foreach $w32 (in $list) {
+        next if $w32->{$key} eq '_Total';
+        map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
     }
 
 
+    while(ContinueRun()) {
+
+    k_sleep();
+
+    my $start = [gettimeofday];
+
+
+    my ($cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct);
+    my %cstat;
+
+    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+	        or die "Failed to get instance object\n";
+
+    my $hash = {};
+
+    foreach $w32 (in $list) {
+	next if $w32->{$key} eq '_Total';
+	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
+    }
+
+    #print "cpus " . keys(%$hash) . ".\n";
+    # print Dumper($hash);
+
+    for my $k (keys %$hash) {
+
+        $cpuid = $k;
+
+        $totalpct = sprintf("%.2f", (1 - get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentProcessorTime' )) * 100);
+	$idlepct = sprintf("%.2f", 100-$totalpct);
+
+        $userpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentUserTime' )* 100);
+
+        $syspct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' )* 100);
+
+        $irqpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentInterruptTime' )* 100);
+
+        $dpcpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentDPCTime' )* 100);
+
+        #printf "%s %s %s %s %s %s %s\n", $cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct;
+
+	$cstat{$cpuid} =
+	                "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
+
+    }
+
     # end payload
     my $tnow = [gettimeofday];
+    my $delta1  = tv_interval ($start, $tnow);
+    print " CPU Win32_PerfRawData_PerfOS_Processor: $delta1 sec\n";
+
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -181,10 +215,12 @@ sub Startup {
 
         $last_time = $$tnow[0];
 
-
     } else {
 
         putraw($$tnow[0], %cstat);
+        my $elapsed = tv_interval ($start, $tnow);
+
+
 
         if (!RunningAsService()) {
             # check count, interval
@@ -258,6 +294,20 @@ sub k_sleep {
     usleep($delta * 1_000_000);
 
     return;
+}
+
+
+# get_value - get delta between samples
+#
+sub get_value {
+    my ($h1, $h2, $property) = @_; 
+
+    my $delta = ( ($h2->{$property}            - $h1->{$property}) / 
+                  ($h2->{'TimeStamp_Sys100NS'} - $h1->{'TimeStamp_Sys100NS'}));
+
+    $delta = 1 if $delta > 1;
+
+    return $delta;
 }
 
 
@@ -573,9 +623,8 @@ USAGE: cpurec [-lhV] | [interval [count]]
    #04 syspct     : system cpu utilization, percentage
    #05 irqpct     : irq cpu utilization, percentage
    #06 dpcpct     : deffered procedure calls cpu, percentage 
-   #07 privpct    : priviledged cpu utilization (dpc+irq), percentage
-   #08 idlepct    : idle cpu utilization, percentage
-   #09 totalpct   : total cpu utilization, percentage
+   #07 idlepct    : idle cpu utilization, percentage
+   #08 totalpct   : total cpu utilization, percentage
 END
     return;
 }
@@ -585,7 +634,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.19, 2016-01-20 1258
+cpurec: 1.0.19, 2016-01-22 1545
 END
     return;
 }

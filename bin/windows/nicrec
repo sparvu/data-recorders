@@ -24,7 +24,7 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday usleep tv_interval);
+use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -138,7 +138,7 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    k_sleep();
+    my $start = [gettimeofday];
 
     # NIC stats
     my %nstat;
@@ -241,6 +241,12 @@ sub Startup {
     # end payload
     my $tnow = [gettimeofday];
 
+    my $elapsed = tv_interval ($start, $tnow);
+
+    my $stime = 1;
+    if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
+
+
     # cktime for rotation
     if (RunningAsService()) {
         cktime();
@@ -249,8 +255,8 @@ sub Startup {
     if ($last_time > 0) {
 
         putraw($$tnow[0], %nstat); 
-
 	$last_time = $$tnow[0];
+	sleep($stime);
 
     } else { 
 
@@ -262,6 +268,7 @@ sub Startup {
         }
 
 	$last_time = $$tnow[0];
+	sleep($stime);
         
 	next;
     }
@@ -681,7 +688,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.19, 2016-01-20 1004
+nicrec: 1.0.19, 2016-01-20 1638
 END
     return;
 }

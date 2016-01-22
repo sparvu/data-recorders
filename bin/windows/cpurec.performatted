@@ -38,7 +38,7 @@ use JSON;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my $recid           = 'diskrec';
+my $recid           = 'cpurec';
 my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
 my ($l, $v, $h, $V) = 0;
 our %Config         = (ServiceName => $recid);
@@ -80,6 +80,7 @@ my $logging = defined $l ? $l : 0;
 
 ### MAIN BODY
 
+
 # read configuration
 my $cdata = open_config($cf);
 
@@ -115,6 +116,7 @@ if (RunningAsService()) {
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
+
     my $curentProcess;
 
     my $pid = Win32::Process::GetCurrentProcessID();
@@ -124,6 +126,8 @@ if (RunningAsService()) {
     }
 
     writelog ("info: started");
+
+
 }
 
 
@@ -134,102 +138,47 @@ sub Startup {
 
     while(ContinueRun()) {
 
+
     my $start = [gettimeofday];
 
-    my %dstat;
-    my ($di, $dkey);
 
-    my %diskname = getdisk();
+    my ($id, $userpct,  $idlepct , $syspct, $irqpct, $privpct, $dpcpct, $totalpct);
 
-    ### verbose
-    if ($verbose) {
-        my $entries = keys (%diskname);
-        if (RunningAsService()) {
-            writelog ("info: Number of disks: $entries");
-            for my $key (keys %diskname) {
-                my $value = $diskname{$key};
-                writelog ("info: disk$key => $value");
-            }
+    # Win32_PerfFormattedData_PerfOS_Processor
+    my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor") 
+        or die "Cannot get wmi0";
 
-	} else {
-            writelog ("info: Number of disks: $entries")
-	      if ($logging);
-            print "info: Number of disks: $entries\n";
-            for my $key (keys %diskname) {
-                my $value = $diskname{$key};
-                print "info: disk$key => $value\n";
-            }
-	}
+    # per-cpu hash data
+    my %cstat;
+
+    foreach my $obj (in $wcpu) {
+        $id = $obj->{Name};
+        $userpct = $obj->{PercentUserTime};
+        $idlepct = $obj->{PercentIdleTime};
+        $privpct = $obj->{PercentProcessorTime};
+        $syspct = $obj->{PercentPrivilegedTime};
+        $irqpct = $obj->{PercentInterruptTime};
+        $dpcpct = $obj->{PercentDPCTime};
+	$totalpct = 100 - $idlepct;
+
+	next if $id =~ /_Total/;
+
+	# load cstat
+	$cstat{$id} =
+         "cpu$id:$userpct:$syspct:$irqpct:$dpcpct:$privpct:$idlepct:$totalpct";
     }
 
-    my $l;
-
-
-    # metrics
-    my ($reads,  $rkbytes, $rbusypct,
-        $writes, $wkbytes, $wbusypct,
-	$ql,     $aql,     $busypct,    
-	$iops,   $rwkbytes );
-
-    my ($lsize, $lfree, $lfreepct);
-
-
-    for my $k (keys %diskname) {
-
-        $l = $diskname{$k};
-	$di = $k . " " . $l;
-	$l =~ s/\://;
-	#$dkey = lc "disk" . $k . "_" . $l;
-	$dkey = lc "disk" . $k;
-
-
-        # Inventory data
-        my $wdinv = 
-	 $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
-
-        foreach my $obj (in $wdinv) {
-            $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
-        }
-
-        # Performance Metrics
-        # SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk 
-        # Where Name='0 C:'
-        # my $wdstat = $wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk Where Name='$di'");
-        my $wdstat = 
-	$wmi->ExecQuery("SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk Where Name='$l:'");
-
-        foreach my $obj (in $wdstat) {
-            $reads    = $obj->{DiskReadsPerSec};
-            $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
-            $rbusypct = $obj->{PercentDiskReadTime};
-
-            $writes   = $obj->{DiskWritesPerSec};
-            $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
-            $wbusypct = $obj->{PercentDiskWriteTime};
-
-    	    $ql       = $obj->{CurrentDiskQueueLength};
-	    $aql      = $obj->{AvgDiskQueueLength};
-	    $busypct  = $obj->{PercentDiskTime};
-
-       	    $iops     = $obj->{DiskTransfersPerSec};
-	    $rwkbytes = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
-
-            $lfree    = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
-            $lfreepct = 100 - $obj->{PercentFreeSpace};
-        }
-
-       
-        $dstat{$dkey} = 
-	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
-    }
 
     # end payload
     my $tnow = [gettimeofday];
-
     my $elapsed = tv_interval ($start, $tnow);
+    print " CPU Win32_PerfFormatted_PerfOS_Processor: $elapsed sec\n";
+
+
 
     my $stime = 1;
     if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
+
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -238,23 +187,29 @@ sub Startup {
 
     if ($last_time > 0) {
 
-        putraw($$tnow[0], %dstat);
-	$last_time = $$tnow[0];
+        putraw($$tnow[0], %cstat);
+
+        $last_time = $$tnow[0];
+    
         sleep($stime);
+
 
     } else {
 
-        putraw($$tnow[0], %dstat);
+        putraw($$tnow[0], %cstat);
 
         if (!RunningAsService()) {
             # check count, interval
             last if ++$loop == $loop_max;
         }
 
-	$last_time = $$tnow[0];
+        $last_time = $$tnow[0];
+
         sleep($stime);
+
 	next;
     }
+
 
     if (!RunningAsService()) {
         # check count, interval
@@ -320,47 +275,6 @@ sub k_sleep {
 }
 
 
-# getdisk -- get disks, logic drive
-#
-sub getdisk {
-
-    my %disk;
-
-    # get physical disks
-    my ($di, $dd);
-    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
-
-    foreach my $disk (in $wd) {
-
-        $di = $disk->{Index};
-        $dd = $disk->{DeviceID};
-        $dd =~ s/\\/\\\\/sg;
-        # writelog ("Physical Disk: $di $dd") if (RunningAsService());
-
-        my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . $dd . '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
-
-        my $wpart = $wmi->ExecQuery($qpart);
-
-        foreach my $obj (in $wpart) {
-
-            my $d1 = $obj->{DeviceID};
-	    # writelog ("$d1") if (RunningAsService());
-
-            my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
-
-	    foreach my $lobj (in $wdrive) {
-                my $lid = $lobj->{DeviceID};
-		my $lv = $lid =~ s/\://r;
-		$lv = $di . $lv;
-	        $disk{$lv} = "$lid";
-	    }
-        }
-    }
-
-    return %disk;
-}
-
-
 # print_raw - print krd raw data
 #
 sub putraw {
@@ -368,23 +282,23 @@ sub putraw {
 
     if (RunningAsService()) {
 
-        for my $k (sort keys %c) {
+	for my $k (sort keys %c) {
             printf $rawlog "%s:%s\n",
-                $traw, $c{$k};
-        }
+	        $traw, $c{$k};
+	}
 
     } else {
         if ( $logging ) {
 
-            for my $k (sort keys %c) {
+	    for my $k (sort keys %c) {
                 printf $rawlog "%s:%s\n", $traw, $c{$k};
-            }
+	    }
 
-        }
+	}
 
-        for my $k (sort keys %c) {
+	for my $k (sort keys %c) {
             printf "%s:%s\n", $traw, $c{$k};
-        }
+	}
     }
 }
 
@@ -605,7 +519,7 @@ sub rotate {
     }
 
     my $nkrd = $#krd_files + 1;
-    
+
     if ($verbose) {
         writelog ("info: rotate - copying krd data files: $nkrd");
     }
@@ -616,14 +530,14 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-	    writelog ("warning: rotate - $dstamp dir: $!");
+            writelog ("warning: rotate - $dstamp dir: $!");
         }
 
         foreach my $rawfile (@krd_files) {
             copy("$rawdir/$rawfile","$dest") or
                 writelog ("error: rotate - copying previous daily data, $!");
 
-	    # reset to zero
+            # reset to zero
             open my $ftkrd, ">", "$rawdir/$rawfile";
             close $ftkrd;
 
@@ -656,41 +570,26 @@ sub get_yesterday {
 #
 sub usage {
     print STDERR <<END;
-USAGE: diskrec [-lhV] | [interval [count]]
-       diskrec -install auto
-       diskrec -remove
+USAGE: cpurec [-lhV] | [interval [count]]
+       cpurec -install auto
+       cpurec -remove
  eg. 
-  diskrec.exe                # default CLI mode, print per disk stats stdout
-  diskrec.exe 1 5            # print per disk stats 5 times, every 1s stdout
-  diskrec.exe -l 25          # print per disk stats every 25s stdout, krdlog
-  diskrec.exe -install auto  # run as a service, every 60s, default krdlog
-  diskrec.exe -remove        # stop and remove the service 
+  cpurec.exe                # default CLI mode, print per disk stats stdout
+  cpurec.exe 1 5            # print per cpu stats 5 times, every 1s stdout
+  cpurec.exe -l 25          # print per cpu stats, every 25s stdout and krdlog
+  cpurec.exe -install auto  # run as a service, every 60s, default krdlog
+  cpurec.exe -remove        # stop and remove the service 
 
  FIELDS:
-   #01 timestamp  : seconds since Epoch, time
-   #02 diskid     : disk id
-
-   # reads
-   #03 reads      : disk reads per sec, rate
-   #04 rkbytes    : disk read KB per sec, rate
-   #05 rbusypct   : busy time servicing read requests, number
-
-   # writes
-   #06 writes     : disk writes per sec, rate
-   #07 wkbytes    : disk write KB per sec, rate
-   #08 wbusypct   : busy time servicing write requests, number
-
-   # queue length, throughput
-   #09 ql         : current r+w, including in service, queue length
-   #10 aql        : avg r+w queue length
-   #11 busypct    : busy time r+w requests, number
-   #12 iops       : disk read+write requests per second, rate
-   #13 rwkbytes   : read+write KB per second, rate
-
-   # inventory disk usage
-   #14 size       : volume size in GB, logical drive
-   #15 free       : volume free in GB
-   #16 usedpct    : volume used in percentage
+   #01 timestamp  : seconds since Epoch, timea
+   #02 cpuid      : cpu id
+   #03 userpct    : userspace cpu utilization, percentage
+   #04 syspct     : system cpu utilization, percentage
+   #05 irqpct     : irq cpu utilization, percentage
+   #06 dpcpct     : deffered procedure calls cpu, percentage 
+   #07 privpct    : priviledged cpu utilization (dpc+irq), percentage
+   #08 idlepct    : idle cpu utilization, percentage
+   #09 totalpct   : total cpu utilization, percentage
 END
     return;
 }
@@ -700,7 +599,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.19, 2016-01-20 1638
+cpurec: 1.0.19, 2016-01-20 1628
 END
     return;
 }

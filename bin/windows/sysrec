@@ -24,9 +24,9 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Win32::OLE ('in');
 use Win32::Process;
+use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Sys::Hostname;
 use Time::Local;
 use JSON;
@@ -125,7 +125,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
@@ -139,15 +139,23 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    k_sleep();
+    #k_sleep();
+
+    my ($cpupct, $userpct, $idlepct, $syspct, $irqpct);
 
     # cpu statistics
     # 10 metrics
+
+    my $cpuid='_Total';
+
     my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor")
+    #my $wcpu = $wmi->ExecQuery("SELECT PercentProcessorTime, PercentUserTime,PercentPrivilegedTime,PercentIdleTime,PercentInterruptTime  from Win32_PerfFormattedData_PerfOS_Processor Where Name='$cpuid'")
         or die "Cannot get Win32 PerfOS_Processor\n";
 
-    my ($cpupct, $userpct, $idlepct, $syspct, $irqpct);
     foreach my $obj (in $wcpu) {
+
+        #next if $obj->{Name} ne '_Total';
+
         $cpupct = $obj->{PercentProcessorTime};
         $userpct = $obj->{PercentUserTime};
 	$syspct = $obj->{PercentPrivilegedTime};
@@ -400,7 +408,7 @@ sub Remove {
 sub k_sleep {
 
     my $t = [gettimeofday];
-    my $next = (int($t->[0]/$interval) + 1) * $interval;
+    my $next = (int($t->[0]/$interval) + 1 ) * $interval;
     my $delta = tv_interval ($t, [$next, 0]);
     usleep($delta * 1_000_000);
 
