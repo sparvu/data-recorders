@@ -139,7 +139,7 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    #k_sleep();
+    k_sleep();
 
     my ($cpupct, $userpct, $idlepct, $syspct, $irqpct);
 
@@ -154,7 +154,7 @@ sub Startup {
 
     foreach my $obj (in $wcpu) {
 
-        #next if $obj->{Name} ne '_Total';
+        next if $obj->{Name} ne '_Total';
 
         $cpupct = $obj->{PercentProcessorTime};
         $userpct = $obj->{PercentUserTime};
