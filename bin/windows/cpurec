@@ -24,7 +24,7 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday usleep tv_interval);
+use Time::HiRes qw(time gettimeofday sleep usleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -107,6 +107,16 @@ my $key = 'Name';
 
 my @cpustats = qw(PercentIdleTime PercentProcessorTime PercentPrivilegedTime PercentUserTime PercentInterruptTime PercentDPCTime TimeStamp_Sys100NS);
 
+my $hash1 = {};
+
+my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+        or die "Failed to get instance object\n";
+
+my $w32;
+foreach $w32 (in $list) {
+    next if $w32->{$key} eq '_Total';
+    map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
+}
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -140,23 +150,11 @@ if (RunningAsService()) {
 
 sub Startup {
 
-
-    my $hash1 = {};
-
-    my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-        or die "Failed to get instance object\n";
-
-    my $w32;
-    foreach $w32 (in $list) {
-        next if $w32->{$key} eq '_Total';
-        map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
-    }
-
-
     while(ContinueRun()) {
 
     k_sleep();
 
+    #my $start = [gettimeofday];
 
     my ($cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct);
     my %cstat;
@@ -179,7 +177,8 @@ sub Startup {
         $cpuid = $k;
 
         $totalpct = sprintf("%.2f", (1 - get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentProcessorTime' )) * 100);
-	$idlepct = sprintf("%.2f", 100-$totalpct);
+
+	#$idlepct = sprintf("%.2f", 100-$totalpct);
 
         $userpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentUserTime' )* 100);
 
@@ -189,17 +188,25 @@ sub Startup {
 
         $dpcpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentDPCTime' )* 100);
 
-        #printf "%s %s %s %s %s %s %s\n", $cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct;
+        $idlepct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentIdleTime' )* 100);
 
+        #if (RunningAsService()) {
+        #    printf $rawlog "%s %s %s %s %s %s %s %s\n", 
+	#           time, $cpuid, $userpct, $syspct, $irqpct, 
+	##	   $dpcpct, $idlepct, $totalpct;
+        #} else {
+        #    printf "%s %s %s %s %s %s %s %s\n", 
+	#           time, $cpuid, $userpct, $syspct, $irqpct, 
+	#	   $dpcpct, $idlepct, $totalpct;
+        #}
 	$cstat{$cpuid} = "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
 
     }
 
+    $hash1 = $hash;
+
     # end payload
     my $tnow = [gettimeofday];
-    #my $delta1  = tv_interval ($start, $tnow);
-    #print " CPU Win32_PerfRawData_PerfOS_Processor: $delta1 sec\n";
-
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -218,12 +225,11 @@ sub Startup {
 
         if (!RunningAsService()) {
             # check count, interval
-            last if ++$loop == $loop_max;
-        }
+	    last if ++$loop == $loop_max;
+	}
 
-        $last_time = $$tnow[0];
-
-	next;
+	$last_time = $$tnow[0];
+        next;
     }
 
 
@@ -313,8 +319,7 @@ sub putraw {
     if (RunningAsService()) {
 
 	for my $k (sort keys %c) {
-            printf $rawlog "%s:%s\n",
-	        $traw, $c{$k};
+            printf $rawlog "%s:%s\n", $traw, $c{$k};
 	}
 
     } else {
@@ -628,7 +633,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.19, 2016-01-22 1545
+cpurec: 1.0.19, 2016-01-22 2329
 END
     return;
 }
