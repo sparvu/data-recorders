@@ -157,8 +157,6 @@ sub Startup {
 
     k_sleep();
 
-    my $start = [gettimeofday];
-
 
     my ($cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct);
     my %cstat;
@@ -193,15 +191,14 @@ sub Startup {
 
         #printf "%s %s %s %s %s %s %s\n", $cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct;
 
-	$cstat{$cpuid} =
-	                "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
+	$cstat{$cpuid} = "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
 
     }
 
     # end payload
     my $tnow = [gettimeofday];
-    my $delta1  = tv_interval ($start, $tnow);
-    print " CPU Win32_PerfRawData_PerfOS_Processor: $delta1 sec\n";
+    #my $delta1  = tv_interval ($start, $tnow);
+    #print " CPU Win32_PerfRawData_PerfOS_Processor: $delta1 sec\n";
 
 
     # cktime for rotation
@@ -218,9 +215,6 @@ sub Startup {
     } else {
 
         putraw($$tnow[0], %cstat);
-        my $elapsed = tv_interval ($start, $tnow);
-
-
 
         if (!RunningAsService()) {
             # check count, interval
