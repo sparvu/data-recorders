@@ -105,22 +105,6 @@ if ($logging) {
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
-my $key = 'Name';
-
-my @cpustats = qw(PercentIdleTime PercentProcessorTime PercentPrivilegedTime PercentUserTime PercentInterruptTime PercentDPCTime TimeStamp_Sys100NS);
-
-my $hash1 = {};
-
-my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-    or die "Failed to get instance object\n";
-
-my $w32;
-foreach $w32 (in $list) {
-    next if $w32->{$key} ne '_Total';
-    map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
-}
-
-
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
     *RunningAsService = sub { return 0 };
@@ -141,7 +125,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
@@ -159,29 +143,25 @@ sub Startup {
 
     my ($cpupct, $userpct, $idlepct, $syspct, $irqpct);
 
+    # cpu statistics
+    # 10 metrics
 
-    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-         or die "Failed to get instance object\n";
+    my $cpuid='_Total';
 
-    my $hash = {};
+    my $wcpu = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_Processor")
+    #my $wcpu = $wmi->ExecQuery("SELECT PercentProcessorTime, PercentUserTime,PercentPrivilegedTime,PercentIdleTime,PercentInterruptTime  from Win32_PerfFormattedData_PerfOS_Processor Where Name='$cpuid'")
+        or die "Cannot get Win32 PerfOS_Processor\n";
 
-    foreach $w32 (in $list) {
-        next if $w32->{$key} ne '_Total';
-	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
+    foreach my $obj (in $wcpu) {
+
+        next if $obj->{Name} ne '_Total';
+
+        $cpupct = $obj->{PercentProcessorTime};
+        $userpct = $obj->{PercentUserTime};
+	$syspct = $obj->{PercentPrivilegedTime};
+	$idlepct = $obj->{PercentIdleTime};
+	$irqpct = $obj->{PercentInterruptTime};
     }
-
-    #print "cpus " . keys(%$hash) . ".\n";
-    #print Dumper($hash);
-
-    $cpupct = sprintf("%.2f", (1 - get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentProcessorTime' )) * 100);
-
-    $userpct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentUserTime' )* 100);
-
-    $syspct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentPrivilegedTime' )* 100);
-
-    $irqpct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentInterruptTime' )* 100);
-
-    $idlepct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentIdleTime' )* 100);
 
     my $wsys = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_System")
         or die "Cannot get Win32 PerfOS_System\n";
@@ -317,8 +297,6 @@ sub Startup {
         } else { next; }
     }
 
-    $hash1 = $hash;
-
     # end payload
     my $tnow = [gettimeofday];
 
@@ -436,22 +414,6 @@ sub k_sleep {
 
     return;
 }
-
-##
-# get_value - get delta between samples
-#
-sub get_value {
-    my ($h1, $h2, $property) = @_;
-
-    my $delta = ( 
-                  ($h2->{$property}            - $h1->{$property}) /
-                  ($h2->{'TimeStamp_Sys100NS'} - $h1->{'TimeStamp_Sys100NS'}));
-
-    $delta = 1 if $delta > 1;
-
-    return $delta;
-}
-
 
 
 # print_raw - print krd raw data
