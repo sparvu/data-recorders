@@ -110,15 +110,18 @@ my $key = 'Name';
 my @cpustats = qw(PercentIdleTime PercentProcessorTime PercentPrivilegedTime PercentUserTime PercentInterruptTime PercentDPCTime TimeStamp_Sys100NS);
 
 my $hash1 = {};
+my $list;
 
-my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-    or die "Failed to get instance object\n";
+init_win32();
 
-my $w32;
-foreach $w32 (in $list) {
-    next if $w32->{$key} ne '_Total';
-    map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
-}
+#my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+#    or die "Failed to get instance object\n";
+
+#my $w32;
+#foreach $w32 (in $list) {
+#    next if $w32->{$key} ne '_Total';
+#    map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
+#}
 
 
 unless (defined &ContinueRun) {
@@ -141,7 +144,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
@@ -165,13 +168,12 @@ sub Startup {
 
     my $hash = {};
 
-    foreach $w32 (in $list) {
+    foreach my $w32 (in $list) {
         next if $w32->{$key} ne '_Total';
 	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
     }
 
     #print "cpus " . keys(%$hash) . ".\n";
-    #print Dumper($hash);
 
     $cpupct = sprintf("%.2f", (1 - get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentProcessorTime' )) * 100);
 
@@ -183,7 +185,12 @@ sub Startup {
 
     $idlepct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentIdleTime' )* 100);
 
-    my $wsys = $wmi->InstancesOf("Win32_PerfFormattedData_PerfOS_System")
+    my $sumpct = 0;
+    my $headpct = 0;
+
+
+    ## runqsz, plistsz
+    my $wsys = $wmi->InstancesOf("Win32_PerfRawData_PerfOS_System")
         or die "Cannot get Win32 PerfOS_System\n";
 
     my ($runqsz, $proc, $lwp);
@@ -192,9 +199,6 @@ sub Startup {
 	$proc = $obj->{Processes};
 	$lwp = $obj->{Threads};
     }
-
-    my $sumpct = 0;
-    my $headpct = 0;
 
 
     # memory statistics
@@ -424,6 +428,20 @@ sub Remove {
     return;
 }
 
+
+# init_win32 - initialize win32 objects
+#
+sub init_win32 {
+
+    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+        or die "Failed to get instance object\n";
+
+    foreach my $w32 (in $list) {
+        next if $w32->{$key} ne '_Total';
+        map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
+    }
+
+}
 
 # k_sleep - sleeps exact number of usec
 #
