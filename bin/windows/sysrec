@@ -26,7 +26,7 @@ use Date::Calc qw(:all);
 use File::Copy;
 use Win32::OLE ('in');
 use Win32::Process;
-use Time::HiRes qw(time gettimeofday sleep usleep tv_interval);
+use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Sys::Hostname;
 use Time::Local;
 use JSON;
@@ -113,12 +113,12 @@ my $hash1 = {};
 my $list;
 
 ## disk
-my @diskstats = qw(DiskReadsPerSec DiskReadBytesPerSec PercentDiskReadTime PercentDiskReadTime_Base DiskWritesPerSec DiskWritesPerSec DiskWriteBytesPerSec PercentDiskWriteTime AvgDiskQueueLength CurrentDiskQueueLength PercentDiskTime DiskTransfersPerSec DiskBytesPerSec Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
+my @diskstats = qw(DiskReadsPerSec DiskReadBytesPerSec PercentDiskReadTime DiskWritesPerSec DiskWriteBytesPerSec PercentDiskWriteTime CurrentDiskQueueLength PercentDiskTime DiskTransfersPerSec DiskBytesPerSec Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
 my $disk_old = {};
 my $list2;
 
-init_cpu();
-
+#init_cpu();
+##
 #init_disk();
 
 unless (defined &ContinueRun) {
@@ -141,7 +141,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
@@ -153,11 +153,16 @@ if (RunningAsService()) {
 
 sub Startup {
 
+
+    init_cpu();
+
+    init_disk();
+
     while(ContinueRun()) {
 
-    #k_sleep();
+    k_sleep();
 
-    my $start = [gettimeofday];
+    #my $start = [gettimeofday];
 
     ## cpu utilization
     ##
@@ -247,55 +252,56 @@ sub Startup {
 	$busypct,$cql, $iops, $krw );
 
     $reads = $rkbytes = $rbusypct = $writes = $wkbytes = $wbusypct = $busypct = $cql = $iops = $krw = 0;
-    #$list2 = $wmi->InstancesOf("Win32_PerfRawData_PerfDisk_PhysicalDisk")
-#	    or die "Cannot get Win32 PerfDisks\n";
 
-    #my $disk = {};
+    $list2 = $wmi->InstancesOf("Win32_PerfRawData_PerfDisk_PhysicalDisk")
+	    or die "Cannot get Win32 PerfDisks\n";
 
-    #foreach my $v (in $list2) {
-    #    next if $v->{$key} ne '_Total';
-    #    map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
-    #}
+    my $disk = {};
 
-    #PERF_COUNTER_COUNTER
-    #$reads = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-    #                                'DiskReadsPerSec'));
-
-    #PERF_COUNTER_BULK_COUNT
-    #$rkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-    #                                   'DiskReadBytesPerSec') / 1024);
-
-    # PERF_PRECISION_100NS_TIMER
-    #$rbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
-#	                                'PercentDiskReadTime'));
+    foreach my $v (in $list2) {
+        next if $v->{$key} ne '_Total';
+        map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
+    }
 
     #PERF_COUNTER_COUNTER
-    #$writes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-    #                               'DiskWritesPerSec'));
+    $reads = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+                                    'DiskReadsPerSec'));
 
     #PERF_COUNTER_BULK_COUNT
-    #$wkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-    #                                  'DiskWriteBytesPerSec') / 1024);
+    $rkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+                                       'DiskReadBytesPerSec') / 1024);
 
     # PERF_PRECISION_100NS_TIMER
-    #$wbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
-    #                                    'PercentDiskWriteTime'));
+    $rbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+	                                'PercentDiskReadTime'));
+
+    #PERF_COUNTER_COUNTER
+    $writes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+                                   'DiskWritesPerSec'));
+
+    #PERF_COUNTER_BULK_COUNT
+    $wkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+                                      'DiskWriteBytesPerSec') / 1024);
+
+    # PERF_PRECISION_100NS_TIMER
+    $wbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+                                        'PercentDiskWriteTime'));
 
     # PERF_COUNTER_RAWCOUNT
-    #$cql = sprintf("%.2f", $disk->{'_Total'}->{'CurrentDiskQueueLength'});
+    $cql = sprintf("%.2f", $disk->{'_Total'}->{'CurrentDiskQueueLength'});
 
 
     # PERF_PRECISION_100NS_TIMER
-    #$busypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
-#				        'PercentDiskTime'));
+    $busypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+			              'PercentDiskTime'));
 
     #PERF_COUNTER_COUNTER
-    #$iops = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-    #                               'DiskTransfersPerSec'));
+    $iops = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+                                   'DiskTransfersPerSec'));
 
     #PERF_COUNTER_BULK_COUNT
-    #$krw = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-    #                               'DiskBytesPerSec') / 1024);
+    $krw = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+                                   'DiskBytesPerSec') / 1024);
 
     #my $e4 = [gettimeofday];
     #my $delta4  = tv_interval ($s4, $e4);
@@ -383,9 +389,9 @@ sub Startup {
     my $tnow = [gettimeofday];
 
     # end payload
-    my $elapsed = tv_interval ($start, $tnow);
-    my $stime = 1;
-    if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
+    #my $elapsed = tv_interval ($start, $tnow);
+    #my $stime = 1;
+    #if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
 
 
 
@@ -412,7 +418,7 @@ sub Startup {
 	   );
 
 	$last_time=$$tnow[0];
-	sleep($stime);
+	#sleep($stime);
 
     } else {
 
@@ -437,7 +443,7 @@ sub Startup {
         }
 
 	$last_time=$$tnow[0];
-        sleep($stime); 
+        #sleep($stime); 
 	next;
 
     }
@@ -509,10 +515,11 @@ sub init_cpu {
 
 
 sub init_disk {
+
     $list2 = $wmi->InstancesOf('Win32_PerfRawData_PerfDisk_PhysicalDisk')
           or die "Failed to get instance object\n";
 
-    foreach my $v2 (in $list) {
+    foreach my $v2 (in $list2) {
         next if $v2->{$key} ne '_Total';
 	map{$disk_old->{$v2->{$key}}->{$_}  = $v2->{$_} }@diskstats;
     }
