@@ -26,7 +26,7 @@ use Date::Calc qw(:all);
 use File::Copy;
 use Win32::OLE ('in');
 use Win32::Process;
-use Time::HiRes qw(time gettimeofday usleep tv_interval);
+use Time::HiRes qw(time gettimeofday sleep usleep tv_interval);
 use Sys::Hostname;
 use Time::Local;
 use JSON;
@@ -107,22 +107,19 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $key = 'Name';
 
+## cpu 
 my @cpustats = qw(PercentIdleTime PercentProcessorTime PercentPrivilegedTime PercentUserTime PercentInterruptTime PercentDPCTime TimeStamp_Sys100NS);
-
 my $hash1 = {};
 my $list;
 
-init_win32();
+## disk
+my @diskstats = qw(DiskReadsPerSec DiskReadBytesPerSec PercentDiskReadTime PercentDiskReadTime_Base DiskWritesPerSec DiskWritesPerSec DiskWriteBytesPerSec PercentDiskWriteTime AvgDiskQueueLength CurrentDiskQueueLength PercentDiskTime DiskTransfersPerSec DiskBytesPerSec Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
+my $disk_old = {};
+my $list2;
 
-#my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-#    or die "Failed to get instance object\n";
+init_cpu();
 
-#my $w32;
-#foreach $w32 (in $list) {
-#    next if $w32->{$key} ne '_Total';
-#    map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
-#}
-
+#init_disk();
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -158,10 +155,15 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    k_sleep();
+    #k_sleep();
 
-    my ($cpupct, $userpct, $idlepct, $syspct, $irqpct);
+    my $start = [gettimeofday];
 
+    ## cpu utilization
+    ##
+    #my $s1 = [gettimeofday];
+
+    my ($cpupct, $userpct, $idlepct, $syspct, $irqpct); 
 
     $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
          or die "Failed to get instance object\n";
@@ -172,8 +174,6 @@ sub Startup {
         next if $w32->{$key} ne '_Total';
 	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
     }
-
-    #print "cpus " . keys(%$hash) . ".\n";
 
     $cpupct = sprintf("%.2f", (1 - get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentProcessorTime' )) * 100);
 
@@ -188,25 +188,38 @@ sub Startup {
     my $sumpct = 0;
     my $headpct = 0;
 
+    #my $e1 = [gettimeofday];
+    #my $delta1  = tv_interval ($s1, $e1);
+    #print " CPU Win32_PerfRawData_PerfOS_Processor: $delta1 sec\n";
 
     ## runqsz, plistsz
+    #my $s2 = [gettimeofday];
+
     my $wsys = $wmi->InstancesOf("Win32_PerfRawData_PerfOS_System")
         or die "Cannot get Win32 PerfOS_System\n";
 
-    my ($runqsz, $proc, $lwp);
+    my ($runqsz, $proc, $lwp) = (0);
     foreach my $obj (in $wsys) {
 	$runqsz = $obj->{ProcessorQueueLength};
 	$proc = $obj->{Processes};
 	$lwp = $obj->{Threads};
     }
 
+    #my $e2 = [gettimeofday];
+    #my $delta2  = tv_interval ($s2, $e2);
+    #print " CPU Win32_PerfRawData_PerfOS_System: $delta2 sec\n";
+
+
 
     # memory statistics
     # 9 metrics
+    #my $s3 = [gettimeofday];
+
     my $wos = $wmi->InstancesOf("Win32_OperatingSystem")
         or die "Cannot get Win32 OperatingSystem\n";
 
     my ($memtotal, $memfree, $swaptotal, $swapfree);
+
     foreach my $obj (in $wos) {
         $memtotal  = $obj->{TotalVisibleMemorySize};
         $memfree = $obj->{FreePhysicalMemory};
@@ -219,33 +232,74 @@ sub Startup {
     my $realfreepct = sprintf ("%.2f", ( $memfree / $memtotal ) * 100 );
     my $swapused = $swaptotal - $swapfree;
     my $swapusedpct = sprintf("%.2f", ($swaptotal - $swapfree) / $swaptotal * 100); 
-   
+  
+    #my $e3 = [gettimeofday];
+    #my $delta3  = tv_interval ($s3, $e3);
+    #print " Mem Win32_OperatingSystem: $delta3 sec\n";
+
+
+
+
     # Disk IO statistics
     # 10 metrics
-    my ($reads,  $rkbytes, $rbusypct, 
-        $writes, $wkbytes, $wbusypct,
-	$busypct,$aql, 
-	$iops, $krw );
+    #my $s4 = [gettimeofday];
+    my ($reads,  $rkbytes, $rbusypct, $writes, $wkbytes, $wbusypct,
+	$busypct,$cql, $iops, $krw );
 
-    my $wdstat = 
-        $wmi->InstancesOf("Win32_PerfFormattedData_PerfDisk_PhysicalDisk")
-	    or die "Cannot get Win32 PerfDisks\n";
+    $reads = $rkbytes = $rbusypct = $writes = $wkbytes = $wbusypct = $busypct = $cql = $iops = $krw = 0;
+    #$list2 = $wmi->InstancesOf("Win32_PerfRawData_PerfDisk_PhysicalDisk")
+#	    or die "Cannot get Win32 PerfDisks\n";
 
-    foreach my $obj (in $wdstat) {
-        $reads    = $obj->{DiskReadsPerSec};
-        $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
-        $rbusypct = $obj->{PercentDiskReadTime};
+    #my $disk = {};
 
-        $writes   = $obj->{DiskWritesPerSec};
-        $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
-        $wbusypct = $obj->{PercentDiskWriteTime};
+    #foreach my $v (in $list2) {
+    #    next if $v->{$key} ne '_Total';
+    #    map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
+    #}
 
-	$aql      = $obj->{AvgDiskQueueLength};
-	$busypct  = $obj->{PercentDiskTime};
+    #PERF_COUNTER_COUNTER
+    #$reads = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                                'DiskReadsPerSec'));
 
-	$iops  = $obj->{DiskTransfersPerSec};
-	$krw   = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
-    }
+    #PERF_COUNTER_BULK_COUNT
+    #$rkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                                   'DiskReadBytesPerSec') / 1024);
+
+    # PERF_PRECISION_100NS_TIMER
+    #$rbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+#	                                'PercentDiskReadTime'));
+
+    #PERF_COUNTER_COUNTER
+    #$writes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                               'DiskWritesPerSec'));
+
+    #PERF_COUNTER_BULK_COUNT
+    #$wkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                                  'DiskWriteBytesPerSec') / 1024);
+
+    # PERF_PRECISION_100NS_TIMER
+    #$wbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                                    'PercentDiskWriteTime'));
+
+    # PERF_COUNTER_RAWCOUNT
+    #$cql = sprintf("%.2f", $disk->{'_Total'}->{'CurrentDiskQueueLength'});
+
+
+    # PERF_PRECISION_100NS_TIMER
+    #$busypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+#				        'PercentDiskTime'));
+
+    #PERF_COUNTER_COUNTER
+    #$iops = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                               'DiskTransfersPerSec'));
+
+    #PERF_COUNTER_BULK_COUNT
+    #$krw = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                               'DiskBytesPerSec') / 1024);
+
+    #my $e4 = [gettimeofday];
+    #my $delta4  = tv_interval ($s4, $e4);
+    #print " Disk Win32_PerfFormattedData_PerfDisk_PhysicalDisk: $delta4 sec\n";
 
 
     # NIC IO statistics
@@ -321,10 +375,19 @@ sub Startup {
         } else { next; }
     }
 
+    # save to old
     $hash1 = $hash;
+    #$disk_old = $disk;
 
     # end payload
     my $tnow = [gettimeofday];
+
+    # end payload
+    my $elapsed = tv_interval ($start, $tnow);
+    my $stime = 1;
+    if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
+
+
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -341,7 +404,7 @@ sub Startup {
 	   $swaptotal, 
 	   $reads,       $rkbytes,     $rbusypct,
 	   $writes,      $wkbytes,     $wbusypct,
-	   $aql,         $busypct,
+	   $cql,         $busypct,
 	   $iops,        $krw,
 	   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
 	   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
@@ -349,6 +412,7 @@ sub Startup {
 	   );
 
 	$last_time=$$tnow[0];
+	sleep($stime);
 
     } else {
 
@@ -360,7 +424,7 @@ sub Startup {
 	       $swaptotal, 
 	       $reads,       $rkbytes,     $rbusypct,
 	       $writes,      $wkbytes,     $wbusypct,
-	       $aql,         $busypct,
+	       $cql,         $busypct,
 	       $iops,        $krw,
 	       $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
 	       $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
@@ -373,7 +437,7 @@ sub Startup {
         }
 
 	$last_time=$$tnow[0];
-         
+        sleep($stime); 
 	next;
 
     }
@@ -431,7 +495,7 @@ sub Remove {
 
 # init_win32 - initialize win32 objects
 #
-sub init_win32 {
+sub init_cpu {
 
     $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
         or die "Failed to get instance object\n";
@@ -442,6 +506,18 @@ sub init_win32 {
     }
 
 }
+
+
+sub init_disk {
+    $list2 = $wmi->InstancesOf('Win32_PerfRawData_PerfDisk_PhysicalDisk')
+          or die "Failed to get instance object\n";
+
+    foreach my $v2 (in $list) {
+        next if $v2->{$key} ne '_Total';
+	map{$disk_old->{$v2->{$key}}->{$_}  = $v2->{$_} }@diskstats;
+    }
+}
+
 
 # k_sleep - sleeps exact number of usec
 #
@@ -469,6 +545,54 @@ sub get_value {
 
     return $delta;
 }
+
+
+
+# get_dif - get delta between samples as a difference
+#
+sub get_dif {
+    my $h1 = shift;
+    my $h2 = shift;
+    my $p = shift;
+    my $delta = 0;
+
+    # timestamp
+    my $n2 = $h2->{'Timestamp_PerfTime'};
+    my $n1 = $h1->{'Timestamp_PerfTime'};
+    my $n = $n2 - $n1;
+
+    # frequency
+    my $f2 = $h2->{'Frequency_PerfTime'};
+    my $nf = $n / $f2;
+
+    # data
+    $delta = $h2->{$p} - $h1->{$p};
+
+    # result
+    return $delta / $nf;
+}
+
+
+
+# get_pct - get delta between samples as a percentage
+#
+sub get_pct {
+
+    my $h1 = shift;
+    my $h2 = shift;
+    my $p  = shift;
+
+    my $d  = $h2->{$p} - $h1->{$p};
+
+    # timestamp
+										    my $n2 = $h2->{'Timestamp_Sys100NS'};
+    my $n1 = $h1->{'Timestamp_Sys100NS'};
+    my $n = $n2 - $n1;
+
+    return $d / $n;
+}
+
+
 
 
 

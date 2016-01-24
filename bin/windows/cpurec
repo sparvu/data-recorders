@@ -190,15 +190,6 @@ sub Startup {
 
         $idlepct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentIdleTime' )* 100);
 
-        #if (RunningAsService()) {
-        #    printf $rawlog "%s %s %s %s %s %s %s %s\n", 
-	#           time, $cpuid, $userpct, $syspct, $irqpct, 
-	##	   $dpcpct, $idlepct, $totalpct;
-        #} else {
-        #    printf "%s %s %s %s %s %s %s %s\n", 
-	#           time, $cpuid, $userpct, $syspct, $irqpct, 
-	#	   $dpcpct, $idlepct, $totalpct;
-        #}
 	$cstat{$cpuid} = "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
 
     }
@@ -633,7 +624,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.19, 2016-01-22 2329
+cpurec: 1.0.19, 2016-01-24 2310
 END
     return;
 }

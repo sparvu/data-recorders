@@ -12,9 +12,11 @@ Bug Management System
 Releases
 
   1.0.19 20-01-2016 Release
-    windows recorders time management #87 
-    win recorders, reduce the number of time system calls #86 
-    win recorders dont get cpu time #85 
+    win32 run queue length size more accurate #91
+    cpurec Win32_PerfRawData_PerfOS_Processor provider #90
+    windows recorders time management #87
+    win recorders, reduce the number of time system calls #86
+    win recorders dont get cpu time #85
     update perl 5.20.3
 
   1.0.18 10-01-2016 Release
