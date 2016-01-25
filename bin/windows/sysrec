@@ -141,7 +141,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
@@ -310,9 +310,13 @@ sub Startup {
 
     # NIC IO statistics
     # metrics
+    my $s5 = [gettimeofday];
     my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
         $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
-	$ql,    $rxtxpkt,  $rxtxkbytes,$band ) = 0;
+	$ql,    $rxtxpkt,  $rxtxkbytes,$band );
+
+    $rxpkt = $rxkbytes = $rxpkterr = $rxpktdrop = $txpkt = $txkbytes = $txpkterr = $txpktdrop = $ql = $rxtxpkt = $rxtxkbytes = $band = 0;
+
 
     # get no of NICs
     my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter");
@@ -357,6 +361,7 @@ sub Startup {
 			}
 		    }
 
+                    my $s51 = [gettimeofday];
                     my $nicstat = $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
 
 		    foreach my $pn (in $nicstat) {
@@ -376,14 +381,24 @@ sub Startup {
                         $rxtxpkt    += $rxpkt + $txpkt;
                         $rxtxkbytes += $rxkbytes + $txkbytes;
                     }
+
+                    my $e51 = [gettimeofday];
+                    my $delta51  = tv_interval ($s51, $e51);
+                    print " NIC data: $delta51 sec\n";
+
 	        }
 	    }
         } else { next; }
     }
 
+
+    my $e5 = [gettimeofday];
+    my $delta5  = tv_interval ($s5, $e5);
+    print " NIC Grand: $delta5 sec\n";
+
     # save to old
     $hash1 = $hash;
-    #$disk_old = $disk;
+    $disk_old = $disk;
 
     # end payload
     my $tnow = [gettimeofday];
