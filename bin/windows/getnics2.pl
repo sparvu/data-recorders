@@ -84,59 +84,48 @@ my $s1 = [gettimeofday];
 my $list = $wmi->InstancesOf('Win32_PerfRawData_Tcpip_NetworkInterface')  
      or die "Failed to get instance object\n";  
 
+print "\n";
+print "NICS Win32_PerfRawData_Tcpip_NetworkInterface provider:\n";
 foreach my $v (in $list) {
-    print "$v->{$key}\n";
+    print " $v->{$key} \n";
     map{$nic_old->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;  
 }
 my $e1 = [gettimeofday];
 my $delta1  = tv_interval ($s1, $e1);
-print " Win32_PerfRawData_Tcpip_NetworkInterface: $delta1 sec\n";
-
-print Dumper($nic_old);
+print "Win32_PerfRawData_Tcpip_NetworkInterface calls took: $delta1 sec\n";
+print "\n";
 
 
 my $s2 = [gettimeofday];
-get_nic();
+getnics();
 my $e2 = [gettimeofday];
 my $delta2  = tv_interval ($s2, $e2);
-print " get_nic: $delta2 sec\n";
+print "Win32_NetworkAdapterConfiguration calls took: $delta2 sec\n";
+print "\n";
 
 
 
-sub get_nic {
+sub getnics {
 
-    my $pdev = 'PCI|USB|VMBUS';
-    my $vdev = 'ROOT|SW|\{';
-    my $vid  = 'Microsoft|VMWare|VirtualBox';
     my @ids  =  (
                    'WAN Miniport',
 		   'Microsoft ISATAP Adapter',
-                   'RAS Async Adapter'
+                   'RAS Async Adapter',
+		   'Microsoft Virtual WiFi Miniport Adapter'
 		);
 
-
     # get no of NICs
-    #my $wn = $wmi->InstancesOf('MSFT_NetAdapter')
-    #    or die "Failed to get instance object\n";
+    my $wn = $wmi->InstancesOf('Win32_NetworkAdapterConfiguration')
+        or die "Failed to get instance object\n";
 
-    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapterConfiguration");
+    print "NICS Win32_NetworkAdapterConfiguration provider:\n";
 
     my $nnic = 0;
 
     foreach my $nic (in $wn) {
 
-        print "NIC: $nic->{Description}  $nic->{Index}\n";
+        print " $nic->{Index} $nic->{Description} $nic->{ServiceName}\n";
 
-        #my $nic_vendor = $nic->{Manufacturer};
-        #my $nic_pnp    = $nic->{PNPDeviceID};
-        my $nic_desc   = $nic->{Description};
-        my $nic_index  = $nic->{Index};
-        #my $nic_devid  = $nic->{DeviceID};
-
-
-        #my $nic_name = lc $nic->{ServiceName} . $nic_devid;
-
-        #print "NIC: $nic_name\n";
     }
 }
 
