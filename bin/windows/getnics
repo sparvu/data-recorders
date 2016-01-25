@@ -26,7 +26,6 @@ use File::Copy;
 use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
-use Time::Local;
 use Win32;
 
 
@@ -77,6 +76,8 @@ my $vid   = 'Microsoft|VMWare|VirtualBox';
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
+my $s1 = [gettimeofday];
+
 # get no of NICs
 my $nicq = 
   "SELECT * from Win32_NetworkAdapter";
@@ -86,6 +87,10 @@ my $wn = $wmi->ExecQuery($nicq);
 my $nnic = 0;
 my $pnic = 0;
 my $vnic = 0;
+
+print "WARNING: This utility uses Win32_NetworkAdapter to fetch all\n";
+print "available network adapters found on system. The Win32_NetworkAdapter\n";
+print "class is very slow and not optimized for production usage.\n";
 
 foreach my $nic (in $wn) {
 
@@ -110,6 +115,11 @@ foreach my $nic (in $wn) {
 $nnic = $vnic + $pnic;
 print "\nNICs: $nnic, Physical: $pnic, Virtual: $vnic \n";
 
+my $e1 = [gettimeofday];
+my $delta1  = tv_interval ($s1, $e1);
+print "Win32_NetworkAdapter calls took: $delta1 sec\n";
+
+
 # usage - print usage and exit.
 #
 sub usage {
@@ -126,7 +136,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nics: 1.0.19, 2016-01-20 1317
+nics: 1.0.19, 2016-01-25 2231
 END
     exit 0;
 }
