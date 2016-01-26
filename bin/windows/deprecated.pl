@@ -61,89 +61,72 @@ else {
 ### Variables
 my $loop        = 0;                      # current loop number
 my $recid       = 'nics';
-my $key         = 'Name';
 $|= 1;                                    # autoflush
 
 
 ### MAIN BODY
 
 
+# physical ids
+my $pdev  = 'PCI|USB|VMBUS';
+my $vdev  = 'ROOT|SW|\{';
+my $vid   = 'Microsoft|VMWare|VirtualBox';
+
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
-print "WARNING: This utility uses Win32_PerfRawData_Tcpip_NetworkInterface and\n";
-print "Win32_NetworkAdapterConfiguration to fetch all available network adapters\n";
-print "found on system.\n";
-
-my @nicstats = qw(PacketsReceivedPerSec BytesReceivedPerSec PacketsReceivedErrors PacketsReceivedDiscarded PacketsSentPerSec BytesSentPerSec PacketsOutboundErrors PacketsOutboundDiscarded Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
-      
-my $nic_old = {};
-      
 my $s1 = [gettimeofday];
-my $list = $wmi->InstancesOf('Win32_PerfRawData_Tcpip_NetworkInterface')  
-     or die "Failed to get instance object\n";  
 
-print "\n";
-print "NICS Win32_PerfRawData_Tcpip_NetworkInterface provider:\n";
-foreach my $v (in $list) {
-    print " $v->{$key} \n";
-    map{$nic_old->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;  
+# get no of NICs
+my $nicq = 
+  "SELECT * from Win32_NetworkAdapter";
+
+my $wn = $wmi->ExecQuery($nicq);
+
+my $nnic = 0;
+my $pnic = 0;
+my $vnic = 0;
+
+print "WARNING: This utility uses Win32_NetworkAdapter to fetch all\n";
+print "available network adapters found on system. The Win32_NetworkAdapter\n";
+print "class is very slow and not optimized for production usage.\n";
+
+foreach my $nic (in $wn) {
+
+    my $vendor = $nic->{Manufacturer};
+    my $pnp    = $nic->{PNPDeviceID};
+    my $desc   = $nic->{Description};
+    my $id     = $nic->{Index};
+
+    if (defined $vendor and defined $pnp) {
+        if    ( $vendor =~ /$vid/i and $pnp !~ /$pdev/i ) { $vnic++; }
+        elsif ( $vendor !~ /$vid/i and $pnp =~ /$vdev/i ) { $vnic++; }
+        else  { $pnic++; }
+    } else { 
+        print "Warning: $id, $desc missing vendor and pnp information \n";
+	$vendor = 'NA';
+	$pnp    = 'NA';
+    }
+
+    print "$id, $desc, $vendor, $pnp\n";
 }
+
+$nnic = $vnic + $pnic;
+print "\nNICs: $nnic, Physical: $pnic, Virtual: $vnic \n";
+
 my $e1 = [gettimeofday];
 my $delta1  = tv_interval ($s1, $e1);
-print "Win32_PerfRawData_Tcpip_NetworkInterface calls took: $delta1 sec\n";
-print "\n";
-
-
-my $s2 = [gettimeofday];
-getnics();
-my $e2 = [gettimeofday];
-my $delta2  = tv_interval ($s2, $e2);
-print "Win32_NetworkAdapterConfiguration calls took: $delta2 sec\n";
-print "\n";
-
-
-
-sub getnics {
-
-    my @ids  =  (
-                   'WAN Miniport',
-		   'Microsoft ISATAP Adapter',
-                   'RAS Async Adapter',
-		   'Microsoft Virtual WiFi Miniport Adapter'
-		);
-
-    # get no of NICs
-    my $wn = $wmi->InstancesOf('Win32_NetworkAdapterConfiguration')
-        or die "Failed to get instance object\n";
-
-    print "NICS Win32_NetworkAdapterConfiguration provider:\n";
-
-    my $nnic = 0;
-
-    foreach my $nic (in $wn) {
-
-        print " $nic->{Index} $nic->{Description} $nic->{ServiceName}\n";
-
-    }
-}
-
-
-
-
-
-#$nnic = $vnic + $pnic;
-#print "\nNICs: $nnic, Physical: $pnic, Virtual: $vnic \n";
+print "Win32_NetworkAdapter calls took: $delta1 sec\n";
 
 
 # usage - print usage and exit.
 #
 sub usage {
     print STDERR <<END;
-USAGE: getnics2.exe -V
+USAGE: nics -V
  eg.
-  getnics2.exe               # default CLI mode, prints all NICs
+  nics.exe               # default CLI mode, prints all NICs
 END
     exit 0;
 }
@@ -153,7 +136,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nics: 1.0.19, 2016-01-25 2244
+nics: 1.0.19, 2016-01-25 2231
 END
     exit 0;
 }
