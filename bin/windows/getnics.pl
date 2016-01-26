@@ -269,9 +269,10 @@ sub deprecated_nic {
 #
 sub usage {
     print STDERR <<END;
-USAGE: getnics2.exe -V
+USAGE: getnics.exe -dV
  eg.
-  getnics2.exe               # default CLI mode, prints all NICs
+  getnics.exe -d    # deprecated mode, uses Win32_NetworkAdapter
+  getnics.exe        # default CLI mode, prints all NICs
 END
     exit 0;
 }
@@ -281,7 +282,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nics: 1.0.19, 2016-01-25 2244
+getnics: 1.0.19, 2016-01-26 1358
 END
     exit 0;
 }
