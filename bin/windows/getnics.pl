@@ -35,7 +35,7 @@ use Data::Dumper;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my ($h, $V);
+my ($d, $h, $V);
 
 Getopt::Long::Configure('bundling');
 my $result = GetOptions (
@@ -61,10 +61,12 @@ else {
 
 ### Variables
 my $loop        = 0;                      # current loop number
-my $recid       = 'nics';
+my $recid       = 'getnics';
 my $key         = 'Name';
 $|= 1;                                    # autoflush
 
+my %nics;
+my $nic_old = {};
 my $deprecated = defined $d ? $d : 0;
 
 
@@ -83,9 +85,15 @@ if ($deprecated) {
 
     default_nic();
 
+    print "NIC(s) discovered and ready to be processed:\n";
+    while( my($key, $value) = each (%nics)) {
+        print " $key => $value \n";
+    }
+    print "Total: " . keys(%nics) . "\n";
 }
 
 
+### SUBROUTINES
 
 sub default_nic {
 
@@ -95,8 +103,6 @@ sub default_nic {
     print "found on system.\n";
 
     my @nicstats = qw(PacketsReceivedPerSec BytesReceivedPerSec PacketsReceivedErrors PacketsReceivedDiscarded PacketsSentPerSec BytesSentPerSec PacketsOutboundErrors PacketsOutboundDiscarded Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
-      
-    my $nic_old = {};
       
     my $s1 = [gettimeofday];
     my $list = $wmi->InstancesOf('Win32_PerfRawData_Tcpip_NetworkInterface')  
@@ -115,7 +121,7 @@ sub default_nic {
     print "\n";
 
     my $s2 = [gettimeofday];
-    getnics();
+    my %mn = getnics();
     my $e2 = [gettimeofday];
     my $delta2  = tv_interval ($s2, $e2);
     print "\n";
@@ -181,25 +187,19 @@ my @nicids  =  (
 	}
     }
 
-    # match nics to tcpnics
-    my %nics;
+    # print Dumper(%nac);
 
+
+    # match nics to tcpnics and save it to a new
+    # hash finale
     foreach my $k (keys %$nic_old) {
 
         if (exists $nac{$k} ) {
 	
-	    map {$nics{$nac{$k}} = $_} keys %nac;
+	    map {$nics{$nac{$k}} = $k} keys %nac;
 	}
 	    
     }
-
-    print "\n";
- 
-    while( my($key, $value) = each (%nics)) {
-        print " $key => $value \n";
-    }
-
-    print " Total NIC(s) found: " . keys(%nics) . "\n"; 
 
     return %nics;
 }
@@ -282,7 +282,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-getnics: 1.0.19, 2016-01-26 1358
+getnics: 1.0.19, 2016-01-27 0648
 END
     exit 0;
 }
