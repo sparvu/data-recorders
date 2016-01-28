@@ -141,7 +141,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
