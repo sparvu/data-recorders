@@ -137,7 +137,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
@@ -623,7 +623,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.19, 2016-01-24 2310
+cpurec: 1.0.19, 2016-01-28 1729
 END
     return;
 }
