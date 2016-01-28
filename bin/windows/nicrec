@@ -139,7 +139,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
     }
 
     write_log ("info: started");
@@ -153,7 +153,7 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    #k_sleep();
+    k_sleep();
 
     # my $start = [gettimeofday];
 
@@ -782,7 +782,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.19, 2016-01-26 1514
+nicrec: 1.0.19, 2016-01-28 1724
 END
     return;
 }
