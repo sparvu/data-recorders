@@ -12,6 +12,8 @@ Bug Management System
 Releases
 
   1.0.19 20-01-2016 Release
+    Win32_NetworkAdapter class is very slow #93 
+    win32 nic detection mechanism optimizations #92 
     win32 run queue length size more accurate #91
     cpurec Win32_PerfRawData_PerfOS_Processor provider #90
     windows recorders time management #87
