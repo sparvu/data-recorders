@@ -112,8 +112,7 @@ my $hash1 = {};
 my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
         or die "Failed to get instance object\n";
 
-my $w32;
-foreach $w32 (in $list) {
+foreach my $w32 (in $list) {
     next if $w32->{$key} eq '_Total';
     map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
 }
@@ -138,7 +137,7 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
     }
 
     writelog ("info: started");
@@ -164,7 +163,7 @@ sub Startup {
 
     my $hash = {};
 
-    foreach $w32 (in $list) {
+    foreach my $w32 (in $list) {
 	next if $w32->{$key} eq '_Total';
 	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
     }

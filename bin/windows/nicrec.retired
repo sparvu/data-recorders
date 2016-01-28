@@ -24,7 +24,7 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday usleep tv_interval);
+use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -33,12 +33,11 @@ use JSON;
 
 
 # Debug Only
-use Data::Dumper;
+# use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my $key             = 'Name';
 my $recid           = 'nicrec';
 my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
 my ($l, $v, $h, $V) = 0;
@@ -69,32 +68,25 @@ else {
 }
 
 ### Variables
-my %nics;
-my %nstat;
-my $stime;                                                # sleep timer
-my $nic_old     = {};
-my $nic;
-my $loop        = 0;                                      # current loop number
-my $last_time   = 0;                                      # first counter
-my $cf          = 'kronometrix.json';                     # default json config
-my $logtime     = '0000';                                 # check 23:59
-my $nicwmi      = 'Win32_NetworkAdapterConfiguration';        # TCPIP
-my $tcpwmi      = 'Win32_PerfRawData_Tcpip_NetworkInterface'; # TCPIP
-$|= 1;                                                        # autoflush
+my $loop        = 0;                      # current loop number
+my $cf          = 'kronometrix.json';     # default json config
+my $logtime     = '0000';                 # min time check 23:59
+my $stime;                                # sleep timer
+my $pdev        = 'PCI|USB|VMBUS';
+my $vdev        = 'ROOT|SW|\{';
+my $vid         = 'Microsoft|VMWare|VirtualBox';
+my $last_time   = 0;                      # first counter
+$|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
 
 ### MAIN BODY
 
-my @nicstats = qw(PacketsReceivedPerSec BytesReceivedPerSec PacketsReceivedErrors PacketsReceivedDiscarded PacketsSentPerSec BytesSentPerSec PacketsOutboundErrors PacketsOutboundDiscarded OutputQueueLength PacketsPerSec BytesTotalPerSec CurrentBandwidth Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
-
-
-
 # read configuration
 my $cdata = open_config($cf);
 
-my ( $blog, $clog, $dlog ) = get_log($cdata);
+my ( $blog, $clog, $dlog ) = getlog($cdata);
 
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
@@ -105,19 +97,12 @@ my ($log, $rawlog);
 if ($logging) {
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
-    write_log ("info: started");
+    writelog ("info: started");
 }
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
-
-my $list = $wmi->InstancesOf($tcpwmi)
-    or die "Failed to get $tcpwmi instance object\n";
-
-foreach my $v (in $list) {
-    map{$nic_old->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
-}
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -128,7 +113,7 @@ unless (defined &ContinueRun) {
 if (RunningAsService()) {
 
     # get service sample interval
-    $interval = get_ssi($cdata);
+    $interval = getssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
@@ -139,10 +124,10 @@ if (RunningAsService()) {
     my $pid = Win32::Process::GetCurrentProcessID();
 
     if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
+        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
     }
 
-    write_log ("info: started");
+    writelog ("info: started");
 }
 
 
@@ -153,21 +138,113 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    #k_sleep();
-
-    # my $start = [gettimeofday];
+    my $start = [gettimeofday];
 
     # NIC stats
-    %nstat = ();
+    my %nstat;
 
-    $nic = {};
+    # get no of NICs
+    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter");
+    my $nnic = 0;
 
-    get_nicstat();
+    foreach my $nic (in $wn) {
 
-    $nic_old = $nic;
+        # metrics
+        my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
+            $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
+	    $ql,    $rxtxpkt,  $rxtxkbytes,$band
+           ) = 0;
+
+        my $nic_vendor = $nic->{Manufacturer};
+	my $nic_pnp    = $nic->{PNPDeviceID};
+        my $nic_desc   = $nic->{Description};
+	my $nic_index  = $nic->{Index};
+	my $nic_devid  = $nic->{DeviceID};
+
+        if (defined $nic_vendor and defined $nic_pnp) {
+            if ( $nic_vendor =~ /$vid/i and $nic_pnp !~ /$pdev/i ) { next; }
+	 elsif ( $nic_vendor !~ /$vid/i and $nic_pnp =~ /$vdev/i ) { next; }
+          else { 
+	
+	     my $nic_name = lc $nic->{ServiceName} . "_" . $nic_devid;
+	  
+	  
+             # get PNPEntity for NIC DeviceID
+             my $pnpq = 'ASSOCIATORS OF ' . 
+		        '{Win32_NetworkAdapter.DeviceID="' . $nic_devid . 
+		        '"} WHERE ResultClass=Win32_PnpEntity';
+	  
+             my $pnp = $wmi -> ExecQuery($pnpq);
+	     foreach my $po (in $pnp) {
+	         my $pnp_name = $po->{Name};
+
+                 ### verbose
+                 if ($verbose) {
+                     if (RunningAsService()) {
+                         writelog ("debug: PNPName: $pnp_name");
+	             } else {
+                         writelog ("debug: PNPName: $pnp_name") if ($logging);
+                         print "debug: PNPName: $pnp_name\n";
+	             }
+                 }
+
+	         $pnp_name =~ s/\(/[/g;
+	         $pnp_name =~ s/\)/]/g;
+	         $pnp_name =~ s/\//_/g;
+	         $pnp_name =~ s/\\/_/g;
+	         $pnp_name =~ s/\#/_/g;
+
+                 ### verbose
+                 if ($verbose) {
+                     if (RunningAsService()) {
+                         writelog ("info: DeviceID: $nic_devid, $pnp_name");
+	             } else {
+                         writelog ("info: DeviceID: $nic_devid $pnp_name") if ($logging);
+                         print "info: DeviceID: $nic_devid, $pnp_name\n";
+	             }
+                 }
+                 my $nicstat = 
+	           $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
+
+                 foreach my $pn (in $nicstat) {
+
+	             # perf metrics per NIC
+                     $rxpkt     = $pn -> {PacketsReceivedPerSec};
+                     $rxkbytes  = 
+		     	         sprintf "%.2f", $pn->{BytesReceivedPerSec} / 1024;
+                     $rxpkterr  = $pn -> {PacketsReceivedErrors};
+                     $rxpktdrop = $pn -> {PacketsReceivedDiscarded};
+
+                     $txpkt     = $pn -> {PacketsSentPerSec};
+                     $txkbytes  = 
+                          sprintf "%.2f", $pn->{BytesSentPerSec} / 1024;
+                     $txpkterr  = $pn -> {PacketsOutboundErrors};
+                     $txpktdrop = $pn -> {PacketsOutboundDiscarded};
+			
+                     $ql        = $pn -> {OutputQueueLength};
+                     # $rxtxpkt   = $pn -> {PacketsPerSec};
+                     $rxtxpkt   = $rxpkt + $txpkt;
+                     #$rxtxkbytes= $pn -> {BytesTotalPerSec};
+                     $rxtxkbytes= $rxkbytes + $txkbytes;
+                     $band      = $pn -> {CurrentBandwidth};
+
+                     $nstat{$nic_name} =
+		         "$nic_name:$rxpkt:$rxkbytes:$rxpkterr:$rxpktdrop:$txpkt:$txkbytes:$txpkterr:$txpktdrop:$ql:$rxtxpkt:$rxtxkbytes:$band";
+                 }    
+	    }
+	  }
+        } else {
+	    next;
+        }
+    }
 
     # end payload
     my $tnow = [gettimeofday];
+
+    my $elapsed = tv_interval ($start, $tnow);
+
+    my $stime = 1;
+    if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
 
 
     # cktime for rotation
@@ -175,11 +252,11 @@ sub Startup {
         cktime();
     }
 
-
     if ($last_time > 0) {
 
         putraw($$tnow[0], %nstat); 
 	$last_time = $$tnow[0];
+	sleep($stime);
 
     } else { 
 
@@ -191,6 +268,8 @@ sub Startup {
         }
 
 	$last_time = $$tnow[0];
+	sleep($stime);
+        
 	next;
     }
 
@@ -202,7 +281,7 @@ sub Startup {
     } # while loop
 
     if (RunningAsService()) {
-        write_log ("info: stopped");
+        writelog ("info: stopped");
     }
 }
 
@@ -256,195 +335,22 @@ sub k_sleep {
 }
 
 
-# get_diff - get delta between samples as a difference
+# getnic -- get functional NIC TCP/IP
 #
-sub get_diff {
-    my $h1 = shift;
-    my $h2 = shift;
-    my $p = shift;
-    my $delta = 0;
+sub getnic {
 
-    # timestamp
-    my $n2 = $h2->{'Timestamp_PerfTime'};
-    my $n1 = $h1->{'Timestamp_PerfTime'};
-    my $n = $n2 - $n1;
-
-    # frequency
-    my $f2 = $h2->{'Frequency_PerfTime'};
-    my $nf = $n / $f2;
-
-    # data
-    $delta = $h2->{$p} - $h1->{$p};
-
-    # result
-    return $delta / $nf;
-}
-
-
-# get_pct - get delta between samples as a percentage
-#
-sub get_pct {
-
-    my $h1 = shift;
-    my $h2 = shift;
-    my $p  = shift;
-
-    my $d  = $h2->{$p} - $h1->{$p};
-
-    # timestamp
-										    my $n2 = $h2->{'Timestamp_Sys100NS'};
-    my $n1 = $h1->{'Timestamp_Sys100NS'};
-    my $n = $n2 - $n1;
-
-    return $d / $n;
-}
-
-
-# get_nicstat - returns nic statistics
-#
-sub get_nicstat {
-
-
-    # metrics
-    my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
-        $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
-	$ql,    $rxtxpkt,  $rxtxkbytes,$band);
-
-
-    $list = $wmi->InstancesOf($tcpwmi) or 
-        die "Failed to get $tcpwmi instance object\n";
-
-    # map nic stats
-    foreach my $v (in $list) {
-        map{$nic->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
-    }
-
-    # get NACs
-    my %nacs = get_nac();
-    #print Dumper(%nacs);
-
-
-    #print "NICs " . keys(%$ntcp) . ".\n";
-    #print Dumper($nictcp);
-
-    for my $k (keys %$nic) {
-
-        if (exists $nacs{$k} ) {
-
-	# PERF_COUNTER_COUNTER
-        $rxpkt = sprintf("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 
-		                          'PacketsReceivedPerSec' ) );
-
-	# PERF_COUNTER_COUNTER
-        $rxkbytes = sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
-	                                       'BytesReceivedPerSec') / 1024 );
-
-        # PERF_COUNTER_RAWCOUNT 
-        $rxpkterr = sprintf ("%d", $nic->{"$k"}->{'PacketsReceivedErrors'} );
-
-        # PERF_COUNTER_RAWCOUNT 
-        $rxpktdrop = sprintf ("%d", 
-	                      $nic->{"$k"}->{'PacketsReceivedDiscarded'} );
-
-	# PERF_COUNTER_COUNTER
-        $txpkt = sprintf("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 
-			                  'PacketsSentPerSec' ) );
-
-	# PERF_COUNTER_COUNTER
-        $txkbytes = sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
-	                                       'BytesSentPerSec') / 1024 );
-
-        # PERF_COUNTER_RAWCOUNT 
-        $txpkterr = sprintf ("%d", $nic->{"$k"}->{'PacketsOutboundErrors'} );
-
-        # PERF_COUNTER_RAWCOUNT 
-        $txpktdrop = sprintf ("%d", 
-	                      $nic->{"$k"}->{'PacketsOutboundDiscarded'} );
-
-			
-        # PERF_COUNTER_RAWCOUNT 
-        $ql = sprintf ("%.2f", $nic->{"$k"}->{'OutputQueueLength'} );
-       
-
-	# PERF_COUNTER_COUNTER
-        # $rxtxpkt   = $rxpkt + $txpkt;
-        $rxtxpkt = sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
-	                                      'PacketsPerSec') );
-
-	# PERF_COUNTER_BULK_COUNT
-        # $rxtxkbytes= $rxkbytes + $txkbytes;
-        $rxtxkbytes = sprintf ("%.2f", get_diff( $nic_old->{"$k"}, 
-	                                         $nic->{"$k"},
-                                                 'BytesTotalPerSec') / 1024 );
-
-        # PERF_COUNTER_RAWCOUNT 
-        $band = sprintf ("%d", $nic->{"$k"}->{'CurrentBandwidth'} );
-
-        my $nicname; 
-        map {$nicname = $nacs{$k}} keys %nacs;
-
-        $nstat{$k} = "$nicname:$rxpkt:$rxkbytes:$rxpkterr:$rxpktdrop:$txpkt:$txkbytes:$txpkterr:$txpktdrop:$ql:$rxtxpkt:$rxtxkbytes:$band";
-
+    # get physical NICs
+    # Win32_NetworkAdapterConfiguration
+    my $wn = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+    my $nnic = 0;
+    foreach my $nic (in $wn) {
+        if ( defined($nic->{MACAddress}) and
+             defined($nic->{IPAddress} ) ) {
+            print "NIC: $nic->{ServiceName}\n"; 
         }
-
     }
 
     return;
-}
-
-
-
-
-
-
-# get_nac - get network adapter configuration
-#
-sub get_nac {
-
-    my @nicids  =  (
-                'WAN Miniport',
-		'Microsoft ISATAP Adapter',
-		'RAS Async Adapter',
-		'Microsoft Virtual WiFi Miniport Adapter',
-		'VMware Virtual Ethernet Adapter',
-		'Microsoft Teredo Tunneling Adapter',
-		'Microsoft Kernel Debug Network Adapter',
-		'Hyper-V Virtual Switch Extension Adapter',
-		'Hyper-V Virtual Ethernet Adapter'
-                );
-
-    # get no of NICs
-    my $wn = $wmi->InstancesOf('Win32_NetworkAdapterConfiguration')
-        or die "Failed to get instance object\n";
-
-    # Network Adapter Configuration
-    my %nac;
-
-
-    foreach my $nic (in $wn) {
-
-        my $desc = $nic->{Description};
-
-	my $id   = $nic->{Index};
-
-	my $ser  = $nic->{ServiceName};
-
-        if (!grep { $desc =~ /$_/i } @nicids) {
-
-            # marked, filter /\()
-            $desc =~ s/\(/[/g;
-	    $desc =~ s/\)/]/g;
-	    $desc =~ s/\//_/g;
-	    $desc =~ s/\\/_/g;
-	    $desc =~ s/\#/_/g;
-
-	    my $nic_name = lc $nic->{ServiceName} . '_' . $id;
-
-            $nac{$desc}=$nic_name;
-	}
-    }
-
-    return %nac;
 }
 
 
@@ -476,18 +382,18 @@ sub putraw {
 }
 
 
-# cklog - check log directory
+# chklog - check log directory
 #
-sub cklog {
+sub chklog {
 
     my ($dir) = @_;
 
     if (defined $dir) {
         if (! -d $dir) {
-            die "error: cklog - cannot find $dir directory";
+            die "error: chklog - cannot find $dir directory";
         }
     } else {
-        die "error: cklog - cannot find $dir directory";
+        die "error: chklog - cannot find $dir directory";
     }
 
     return;
@@ -556,9 +462,9 @@ sub open_config {
 }
 
 
-# get_ssi - get service sample interval
+# getssi - get service sample interval
 #
-sub get_ssi {
+sub getssi {
     my ($data) = @_;
 
     my $ssi = $data->{'sampling_interval'}->{"$recid"};
@@ -568,27 +474,27 @@ sub get_ssi {
 }
 
 
-# get_log - get log directory information
+# getlog - get log directory information
 #
-sub get_log {
+sub getlog {
     my ($data) = @_;
 
     my $bpath = $data->{'log'}->{'base_path'};
-    cklog($bpath);
+    chklog($bpath);
 
     my $cpath = $data->{'log'}->{'current_path'};
-    cklog($cpath);
+    chklog($cpath);
 
     my $dpath = $data->{'log'}->{'daily_path'};
-    cklog($dpath);
+    chklog($dpath);
 
     return ( $bpath, $cpath, $dpath );
 }
 
 
-# write_log - write log message
+# writelog - write log message
 #
-sub write_log {
+sub writelog {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
@@ -621,10 +527,10 @@ sub cktime {
     # print "time check: $tcheck";
 
     if ($tcheck eq $logtime ) {
-        write_log ("info: cktime - start log rotation");
+        writelog ("info: cktime - start log rotation");
         close ($rawlog);
 	my $numkrd = rotate($clog, $dlog, $yesterday);
-        write_log ("info: cktime - end log rotation, files rotated: $numkrd");
+        writelog ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);
     }
 
@@ -694,7 +600,7 @@ sub rotate {
     my $nkrd = $#krd_files + 1;
     
     if ($verbose) {
-        write_log ("info: rotate - copying krd data files: $nkrd");
+        writelog ("info: rotate - copying krd data files: $nkrd");
     }
 
     my $cnt = 0;
@@ -703,12 +609,12 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-	    write_log ("warning: rotate - $dstamp dir: $!");
+	    writelog ("warning: rotate - $dstamp dir: $!");
         }
 
         foreach my $rawfile (@krd_files) {
             copy("$rawdir/$rawfile","$dest") or
-                write_log ("error: rotate - copying previous daily data, $!");
+                writelog ("error: rotate - copying previous daily data, $!");
 
 	    # reset to zero
             open my $ftkrd, ">", "$rawdir/$rawfile";
@@ -782,7 +688,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.19, 2016-01-26 1514
+nicrec: 1.0.19, 2016-01-20 1638
 END
     return;
 }

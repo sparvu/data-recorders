@@ -25,6 +25,7 @@ use Getopt::Long;
 use File::Copy;
 use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
+use Win32::Process;
 use Sys::Hostname;
 use Win32;
 
@@ -72,6 +73,15 @@ my $deprecated = defined $d ? $d : 0;
 
 ### MAIN BODY
 
+# set RT class for busy systems
+my $curentProcess;
+my $pid = Win32::Process::GetCurrentProcessID();
+if (Win32::Process::Open($curentProcess, $pid, 0)) {
+    $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
+}
+
+
+
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
@@ -86,6 +96,7 @@ if ($deprecated) {
     default_nic();
 
     print "NIC(s) discovered and ready to be processed:\n";
+
     while( my($key, $value) = each (%nics)) {
         print " $key => $value \n";
     }
@@ -96,6 +107,8 @@ if ($deprecated) {
 ### SUBROUTINES
 
 sub default_nic {
+
+    sleep (1);
 
     print "\n";
     print "WARNING: This utility uses Win32_PerfRawData_Tcpip_NetworkInterface and\n";
@@ -282,7 +295,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-getnics: 1.0.19, 2016-01-27 0648
+getnics: 1.0.19, 2016-01-27 2047
 END
     exit 0;
 }
