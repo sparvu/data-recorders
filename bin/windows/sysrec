@@ -310,7 +310,6 @@ sub Startup {
 
     # NIC IO statistics
     # metrics
-    my $s5 = [gettimeofday];
     my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
         $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
 	$ql,    $rxtxpkt,  $rxtxkbytes,$band );
@@ -319,82 +318,7 @@ sub Startup {
 
 
     # get no of NICs
-    my $wn = $wmi->ExecQuery("SELECT * from Win32_NetworkAdapter");
-    my $nnic = 0;
 
-    foreach my $nic (in $wn) {
-
-        my $nic_vendor = $nic->{Manufacturer};
-	my $nic_pnp    = $nic->{PNPDeviceID};
-	my $nic_desc   = $nic->{Description};
-	my $nic_index  = $nic->{Index};
-	my $nic_devid  = $nic->{DeviceID};
-
-        if (defined $nic_vendor and defined $nic_pnp) {
-	    if ( $nic_vendor =~ /$vid/i and $nic_pnp !~ /$pdev/i ) { next; }
-         elsif ( $nic_vendor !~ /$vid/i and $nic_pnp =~ /$vdev/i ) { next; }
-	  else {
-
-	        my $nic_name = lc $nic->{ServiceName} . "_" . $nic_devid;
-
-		# get PNPEntity for NIC DeviceID
-		my $pnpq = 'ASSOCIATORS OF ' .
-		           '{Win32_NetworkAdapter.DeviceID="' . $nic_devid .
-			   '"} WHERE ResultClass=Win32_PnpEntity';
-
-                my $pnp = $wmi -> ExecQuery($pnpq);
-                foreach my $po (in $pnp) {
-	            my $pnp_name = $po->{Name};
-		    $pnp_name =~ s/\(/[/g; 
-		    $pnp_name =~ s/\)/]/g; 
-		    $pnp_name =~ s/\//_/g; 
-		    $pnp_name =~ s/\\/_/g; 
-		    $pnp_name =~ s/\#/_/g;
-
-                    ### verbose
-		    if ($verbose) {
-			if (RunningAsService()) {
-                            writelog ("info: DeviceID: $nic_devid, $pnp_name");
-			} else { 
-			    writelog ("info: DeviceID: $nic_devid $pnp_name") if ($logging);
-                            print "info: DeviceID: $nic_devid, $pnp_name\n"; 
-			}
-		    }
-
-                    my $s51 = [gettimeofday];
-                    my $nicstat = $wmi->ExecQuery("SELECT * from Win32_PerfFormattedData_Tcpip_NetworkInterface where Name='$pnp_name'");
-
-		    foreach my $pn (in $nicstat) {
-	                # perf metrics per NIC
-                        $rxpkt      += $pn -> {PacketsReceivedPerSec};
-                        $rxkbytes   += sprintf "%.2f", 
-		                         $pn->{BytesReceivedPerSec} / 1024;
-                        $rxpkterr   += $pn -> {PacketsReceivedErrors};
-                        $rxpktdrop  += $pn -> {PacketsReceivedDiscarded};
-
-                        $txpkt      += $pn -> {PacketsSentPerSec};
-                        $txkbytes   += sprintf "%.2f", 
-		                         $pn->{BytesSentPerSec} / 1024;
-                        $txpkterr   += $pn -> {PacketsOutboundErrors};
-                        $txpktdrop  += $pn -> {PacketsOutboundDiscarded};
-			
-                        $rxtxpkt    += $rxpkt + $txpkt;
-                        $rxtxkbytes += $rxkbytes + $txkbytes;
-                    }
-
-                    my $e51 = [gettimeofday];
-                    my $delta51  = tv_interval ($s51, $e51);
-                    print " NIC data: $delta51 sec\n";
-
-	        }
-	    }
-        } else { next; }
-    }
-
-
-    my $e5 = [gettimeofday];
-    my $delta5  = tv_interval ($s5, $e5);
-    print " NIC Grand: $delta5 sec\n";
 
     # save to old
     $hash1 = $hash;
