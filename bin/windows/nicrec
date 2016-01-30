@@ -275,9 +275,12 @@ sub get_diff {
 
     # data
     $delta = $h2->{$p} - $h1->{$p};
+    my $r = $delta / $nf;
+
+    $r = 0 if $r < 0;
 
     # result
-    return $delta / $nf;
+    return $r;
 }
 
 

@@ -77,7 +77,7 @@ my $deprecated = defined $d ? $d : 0;
 my $curentProcess;
 my $pid = Win32::Process::GetCurrentProcessID();
 if (Win32::Process::Open($curentProcess, $pid, 0)) {
-    $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
+    $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
 }
 
 
@@ -120,6 +120,8 @@ sub default_nic {
     my $s1 = [gettimeofday];
     my $list = $wmi->InstancesOf('Win32_PerfRawData_Tcpip_NetworkInterface')  
          or die "Failed to get instance object\n";  
+
+    my $c = 'Caption';
 
     print "\n";
     print "NICS Win32_PerfRawData_Tcpip_NetworkInterface provider:\n";
@@ -170,6 +172,8 @@ my @nicids  =  (
     # Network Adapter Configuration
     my %nac;
 
+    my $curr_desc = "";
+    my $cnt = 1;
 
     foreach my $nic (in $wn) {
 
@@ -191,6 +195,17 @@ my @nicids  =  (
 	    $desc =~ s/\//_/g;
 	    $desc =~ s/\\/_/g;
 	    $desc =~ s/\#/_/g;
+
+            if ($cnt > 1) {
+            
+	        if ($desc =~ m/\Q$curr_desc/) {
+		    $desc = $desc . " " . '_' . $cnt;
+		}
+
+	    }
+
+            $curr_desc = $desc;
+	    $cnt++;
 
             print " $id $desc $ser (marked)\n";
 
@@ -295,7 +310,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-getnics: 1.0.19, 2016-01-27 2047
+getnics: 1.0.19, 2016-01-29 1725
 END
     exit 0;
 }

@@ -139,7 +139,13 @@ sub Startup {
     my %dstat;
     my ($di, $dkey);
 
+    my $s1 = [gettimeofday];
+
     my %diskname = getdisk();
+
+    my $e1 = [gettimeofday];
+    my $delta1 = tv_interval ($s1, $e1);
+    print " getdisk took: $delta1\n";
 
     ### verbose
     if ($verbose) {
@@ -174,6 +180,7 @@ sub Startup {
     my ($lsize, $lfree, $lfreepct);
 
 
+    my $s2 = [gettimeofday];
     for my $k (keys %diskname) {
 
         $l = $diskname{$k};
@@ -222,6 +229,11 @@ sub Startup {
         $dstat{$dkey} = 
 	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
     }
+
+
+    my $e2 = [gettimeofday];
+    my $delta2 = tv_interval ($s2, $e2);
+    print " disk processing took: $delta2\n";
 
     # end payload
     my $tnow = [gettimeofday];
