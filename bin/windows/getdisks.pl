@@ -62,7 +62,7 @@ else {
 
 ### Variables
 my $loop        = 0;                      # current loop number
-my $recid       = 'getnics';
+my $recid       = 'getdisks';
 my $key         = 'Name';
 $|= 1;                                    # autoflush
 
@@ -73,219 +73,72 @@ my $deprecated = defined $d ? $d : 0;
 
 ### MAIN BODY
 
-# set RT class for busy systems
+# set HIGH class for busy systems
 my $curentProcess;
 my $pid = Win32::Process::GetCurrentProcessID();
 if (Win32::Process::Open($curentProcess, $pid, 0)) {
-    $curentProcess->SetPriorityClass(REALTIME_PRIORITY_CLASS);
+    $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
 }
-
 
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
+get_disks();
 
-if ($deprecated) {
-
-    deprecated_nic();
-
-} else {
-
-    default_nic();
-
-    print "NIC(s) discovered and ready to be processed:\n";
-
-    while( my($key, $value) = each (%nics)) {
-        print " $key => $value \n";
-    }
-    print "Total: " . keys(%nics) . "\n";
-}
 
 
 ### SUBROUTINES
 
-sub default_nic {
+sub get_disks {
 
-    sleep (1);
-
-    print "\n";
-    print "WARNING: This utility uses Win32_PerfRawData_Tcpip_NetworkInterface and\n";
-    print "Win32_NetworkAdapterConfiguration to fetch all available network adapters\n";
-    print "found on system.\n";
-
-    my @nicstats = qw(PacketsReceivedPerSec BytesReceivedPerSec PacketsReceivedErrors PacketsReceivedDiscarded PacketsSentPerSec BytesSentPerSec PacketsOutboundErrors PacketsOutboundDiscarded Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
-      
-    my $s1 = [gettimeofday];
-    my $list = $wmi->InstancesOf('Win32_PerfRawData_Tcpip_NetworkInterface')  
-         or die "Failed to get instance object\n";  
-
-    print "\n";
-    print "NICS Win32_PerfRawData_Tcpip_NetworkInterface provider:\n";
-    foreach my $v (in $list) {
-        print " $v->{$key}\n";
-        map{$nic_old->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;  
-    }
-
-    my $e1 = [gettimeofday];
-    my $delta1  = tv_interval ($s1, $e1);
-    print "Win32_PerfRawData_Tcpip_NetworkInterface calls took: $delta1 sec\n";
-    print "\n";
-
-    my $s2 = [gettimeofday];
-    my %mn = getnics();
-    my $e2 = [gettimeofday];
-    my $delta2  = tv_interval ($s2, $e2);
-    print "\n";
-    print "Win32_NetworkAdapterConfiguration calls took: $delta2 sec\n";
-    print "\n";
-
-    return;
-}
-
-
-sub getnics {
-
-my @nicids  =  (
-                'WAN Miniport',
-		'Microsoft ISATAP Adapter',
-		'RAS Async Adapter',
-		'Microsoft Virtual WiFi Miniport Adapter',
-		'VMware Virtual Ethernet Adapter',
-		'Microsoft Teredo Tunneling Adapter',
-		'Microsoft Kernel Debug Network Adapter',
-		'Hyper-V Virtual Switch Extension Adapter',
-		'Hyper-V Virtual Ethernet Adapter'
-                );
-
-    # get no of NICs
-    my $wn = $wmi->InstancesOf('Win32_NetworkAdapterConfiguration')
-        or die "Failed to get instance object\n";
-
-    print "NICS Win32_NetworkAdapterConfiguration provider:\n";
-
-    my $nnic = 0;
-
-    # Network Adapter Configuration
-    my %nac;
-
-
-    foreach my $nic (in $wn) {
-
-        my $desc = $nic->{Description};
-
-	my $id   = $nic->{Index};
-
-	my $ser  = $nic->{ServiceName};
-
-        if (grep { $desc =~ /$_/i } @nicids) {
-
-            print " $id $desc $ser\n";
-
-	} else {
-
-            # marked, filter /\()
-            $desc =~ s/\(/[/g;
-	    $desc =~ s/\)/]/g;
-	    $desc =~ s/\//_/g;
-	    $desc =~ s/\\/_/g;
-	    $desc =~ s/\#/_/g;
-
-            print " $id $desc $ser (marked)\n";
-
-	    my $nic_name = lc $nic->{ServiceName} . '_' . $id;
-
-            $nac{$desc}=$nic_name;
-	}
-    }
-
-    # print Dumper(%nac);
-
-
-    # match nics to tcpnics and save it to a new
-    # hash finale
-    foreach my $k (keys %$nic_old) {
-
-        if (exists $nac{$k} ) {
-	
-	    map {$nics{$nac{$k}} = $k} keys %nac;
-	}
-	    
-    }
-
-    return %nics;
-}
-
-
-# uses Win32_NetworkAdapter deprecated class
-#
-sub deprecated_nic {
-
-    # physical ids
-    my $pdev  = 'PCI|USB|VMBUS';
-    my $vdev  = 'ROOT|SW|\{';
-    my $vid   = 'Microsoft|VMWare|VirtualBox';
+    my ($di, $dd);
 
     my $s1 = [gettimeofday];
 
-    # get no of NICs
-    my $nicq = 
-      "SELECT * from Win32_NetworkAdapter";
+    # get no of physical disks
+    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
 
-    my $wn = $wmi->ExecQuery($nicq);
+    foreach my $disk (in $wd) {
+        $di = $disk->{Index};
+        $dd = $disk->{DeviceID};
+        $dd =~ s/\\/\\\\/sg;
 
-    my $nnic = 0;
-    my $pnic = 0;
-    my $vnic = 0;
+        my $qpart = 'ASSOCIATORS OF ' . '{Win32_DiskDrive.DeviceID="' . 
+	            $dd . 
+		    '"} WHERE AssocClass = Win32_DiskDriveToDiskPartition';
 
-    print "WARNING: This utility uses Win32_NetworkAdapter to fetch all\n";
-    print "available network adapters found on system. The Win32_NetworkAdapter\n";
-    print "class is very slow and not optimized for production usage.\n";
+        # print "qpart=$qpart\n";
 
-    foreach my $nic (in $wn) {
+        my $wpart = $wmi->ExecQuery($qpart);
 
-        my $vendor = $nic->{Manufacturer};
-        my $pnp    = $nic->{PNPDeviceID};
-        my $desc   = $nic->{Description};
-        my $id     = $nic->{Index};
+        foreach my $obj (in $wpart) {
 
-        if (defined $vendor and defined $pnp) {
-            if    ( $vendor =~ /$vid/i and $pnp !~ /$pdev/i ) { $vnic++; }
-            elsif ( $vendor !~ /$vid/i and $pnp =~ /$vdev/i ) { $vnic++; }
-            else  { $pnic++; }
-        } else { 
-            print "Warning: $id, $desc missing vendor and pnp information \n";
-	    $vendor = 'NA';
-	    $pnp    = 'NA';
+            my $d1 = $obj->{DeviceID};
+
+            my $wdrive = $wmi->ExecQuery("ASSOCIATORS OF {Win32_DiskPartition.DeviceID=\"$d1\"} WHERE AssocClass = Win32_LogicalDiskToPartition");
+
+	    foreach my $lobj (in $wdrive) {
+                my $lid = $lobj->{DeviceID};
+	        print "$dd $d1, Logical: $lid\n";
+	    }
         }
-
-        print "$id, $desc, $vendor, $pnp\n";
     }
-
-    $nnic = $vnic + $pnic;
-    print "\nNICs: $nnic, Physical: $pnic, Virtual: $vnic \n";
 
     my $e1 = [gettimeofday];
     my $delta1  = tv_interval ($s1, $e1);
-    print "Win32_NetworkAdapter calls took: $delta1 sec\n";
-
-    return;
+    print "Win32_DiskDrive calls took: $delta1 sec\n";
 }
-
-
-
-
 
 
 # usage - print usage and exit.
 #
 sub usage {
     print STDERR <<END;
-USAGE: getnics.exe -dV
- eg.
-  getnics.exe -d    # deprecated mode, uses Win32_NetworkAdapter
-  getnics.exe        # default CLI mode, prints all NICs
+USAGE: getdisks [-hV]
+ eg. 
+  getdisks.exe
 END
     exit 0;
 }
@@ -295,7 +148,10 @@ END
 #
 sub revision {
     print STDERR <<END;
-getnics: 1.0.19, 2016-01-27 2047
+disks: 1.0.19, 2016-01-31 2034
 END
     exit 0;
 }
+
+
+

@@ -93,116 +93,61 @@ if ($deprecated) {
 
 } else {
 
-    sleep (0.5);
-
-    print "\n";
-
-    print
-      "This utility uses Win32_PerfRawData_Tcpip_NetworkInterface to report\n";
-    print
-      "TCPIP statistics for each network adapter found on system, mapping\n";
-    print
-      "the names from Win32_NetworkAdapterConfiguration\n";
-
-    my %names = get_nac();
-
-    get_nics();
+    default_nic();
 
     print "NIC(s) discovered and ready to be processed:\n";
 
-    for my $k (keys %nics) {
-
-        if (exists $names{$k}) {
-
-            if ( $k =~ /\_\d+$/ ) {
-
-                my ($l, $r) = $k =~ /^(.*)(_\d+)$/;
-		my $nn = $names{$k} . "_" . $r;
-                print " $nn => $k\n";
-
-            } else {
-                print " |k=$k|\n"; 
-		my $nn = $names{$k} . "_" ;
-                print " |nn=$nn|\n"; 
-
-	        print " $names{$k} => $k \n";
-
-            }
-        } else {
-
-            if ( $k =~ /\_\d+$/ ) {
-
-		my ($l, $r) = $k =~ /^(.*)(_\d+)$/;
-		#print "left: $l\n";
-		#print "right: $r\n";
-		my $nn = $names{$k} . "_" . $r;
-                print " $nn => $k\n";
-	    }
-
-	}
+    while( my($key, $value) = each (%nics)) {
+        print " $key => $value \n";
     }
-
-    #while( my($key, $value) = each (%nics)) {
-    #    print " $key => $value \n";
-    #}
-
-    # print "Total: " . keys(%nics) . "\n";
+    print "Total: " . keys(%nics) . "\n";
 }
 
 
 ### SUBROUTINES
 
-sub get_nics {
+sub default_nic {
 
-    my @nicstats = qw( PacketsReceivedPerSec BytesReceivedPerSec 
-                       PacketsReceivedErrors PacketsReceivedDiscarded 
-		       PacketsSentPerSec     BytesSentPerSec 
-		       PacketsOutboundErrors PacketsOutboundDiscarded 
-		       Timestamp_PerfTime    Frequency_PerfTime 
-		       Frequency_Sys100NS    Timestamp_Sys100NS);
+    sleep (1);
 
-    my @filter   =   ( 'isatap',
-		       'Microsoft Virtual WiFi Miniport Adapter',
-		       'Teredo Tunneling Pseudo-Interface',
-		       'Reusable ISATAP Interface'
-                     );
+    print "\n";
+    print "WARNING: This utility uses Win32_PerfRawData_Tcpip_NetworkInterface and\n";
+    print "Win32_NetworkAdapterConfiguration to fetch all available network adapters\n";
+    print "found on system.\n";
 
+    my @nicstats = qw(PacketsReceivedPerSec BytesReceivedPerSec PacketsReceivedErrors PacketsReceivedDiscarded PacketsSentPerSec BytesSentPerSec PacketsOutboundErrors PacketsOutboundDiscarded Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
+      
     my $s1 = [gettimeofday];
     my $list = $wmi->InstancesOf('Win32_PerfRawData_Tcpip_NetworkInterface')  
          or die "Failed to get instance object\n";  
 
+    my $c = 'Caption';
+
     print "\n";
     print "NICS Win32_PerfRawData_Tcpip_NetworkInterface provider:\n";
-
     foreach my $v (in $list) {
-        if (!grep { $v->{$key} =~ /$_/i } @filter) {
-
-            print " $v->{$key} (marked) \n";
-
-            map{$nic_old->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
-
-	    $nics{$v->{$key}}=$v->{$key};
-
-	} else {
-
-            print " $v->{$key}\n";
-        }
+        print " $v->{$key}\n";
+        map{$nic_old->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;  
     }
- 
+
     my $e1 = [gettimeofday];
     my $delta1  = tv_interval ($s1, $e1);
+    print "Win32_PerfRawData_Tcpip_NetworkInterface calls took: $delta1 sec\n";
+    print "\n";
 
-    printf "%s %.3f sec\n",
-           "Win32_PerfRawData_Tcpip_NetworkInterface calls:",
-           $delta1;
-
+    my $s2 = [gettimeofday];
+    my %mn = getnics();
+    my $e2 = [gettimeofday];
+    my $delta2  = tv_interval ($s2, $e2);
+    print "\n";
+    print "Win32_NetworkAdapterConfiguration calls took: $delta2 sec\n";
     print "\n";
 
     return;
 }
 
 
-sub get_nac {
+sub getnics {
 
 my @nicids  =  (
                 'WAN Miniport',
@@ -216,30 +161,34 @@ my @nicids  =  (
 		'Hyper-V Virtual Ethernet Adapter'
                 );
 
-    my $s1 = [gettimeofday];
-
     # get no of NICs
     my $wn = $wmi->InstancesOf('Win32_NetworkAdapterConfiguration')
         or die "Failed to get instance object\n";
 
+    print "NICS Win32_NetworkAdapterConfiguration provider:\n";
+
+    my $nnic = 0;
+
     # Network Adapter Configuration
     my %nac;
 
-    print "\n";
-
-    print "NICS Win32_NetworkAdapterConfiguration provider:\n";
+    my $curr_desc = "";
+    my $cnt = 1;
 
     foreach my $nic (in $wn) {
 
         my $desc = $nic->{Description};
 
-	my $svc  = lc $nic->{ServiceName};
+	my $id   = $nic->{Index};
+
+	my $ser  = $nic->{ServiceName};
 
         if (grep { $desc =~ /$_/i } @nicids) {
 
-            print " $desc => $svc\n";
+            print " $id $desc $ser\n";
 
 	} else {
+
             # marked, filter /\()
             $desc =~ s/\(/[/g;
 	    $desc =~ s/\)/]/g;
@@ -247,53 +196,40 @@ my @nicids  =  (
 	    $desc =~ s/\\/_/g;
 	    $desc =~ s/\#/_/g;
 
-            print " $desc => $svc (marked)\n";
+            if ($cnt > 1) {
+            
+	        if ($desc =~ m/\Q$curr_desc/) {
+		    $desc = $desc . " " . '_' . $cnt;
+		}
 
-            $nac{$desc}=$svc;
+	    }
+
+            $curr_desc = $desc;
+	    $cnt++;
+
+            print " $id $desc $ser (marked)\n";
+
+	    my $nic_name = lc $nic->{ServiceName} . '_' . $id;
+
+            $nac{$desc}=$nic_name;
 	}
     }
 
-    print "\n";
-    print " NAC Table:\n";
+    # print Dumper(%nac);
 
-    for my $nc (keys %nac) {
-
-        print " $nc => $nac{$nc}\n"; 
-    }
-
-
-    my $e1 = [gettimeofday];
-    my $delta1  = tv_interval ($s1, $e1);
-
-    printf "%s %.3f sec\n",
-           "Win32_NetworkAdapterConfiguration calls:",
-           $delta1;
-
-    #print Dumper(%nac);
 
     # match nics to tcpnics and save it to a new
     # hash finale
-    #foreach my $k (keys %$nic_old) {
-    #    if (exists $nac{$k} ) {
-    #	    map {$nics{$nac{$k}} = $k} keys %nac;
-    #	}
-    #}
+    foreach my $k (keys %$nic_old) {
 
-    # return NIC names
-    # name => service ida
-    # Microsoft Hyper-V Network Adapter _3 => netvsc
-    # Microsoft Hyper-V Network Adapter _4 => netvsc
-    # WAN Miniport (L2TP) => rasl2tp
-    # WAN Miniport (SSTP) => rasSstp
-    # WAN Miniport (IKEv2) => rasAgileVpn
-    # WAN Miniport (PPTP) => pptpMiniport
-    # WAN Miniport (PPPOE) => rasPppoe
-    # WAN Miniport (IP) => ndisWan
-    # WAN Miniport (IPv6) => ndisWan
-    # WAN Miniport (Network Monitor) => ndisWan
-    # Microsoft Kernel Debug Network Adapter => kdnic
+        if (exists $nac{$k} ) {
+	
+	    map {$nics{$nac{$k}} = $k} keys %nac;
+	}
+	    
+    }
 
-    return %nac;
+    return %nics;
 }
 
 
@@ -318,7 +254,7 @@ sub deprecated_nic {
     my $pnic = 0;
     my $vnic = 0;
 
-    print "\nWARNING: This utility uses Win32_NetworkAdapter to fetch all\n";
+    print "WARNING: This utility uses Win32_NetworkAdapter to fetch all\n";
     print "available network adapters found on system. The Win32_NetworkAdapter\n";
     print "class is very slow and not optimized for production usage.\n";
 
@@ -374,7 +310,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-getnics: 1.0.19, 2016-01-31 1720
+getnics: 1.0.19, 2016-01-29 1725
 END
     exit 0;
 }
