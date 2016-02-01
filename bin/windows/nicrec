@@ -468,7 +468,7 @@ sub get_nac {
                     );
 
     # get no of NICs
-    my $wn = $wmi->InstancesOf('Win32_NetworkAdapterConfiguration')
+    my $wn = $wmi->InstancesOf($nicwmi)
         or die "Failed to get instance object\n";
 
     # Network Adapter Configuration
