@@ -411,8 +411,6 @@ sub get_nicstat {
 
         if (exists $nac{$k}) {
 
-            print "  Im in NAC\n";
-
             if ( $k =~ /\_\d+$/ ) {
 
                 my ($l, $r) = $k =~ /^(.*)(_\d+)$/;
@@ -424,13 +422,10 @@ sub get_nicstat {
 
             } else {
             
-	        print "  Im in NAC but not multihomed\n";
-
                 $nicname = $nac{$k};
 
             }
         } else {
-            print "  Im not in NAC\n";
 
             if ( $k =~ /\_\d+$/ ) {
 		my ($l, $r) = $k =~ /^(.*)(_\d+)$/;
@@ -443,12 +438,7 @@ sub get_nicstat {
 	    } else { next; }
 	}
 
-
-        #map {$nicname = $nacs{$k}} keys %nacs;
-
         $nstat{$k} = "$nicname:$rxpkt:$rxkbytes:$rxpkterr:$rxpktdrop:$txpkt:$txkbytes:$txpkterr:$txpktdrop:$ql:$rxtxpkt:$rxtxkbytes:$band";
-
-        #}
 
     }
 
