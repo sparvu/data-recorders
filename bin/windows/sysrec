@@ -73,9 +73,6 @@ my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
 my $last_time   = 0;                      # first counter
-my $pdev        = 'PCI|USB|VMBUS';
-my $vdev        = 'ROOT|SW|\{';
-my $vid         = 'Microsoft|VMWare|VirtualBox';
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -108,22 +105,26 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 my $key = 'Name';
 
 ## cpu 
-my @cpustats = qw(
-                   PercentIdleTime       PercentProcessorTime 
-		   PercentPrivilegedTime PercentUserTime 
-		   PercentInterruptTime  PercentDPCTime  TimeStamp_Sys100NS
-		 );
+my @cpustats  = qw(
+                    PercentIdleTime       PercentProcessorTime 
+		    PercentPrivilegedTime PercentUserTime 
+		    PercentInterruptTime  PercentDPCTime  
+		    TimeStamp_Sys100NS
+		  );
 my $hash1 = {};
 my $list;
 
 ## disk
 my @diskstats = qw(
-                   DiskReadsPerSec  DiskReadBytesPerSec  PercentDiskReadTime 
-		   DiskWritesPerSec DiskWriteBytesPerSec PercentDiskWriteTime 
-		   CurrentDiskQueueLength PercentDiskTime DiskTransfersPerSec 
-		   DiskBytesPerSec Timestamp_PerfTime Frequency_PerfTime 
-		   Frequency_Sys100NS Timestamp_Sys100NS
+                    DiskReadsPerSec        DiskReadBytesPerSec  
+		    PercentDiskReadTime    DiskWritesPerSec 
+		    DiskWriteBytesPerSec   PercentDiskWriteTime 
+		    CurrentDiskQueueLength PercentDiskTime 
+		    DiskTransfersPerSec    DiskBytesPerSec 
+		    Timestamp_PerfTime     Frequency_PerfTime 
+		    Frequency_Sys100NS     Timestamp_Sys100NS
 		  );
+
 my $disk_old = {};
 my $list2;
 
