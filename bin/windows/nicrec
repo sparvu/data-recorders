@@ -58,6 +58,8 @@ revision() if (defined $V);
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
+my $onetime = 0;
+
 if ( defined $ARGV[0] ) {
     $interval = $ARGV[0];
     $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
@@ -66,6 +68,7 @@ if ( defined $ARGV[0] ) {
 else {
     $interval = 1;
     $loop_max = 1;
+    $onetime = 1;
 }
 
 ### Variables
@@ -173,7 +176,7 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    k_sleep();
+    k_sleep() if $onetime == 0;
 
     # my $start = [gettimeofday];
 
@@ -827,7 +830,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.19, 2016-02-01 1321
+nicrec: 1.0.19, 2016-02-01 1641
 END
     return;
 }

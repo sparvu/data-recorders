@@ -68,12 +68,14 @@ else {
 
 
 ### Variables
-my $loop        = 0;                      # current loop number
-my $cf          = 'kronometrix.json';     # default json config
-my $logtime     = '0000';                 # min time check 23:59
-my $stime;                                # sleep timer
-my $last_time   = 0;                      # first counter
-$|= 1;                                    # autoflush
+my $loop        = 0;                                     # current loop number
+my $cf          = 'kronometrix.json';                    # default json config
+my $logtime     = '0000';                                # min time check 23:59
+my $stime;                                               # sleep timer
+my $last_time   = 0;                                     # first counter
+my $nicwmi      = 'Win32_NetworkAdapterConfiguration';   # NIC Config
+my $tcpwmi      = 'Win32_PerfRawData_Tcpip_NetworkInterface'; # TCPIP
+$|= 1;                                                   # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
@@ -128,6 +130,30 @@ my @diskstats = qw(
 my $disk_old = {};
 my $list2;
 
+
+## nic
+my @nicstats = qw(
+                   PacketsReceivedPerSec BytesReceivedPerSec
+                   PacketsReceivedErrors PacketsReceivedDiscarded
+		   PacketsSentPerSec     BytesSentPerSec
+		   PacketsOutboundErrors PacketsOutboundDiscarded
+		   OutputQueueLength     PacketsPerSec
+		   BytesTotalPerSec      CurrentBandwidth
+		   Timestamp_PerfTime    Frequency_PerfTime
+		   Frequency_Sys100NS    Timestamp_Sys100NS
+		 );
+
+my @filter   =   ( 
+                   'isatap',
+	           'Microsoft Virtual WiFi Miniport Adapter',
+	           'Teredo Tunneling Pseudo-Interface',
+	           'Reusable ISATAP Interface'
+	         );
+
+my $nic_old = {};
+my $list3;
+
+
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
     *RunningAsService = sub { return 0 };
@@ -165,9 +191,11 @@ sub Startup {
 
     init_disk();
 
+    init_nic();
+
     while(ContinueRun()) {
 
-    k_sleep();
+    #k_sleep();
 
     #my $start = [gettimeofday];
 
@@ -282,12 +310,12 @@ sub Startup {
     }
 
     #PERF_COUNTER_COUNTER
-    $reads = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+    $reads = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
                                       $disk->{'_Total'},
                                       'DiskReadsPerSec') );
 
     #PERF_COUNTER_BULK_COUNT
-    $rkbytes = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+    $rkbytes = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
                                         $disk->{'_Total'},
                                         'DiskReadBytesPerSec') / 1024 );
 
@@ -297,12 +325,12 @@ sub Startup {
 	                                 'PercentDiskReadTime') );
 
     #PERF_COUNTER_COUNTER
-    $writes = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+    $writes = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
                                        $disk->{'_Total'},
                                        'DiskWritesPerSec') );
 
     #PERF_COUNTER_BULK_COUNT
-    $wkbytes = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+    $wkbytes = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
                                         $disk->{'_Total'},
                                         'DiskWriteBytesPerSec') / 1024 );
 
@@ -321,12 +349,12 @@ sub Startup {
 			                'PercentDiskTime') );
 
     #PERF_COUNTER_COUNTER
-    $iops = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+    $iops = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
                                      $disk->{'_Total'},
                                      'DiskTransfersPerSec') );
 
     #PERF_COUNTER_BULK_COUNT
-    $krw = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+    $krw = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
                                     $disk->{'_Total'},
                                     'DiskBytesPerSec') / 1024 );
 
@@ -465,7 +493,7 @@ sub Remove {
 }
 
 
-# init_win32 - initialize win32 objects
+# CPU Initialization
 #
 sub init_cpu {
 
@@ -480,6 +508,8 @@ sub init_cpu {
 }
 
 
+# Disk IO Initialization
+#
 sub init_disk {
 
     $list2 = $wmi->InstancesOf('Win32_PerfRawData_PerfDisk_PhysicalDisk')
@@ -488,6 +518,24 @@ sub init_disk {
     foreach my $v2 (in $list2) {
         next if $v2->{$key} ne '_Total';
 	map{$disk_old->{$v2->{$key}}->{$_}  = $v2->{$_} }@diskstats;
+    }
+}
+
+
+# NIC initialization
+#
+sub init_nic {
+
+    $list3 = $wmi->InstancesOf($tcpwmi)
+          or die "Failed to get instance object\n";
+
+    foreach my $v3 (in $list3) {
+
+        if (!grep { $v3->{$key} =~ /$_/i } @filter) {
+
+            map{$nic_old->{$v3->{$key}}->{$_} = $v3->{$_} }@nicstats;
+
+	}
     }
 }
 
@@ -521,9 +569,9 @@ sub get_value {
 
 
 
-# get_dif - get delta between samples as a difference
+# get_diff - get delta between samples as a difference
 #
-sub get_dif {
+sub get_diff {
     my $h1 = shift;
     my $h2 = shift;
     my $p = shift;
@@ -540,9 +588,12 @@ sub get_dif {
 
     # data
     $delta = $h2->{$p} - $h1->{$p};
+    my $r = $delta / $nf;
+
+    $r = 0 if $r < 0;
 
     # result
-    return $delta / $nf;
+    return $r;
 }
 
 
