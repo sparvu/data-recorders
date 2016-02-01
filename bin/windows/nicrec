@@ -78,7 +78,7 @@ my $loop        = 0;                                      # current loop number
 my $last_time   = 0;                                      # first counter
 my $cf          = 'kronometrix.json';                     # default json config
 my $logtime     = '0000';                                 # check 23:59
-my $nicwmi      = 'Win32_NetworkAdapterConfiguration';        # TCPIP
+my $nicwmi      = 'Win32_NetworkAdapterConfiguration';        # NIC Config
 my $tcpwmi      = 'Win32_PerfRawData_Tcpip_NetworkInterface'; # TCPIP
 $|= 1;                                                        # autoflush
 
@@ -87,8 +87,23 @@ my $logging = defined $l ? $l : 0;
 
 ### MAIN BODY
 
-my @nicstats = qw(PacketsReceivedPerSec BytesReceivedPerSec PacketsReceivedErrors PacketsReceivedDiscarded PacketsSentPerSec BytesSentPerSec PacketsOutboundErrors PacketsOutboundDiscarded OutputQueueLength PacketsPerSec BytesTotalPerSec CurrentBandwidth Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
+my @nicstats = qw(
+                   PacketsReceivedPerSec BytesReceivedPerSec 
+		   PacketsReceivedErrors PacketsReceivedDiscarded 
+		   PacketsSentPerSec     BytesSentPerSec 
+		   PacketsOutboundErrors PacketsOutboundDiscarded 
+		   OutputQueueLength     PacketsPerSec 
+		   BytesTotalPerSec      CurrentBandwidth 
+		   Timestamp_PerfTime    Frequency_PerfTime 
+		   Frequency_Sys100NS    Timestamp_Sys100NS
+		  );
 
+
+my @filter   =   ( 'isatap',
+                   'Microsoft Virtual WiFi Miniport Adapter',
+		   'Teredo Tunneling Pseudo-Interface',
+		   'Reusable ISATAP Interface'
+		 );
 
 
 # read configuration
@@ -116,7 +131,12 @@ my $list = $wmi->InstancesOf($tcpwmi)
     or die "Failed to get $tcpwmi instance object\n";
 
 foreach my $v (in $list) {
-    map{$nic_old->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
+
+    if (!grep { $v->{$key} =~ /$_/i } @filter) {
+
+        map{$nic_old->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
+
+    }
 }
 
 unless (defined &ContinueRun) {
@@ -319,11 +339,15 @@ sub get_nicstat {
 
     # map nic stats
     foreach my $v (in $list) {
-        map{$nic->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
+    
+        if (!grep { $v->{$key} =~ /$_/i } @filter) {
+
+            map{$nic->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
+	}
     }
 
     # get NACs
-    my %nacs = get_nac();
+    my %nac = get_nac();
     #print Dumper(%nacs);
 
 
@@ -332,7 +356,7 @@ sub get_nicstat {
 
     for my $k (keys %$nic) {
 
-        if (exists $nacs{$k} ) {
+        #if (exists $nacs{$k} ) {
 
 	# PERF_COUNTER_COUNTER
         $rxpkt = sprintf("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 
@@ -383,12 +407,43 @@ sub get_nicstat {
         # PERF_COUNTER_RAWCOUNT 
         $band = sprintf ("%d", $nic->{"$k"}->{'CurrentBandwidth'} );
 
-        my $nicname; 
-        map {$nicname = $nacs{$k}} keys %nacs;
+        my $nicname;
+
+        if (exists $nac{$k}) {
+
+            if ( $k =~ /\_\d+$/ ) {
+
+                my ($l, $r) = $k =~ /^(.*)(_\d+)$/;
+	        $l=~s/^\s+//; $l=~s/\s+$//;	
+	        $r=~s/^\s+//; $r=~s/\s+$//;	
+	        if (exists $nac{$l}) {
+		    $nicname = $nac{$l} . $r;
+		}
+
+            } else {
+
+                $nicname = $nac{$k};
+
+            }
+        } else {
+
+            if ( $k =~ /\_\d+$/ ) {
+		my ($l, $r) = $k =~ /^(.*)(_\d+)$/;
+	        $l=~s/^\s+//; $l=~s/\s+$//;	
+	        $r=~s/^\s+//; $r=~s/\s+$//;	
+               
+	        if (exists $nac{$l}) {
+		    $nicname = $nac{$l} . $r;
+		}
+	    }
+	}
+
+
+        #map {$nicname = $nacs{$k}} keys %nacs;
 
         $nstat{$k} = "$nicname:$rxpkt:$rxkbytes:$rxpkterr:$rxpktdrop:$txpkt:$txkbytes:$txpkterr:$txpktdrop:$ql:$rxtxpkt:$rxtxkbytes:$band";
 
-        }
+        #}
 
     }
 
@@ -396,25 +451,21 @@ sub get_nicstat {
 }
 
 
-
-
-
-
 # get_nac - get network adapter configuration
 #
 sub get_nac {
 
     my @nicids  =  (
-                'WAN Miniport',
-		'Microsoft ISATAP Adapter',
-		'RAS Async Adapter',
-		'Microsoft Virtual WiFi Miniport Adapter',
-		'VMware Virtual Ethernet Adapter',
-		'Microsoft Teredo Tunneling Adapter',
-		'Microsoft Kernel Debug Network Adapter',
-		'Hyper-V Virtual Switch Extension Adapter',
-		'Hyper-V Virtual Ethernet Adapter'
-                );
+                     'WAN Miniport',
+	     	     'Microsoft ISATAP Adapter',
+		     'RAS Async Adapter',
+		     'Microsoft Virtual WiFi Miniport Adapter',
+		     'VMware Virtual Ethernet Adapter',
+		     'Microsoft Teredo Tunneling Adapter',
+		     'Microsoft Kernel Debug Network Adapter',
+		     'Hyper-V Virtual Switch Extension Adapter',
+		     'Hyper-V Virtual Ethernet Adapter'
+                    );
 
     # get no of NICs
     my $wn = $wmi->InstancesOf('Win32_NetworkAdapterConfiguration')
@@ -428,9 +479,7 @@ sub get_nac {
 
         my $desc = $nic->{Description};
 
-	my $id   = $nic->{Index};
-
-	my $ser  = $nic->{ServiceName};
+	my $svc  = lc $nic->{ServiceName};
 
         if (!grep { $desc =~ /$_/i } @nicids) {
 
@@ -441,9 +490,7 @@ sub get_nac {
 	    $desc =~ s/\\/_/g;
 	    $desc =~ s/\#/_/g;
 
-	    my $nic_name = lc $nic->{ServiceName} . '_' . $id;
-
-            $nac{$desc}=$nic_name;
+            $nac{$desc}=$svc;
 	}
     }
 
@@ -785,7 +832,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.19, 2016-01-28 1724
+nicrec: 1.0.19, 2016-02-01 1321
 END
     return;
 }

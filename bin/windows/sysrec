@@ -108,18 +108,24 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 my $key = 'Name';
 
 ## cpu 
-my @cpustats = qw(PercentIdleTime PercentProcessorTime PercentPrivilegedTime PercentUserTime PercentInterruptTime PercentDPCTime TimeStamp_Sys100NS);
+my @cpustats = qw(
+                   PercentIdleTime       PercentProcessorTime 
+		   PercentPrivilegedTime PercentUserTime 
+		   PercentInterruptTime  PercentDPCTime  TimeStamp_Sys100NS
+		 );
 my $hash1 = {};
 my $list;
 
 ## disk
-my @diskstats = qw(DiskReadsPerSec DiskReadBytesPerSec PercentDiskReadTime DiskWritesPerSec DiskWriteBytesPerSec PercentDiskWriteTime CurrentDiskQueueLength PercentDiskTime DiskTransfersPerSec DiskBytesPerSec Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
+my @diskstats = qw(
+                   DiskReadsPerSec  DiskReadBytesPerSec  PercentDiskReadTime 
+		   DiskWritesPerSec DiskWriteBytesPerSec PercentDiskWriteTime 
+		   CurrentDiskQueueLength PercentDiskTime DiskTransfersPerSec 
+		   DiskBytesPerSec Timestamp_PerfTime Frequency_PerfTime 
+		   Frequency_Sys100NS Timestamp_Sys100NS
+		  );
 my $disk_old = {};
 my $list2;
-
-#init_cpu();
-##
-#init_disk();
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -180,17 +186,27 @@ sub Startup {
 	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
     }
 
-    $cpupct = sprintf("%.2f", (1 - get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentProcessorTime' )) * 100);
+    $cpupct = sprintf("%.2f", ( 1 - get_value( $hash1->{'_Total'}, 
+                                               $hash->{'_Total'}, 
+		                               'PercentProcessorTime' )) * 100);
 
-    $userpct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentUserTime' )* 100);
+    $userpct = sprintf("%.2f", get_value( $hash1->{'_Total'}, 
+                                          $hash->{'_Total'}, 
+					  'PercentUserTime' ) * 100);
 
-    $syspct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentPrivilegedTime' )* 100);
+    $syspct = sprintf("%.2f", get_value( $hash1->{'_Total'}, 
+                                         $hash->{'_Total'}, 
+					 'PercentPrivilegedTime' ) * 100);
 
-    $irqpct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentInterruptTime' )* 100);
+    $irqpct = sprintf("%.2f", get_value( $hash1->{'_Total'}, 
+                                         $hash->{'_Total'}, 
+					 'PercentInterruptTime' ) * 100);
 
-    $idlepct = sprintf("%.2f", get_value($hash1->{'_Total'}, $hash->{'_Total'}, 'PercentIdleTime' )* 100);
+    $idlepct = sprintf("%.2f", get_value( $hash1->{'_Total'}, 
+                                          $hash->{'_Total'}, 
+					  'PercentIdleTime' ) * 100);
 
-    my $sumpct = 0;
+    my $sumpct  = 0;
     my $headpct = 0;
 
     #my $e1 = [gettimeofday];
@@ -232,11 +248,12 @@ sub Startup {
         $swapfree = $obj->{FreeSpaceInPagingFiles};
     }
 
-    my $memused =  $memtotal - $memfree;
-    my $memusedpct = sprintf ("%.2f", ( $memused / $memtotal ) * 100 );
+    my $memused     = $memtotal - $memfree;
+    my $memusedpct  = sprintf ("%.2f", ( $memused / $memtotal ) * 100 );
     my $realfreepct = sprintf ("%.2f", ( $memfree / $memtotal ) * 100 );
-    my $swapused = $swaptotal - $swapfree;
-    my $swapusedpct = sprintf("%.2f", ($swaptotal - $swapfree) / $swaptotal * 100); 
+    my $swapused    = $swaptotal - $swapfree;
+    my $swapusedpct = sprintf("%.2f", 
+                                ($swaptotal - $swapfree) / $swaptotal * 100); 
   
     #my $e3 = [gettimeofday];
     #my $delta3  = tv_interval ($s3, $e3);
@@ -264,44 +281,53 @@ sub Startup {
     }
 
     #PERF_COUNTER_COUNTER
-    $reads = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-                                    'DiskReadsPerSec'));
+    $reads = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+                                      $disk->{'_Total'},
+                                      'DiskReadsPerSec') );
 
     #PERF_COUNTER_BULK_COUNT
-    $rkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-                                       'DiskReadBytesPerSec') / 1024);
+    $rkbytes = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+                                        $disk->{'_Total'},
+                                        'DiskReadBytesPerSec') / 1024 );
 
     # PERF_PRECISION_100NS_TIMER
-    $rbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
-	                                'PercentDiskReadTime'));
+    $rbusypct = sprintf("%.2f", get_pct( $disk_old->{'_Total'}, 
+                                         $disk->{'_Total'},
+	                                 'PercentDiskReadTime') );
 
     #PERF_COUNTER_COUNTER
-    $writes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-                                   'DiskWritesPerSec'));
+    $writes = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+                                       $disk->{'_Total'},
+                                       'DiskWritesPerSec') );
 
     #PERF_COUNTER_BULK_COUNT
-    $wkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-                                      'DiskWriteBytesPerSec') / 1024);
+    $wkbytes = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+                                        $disk->{'_Total'},
+                                        'DiskWriteBytesPerSec') / 1024 );
 
     # PERF_PRECISION_100NS_TIMER
-    $wbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
-                                        'PercentDiskWriteTime'));
+    $wbusypct = sprintf("%.2f", get_pct( $disk_old->{'_Total'}, 
+                                         $disk->{'_Total'},
+                                         'PercentDiskWriteTime') );
 
     # PERF_COUNTER_RAWCOUNT
     $cql = sprintf("%.2f", $disk->{'_Total'}->{'CurrentDiskQueueLength'});
 
 
     # PERF_PRECISION_100NS_TIMER
-    $busypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
-			              'PercentDiskTime'));
+    $busypct = sprintf("%.2f", get_pct( $disk_old->{'_Total'}, 
+                                        $disk->{'_Total'},
+			                'PercentDiskTime') );
 
     #PERF_COUNTER_COUNTER
-    $iops = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-                                   'DiskTransfersPerSec'));
+    $iops = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+                                     $disk->{'_Total'},
+                                     'DiskTransfersPerSec') );
 
     #PERF_COUNTER_BULK_COUNT
-    $krw = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
-                                   'DiskBytesPerSec') / 1024);
+    $krw = sprintf("%.2f", get_dif( $disk_old->{'_Total'}, 
+                                    $disk->{'_Total'},
+                                    'DiskBytesPerSec') / 1024 );
 
     #my $e4 = [gettimeofday];
     #my $delta4  = tv_interval ($s4, $e4);

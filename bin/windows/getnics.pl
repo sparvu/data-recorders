@@ -106,9 +106,14 @@ if ($deprecated) {
 
     my %names = get_nac();
 
+    #print "\n\n";
+    #print Dumper (%names);
+
+    print "\n";
     get_nics();
 
     print "NIC(s) discovered and ready to be processed:\n";
+    my $cnt = 0;
 
     for my $k (keys %nics) {
 
@@ -117,26 +122,30 @@ if ($deprecated) {
             if ( $k =~ /\_\d+$/ ) {
 
                 my ($l, $r) = $k =~ /^(.*)(_\d+)$/;
-		my $nn = $names{$k} . "_" . $r;
-                print " $nn => $k\n";
+	        $l=~s/^\s+//; $l=~s/\s+$//;	
+	        $r=~s/^\s+//; $r=~s/\s+$//;	
+	        if (exists $names{$l}) {
+		    my $nn = $names{$l} . $r;
+                    print " $nn => $k\n";
+		}
 
             } else {
-                print " |k=$k|\n"; 
-		my $nn = $names{$k} . "_" ;
-                print " |nn=$nn|\n"; 
-
+	
 	        print " $names{$k} => $k \n";
 
             }
         } else {
 
             if ( $k =~ /\_\d+$/ ) {
-
 		my ($l, $r) = $k =~ /^(.*)(_\d+)$/;
-		#print "left: $l\n";
-		#print "right: $r\n";
-		my $nn = $names{$k} . "_" . $r;
-                print " $nn => $k\n";
+	        $l=~s/^\s+//; $l=~s/\s+$//;	
+	        $r=~s/^\s+//; $r=~s/\s+$//;	
+               
+	        if (exists $names{$l}) {
+		    my $nn = $names{$l} . $r;
+                    print " $nn => $k\n";
+		}
+		 
 	    }
 
 	}
@@ -196,7 +205,7 @@ sub get_nics {
            "Win32_PerfRawData_Tcpip_NetworkInterface calls:",
            $delta1;
 
-    print "\n";
+    print "\n\n";
 
     return;
 }
@@ -374,7 +383,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-getnics: 1.0.19, 2016-01-31 1720
+getnics: 1.0.19, 2016-02-01 1229
 END
     exit 0;
 }

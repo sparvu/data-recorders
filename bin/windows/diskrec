@@ -39,6 +39,7 @@ use JSON;
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
 my $recid           = 'diskrec';
+my $key             = 'Name';
 my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
 my ($l, $v, $h, $V) = 0;
 our %Config         = (ServiceName => $recid);
@@ -83,7 +84,7 @@ my $logging = defined $l ? $l : 0;
 # read configuration
 my $cdata = open_config($cf);
 
-my ( $blog, $clog, $dlog ) = getlog($cdata);
+my ( $blog, $clog, $dlog ) = get_log($cdata);
 
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
@@ -97,9 +98,25 @@ if ($logging) {
     writelog ("info: started");
 }
 
+
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
+
+
+## disk
+my @diskstats = qw(
+                    DiskReadsPerSec DiskReadBytesPerSec PercentDiskReadTime 
+		    DiskWritesPerSec DiskWriteBytesPerSec PercentDiskWriteTime 
+		    CurrentDiskQueueLength PercentDiskTime DiskTransfersPerSec 
+		    DiskBytesPerSec Timestamp_PerfTime Frequency_PerfTime 
+		    Frequency_Sys100NS Timestamp_Sys100NS
+		   );
+
+my $disk_old = {};
+my $list2;
+
+
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -110,7 +127,7 @@ unless (defined &ContinueRun) {
 if (RunningAsService()) {
 
     # get service sample interval
-    $interval = getssi($cdata);
+    $interval = get_ssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
@@ -141,11 +158,11 @@ sub Startup {
 
     my $s1 = [gettimeofday];
 
-    my %diskname = getdisk();
+    my %diskname = get_disk();
 
     my $e1 = [gettimeofday];
     my $delta1 = tv_interval ($s1, $e1);
-    print " getdisk took: $delta1\n";
+    print " get_disk took: $delta1\n";
 
     ### verbose
     if ($verbose) {
@@ -332,9 +349,73 @@ sub k_sleep {
 }
 
 
-# getdisk -- get disks, logic drive
+##
+# get_value - get delta between samples
 #
-sub getdisk {
+sub get_value {
+    my ($h1, $h2, $property) = @_;
+
+    my $delta = ( 
+                  ($h2->{$property}            - $h1->{$property}) /
+                  ($h2->{'TimeStamp_Sys100NS'} - $h1->{'TimeStamp_Sys100NS'}));
+
+    $delta = 1 if $delta > 1;
+
+    return $delta;
+}
+
+
+# get_dif - get delta between samples as a difference
+#
+sub get_dif {
+    my $h1 = shift;
+    my $h2 = shift;
+    my $p = shift;
+    my $delta = 0;
+
+    # timestamp
+    my $n2 = $h2->{'Timestamp_PerfTime'};
+    my $n1 = $h1->{'Timestamp_PerfTime'};
+    my $n = $n2 - $n1;
+
+    # frequency
+    my $f2 = $h2->{'Frequency_PerfTime'};
+    my $nf = $n / $f2;
+
+    # data
+    $delta = $h2->{$p} - $h1->{$p};
+
+    # result
+    return $delta / $nf;
+}
+
+
+# get_pct - get delta between samples as a percentage
+#
+sub get_pct {
+
+    my $h1 = shift;
+    my $h2 = shift;
+    my $p  = shift;
+
+    my $d  = $h2->{$p} - $h1->{$p};
+
+    # timestamp
+										    my $n2 = $h2->{'Timestamp_Sys100NS'};
+    my $n1 = $h1->{'Timestamp_Sys100NS'};
+    my $n = $n2 - $n1;
+
+    return $d / $n;
+}
+
+
+
+
+
+
+# get_disk -- get disks, logic drive
+#
+sub get_disk {
 
     my %disk;
 
@@ -481,9 +562,9 @@ sub open_config {
 }
 
 
-# getssi - get service sample interval
+# get_ssi - get service sample interval
 #
-sub getssi {
+sub get_ssi {
     my ($data) = @_;
 
     my $ssi = $data->{'sampling_interval'}->{"$recid"};
@@ -493,9 +574,9 @@ sub getssi {
 }
 
 
-# getlog - get log directory information
+# get_log - get log directory information
 #
-sub getlog {
+sub get_log {
     my ($data) = @_;
 
     my $bpath = $data->{'log'}->{'base_path'};
@@ -716,3 +797,76 @@ diskrec: 1.0.19, 2016-01-20 1638
 END
     return;
 }
+
+## disk
+my @diskstats = qw(DiskReadsPerSec DiskReadBytesPerSec PercentDiskReadTime DiskWritesPerSec DiskWriteBytesPerSec PercentDiskWriteTime CurrentDiskQueueLength PercentDiskTime DiskTransfersPerSec DiskBytesPerSec Timestamp_PerfTime Frequency_PerfTime Frequency_Sys100NS Timestamp_Sys100NS);
+my $disk_old = {};
+my $list2;
+
+
+    #$list2 = $wmi->InstancesOf("Win32_PerfRawData_PerfDisk_PhysicalDisk")
+#	    or die "Cannot get Win32 PerfDisks\n";
+
+    #my $disk = {};
+
+    #foreach my $v (in $list2) {
+    #    next if $v->{$key} ne '_Total';
+    #    map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
+    #}
+
+    #PERF_COUNTER_COUNTER
+    #$reads = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+#                                    'DiskReadsPerSec'));
+
+    #PERF_COUNTER_BULK_COUNT
+    #$rkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+#                                       'DiskReadBytesPerSec') / 1024);
+
+    # PERF_PRECISION_100NS_TIMER
+    #$rbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+#	                                'PercentDiskReadTime'));
+
+    #PERF_COUNTER_COUNTER
+    #$writes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                               'DiskWritesPerSec'));
+
+    #PERF_COUNTER_BULK_COUNT
+    #$wkbytes = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                                  'DiskWriteBytesPerSec') / 1024);
+
+    # PERF_PRECISION_100NS_TIMER
+    #$wbusypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                                    'PercentDiskWriteTime'));
+
+    # PERF_COUNTER_RAWCOUNT
+    #$cql = sprintf("%.2f", $disk->{'_Total'}->{'CurrentDiskQueueLength'});
+
+
+    # PERF_PRECISION_100NS_TIMER
+    #$busypct = sprintf("%.2f", get_pct($disk_old->{'_Total'}, $disk->{'_Total'},
+#			              'PercentDiskTime'));
+
+    ##PERF_COUNTER_COUNTER
+    #$iops = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                               'DiskTransfersPerSec'));
+
+    #PERF_COUNTER_BULK_COUNT
+    #$krw = sprintf("%.2f", get_dif($disk_old->{'_Total'}, $disk->{'_Total'},
+    #                               'DiskBytesPerSec') / 1024);
+
+    #my $e4 = [gettimeofday];
+    #my $delta4  = tv_interval ($s4, $e4);
+    #print " Disk Win32_PerfFormattedData_PerfDisk_PhysicalDisk: $delta4 sec\n";
+
+
+sub init_disk {
+
+    $list2 = $wmi->InstancesOf('Win32_PerfRawData_PerfDisk_PhysicalDisk')
+          or die "Failed to get instance object\n";
+
+    foreach my $v2 (in $list2) {
+        next if $v2->{$key} ne '_Total';
+	map{$disk_old->{$v2->{$key}}->{$_}  = $v2->{$_} }@diskstats;
+    }
+}
+

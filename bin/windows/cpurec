@@ -105,8 +105,10 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $key = 'Name';
 
-my @cpustats = qw(PercentIdleTime PercentProcessorTime PercentPrivilegedTime PercentUserTime PercentInterruptTime PercentDPCTime TimeStamp_Sys100NS);
-
+my @cpustats = qw(
+                   PercentIdleTime       PercentProcessorTime 
+		   PercentPrivilegedTime PercentUserTime 
+		   PercentInterruptTime  PercentDPCTime TimeStamp_Sys100NS);
 my $hash1 = {};
 
 my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
