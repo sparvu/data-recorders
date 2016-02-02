@@ -80,6 +80,14 @@ my $logging = defined $l ? $l : 0;
 
 ### MAIN BODY
 
+# set HIGH priority
+my $curentProcess;
+
+my $pid = Win32::Process::GetCurrentProcessID();
+
+if (Win32::Process::Open($curentProcess, $pid, 0)) {
+    $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+}
 
 # read configuration
 my $cdata = open_config($cf);
@@ -133,14 +141,6 @@ if (RunningAsService()) {
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
-
-    my $curentProcess;
-
-    my $pid = Win32::Process::GetCurrentProcessID();
-
-    if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
-    }
 
     writelog ("info: started");
 }
@@ -625,7 +625,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.19, 2016-01-28 1729
+cpurec: 1.0.19, 2016-02-02 1046
 END
     return;
 }

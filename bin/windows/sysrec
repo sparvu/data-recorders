@@ -82,11 +82,20 @@ my $logging = defined $l ? $l : 0;
 
 ### MAIN BODY
 
+# set HIGH priority
+my $curentProcess;
+
+my $pid = Win32::Process::GetCurrentProcessID();
+
+if (Win32::Process::Open($curentProcess, $pid, 0)) {
+    $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+}
+
 # read configuration
 my $cdata = open_config($cf);
 
 # get log dir configuration
-my ( $blog, $clog, $dlog ) = getlog($cdata);
+my ( $blog, $clog, $dlog ) = get_log($cdata);
 
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
@@ -106,24 +115,26 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $key = 'Name';
 
-## cpu 
+
+## CPU
 my @cpustats  = qw(
-                    PercentIdleTime       PercentProcessorTime 
-		    PercentPrivilegedTime PercentUserTime 
-		    PercentInterruptTime  PercentDPCTime  
+                    PercentIdleTime       PercentProcessorTime
+		    PercentPrivilegedTime PercentUserTime
+		    PercentInterruptTime  PercentDPCTime
 		    TimeStamp_Sys100NS
 		  );
 my $hash1 = {};
-my $list;
+my $list1;
 
-## disk
+
+## DISK
 my @diskstats = qw(
-                    DiskReadsPerSec        DiskReadBytesPerSec  
-		    PercentDiskReadTime    DiskWritesPerSec 
-		    DiskWriteBytesPerSec   PercentDiskWriteTime 
-		    CurrentDiskQueueLength PercentDiskTime 
-		    DiskTransfersPerSec    DiskBytesPerSec 
-		    Timestamp_PerfTime     Frequency_PerfTime 
+                    DiskReadsPerSec        DiskReadBytesPerSec
+		    PercentDiskReadTime    DiskWritesPerSec
+		    DiskWriteBytesPerSec   PercentDiskWriteTime
+		    CurrentDiskQueueLength PercentDiskTime
+		    DiskTransfersPerSec    DiskBytesPerSec
+		    Timestamp_PerfTime     Frequency_PerfTime
 		    Frequency_Sys100NS     Timestamp_Sys100NS
 		  );
 
@@ -131,19 +142,18 @@ my $disk_old = {};
 my $list2;
 
 
-## nic
+## NIC
 my @nicstats = qw(
                    PacketsReceivedPerSec BytesReceivedPerSec
                    PacketsReceivedErrors PacketsReceivedDiscarded
 		   PacketsSentPerSec     BytesSentPerSec
 		   PacketsOutboundErrors PacketsOutboundDiscarded
-		   OutputQueueLength     PacketsPerSec
-		   BytesTotalPerSec      CurrentBandwidth
-		   Timestamp_PerfTime    Frequency_PerfTime
-		   Frequency_Sys100NS    Timestamp_Sys100NS
+		   PacketsPerSec         BytesTotalPerSec      
+		   Timestamp_PerfTime    Timestamp_Sys100NS
+		   Frequency_PerfTime    Frequency_Sys100NS    
 		 );
 
-my @filter   =   ( 
+my @filter   =   (
                    'isatap',
 	           'Microsoft Virtual WiFi Miniport Adapter',
 	           'Teredo Tunneling Pseudo-Interface',
@@ -151,8 +161,8 @@ my @filter   =   (
 	         );
 
 my $nic_old = {};
+my $nic;
 my $list3;
-
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -161,21 +171,12 @@ unless (defined &ContinueRun) {
 }
 
 if (RunningAsService()) {
-
     # get service sample interval
-    $interval = getssi($cdata);
+    $interval = get_ssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
-
-    my $curentProcess;
-
-    my $pid = Win32::Process::GetCurrentProcessID();
-
-    if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
-    }
 
     writelog ("info: started");
 }
@@ -186,7 +187,6 @@ if (RunningAsService()) {
 
 sub Startup {
 
-
     init_cpu();
 
     init_disk();
@@ -195,7 +195,7 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    #k_sleep();
+     k_sleep();
 
     #my $start = [gettimeofday];
 
@@ -205,12 +205,12 @@ sub Startup {
 
     my ($cpupct, $userpct, $idlepct, $syspct, $irqpct); 
 
-    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+    $list1 = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
          or die "Failed to get instance object\n";
 
     my $hash = {};
 
-    foreach my $w32 (in $list) {
+    foreach my $w32 (in $list1) {
         next if $w32->{$key} ne '_Total';
 	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
     }
@@ -365,19 +365,21 @@ sub Startup {
 
     # NIC IO statistics
     # metrics
-    my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,
-        $txpkt, $txkbytes, $txpkterr,  $txpktdrop,
-	$ql,    $rxtxpkt,  $rxtxkbytes,$band );
 
-    $rxpkt = $rxkbytes = $rxpkterr = $rxpktdrop = $txpkt = $txkbytes = $txpkterr = $txpktdrop = $ql = $rxtxpkt = $rxtxkbytes = $band = 0;
+    $nic = {};
 
+    my ($rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop,
+        $txpkt,    $txkbytes, $txpkterr,  $txpktdrop,
+	$rxtxpkt,  $rxtxkbytes ) = get_nicstat();
 
-    # get no of NICs
+    #$rxpkt = $rxkbytes = $rxpkterr = $rxpktdrop = $txpkt = $txkbytes = $txpkterr = $txpktdrop = $rxtxpkt = $rxtxkbytes = 0;
+
 
 
     # save to old
     $hash1 = $hash;
     $disk_old = $disk;
+    $nic_old = $nic;
 
     # end payload
     my $tnow = [gettimeofday];
@@ -386,8 +388,6 @@ sub Startup {
     #my $elapsed = tv_interval ($start, $tnow);
     #my $stime = 1;
     #if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
-
-
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -496,11 +496,10 @@ sub Remove {
 # CPU Initialization
 #
 sub init_cpu {
-
-    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+    $list1 = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
         or die "Failed to get instance object\n";
 
-    foreach my $w32 (in $list) {
+    foreach my $w32 (in $list1) {
         next if $w32->{$key} ne '_Total';
         map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
     }
@@ -511,7 +510,6 @@ sub init_cpu {
 # Disk IO Initialization
 #
 sub init_disk {
-
     $list2 = $wmi->InstancesOf('Win32_PerfRawData_PerfDisk_PhysicalDisk')
           or die "Failed to get instance object\n";
 
@@ -525,16 +523,12 @@ sub init_disk {
 # NIC initialization
 #
 sub init_nic {
-
     $list3 = $wmi->InstancesOf($tcpwmi)
           or die "Failed to get instance object\n";
 
     foreach my $v3 (in $list3) {
-
         if (!grep { $v3->{$key} =~ /$_/i } @filter) {
-
             map{$nic_old->{$v3->{$key}}->{$_} = $v3->{$_} }@nicstats;
-
 	}
     }
 }
@@ -543,7 +537,6 @@ sub init_nic {
 # k_sleep - sleeps exact number of usec
 #
 sub k_sleep {
-
     my $t = [gettimeofday];
     my $next = (int($t->[0]/$interval) + 1 ) * $interval;
     my $delta = tv_interval ($t, [$next, 0]);
@@ -617,7 +610,150 @@ sub get_pct {
 }
 
 
+# get_nicstat - returns nic statistics
+#
+sub get_nicstat {
 
+    my ($rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop,
+        $txpkt,    $txkbytes, $txpkterr,  $txpktdrop,
+	$rxtxpkt,  $rxtxkbytes );
+
+    $list3 = $wmi->InstancesOf($tcpwmi) or 
+        die "Failed to get $tcpwmi instance object\n";
+
+    # map nic stats
+    foreach my $v (in $list3) {
+    
+        if (!grep { $v->{$key} =~ /$_/i } @filter) {
+
+            map{$nic->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
+	}
+    }
+
+    # get NACs
+    # my %nac = get_nac();
+    #print Dumper(%nacs);
+
+    #print "NICs " . keys(%$ntcp) . ".\n";
+    #print Dumper($nictcp);
+
+    my $nic_count = 0;
+
+    for my $k (keys %$nic) {
+
+	# PERF_COUNTER_COUNTER
+        $rxpkt += sprintf("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 
+		                          'PacketsReceivedPerSec' ) );
+
+	# PERF_COUNTER_COUNTER
+        $rxkbytes += sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
+	                                       'BytesReceivedPerSec') / 1024 );
+
+        # PERF_COUNTER_RAWCOUNT 
+        $rxpkterr += sprintf ("%d", $nic->{"$k"}->{'PacketsReceivedErrors'} );
+
+        # PERF_COUNTER_RAWCOUNT 
+        $rxpktdrop += sprintf ("%d", 
+	                      $nic->{"$k"}->{'PacketsReceivedDiscarded'} );
+
+	# PERF_COUNTER_COUNTER
+        $txpkt += sprintf("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 
+			                  'PacketsSentPerSec' ) );
+
+	# PERF_COUNTER_COUNTER
+        $txkbytes += sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
+	                                       'BytesSentPerSec') / 1024 );
+
+        # PERF_COUNTER_RAWCOUNT 
+        $txpkterr += sprintf ("%d", $nic->{"$k"}->{'PacketsOutboundErrors'} );
+
+        # PERF_COUNTER_RAWCOUNT 
+        $txpktdrop += sprintf ("%d", 
+	                      $nic->{"$k"}->{'PacketsOutboundDiscarded'} );
+
+			
+        # PERF_COUNTER_RAWCOUNT 
+        #$ql += sprintf ("%.2f", $nic->{"$k"}->{'OutputQueueLength'} );
+       
+
+	# PERF_COUNTER_COUNTER
+        # $rxtxpkt   = $rxpkt + $txpkt;
+        #$rxtxpkt += sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
+	#                                      'PacketsPerSec') );
+
+	# PERF_COUNTER_BULK_COUNT
+        # $rxtxkbytes= $rxkbytes + $txkbytes;
+        #$rxtxkbytes += sprintf ("%.2f", get_diff( $nic_old->{"$k"}, 
+	#                                         $nic->{"$k"},
+        #                                         'BytesTotalPerSec') / 1024 );
+
+	$nic_count++;
+
+    }
+
+    $rxpkt     /= $nic_count;
+    $rxkbytes  /= $nic_count;
+    $rxpkterr  /= $nic_count;
+    $rxpktdrop /= $nic_count;
+
+    $txpkt     /= $nic_count;
+    $txkbytes  /= $nic_count;
+    $txpkterr  /= $nic_count;
+    $txpktdrop /= $nic_count;
+
+    $rxtxpkt    = $rxpkt + $txpkt;
+    $rxtxkbytes = $rxkbytes + $txkbytes;
+
+    return ($rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop,
+            $txpkt,    $txkbytes, $txpkterr,  $txpktdrop,
+	    $rxtxpkt,  $rxtxkbytes ); 
+}
+
+
+# get_nac - get network adapter configuration
+#
+sub get_nac {
+
+    my @nicids  =  (
+                     'WAN Miniport',
+	     	     'Microsoft ISATAP Adapter',
+		     'RAS Async Adapter',
+		     'Microsoft Virtual WiFi Miniport Adapter',
+		     'VMware Virtual Ethernet Adapter',
+		     'Microsoft Teredo Tunneling Adapter',
+		     'Microsoft Kernel Debug Network Adapter',
+		     'Hyper-V Virtual Switch Extension Adapter',
+		     'Hyper-V Virtual Ethernet Adapter'
+                    );
+
+    # get no of NICs
+    my $wn = $wmi->InstancesOf($nicwmi)
+        or die "Failed to get instance object\n";
+
+    # Network Adapter Configuration
+    my %nac;
+
+    foreach my $nic (in $wn) {
+
+        my $desc = $nic->{Description};
+
+	my $svc  = lc $nic->{ServiceName};
+
+        if (!grep { $desc =~ /$_/i } @nicids) {
+
+            # marked, filter /\()
+            $desc =~ s/\(/[/g;
+	    $desc =~ s/\)/]/g;
+	    $desc =~ s/\//_/g;
+	    $desc =~ s/\\/_/g;
+	    $desc =~ s/\#/_/g;
+
+            $nac{$desc}=$svc;
+	}
+    }
+
+    return %nac;
+}
 
 
 # print_raw - print krd raw data
@@ -780,9 +916,9 @@ sub open_config {
 }
 
 
-# getssi - get service sample interval
+# get_ssi - get service sample interval
 #
-sub getssi {
+sub get_ssi {
     my ($data) = @_;
 
     my $ssi = $data->{'sampling_interval'}->{"$recid"};
@@ -793,9 +929,9 @@ sub getssi {
 
 
 
-# getlog - get log directory information
+# get_log - get log directory information
 #
-sub getlog {
+sub get_log {
     my ($data) = @_;
 
     my $bpath = $data->{'log'}->{'base_path'};
@@ -1091,7 +1227,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.19, 2016-01-28 1728
+sysrec: 1.0.19, 2016-02-02 1102
 END
     return;
 }
