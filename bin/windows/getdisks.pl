@@ -31,7 +31,7 @@ use Win32;
 
 
 # Debug Only
-use Data::Dumper;
+#use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";

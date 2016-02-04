@@ -24,7 +24,7 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday usleep tv_interval);
+use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -33,7 +33,7 @@ use JSON;
 
 
 # Debug Only
-# use Data::Dumper;
+use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -69,7 +69,6 @@ else {
 }
 
 ### Variables
-my $diskwmi     = 'Win32_PerfRawData_PerfDisk_LogicalDisk';
 my $loop        = 0;                      # current loop number
 my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
@@ -113,22 +112,18 @@ if ($logging) {
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
 
+
 ## disk
 my @diskstats = qw(
                     DiskReadsPerSec        DiskReadBytesPerSec
-		    PercentDiskReadTime    AvgDiskSecPerRead 
-		    DiskWritesPerSec       DiskWriteBytesPerSec 
+		    PercentDiskReadTime    AvgDiskSecPerRead
+		    DiskWritesPerSec       DiskWriteBytesPerSec
 		    PercentDiskWriteTime   AvgDiskSecPerWrite
-		    CurrentDiskQueueLength PercentDiskTime 
-		    DiskTransfersPerSec    DiskBytesPerSec 
-		    Freemegabytes          PercentFreeSpace 
-		    Timestamp_PerfTime     Frequency_PerfTime 
+		    CurrentDiskQueueLength PercentDiskTime
+		    DiskTransfersPerSec    DiskBytesPerSec
+		    Timestamp_PerfTime     Frequency_PerfTime
 		    Frequency_Sys100NS     Timestamp_Sys100NS
-		   );
-
-my @filter   =   ( 'Harddisk',
-                   '_Total'
-                 );
+		  );
 
 my $disk_old = {};
 my $list;
@@ -161,15 +156,39 @@ sub Startup {
 
     while(ContinueRun()) {
 
-    k_sleep();
+    my $start = [gettimeofday];
+
+    my %dstat;
+    my ($di, $dkey);
 
     my $s1 = [gettimeofday];
 
-    my %dstat;
+    my %diskname = get_disk();
 
-    my ($di, $dkey);
+    my $e1 = [gettimeofday];
+    my $delta1 = tv_interval ($s1, $e1);
+    print " get_disk took: $delta1\n";
 
-    # my %diskname = get_disk();
+    ### verbose
+    #if ($verbose) {
+    #    my $entries = keys (%diskname);
+    #    if (RunningAsService()) {
+    #        writelog ("info: Number of disks: $entries");
+    #        for my $key (keys %diskname) {
+    #            my $value = $diskname{$key};
+    #            writelog ("info: disk$key => $value");
+    #        }
+#
+#	} else {
+#            writelog ("info: Number of disks: $entries")
+#	      if ($logging);
+#            print "info: Number of disks: $entries\n";
+#            for my $key (keys %diskname) {
+#                my $value = $diskname{$key};
+#                print "info: disk$key => $value\n";
+#            }
+#	}
+#    }
 
     my $l;
 
@@ -177,121 +196,73 @@ sub Startup {
     # metrics
     my ($reads,  $rkbytes, $rbusypct, $rtime,
         $writes, $wkbytes, $wbusypct, $wtime,
-	$cql,    $busypct, $iops,     $rwkbytes );
+	$ql,     $busypct,  $iops,    $rwkbytes );
 
-    my ($lsize, $lfree, $lfreepct, $usedpct);
+    my ($lsize, $lfree, $lfreepct);
 
 
+    my $s2 = [gettimeofday];
     my $disk = {};
 
-    $list = $wmi->InstancesOf($diskwmi)
-        or die "Failed to get $diskwmi instance object\n";
+    for my $k (keys %diskname) {
 
+        $l = $diskname{$k};
+	$di = $k . " " . $l;
+	$l =~ s/\://;
+	#$dkey = lc "disk" . $k . "_" . $l;
+	$dkey = lc "disk" . $k;
 
-    foreach my $v (in $list) {
-
-        if (! grep { $v->{$key} =~ /$_/i } @filter ) {
-
-	    map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
-	}
-    }
-
-
-    for my $k (keys %$disk) {
-
-        my $dn = $k;
-	$dn =~ s/\://; $dn =~s/\s+//;
-        my $diskname = "disk" . $dn;
-
-        
-        #PERF_COUNTER_COUNTER
-        $reads = sprintf("%.2f", get_diff( $disk_old->{"$k"},
-                                 $disk->{"$k"},
-			        'DiskReadsPerSec') );
-
-        #PERF_COUNTER_BULK_COUNT
-        $rkbytes = sprintf("%.2f", get_diff( $disk_old->{"$k"},
-	                                     $disk->{"$k"},
-					     'DiskReadBytesPerSec') / 1024 );
-
-        # PERF_PRECISION_100NS_TIMER
-	$rbusypct = sprintf("%.2f", get_pct( $disk_old->{"$k"},
-	                                     $disk->{"$k"},
-	                                     'PercentDiskReadTime') );
-
-        # PERF_AVERAGE_TIMER
-	#$rtime = sprintf("%.2f", get_avg( $disk_old->{"$k"},
-	#                                  $disk->{"$k"},
-	#                                  'AvgDiskSecPerRead') );
-
-
-        #PERF_COUNTER_COUNTER
-        $writes = sprintf("%.2f", get_diff( $disk_old->{"$k"},
-	                                    $disk->{"$k"},
-	                                    'DiskWritesPerSec') );
-
-										        #PERF_COUNTER_BULK_COUNT
-	$wkbytes = sprintf("%.2f", get_diff( $disk_old->{"$k"},
-	                                     $disk->{"$k"},
-	                                     'DiskWriteBytesPerSec') / 1024 );
-
-        # PERF_PRECISION_100NS_TIME
-        $wbusypct = sprintf("%.2f", get_pct( $disk_old->{"$k"},
-                                             $disk->{"$k"},
-                                             'PercentDiskWriteTime') );
-
-        # PERF_AVERAGE_TIMER
-	#$wtime = sprintf("%.2f", get_avg( $disk_old->{"$k"},
-	#                                  $disk->{"$k"},
-	#                                  'AvgDiskSecPerWrite') );
-
-
-        # PERF_COUNTER_RAWCOUNT
-        $cql = sprintf("%.2f", $disk->{"$k"}->{'CurrentDiskQueueLength'});
-
-
-        # PERF_PRECISION_100NS_TIMER
-        $busypct = sprintf("%.2f", get_pct( $disk_old->{"$k"},
-                                            $disk->{"$k"},
-                                            'PercentDiskTime') );
-
-        #PERF_COUNTER_COUNTER
-	$iops = sprintf("%.2f", get_diff( $disk_old->{"$k"},
-	                                  $disk->{"$k"},
-	                                  'DiskTransfersPerSec') );
-
-	#PERF_COUNTER_BULK_COUNT
-	$rwkbytes = sprintf("%.2f", get_diff( $disk_old->{"$k"},
-	                                 $disk->{"$k"},
-	                                 'DiskBytesPerSec') / 1024 );
 
         # Inventory data
-	my $wdinv =
-	$wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$k'");
+        my $wdinv = 
+	 $wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$l:'");
 
-	foreach my $obj (in $wdinv) {
-	    $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
-	}
- 
-        $lfree    = sprintf ("%.2f", $disk->{"$k"}->{'Freemegabytes'} / 1024);
+        foreach my $obj (in $wdinv) {
+            $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
+        }
+
+        # Performance Metrics
+        my $wdstat = 
+	$wmi->ExecQuery("SELECT * FROM Win32_PerfRawData_PerfDisk_LogicalDisk Where Name='$l:'");
+
+        foreach my $obj (in $wdstat) {
+            $reads    = $obj->{DiskReadsPerSec};
+            $rkbytes  = sprintf "%.2f", $obj->{DiskReadBytesPerSec} / 1024;
+            $rbusypct = $obj->{PercentDiskReadTime};
+
+            $writes   = $obj->{DiskWritesPerSec};
+            $wkbytes  = sprintf "%.2f", $obj->{DiskWriteBytesPerSec} / 1024;
+            $wbusypct = $obj->{PercentDiskWriteTime};
+
+    	    $ql       = $obj->{CurrentDiskQueueLength};
+	    $busypct  = $obj->{PercentDiskTime};
+
+       	    $iops     = $obj->{DiskTransfersPerSec};
+	    $rwkbytes = sprintf "%.2f", $obj->{DiskBytesPerSec} / 1024;
 
 
-	$usedpct = sprintf ("%.2f", 100 - (100 * ($lfree / $lsize)));
+            $lfree    = sprintf "%.2f", $obj->{FreeMegaBytes} / 1024;
+            $lfreepct = 100 - $obj->{PercentFreeSpace};
+        }
 
-
-        $dstat{$k} = "$diskname:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$cql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$usedpct";
-
+       
+        $dstat{$dkey} = 
+	"$dkey:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$ql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$lfreepct";
     }
 
     $disk_old = $disk;
 
-
-    #my $e1 = [gettimeofday];
-    #my $delta1 = tv_interval ($s1, $e1);
-    #print " disk processing took: $delta1\n";
+    my $e2 = [gettimeofday];
+    my $delta2 = tv_interval ($s2, $e2);
+    print " disk processing took: $delta2\n";
 
     # end payload
     my $tnow = [gettimeofday];
+
+    my $elapsed = tv_interval ($start, $tnow);
+
+    my $stime = 1;
+    if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
 
     # cktime for rotation
     if (RunningAsService()) {
@@ -302,6 +273,7 @@ sub Startup {
 
         putraw($$tnow[0], %dstat);
 	$last_time = $$tnow[0];
+        sleep($stime);
 
     } else {
 
@@ -313,6 +285,7 @@ sub Startup {
         }
 
 	$last_time = $$tnow[0];
+        sleep($stime);
 	next;
     }
 
@@ -382,17 +355,80 @@ sub k_sleep {
 
 sub init_disk {
 
-    $list = $wmi->InstancesOf($diskwmi)
-          or die "Failed to get $diskwmi instance object\n";
+    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfDisk_LogicalDisk')
+              or die "Failed to get instance object\n";
 
     foreach my $v (in $list) {
-
-        if (! grep { $v->{$key} =~ /$_/i } @filter ) {
-
-	    map{$disk_old->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
-	}
+        next if $v->{$key} eq '_Total';
+	map{$disk_old->{$v->{$key}}->{$_} = $v->{$_} }@diskstats;
     }
 }
+
+
+
+
+##
+# get_value - get delta between samples
+#
+sub get_value {
+    my ($h1, $h2, $property) = @_;
+
+    my $delta = ( 
+                  ($h2->{$property}            - $h1->{$property}) /
+                  ($h2->{'TimeStamp_Sys100NS'} - $h1->{'TimeStamp_Sys100NS'}));
+
+    $delta = 1 if $delta > 1;
+
+    return $delta;
+}
+
+
+# get_dif - get delta between samples as a difference
+#
+sub get_dif {
+    my $h1 = shift;
+    my $h2 = shift;
+    my $p = shift;
+    my $delta = 0;
+
+    # timestamp
+    my $n2 = $h2->{'Timestamp_PerfTime'};
+    my $n1 = $h1->{'Timestamp_PerfTime'};
+    my $n = $n2 - $n1;
+
+    # frequency
+    my $f2 = $h2->{'Frequency_PerfTime'};
+    my $nf = $n / $f2;
+
+    # data
+    $delta = $h2->{$p} - $h1->{$p};
+
+    # result
+    return $delta / $nf;
+}
+
+
+# get_pct - get delta between samples as a percentage
+#
+sub get_pct {
+
+    my $h1 = shift;
+    my $h2 = shift;
+    my $p  = shift;
+
+    my $d  = $h2->{$p} - $h1->{$p};
+
+    # timestamp
+										    my $n2 = $h2->{'Timestamp_Sys100NS'};
+    my $n1 = $h1->{'Timestamp_Sys100NS'};
+    my $n = $n2 - $n1;
+
+    return $d / $n;
+}
+
+
+
+
 
 
 # get_disk -- get disks, logic drive
@@ -430,104 +466,9 @@ sub get_disk {
         }
     }
 
+    print Dumper (%disk);
     return %disk;
 }
-
-
-##
-# get_value - get delta between samples
-#
-sub get_value {
-    my ($h1, $h2, $property) = @_;
-
-    my $delta = ( 
-                  ($h2->{$property}            - $h1->{$property}) /
-                  ($h2->{'TimeStamp_Sys100NS'} - $h1->{'TimeStamp_Sys100NS'}));
-
-    $delta = 1 if $delta > 1;
-
-    return $delta;
-}
-
-
-# get_diff - get delta between samples as a difference
-#
-sub get_diff {
-    my $h1 = shift;
-    my $h2 = shift;
-    my $p = shift;
-    my $delta = 0;
-
-    # timestamp
-    my $n2 = $h2->{'Timestamp_PerfTime'};
-    my $n1 = $h1->{'Timestamp_PerfTime'};
-    my $n = $n2 - $n1;
-
-    # frequency
-    my $f2 = $h2->{'Frequency_PerfTime'};
-    my $nf = $n / $f2;
-
-    # data
-    $delta = $h2->{$p} - $h1->{$p};
-    my $r = $delta / $nf;
-
-    $r = 0 if $r < 0;
-
-    # result
-    return $r;
-}
-
-
-# get_pct - get delta between samples as a percentage
-#
-sub get_pct {
-
-    my $h1 = shift;
-    my $h2 = shift;
-    my $p  = shift;
-
-    my $d  = $h2->{$p} - $h1->{$p};
-
-    # timestamp
-										    my $n2 = $h2->{'Timestamp_Sys100NS'};
-    my $n1 = $h1->{'Timestamp_Sys100NS'};
-    my $n = $n2 - $n1;
-
-    return $d / $n;
-}
-
-
-# get_avg - get the average time it takes to complete an IO
-#
-sub get_avg {
-
-    my $h1 = shift;
-    my $h2 = shift;
-    my $p  = shift;
-    my $delta = 0;
-
-    # timestamp
-    my $n2 = $h2->{'Timestamp_Sys100NS'};
-    my $n1 = $h1->{'Timestamp_Sys100NS'};
-    my $n = $n2 - $n1;
-
-    # frequency
-    my $f2 = $h2->{'Frequency_Sys100NS'};
-    my $nf = $n / $f2;
-
-    # data
-    my $hh2 = $h2->{$p};
-    my $hh1 = $h1->{$p};
-    $delta = $hh2 - $hh1;
-
-
-    my $r = $nf / $delta;
-    $r = 0 if $r < 0;
-   
-    # result
-    return $r;
-}
-
 
 
 # print_raw - print krd raw data
@@ -851,14 +792,15 @@ USAGE: diskrec [-lhV] | [interval [count]]
 
    # queue length, throughput
    #09 ql         : current r+w, including in service, queue length
-   #10 busypct    : busy time r+w requests, number
-   #11 iops       : disk read+write requests per second, rate
-   #12 rwkbytes   : read+write KB per second, rate
+   #10 aql        : avg r+w queue length
+   #11 busypct    : busy time r+w requests, number
+   #12 iops       : disk read+write requests per second, rate
+   #13 rwkbytes   : read+write KB per second, rate
 
    # inventory disk usage
-   #13 size       : volume size in GB, logical drive
-   #14 free       : volume free in GB
-   #15 usedpct    : volume used in percentage
+   #14 size       : volume size in GB, logical drive
+   #15 free       : volume free in GB
+   #16 usedpct    : volume used in percentage
 END
     return;
 }
@@ -868,10 +810,11 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.19, 2016-02-04 2333
+diskrec: 1.0.19, 2016-01-20 1638
 END
     return;
 }
+
 
 
 
