@@ -90,7 +90,6 @@ if (Win32::Process::Open($curentProcess, $pid, 0)) {
     $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
 }
 
-
 # read configuration
 my $cdata = open_config($cf);
 
@@ -119,9 +118,9 @@ my @diskstats = qw(
 		    PercentDiskReadTime    AvgDiskSecPerRead 
 		    DiskWritesPerSec       DiskWriteBytesPerSec 
 		    PercentDiskWriteTime   AvgDiskSecPerWrite
-		    CurrentDiskQueueLength PercentDiskTime 
-		    DiskTransfersPerSec    DiskBytesPerSec 
-		    Freemegabytes          PercentFreeSpace 
+		    CurrentDiskQueueLength AvgDiskQueueLength
+		    PercentDiskTime        DiskTransfersPerSec
+		    DiskBytesPerSec        Freemegabytes
 		    Timestamp_PerfTime     Frequency_PerfTime 
 		    Frequency_Sys100NS     Timestamp_Sys100NS
 		   );
@@ -163,7 +162,7 @@ sub Startup {
 
     k_sleep();
 
-    my $s1 = [gettimeofday];
+    #my $s1 = [gettimeofday];
 
     my %dstat;
 
@@ -177,7 +176,7 @@ sub Startup {
     # metrics
     my ($reads,  $rkbytes, $rbusypct, $rtime,
         $writes, $wkbytes, $wbusypct, $wtime,
-	$cql,    $busypct, $iops,     $rwkbytes );
+	$cql,    $aql,     $busypct,  $iops,   $rwkbytes );
 
     my ($lsize, $lfree, $lfreepct, $usedpct);
 
@@ -250,6 +249,9 @@ sub Startup {
         $cql = sprintf("%.2f", $disk->{"$k"}->{'CurrentDiskQueueLength'});
 
 
+        # PERF_COUNTER_100NS_QUEUELEN_TYPE
+	$aql = 0;
+
         # PERF_PRECISION_100NS_TIMER
         $busypct = sprintf("%.2f", get_pct( $disk_old->{"$k"},
                                             $disk->{"$k"},
@@ -279,7 +281,7 @@ sub Startup {
 	$usedpct = sprintf ("%.2f", 100 - (100 * ($lfree / $lsize)));
 
 
-        $dstat{$k} = "$diskname:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$cql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$usedpct";
+        $dstat{$k} = "$diskname:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$cql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$usedpct";
 
     }
 
@@ -851,14 +853,15 @@ USAGE: diskrec [-lhV] | [interval [count]]
 
    # queue length, throughput
    #09 ql         : current r+w, including in service, queue length
-   #10 busypct    : busy time r+w requests, number
-   #11 iops       : disk read+write requests per second, rate
-   #12 rwkbytes   : read+write KB per second, rate
+   #10 aql        : average queue length, ratio
+   #11 busypct    : busy time r+w requests, number
+   #12 iops       : disk read+write requests per second, rate
+   #13 rwkbytes   : read+write KB per second, rate
 
    # inventory disk usage
-   #13 size       : volume size in GB, logical drive
-   #14 free       : volume free in GB
-   #15 usedpct    : volume used in percentage
+   #14 size       : volume size in GB, logical drive
+   #15 free       : volume free in GB
+   #16 usedpct    : volume used in percentage
 END
     return;
 }
@@ -868,7 +871,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.19, 2016-02-04 2333
+diskrec: 1.0.19, 2016-02-05 0158
 END
     return;
 }

@@ -75,6 +75,7 @@ my $stime;                                               # sleep timer
 my $last_time   = 0;                                     # first counter
 my $nicwmi      = 'Win32_NetworkAdapterConfiguration';   # NIC Config
 my $tcpwmi      = 'Win32_PerfRawData_Tcpip_NetworkInterface'; # TCPIP
+my $diskwmi     = 'Win32_PerfRawData_PerfDisk_LogicalDisk';   # Disk IO
 $|= 1;                                                   # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -299,7 +300,7 @@ sub Startup {
 
     $reads = $rkbytes = $rbusypct = $writes = $wkbytes = $wbusypct = $busypct = $cql = $iops = $krw = 0;
 
-    $list2 = $wmi->InstancesOf("Win32_PerfRawData_PerfDisk_PhysicalDisk")
+    $list2 = $wmi->InstancesOf($diskwmi)
 	    or die "Cannot get Win32 PerfDisks\n";
 
     my $disk = {};
@@ -510,8 +511,8 @@ sub init_cpu {
 # Disk IO Initialization
 #
 sub init_disk {
-    $list2 = $wmi->InstancesOf('Win32_PerfRawData_PerfDisk_PhysicalDisk')
-          or die "Failed to get instance object\n";
+    $list2 = $wmi->InstancesOf($diskwmi)
+          or die "Failed to get $diskwmi instance object\n";
 
     foreach my $v2 (in $list2) {
         next if $v2->{$key} ne '_Total';
@@ -1196,7 +1197,7 @@ USAGE: sysrec [-lhvV] | [interval [count]]
    #26 wbusypct   : busy time servicing write requests, number
 
    # throughput
-   #27 aql        : avg r+w queue length 
+   #27 cql        : current r+w queue length 
    #28 busypct    : busy time r+w requests, number
    #29 iops       : disk read+write requests per second, rate
    #30 rwkbytes   : read+write KB per second, rate
@@ -1227,7 +1228,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.19, 2016-02-02 1102
+sysrec: 1.0.19, 2016-02-05 0735
 END
     return;
 }
