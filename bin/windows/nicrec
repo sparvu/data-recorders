@@ -288,6 +288,7 @@ sub init_nic {
 # get_diff - get delta between samples as a difference
 #
 sub get_diff {
+
     my $h1 = shift;
     my $h2 = shift;
     my $p = shift;
@@ -335,7 +336,6 @@ sub get_pct {
 # get_nicstat - returns nic statistics
 #
 sub get_nicstat {
-
 
     # metrics
     my ($rxpkt, $rxkbytes, $rxpkterr,  $rxpktdrop,

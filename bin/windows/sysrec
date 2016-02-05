@@ -73,10 +73,10 @@ my $cf          = 'kronometrix.json';                    # default json config
 my $logtime     = '0000';                                # min time check 23:59
 my $stime;                                               # sleep timer
 my $last_time   = 0;                                     # first counter
-my $nicwmi      = 'Win32_NetworkAdapterConfiguration';   # NIC Config
+my $nicwmi      = 'Win32_NetworkAdapterConfiguration';        # NIC Config
 my $tcpwmi      = 'Win32_PerfRawData_Tcpip_NetworkInterface'; # TCPIP
 my $diskwmi     = 'Win32_PerfRawData_PerfDisk_LogicalDisk';   # Disk IO
-$|= 1;                                                   # autoflush
+$|= 1;                                                        # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
@@ -196,7 +196,7 @@ sub Startup {
 
     while(ContinueRun()) {
 
-     k_sleep();
+    k_sleep();
 
     #my $start = [gettimeofday];
 
@@ -359,10 +359,6 @@ sub Startup {
                                     $disk->{'_Total'},
                                     'DiskBytesPerSec') / 1024 );
 
-    #my $e4 = [gettimeofday];
-    #my $delta4  = tv_interval ($s4, $e4);
-    #print " Disk Win32_PerfFormattedData_PerfDisk_PhysicalDisk: $delta4 sec\n";
-
 
     # NIC IO statistics
     # metrics
@@ -372,9 +368,6 @@ sub Startup {
     my ($rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop,
         $txpkt,    $txkbytes, $txpkterr,  $txpktdrop,
 	$rxtxpkt,  $rxtxkbytes ) = get_nicstat();
-
-    #$rxpkt = $rxkbytes = $rxpkterr = $rxpktdrop = $txpkt = $txkbytes = $txpkterr = $txpktdrop = $rxtxpkt = $rxtxkbytes = 0;
-
 
 
     # save to old
@@ -413,7 +406,6 @@ sub Startup {
 	   );
 
 	$last_time=$$tnow[0];
-	#sleep($stime);
 
     } else {
 
@@ -438,7 +430,6 @@ sub Startup {
         }
 
 	$last_time=$$tnow[0];
-        #sleep($stime); 
 	next;
 
     }
@@ -497,6 +488,7 @@ sub Remove {
 # CPU Initialization
 #
 sub init_cpu {
+
     $list1 = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
         or die "Failed to get instance object\n";
 
@@ -511,6 +503,7 @@ sub init_cpu {
 # Disk IO Initialization
 #
 sub init_disk {
+
     $list2 = $wmi->InstancesOf($diskwmi)
           or die "Failed to get $diskwmi instance object\n";
 
@@ -524,6 +517,7 @@ sub init_disk {
 # NIC initialization
 #
 sub init_nic {
+
     $list3 = $wmi->InstancesOf($tcpwmi)
           or die "Failed to get instance object\n";
 
@@ -566,6 +560,7 @@ sub get_value {
 # get_diff - get delta between samples as a difference
 #
 sub get_diff {
+
     my $h1 = shift;
     my $h2 = shift;
     my $p = shift;
@@ -630,13 +625,6 @@ sub get_nicstat {
             map{$nic->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
 	}
     }
-
-    # get NACs
-    # my %nac = get_nac();
-    #print Dumper(%nacs);
-
-    #print "NICs " . keys(%$ntcp) . ".\n";
-    #print Dumper($nictcp);
 
     my $nic_count = 0;
 
@@ -708,52 +696,6 @@ sub get_nicstat {
     return ($rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop,
             $txpkt,    $txkbytes, $txpkterr,  $txpktdrop,
 	    $rxtxpkt,  $rxtxkbytes ); 
-}
-
-
-# get_nac - get network adapter configuration
-#
-sub get_nac {
-
-    my @nicids  =  (
-                     'WAN Miniport',
-	     	     'Microsoft ISATAP Adapter',
-		     'RAS Async Adapter',
-		     'Microsoft Virtual WiFi Miniport Adapter',
-		     'VMware Virtual Ethernet Adapter',
-		     'Microsoft Teredo Tunneling Adapter',
-		     'Microsoft Kernel Debug Network Adapter',
-		     'Hyper-V Virtual Switch Extension Adapter',
-		     'Hyper-V Virtual Ethernet Adapter'
-                    );
-
-    # get no of NICs
-    my $wn = $wmi->InstancesOf($nicwmi)
-        or die "Failed to get instance object\n";
-
-    # Network Adapter Configuration
-    my %nac;
-
-    foreach my $nic (in $wn) {
-
-        my $desc = $nic->{Description};
-
-	my $svc  = lc $nic->{ServiceName};
-
-        if (!grep { $desc =~ /$_/i } @nicids) {
-
-            # marked, filter /\()
-            $desc =~ s/\(/[/g;
-	    $desc =~ s/\)/]/g;
-	    $desc =~ s/\//_/g;
-	    $desc =~ s/\\/_/g;
-	    $desc =~ s/\#/_/g;
-
-            $nac{$desc}=$svc;
-	}
-    }
-
-    return %nac;
 }
 
 
@@ -1228,7 +1170,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.0.19, 2016-02-05 0735
+sysrec: 1.0.19, 2016-02-05 1103
 END
     return;
 }

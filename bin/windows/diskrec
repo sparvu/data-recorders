@@ -189,6 +189,8 @@ sub Startup {
 
     foreach my $v (in $list) {
 
+        next if $v->{$key} =~ m/\\/;
+
         if (! grep { $v->{$key} =~ /$_/i } @filter ) {
 
 	    map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
@@ -272,7 +274,7 @@ sub Startup {
 	$wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$k'");
 
 	foreach my $obj (in $wdinv) {
-	    $lsize = sprintf "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024);
+	    $lsize = sprintf ( "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024));
 	}
  
         $lfree    = sprintf ("%.2f", $disk->{"$k"}->{'Freemegabytes'} / 1024);
@@ -388,6 +390,8 @@ sub init_disk {
           or die "Failed to get $diskwmi instance object\n";
 
     foreach my $v (in $list) {
+
+        next if $v->{$key} =~ m/\\/;
 
         if (! grep { $v->{$key} =~ /$_/i } @filter ) {
 
