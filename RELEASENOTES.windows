@@ -11,7 +11,8 @@ Bug Management System
 
 Releases
 
-  1.0.19 20-01-2016 Release
+  1.0.19 12-02-2016 Release
+    detection breaks in a multihomed configuration #94 
     Win32_NetworkAdapter class is very slow #93 
     win32 nic detection mechanism optimizations #92 
     win32 run queue length size more accurate #91
