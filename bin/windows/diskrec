@@ -395,7 +395,7 @@ sub init_disk {
 
         if (! grep { $v->{$key} =~ /$_/i } @filter ) {
 
-	    map{$disk_old->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
+	    map{$disk_old->{$v->{$key}}->{$_} = $v->{$_} }@diskstats;
 	}
     }
 }
