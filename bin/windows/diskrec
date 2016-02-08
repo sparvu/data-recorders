@@ -132,6 +132,9 @@ my @filter   =   ( 'Harddisk',
 my $disk_old = {};
 my $list;
 
+# pre-init all default
+init_disk();
+
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
     *RunningAsService = sub { return 0 };
@@ -155,8 +158,6 @@ if (RunningAsService()) {
 
 
 sub Startup {
-
-    init_disk();
 
     while(ContinueRun()) {
 
@@ -875,7 +876,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.19, 2016-02-05 0158
+diskrec: 1.0.19, 2016-02-08 1220
 END
     return;
 }

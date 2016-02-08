@@ -138,6 +138,9 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $list;
 
+# pre-init default
+init_nic();
+
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
     *RunningAsService = sub { return 0 };
@@ -161,8 +164,6 @@ if (RunningAsService()) {
 
 
 sub Startup {
-
-    init_nic();
 
     while(ContinueRun()) {
 
@@ -836,7 +837,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.19, 2016-02-02 1046
+nicrec: 1.0.19, 2016-02-08 1221
 END
     return;
 }

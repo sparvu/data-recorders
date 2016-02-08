@@ -87,6 +87,14 @@ my $logging = defined $l ? $l : 0;
 
 ### MAIN BODY
 
+my $curentProcess;
+
+my $pid = Win32::Process::GetCurrentProcessID();
+
+if (Win32::Process::Open($curentProcess, $pid, 0)) {
+    $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+}
+
 # how often do we trigger (seconds)?
 my $first_interval = $interval;
 
@@ -125,14 +133,6 @@ if (RunningAsService()) {
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
-
-    my $curentProcess;
-
-    my $pid = Win32::Process::GetCurrentProcessID();
-
-    if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
-    }
 
     writelog ("info: started");
 }
@@ -779,7 +779,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.19, 2016-01-20 1638
+hdwrec: 1.0.19, 2016-02-08 1221
 END
     return;
 }
