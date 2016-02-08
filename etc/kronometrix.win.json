@@ -5,11 +5,11 @@
     "daily_path" : "C:\\ProgramData\\Kronometrix\\log\\daily"
   },
   "sampling_interval" : {
-    "sysrec" : "60",
-    "cpurec" : "60",
+    "sysrec"  : "60",
+    "cpurec"  : "60",
     "diskrec" : "60",
-    "nicrec" : "60",
-    "hdwrec" : "60"
+    "nicrec"  : "60",
+    "hdwrec"  : "120"
   },
   "transport" : {
     "data_file" : [
