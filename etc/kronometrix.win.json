@@ -9,7 +9,7 @@
     "cpurec"  : "60",
     "diskrec" : "60",
     "nicrec"  : "60",
-    "hdwrec"  : "120"
+    "hdwrec"  : "60"
   },
   "transport" : {
     "data_file" : [
