@@ -88,10 +88,10 @@ setitimer( ITIMER_REAL, $first_interval, $interval );
 
 #
 # check for disk list
-#if ( defined $main::opt_d ) {
-#    $disk_sem = 1;
-#    @def_disks = split( /,/, $main::opt_d );
-#}
+if ( defined $main::opt_d ) {
+    $disk_sem = 1;
+    @def_disks = split( /,/, $main::opt_d );
+}
 
 if ( $interval =~ /\./ ) {
     $tp = 3;
@@ -120,9 +120,9 @@ while ( 1 ) {
         my $lused = 'NA';
 
         # filter by disk
-        #if ( $disk_sem == 1 ) {
-        #    next if ( all { $_ ne $d } @def_disks);
-        #}
+        if ( $disk_sem == 1 ) {
+            next if ( all { $_ ne $d } @def_disks);
+        }
 
         #exceptions
         next if ($d =~ m/^loop|^ram|^zram/);
