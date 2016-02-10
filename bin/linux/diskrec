@@ -22,8 +22,12 @@ use strict;
 use warnings;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use Sys::Filesystem ();
+use Filesys::Df;
+use File::stat;
+use File::Stat::Bits;
 use Sys::Statistics::Linux qw(DiskStats);
-use POSIX qw(pause);
+use POSIX qw(pause ceil);
 use List::Util qw(all);
 
 ### Command line arguments
@@ -84,10 +88,10 @@ setitimer( ITIMER_REAL, $first_interval, $interval );
 
 #
 # check for disk list
-if ( defined $main::opt_d ) {
-    $disk_sem = 1;
-    @def_disks = split( /,/, $main::opt_d );
-}
+#if ( defined $main::opt_d ) {
+#    $disk_sem = 1;
+#    @def_disks = split( /,/, $main::opt_d );
+#}
 
 if ( $interval =~ /\./ ) {
     $tp = 3;
@@ -97,39 +101,28 @@ while ( 1 ) {
 
     my $stat    = $lxs->get;
 
+    # get FS
+    my @fs = get_fs();
+
     # get the diskid
     my @rdisks = sort $stat->diskstats;
 
-    #use Data::Dumper;
-    #print Dumper(@disks);
-    #my $ref = df ("/");
-    #if(defined($ref)) {
-    #    printf "Total: %.2f\n", $ref->{blocks} / 1024 / 1024;
-    #    printf "Total free: %.2f\n", $ref->{bfree} / 1024 / 1024;
-    #    printf "Total avail to me: %.2f\n", $ref->{bavail} / 1024 / 1024;
-    #    printf "Used: %.2f\n", $ref->{used} / 1024 / 1024;
-    #    printf "Free percent: %.2f Used: %.2f\n", 100 - $ref->{per}, $ref->{per};
-    #}
-
-    #my @sfs = $fs->special_filesystems();
-#
-#    my $f1 = Sys::Filesystem->filesystems(device => "/dev/root");
-
-    # Dump $lx variable
-    #use Data::Dumper;
-    #print Dumper($f1);
-    #print $f1;
-
+    my ( $dmajor, $dminor ) = 0;
+    my %dstat;
 
     ### loop over all disks
     foreach my $d (@rdisks) {
-        my ( $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt ) = 0;
+        my ( $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt );
+        my ( $dmajor, $dminor );
+
+        my $lsize = 'NA';
+        my $lfree = 'NA';
+        my $lused = 'NA';
 
         # filter by disk
-        if ( $disk_sem == 1 ) {
-            next if ( all { $_ ne $d } @def_disks);
-        }
-
+        #if ( $disk_sem == 1 ) {
+        #    next if ( all { $_ ne $d } @def_disks);
+        #}
 
         #exceptions
         next if ($d =~ m/^loop|^ram|^zram/);
@@ -147,6 +140,15 @@ while ( 1 ) {
         ### verbose
         if ($verbose) {
             print "time: $print_time, disk: $d \n";
+        }
+
+
+        if ( defined( $disk->{$d}{major} ) ) {
+            $dmajor = $disk->{$d}{major};
+        }
+
+        if ( defined( $disk->{$d}{minor} ) ) {
+            $dminor = $disk->{$d}{minor};
         }
 
         if ( defined( $disk->{$d}{rdreq} ) ) {
@@ -173,19 +175,72 @@ while ( 1 ) {
             $totByt = ( $disk->{$d}{ttbyt} / 1024 );
         }
 
-        my $lsize = 'NA';
-        my $lfree = 'NA';
-        my $lused = 'NA';
+        my $key= $dmajor . $dminor;
+
+        for my $filesystem ( @fs ) {
+
+            my ($mj, $mi);
+
+            my $st = stat($filesystem) or
+                die "Can't stat $filesystem: $!";
+
+            if (S_ISDIR($st->mode)) {
+                ($mj, $mi) = dev_split( $st->dev );
+            }
+
+            my $fkey = $mj . $mi;
+
+            if ( $key eq $fkey ) {
+
+                my $ref = df("$filesystem", 1);
+
+                if ( defined($ref) ) {
+                    #my $used = $ref->{used} / 1073741824;
+
+                    $lsize  = ceil($ref->{blocks} / 1073741824);
+
+                    #my $avail = ceil($ref->{bavail} / 1073741824);
+                    #print "Avail: $avail \n";
+
+                    $lfree = ceil ($ref->{bfree} / 1073741824);
+
+                    $lused = ceil(100 - (100 * ($lfree / $lsize)));
+                }
+
+                if ( $filesystem =~ /^\/$/ ) {
+                    my $nfs  = "root";
+
+                    $d = $d . $nfs;
+                }
+
+                # $filesystem = $mdev{$fkey} . $filesystem;
+            }
+
+            #if(defined($ref)) {
+            # 
+            #    my $used = $ref->{used} / 1073741824;
+            #    my $tot  = $ref->{blocks} / 1073741824;
+            #    my $avail= $ref->{bavail} / 1073741824;
+            #    my $free = $ref->{bfree} / 1073741824;
+ 
+            #    $hns {$filesystem} = $ref->{per} . '*' . $used . '*' . $tot
+            #       . '*' . $avail . '*' . $free ;
+      
+            #    $hs {$filesystem} = $ref->{per};
+            #} #eof if
+        } #
+
 
         ### verbose
         if ($verbose) {
-            print "  total requests: $totReq ( reads: $readReq writes: $writeReq) \n";
-            print "  total bytes:  $totByt ( reads: $readByt writes: $writeByt) \n";
+            print "  requests: $totReq ( reads: $readReq writes: $writeReq) \n";
+            print "  bytes:  $totByt ( reads: $readByt writes: $writeByt) \n";
         }
 
         
         printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%s:%s:%s\n",
-            $print_time, $d, $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt, $lsize, $lfree, $lused;
+                $print_time, $d, $readReq, $readByt, $writeReq, $writeByt, 
+                $totReq, $totByt, $lsize, $lfree, $lused;
 
     }
 
@@ -196,6 +251,44 @@ while ( 1 ) {
     ### Interval
     pause;
 
+}
+
+
+## get filesystems
+#  will get a list of valid regular fs ignoring
+#  autofs, nfs,usbfs, rpc_pipefs, selinuxfs
+sub get_fs {
+
+    my $fs = Sys::Filesystem->new();
+    my @filesystems = $fs->regular_filesystems();
+    my @lfs;
+
+    for (@filesystems)
+    {
+        if ( ($fs->format($_) eq 'autofs') or
+             ($fs->format($_) eq 'nfs') or
+             ($fs->format($_) eq 'usbfs') or
+             ($fs->format($_) eq 'rpc_pipefs') or
+             ($fs->format($_) eq 'devtmpfs') or
+             ($fs->format($_) eq 'xenfs') or
+             ($fs->format($_) eq 'selinuxfs') ) { 
+            next;
+        }
+
+        if ($verbose) {
+ 
+            printf("%s is a %s filesystem mounted on %s\n",
+                 $fs->mount_point($_),
+                 $fs->format($_),
+                 $fs->device($_)
+              );
+        }
+
+        # load final
+        push @lfs, $_;
+    }
+
+    return @lfs;
 }
 
 
@@ -244,7 +337,108 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1, 2015-12-04 1610
+diskrec: 1.0.19, 2016-02-07 0907
 END
     exit 0;
 }
+
+
+sub get_df {
+
+    my @lfs = @_;
+    my %hs            = () ;  # the sorted hash
+    my %hns           = () ;  # the non-sorted hash
+
+    my $lxs = Sys::Statistics::Linux->new( diskstats => 1 );
+    my $stat    = $lxs->get;
+    # get the diskid
+    my @rdisks = sort $stat->diskstats;
+
+    # diskhash
+    my %mdev = ();
+
+    ### loop over all disks
+    foreach my $d (@rdisks) {
+        my ( $dmajor, $dminor ) = 0;
+
+        #exceptions
+        next if ($d =~ m/^loop|^ram|^zram/);
+        next if ($d =~ m/^fd0|^hdc/);
+        next if ($d =~ m/^md(?:[0-9])/);
+        next if ($d =~ m/^sr(?:[0-9])$/);
+
+        #print "Disk: $d\n";
+
+        my $print_time = time();
+
+        ### Get Stats
+        my $disk    = $stat->diskstats;
+
+        if ( defined( $disk->{$d}{major} ) ) {
+            $dmajor = $disk->{$d}{major};
+        }
+
+        if ( defined( $disk->{$d}{minor} ) ) {
+            $dminor = $disk->{$d}{minor};
+        }
+
+        print "disk: $d, major: $dmajor, minor: $dminor \n";
+
+        my $key= $dmajor . $dminor;
+
+        $mdev{$key} = $d;
+    }
+
+
+ 
+    for my $filesystem ( @lfs ) {
+
+        # my $mount = $fs->mount_point($filesystem);
+        my ($major, $minor);
+
+        my $ref = df("$filesystem", 1);
+
+
+        my $st = stat($filesystem) or 
+            die "Can't stat $filesystem: $!";
+
+        if (S_ISDIR($st->mode)) {
+            ($major, $minor) = dev_split( $st->dev );
+        }
+
+        my $fkey = $major . $minor;
+
+        if ( $filesystem =~ /^\/$/ ) { 
+            $filesystem = "root"; 
+        }
+
+        if (exists $mdev{$fkey}) { 
+            print "found key !\n"; 
+            $filesystem = $mdev{$fkey} . $filesystem;
+        }
+
+        if(defined($ref)) {
+     
+            my $used = $ref->{used} / 1073741824;
+            my $tot  = $ref->{blocks} / 1073741824;
+            my $avail= $ref->{bavail} / 1073741824;
+            my $free = $ref->{bfree} / 1073741824;
+ 
+            $hns {$filesystem} = $ref->{per} . '*' . $used . '*' . $tot
+               . '*' . $avail . '*' . $free ;
+      
+            $hs {$filesystem} = $ref->{per};
+        } #eof if
+    } #eof for
+ 
+    printf "%-15s %10s %10s %10s %10s %10s \n" , "Mount " , "Usage in % ",
+           "Used GB " , "Total GB " , "Available GB " , "Free GB " ;
+    print '========================================================================' . "\n" ;
+
+    foreach my $key (reverse sort { ($hs{$a} <=> $hs{$b}) } keys %hs) {
+        printf "%-15s %10d %8.2f %8.2f %8.2f %8.2f \n" , "$key" , split ('\*' , $hns{$key});
+    }
+
+    return;
+}
+
