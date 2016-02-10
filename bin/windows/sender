@@ -87,6 +87,15 @@ my $verbose = defined $v ? $v : 0;
 
 ### MAIN BODY #
 
+my $curentProcess;
+
+my $pid = Win32::Process::GetCurrentProcessID();
+
+if (Win32::Process::Open($curentProcess, $pid, 0)) {
+    $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
+}
+
+
 # Default krd
 my @recs = qw(sys cpu disk nic hdw);
 
@@ -162,14 +171,6 @@ if (!RunningAsService()) {
     # get verbose mode
     my $vset = get_verbose($cdata);
     $verbose = 1 if ($vset); 
-
-    my $curentProcess;
-
-    my $pid = Win32::Process::GetCurrentProcessID();
-
-    if (Win32::Process::Open($curentProcess, $pid, 0)) {
-        $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
-    }
 
     writelog ("info: started");
 
