@@ -104,6 +104,11 @@ while ( 1 ) {
     # get FS
     my @fs = get_fs();
 
+    my %sp = procswap();
+    #for my $key (keys %sp) {
+    #    print $sp{$key};
+    #}
+
     # get the diskid
     my @rdisks = sort $stat->diskstats;
 
@@ -130,7 +135,9 @@ while ( 1 ) {
         next if ($d =~ m/^md(?:[0-9])/);
         next if ($d =~ m/^sr(?:[0-9])$/);
 
-        #print "Disk: $d\n";
+        next if ( exists $sp{$d} );
+
+        # print "Disk: $d\n";
 
         my $print_time = time();
 
@@ -207,29 +214,24 @@ while ( 1 ) {
                     $lused = ceil(100 - (100 * ($lfree / $lsize)));
                 }
 
-                if ( $filesystem =~ /^\/$/ ) {
-                    my $nfs  = "root";
+                #print "Processing $filesystem ...\n";
 
-                    $d = $d . $nfs;
+                my $nfs;
+                if ( $filesystem =~ /^\/$/ ) {
+                    $nfs  = "root";
+
+                } elsif ( $filesystem =~ m/^.*\/(.*?)$/ ) {
+                    $nfs  = $1;
                 }
+                $d = $d . $nfs;
 
                 # $filesystem = $mdev{$fkey} . $filesystem;
-            }
+            } 
+            #else { print "Not found major, minor same: $d, $filesystem\n"; }
+        }
 
-            #if(defined($ref)) {
-            # 
-            #    my $used = $ref->{used} / 1073741824;
-            #    my $tot  = $ref->{blocks} / 1073741824;
-            #    my $avail= $ref->{bavail} / 1073741824;
-            #    my $free = $ref->{bfree} / 1073741824;
- 
-            #    $hns {$filesystem} = $ref->{per} . '*' . $used . '*' . $tot
-            #       . '*' . $avail . '*' . $free ;
-      
-            #    $hs {$filesystem} = $ref->{per};
-            #} #eof if
-        } #
-
+        # remove '-'
+        $d =~ s/\-//;
 
         ### verbose
         if ($verbose) {
@@ -289,6 +291,31 @@ sub get_fs {
     }
 
     return @lfs;
+}
+
+
+# process proc swaps file
+#
+sub procswap {
+
+    my %swaps;
+
+    if (-e "/proc/swaps") {
+        open my $pswap, "<", "/proc/swaps"
+          or die "error: cannot open /proc/swaps: $!\n";
+        while (<$pswap>) {
+            chomp;
+            next if $_ =~ m/^Filename/;
+            if ( $_ =~ m/^.*\/(.*?)\s.*$/ ) {
+                my $k = $1;
+                $swaps{$k} = $k;
+            }
+            #if ( grep{/^$d$/} <$pswap>) { next; }
+        }
+        close $pswap;
+    }
+
+    return %swaps;
 }
 
 
