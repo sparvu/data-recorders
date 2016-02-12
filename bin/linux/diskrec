@@ -137,7 +137,7 @@ while ( 1 ) {
 
         next if ( exists $sp{$d} );
 
-        # print "Disk: $d\n";
+        #print "Disk: $d\n";
 
         my $print_time = time();
 
@@ -267,8 +267,10 @@ sub get_fs {
 
     for (@filesystems)
     {
+
         if ( ($fs->format($_) eq 'autofs') or
              ($fs->format($_) eq 'nfs') or
+             ($fs->format($_) eq 'udf,iso9660') or
              ($fs->format($_) eq 'usbfs') or
              ($fs->format($_) eq 'rpc_pipefs') or
              ($fs->format($_) eq 'devtmpfs') or
@@ -364,7 +366,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.19, 2016-02-12 0732
+diskrec: 1.0.19, 2016-02-13 0002
 END
     exit 0;
 }
