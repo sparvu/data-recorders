@@ -114,6 +114,7 @@ while (1) {
 
         # skip here the loopback interface
         next if $n =~ /^lo.*/;
+        next if $n =~ /^vif.*/;
 
         # filter by interface
         if ( $int_sem == 1 ) {
@@ -246,7 +247,7 @@ END
 sub revision {
 
     print STDERR <<END;
-nicrec: 1.0.17, 2015-09-13 0901
+nicrec: 1.0.19, 2016-02-12 1302
 END
     exit 0;
 }
