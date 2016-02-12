@@ -364,7 +364,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.19, 2016-02-10 1234
+diskrec: 1.0.19, 2016-02-12 0732
 END
     exit 0;
 }
