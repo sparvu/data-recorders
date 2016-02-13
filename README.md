@@ -58,7 +58,7 @@ We plan to support and record data from different types of industries. For some 
  * hdwrec hardware, software inventory 
 
 
-#### Meteorology / Climatology
+#### General Meteorology
 
  * wsrec: WH1080, WH1081, WH1090, WH20xx
   
