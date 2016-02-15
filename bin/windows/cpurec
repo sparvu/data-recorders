@@ -193,16 +193,6 @@ sub Startup {
 
 	$cstat{$cpuid} = "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
 
-        #if (RunningAsService()) {
-        #if($verbose) { 
-
-        #    my $tcheck = [gettimeofday];
-
-        #    write_log("info: values at $$tcheck[0]");
-
-	#    write_log("info: cpuid=$cpuid userpct=$userpct syspct=$syspct irqpct=$irqpct dpcpct=$dpcpct idlepct=$idlepct total=$totalpct");
-
-	#} }
     }
 
     $hash1 = $hash;
@@ -307,19 +297,23 @@ sub get_value {
 
     my $delta = 0;
 
-    my $hh2  = $h2->{$property};
-    my $hh1  = $h1->{$property};
-    my $ht2  = $h2->{'TimeStamp_Sys100NS'};
-    my $ht1  = $h1->{'TimeStamp_Sys100NS'};
+    my $v2  = $h2->{$property};
+    my $v1  = $h1->{$property};
+
+    my $t2  = $h2->{'TimeStamp_Sys100NS'};
+    my $t1  = $h1->{'TimeStamp_Sys100NS'};
 
     eval {
-        $delta = ( ($hh2 - $hh1) / ( $ht2 - $ht1) );
+        $delta = ( ($v2 - $v1) / ($t2 - $t1) );
     };
 
-    write_log("$@ h2=$hh2 h1=$hh1 $ht2=$ht2 ht1=$ht1") if $@;
+    if ($@) { 
+        write_log("$@");
+        write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+    }
 
     $delta = 1 if $delta > 1;
-
+    
     return $delta;
 }
 

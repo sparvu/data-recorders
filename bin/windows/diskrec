@@ -441,29 +441,15 @@ sub get_disk {
 }
 
 
-##
-# get_value - get delta between samples
-#
-sub get_value {
-    my ($h1, $h2, $property) = @_;
-
-    my $delta = ( 
-                  ($h2->{$property}            - $h1->{$property}) /
-                  ($h2->{'TimeStamp_Sys100NS'} - $h1->{'TimeStamp_Sys100NS'}));
-
-    $delta = 1 if $delta > 1;
-
-    return $delta;
-}
-
-
 # get_diff - get delta between samples as a difference
 #
 sub get_diff {
+
     my $h1 = shift;
     my $h2 = shift;
     my $p = shift;
     my $delta = 0;
+    my $nf    = 0;
 
     # timestamp
     my $n2 = $h2->{'Timestamp_PerfTime'};
@@ -472,7 +458,11 @@ sub get_diff {
 
     # frequency
     my $f2 = $h2->{'Frequency_PerfTime'};
-    my $nf = $n / $f2;
+    my $nf;
+
+    eval {
+        $nf = $n / $f2;
+    }
 
     # data
     $delta = $h2->{$p} - $h1->{$p};
@@ -483,6 +473,33 @@ sub get_diff {
     # result
     return $r;
 }
+
+
+
+sub get_value {
+
+    my ($h1, $h2, $property) = @_;
+
+    my $delta = 0;
+
+    my $hh2  = $h2->{$property};
+    my $hh1  = $h1->{$property};
+    my $ht2  = $h2->{'TimeStamp_Sys100NS'};
+    my $ht1  = $h1->{'TimeStamp_Sys100NS'};
+
+    eval {
+           $delta = ( ($hh2 - $hh1) / ( $ht2 - $ht1) );
+    };
+
+    write_log("$@ h2=$hh2 h1=$hh1 $ht2=$ht2 ht1=$ht1") if $@;
+
+    $delta = 1 if $delta > 1;
+
+    return $delta;
+}
+
+
+
 
 
 # get_pct - get delta between samples as a percentage
