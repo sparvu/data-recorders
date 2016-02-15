@@ -449,57 +449,37 @@ sub get_diff {
     my $h2 = shift;
     my $p = shift;
     my $delta = 0;
-    my $nf    = 0;
+    my $tf    = 0;
 
     # timestamp
-    my $n2 = $h2->{'Timestamp_PerfTime'};
-    my $n1 = $h1->{'Timestamp_PerfTime'};
-    my $n = $n2 - $n1;
-
-    # frequency
-    my $f2 = $h2->{'Frequency_PerfTime'};
-    my $nf;
-
-    eval {
-        $nf = $n / $f2;
-    }
+    my $t2 = $h2->{'Timestamp_PerfTime'};
+    my $t1 = $h1->{'Timestamp_PerfTime'};
 
     # data
-    $delta = $h2->{$p} - $h1->{$p};
-    my $r = $delta / $nf;
+    my $v2 = $h2->{$p};
+    my $v1 = $h1->{$p};
+    $delta = $v2 - $v1;
+
+    # frequency
+    my $td = $t2 - $t1;
+    my $f2 = $h2->{'Frequency_PerfTime'};
+
+    my $r;
+    eval {
+        $tf = $td / $f2;
+        $r  = $delta / $tf;
+    };
+
+    if ($@) {
+        write_log("$@");
+	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+    }
 
     $r = 0 if $r < 0;
 
     # result
     return $r;
 }
-
-
-
-sub get_value {
-
-    my ($h1, $h2, $property) = @_;
-
-    my $delta = 0;
-
-    my $hh2  = $h2->{$property};
-    my $hh1  = $h1->{$property};
-    my $ht2  = $h2->{'TimeStamp_Sys100NS'};
-    my $ht1  = $h1->{'TimeStamp_Sys100NS'};
-
-    eval {
-           $delta = ( ($hh2 - $hh1) / ( $ht2 - $ht1) );
-    };
-
-    write_log("$@ h2=$hh2 h1=$hh1 $ht2=$ht2 ht1=$ht1") if $@;
-
-    $delta = 1 if $delta > 1;
-
-    return $delta;
-}
-
-
-
 
 
 # get_pct - get delta between samples as a percentage
@@ -510,14 +490,27 @@ sub get_pct {
     my $h2 = shift;
     my $p  = shift;
 
-    my $d  = $h2->{$p} - $h1->{$p};
+    my $v2 = $h2->{$p};
+    my $v1 = $h1->{$p};
+    my $d  = $v2 - $v1;
 
     # timestamp
-										    my $n2 = $h2->{'Timestamp_Sys100NS'};
-    my $n1 = $h1->{'Timestamp_Sys100NS'};
-    my $n = $n2 - $n1;
+    my $t2 = $h2->{'Timestamp_Sys100NS'};
+    my $t1 = $h1->{'Timestamp_Sys100NS'};
+    my $td = $t2 - $t1;
 
-    return $d / $n;
+    my $r;
+
+    eval {
+        $r = $d / $td;
+    };
+
+    if ($@) {
+        write_log("$@");
+	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+    }
+
+    return $r;
 }
 
 
@@ -529,23 +522,33 @@ sub get_avg {
     my $h2 = shift;
     my $p  = shift;
     my $delta = 0;
+    my $tf    = 0;
 
     # timestamp
-    my $n2 = $h2->{'Timestamp_Sys100NS'};
-    my $n1 = $h1->{'Timestamp_Sys100NS'};
-    my $n = $n2 - $n1;
+    my $t2 = $h2->{'Timestamp_Sys100NS'};
+    my $t1 = $h1->{'Timestamp_Sys100NS'};
+    my $td = $t2 - $t1;
 
     # frequency
     my $f2 = $h2->{'Frequency_Sys100NS'};
-    my $nf = $n / $f2;
 
     # data
-    my $hh2 = $h2->{$p};
-    my $hh1 = $h1->{$p};
-    $delta = $hh2 - $hh1;
+    my $v2 = $h2->{$p};
+    my $v1 = $h1->{$p};
+    $delta = $v2 - $v1;
 
+    my $r;
 
-    my $r = $nf / $delta;
+    eval {
+       $tf = $td / $f2;
+        $r = $tf / $delta;
+    };
+
+    if ($@) {
+        write_log("$@");
+	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+    }
+
     $r = 0 if $r < 0;
    
     # result
