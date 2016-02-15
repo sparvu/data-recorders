@@ -101,7 +101,7 @@ my $first_interval = $interval;
 # read configuration
 my $cdata = open_config($cf);
 
-my ( $blog, $clog, $dlog ) = getlog($cdata);
+my ( $blog, $clog, $dlog ) = get_log($cdata);
 
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
@@ -112,7 +112,7 @@ my ($log, $rawlog);
 if ($logging) {
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
-    writelog ("info: started");
+    write_log ("info: started");
 }
 
 # get stats
@@ -128,13 +128,13 @@ unless (defined &ContinueRun) {
 if (RunningAsService()) {
 
     # get service sample interval
-    $interval = getssi($cdata);
+    $interval = get_ssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
 
-    writelog ("info: started");
+    write_log ("info: started");
 }
 
 
@@ -313,7 +313,7 @@ sub Startup {
     } # while loop
     
     if (RunningAsService()) {
-        writelog ("info: stopped");
+        write_log ("info: stopped");
     }
 }
 
@@ -465,9 +465,9 @@ sub open_config {
 }
 
 
-# getssi - get service sample interval
+# get_ssi - get service sample interval
 #
-sub getssi {
+sub get_ssi {
     my ($data) = @_;
 
     my $ssi = $data->{'sampling_interval'}->{"$recid"};
@@ -477,9 +477,9 @@ sub getssi {
 }
 
 
-# getlog - get log directory information
+# get_log - get log directory information
 #
-sub getlog {
+sub get_log {
     my ($data) = @_;
 
     my $bpath = $data->{'log'}->{'base_path'};
@@ -539,9 +539,9 @@ sub get_uptime {
 }
 
 
-# writelog - write log message
+# write_log - write log message
 #
-sub writelog {
+sub write_log {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
@@ -573,10 +573,10 @@ sub cktime {
     # print "time check: $tcheck";
 
     if ($tcheck eq $logtime ) {
-        writelog ("info: cktime - start log rotation");
+        write_log ("info: cktime - start log rotation");
         close ($rawlog);
 	my $numkrd = rotate($clog, $dlog, $yesterday);
-        writelog ("info: cktime - end log rotation, files rotated: $numkrd");
+        write_log ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);
     }
 
@@ -646,7 +646,7 @@ sub rotate {
     my $nkrd = $#krd_files + 1;
 
     if ($verbose) {
-        writelog ("info: rotate - copying krd data files: $nkrd");
+        write_log ("info: rotate - copying krd data files: $nkrd");
     }
 
     my $cnt = 0;
@@ -655,12 +655,12 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-	    writelog ("warning: rotate - $dstamp dir: $!");
+	    write_log ("warning: rotate - $dstamp dir: $!");
         }
 
         foreach my $rawfile (@krd_files) {
             copy("$rawdir/$rawfile","$dest") or
-                writelog ("error: rotate - copying previous daily data, $!");
+                write_log ("error: rotate - copying previous daily data, $!");
 	
             # reset to zero
             open my $ftkrd, ">", "$rawdir/$rawfile";

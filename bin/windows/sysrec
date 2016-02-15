@@ -107,7 +107,7 @@ my ($log, $rawlog);
 if ($logging) {
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
-    writelog ("info: started");
+    write_log ("info: started");
 }
 
 # get stats
@@ -184,7 +184,7 @@ if (RunningAsService()) {
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
 
-    writelog ("info: started");
+    write_log ("info: started");
 }
 
 
@@ -442,7 +442,7 @@ sub Startup {
     } # while loop
 
     if (RunningAsService()) {
-        writelog ("info: stopped");
+        write_log ("info: stopped");
     }
 }
 
@@ -933,9 +933,9 @@ sub get_uptime {
 }
 
 
-# writelog - write log message
+# write_log - write log message
 #
-sub writelog {
+sub write_log {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
@@ -968,10 +968,10 @@ sub cktime {
     # print "time check: $tcheck";
 
     if ($tcheck eq $logtime ) {
-        writelog ("info: cktime - start log rotation");
+        write_log ("info: cktime - start log rotation");
         close $rawlog;
 	my $numkrd = rotate($clog, $dlog, $yesterday);
-        writelog ("info: cktime - end log rotation, files rotated: $numkrd");
+        write_log ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);
     }
 
@@ -1041,7 +1041,7 @@ sub rotate {
     my $nkrd = $#krd_files + 1;
 
     if ($verbose) {
-        writelog ("info: rotate - copying krd data files: $nkrd");
+        write_log ("info: rotate - copying krd data files: $nkrd");
     }
 
     my $cnt = 0;
@@ -1050,12 +1050,12 @@ sub rotate {
    
         # make daily target dir
         unless(mkdir $dest) {
-            writelog ("warning: rotate - $dstamp dir: $!");
+            write_log ("warning: rotate - $dstamp dir: $!");
         }
 
         foreach my $rawfile (@krd_files) {
             copy("$rawdir/$rawfile","$dest") or
-                writelog ("error: rotate - copying previous daily data, $!");
+                write_log ("error: rotate - copying previous daily data, $!");
 
             # reset to zero
 	    open my $ftkrd, ">", "$rawdir/$rawfile";
