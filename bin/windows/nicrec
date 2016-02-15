@@ -285,7 +285,6 @@ sub init_nic {
 }
 
 
-
 # get_diff - get delta between samples as a difference
 #
 sub get_diff {
@@ -294,19 +293,31 @@ sub get_diff {
     my $h2 = shift;
     my $p = shift;
     my $delta = 0;
+    my $tf    = 0;
 
     # timestamp
-    my $n2 = $h2->{'Timestamp_PerfTime'};
-    my $n1 = $h1->{'Timestamp_PerfTime'};
-    my $n = $n2 - $n1;
-
-    # frequency
-    my $f2 = $h2->{'Frequency_PerfTime'};
-    my $nf = $n / $f2;
+    my $t2 = $h2->{'Timestamp_PerfTime'};
+    my $t1 = $h1->{'Timestamp_PerfTime'};
 
     # data
-    $delta = $h2->{$p} - $h1->{$p};
-    my $r = $delta / $nf;
+    my $v2 = $h2->{$p};
+    my $v1 = $h1->{$p};
+    $delta = $v2 - $v1;
+
+    # frequency
+    my $td = $t2 - $t1;
+    my $f2 = $h2->{'Frequency_PerfTime'};
+
+    my $r;
+    eval {
+        $tf = $td / $f2;
+        $r  = $delta / $tf;
+    };
+
+    if ($@) {
+        write_log("$@");
+	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+    }
 
     $r = 0 if $r < 0;
 
@@ -323,16 +334,120 @@ sub get_pct {
     my $h2 = shift;
     my $p  = shift;
 
-    my $d  = $h2->{$p} - $h1->{$p};
+    my $v2 = $h2->{$p};
+    my $v1 = $h1->{$p};
+    my $d  = $v2 - $v1;
 
     # timestamp
-										    my $n2 = $h2->{'Timestamp_Sys100NS'};
-    my $n1 = $h1->{'Timestamp_Sys100NS'};
-    my $n = $n2 - $n1;
+    my $t2 = $h2->{'Timestamp_Sys100NS'};
+    my $t1 = $h1->{'Timestamp_Sys100NS'};
+    my $td = $t2 - $t1;
 
-    return $d / $n;
+    my $r;
+
+    eval {
+        $r = $d / $td;
+    };
+
+    if ($@) {
+        write_log("$@");
+	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+    }
+
+    return $r;
 }
 
+
+# get_avg - get the average time it takes to complete an IO
+#
+sub get_avg {
+
+    my $h1 = shift;
+    my $h2 = shift;
+    my $p  = shift;
+    my $delta = 0;
+    my $tf    = 0;
+
+    # timestamp
+    my $t2 = $h2->{'Timestamp_Sys100NS'};
+    my $t1 = $h1->{'Timestamp_Sys100NS'};
+    my $td = $t2 - $t1;
+
+    # frequency
+    my $f2 = $h2->{'Frequency_Sys100NS'};
+
+    # data
+    my $v2 = $h2->{$p};
+    my $v1 = $h1->{$p};
+    $delta = $v2 - $v1;
+
+    my $r;
+
+    eval {
+       $tf = $td / $f2;
+        $r = $tf / $delta;
+    };
+
+    if ($@) {
+        write_log("$@");
+	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+    }
+
+    $r = 0 if $r < 0;
+   
+    # result
+    return $r;
+}
+
+
+
+# get_diff - get delta between samples as a difference
+#
+#sub get_diff {
+#
+#    my $h1 = shift;
+#    my $h2 = shift;
+#    my $p = shift;
+#    my $delta = 0;
+#
+#    # timestamp
+#    my $n2 = $h2->{'Timestamp_PerfTime'};
+#    my $n1 = $h1->{'Timestamp_PerfTime'};
+#    my $n = $n2 - $n1;
+#
+#    # frequency
+#    my $f2 = $h2->{'Frequency_PerfTime'};
+#    my $nf = $n / $f2;
+#
+#    # data
+#    $delta = $h2->{$p} - $h1->{$p};
+#    my $r = $delta / $nf;
+#
+#    $r = 0 if $r < 0;
+#
+#    # result
+#    return $r;
+#}
+
+
+# get_pct - get delta between samples as a percentage
+#
+#sub get_pct {
+#
+#    my $h1 = shift;
+#    my $h2 = shift;
+#    my $p  = shift;
+#
+#    my $d  = $h2->{$p} - $h1->{$p};
+#
+#    # timestamp
+#    my $n2 = $h2->{'Timestamp_Sys100NS'};
+#    my $n1 = $h1->{'Timestamp_Sys100NS'};
+#    my $n = $n2 - $n1;
+#
+#    return $d / $n;
+#}
+#
 
 # get_nicstat - returns nic statistics
 #
@@ -837,7 +952,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-nicrec: 1.0.19, 2016-02-08 1221
+nicrec: 1.0.19, 2016-02-15 1654
 END
     return;
 }
