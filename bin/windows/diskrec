@@ -277,11 +277,16 @@ sub Startup {
 	foreach my $obj (in $wdinv) {
 	    $lsize = sprintf ( "%.2f", $obj->{Size} / ( 1024 * 1024 * 1024));
 	}
- 
-        $lfree    = sprintf ("%.2f", $disk->{"$k"}->{'Freemegabytes'} / 1024);
 
-
-	$usedpct = sprintf ("%.2f", 100 - (100 * ($lfree / $lsize)));
+        eval {
+            $lfree = sprintf ("%.2f", $disk->{"$k"}->{'Freemegabytes'} / 1024);
+	    $usedpct = sprintf ("%.2f", 100 - (100 * ($lfree / $lsize)));
+	};
+    
+        if ($@) {
+            write_log("$@");
+	    write_log("size=|$lsize| free=|$lfree| used=|$usedpct|");
+        }
 
 
         $dstat{$k} = "$diskname:$reads:$rkbytes:$rbusypct:$writes:$wkbytes:$wbusypct:$cql:$aql:$busypct:$iops:$rwkbytes:$lsize:$lfree:$usedpct";
@@ -730,10 +735,10 @@ sub cktime {
     # print "time check: $tcheck";
 
     if ($tcheck eq $logtime ) {
-        write_log ("info: cktime - start log rotation");
+        # write_log ("info: cktime - start log rotation");
         close ($rawlog);
 	my $numkrd = rotate($clog, $dlog, $yesterday);
-        write_log ("info: cktime - end log rotation, files rotated: $numkrd");
+        # write_log ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);
     }
 
@@ -811,9 +816,11 @@ sub rotate {
     if ( $nkrd > 0 ) {
    
         # make daily target dir
-        unless(mkdir $dest) {
-	    write_log ("warning: rotate - $dstamp dir: $!");
-        }
+	mkdir $dest if (! -d $dest);
+
+        #unless(mkdir $dest) {
+	#    write_log ("warning: rotate - $dstamp dir: $!");
+        #}
 
         foreach my $rawfile (@krd_files) {
             copy("$rawdir/$rawfile","$dest") or
@@ -896,7 +903,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.19, 2016-02-08 1220
+diskrec: 1.0.19, 2016-02-16 1627
 END
     return;
 }
