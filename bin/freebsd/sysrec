@@ -397,7 +397,10 @@ sub get_diskstat {
 
     my $iostat = "/usr/sbin/iostat";
 
-    my ($reads,$kbreads,$writes,$kbwrites,$qlen,$svc,$busy,$iops,$rwkbytes) = 0;
+    my ($reads,$kbreads,$writes,$kbwrites,$qlen,$svc,$busy,$iops,$rwkbytes);
+
+    $reads = $kbreads = $writes = $kbwrites = $qlen = $svc = 
+    $busy = $iops = $rwkbytes = 0;
 
     my $diskcount = 0;
 
@@ -437,15 +440,18 @@ sub get_diskstat {
 
     }    
 
-    $reads    /= $diskcount;
-    $kbreads  /= $diskcount;
+    eval {
+        $reads    /= $diskcount;
+        $kbreads  /= $diskcount;
 
-    $writes   /= $diskcount;
-    $kbwrites /= $diskcount;
+        $writes   /= $diskcount;
+        $kbwrites /= $diskcount;
 
-    $qlen     /= $diskcount;
-    $svc      /= $diskcount;
-    $busy     /= $diskcount;
+        $qlen     /= $diskcount;
+        $svc      /= $diskcount;
+        $busy     /= $diskcount;
+    };
+
 
     $iops      = $reads + $writes;
     $rwkbytes  = $kbreads + $kbwrites;
