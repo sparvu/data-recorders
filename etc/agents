@@ -36,6 +36,7 @@ test -f ${KRMX_ETC}/hdwrec.start  || exit 0
 test -f ${KRMX_ETC}/jvmrec.start  || exit 0
 test -f ${KRMX_ETC}/netrec.start  || exit 0
 test -f ${KRMX_ETC}/procrec.start || exit 0
+test -f ${KRMX_ETC}/webrec.start || exit 0
 test -f ${KRMX_ETC}/xenrec.start  || exit 0
 
 
@@ -88,30 +89,7 @@ stop() {
         fi
 
         if [ -f ${KRMX_LOG}/${rec}rec.pid ]; then
-            # webrec
-            if [ "X$rec" = "Xweb" ]; then
-                case "$OS_NAME" in
-                  SunOS)
-                   kill `ptree \`cat ${KRMX_LOG}/webrec.pid\` | awk '{print $1}' | xargs | awk '{print $2}'` >/dev/null 2>&1
-                   RETVAL=$?
-                   [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-                   continue
-                   ;;
- 
-                  Linux)
-                   kill `cat ${KRMX_LOG}/webrec.pid` >/dev/null 2>&1
-                   RETVAL=$?
-                   [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
-                   continue
-                   ;;
 
-                  *)
-                   echo "Error: not supported OS"
-                   exit 1
-                   ;;
-                esac
-            fi
-                 
             kill `cat ${KRMX_LOG}/${rec}rec.pid` >/dev/null 2>&1
             RETVAL=$?
             [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
