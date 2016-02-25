@@ -36,7 +36,7 @@ usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
-my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
 
 # process [interval [count]],
 my ( $interval, $loop_max );
@@ -63,8 +63,6 @@ local $| = 1;
 
 
 ### MAIN BODY #
-my $osname = "$^O";
-my $agent = "Kronometrix/1.3.2 (kdr 1.0.18 webrec $osname)";
 
 # Set a timer for WWW::Curl::Easy object
 local $SIG{ALRM} = sub { };
@@ -88,6 +86,9 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
+# osname
+my $osname = "$^O";
+
 # read configuration
 $cdata = open_config($cfile);
 
@@ -96,8 +97,7 @@ tie my %work, "Tie::IxHash";
 %work = get_workload($cdata);
 
 # get it as verbose
-print "Total workload requests: " . keys(%work) . ".\n"
- if ($verbose);
+#print "Total workload requests: " . keys(%work) . ".\n";
 
 if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
     die "Error: No SSL support";
@@ -108,16 +108,16 @@ $http->setopt(CURLOPT_FOLLOWLOCATION, 1);
 $http->setopt(CURLOPT_NOSIGNAL, 1);
 #$http->setopt(CURLOPT_TIMEOUT, 60);
 
-my $head = tempfile();
-$http->setopt(CURLOPT_WRITEHEADER, $head);
+#my $head = tempfile();
+#$http->setopt(CURLOPT_WRITEHEADER, $head);
 
 my $body = tempfile();
 $http->setopt(CURLOPT_FILE, $body);
 
-my @myheaders;
-$myheaders[0] = "$agent";
+##my @myheaders;
+#$myheaders[0] = "User-Agent: Kronometrix/1.3.1 (kdr 1.0.17 webrec $osname)";
 
-$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
+#$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
 $http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
 
 $http->setopt(CURLOPT_FORBID_REUSE, 1);
@@ -128,11 +128,13 @@ $http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
 while (1) {
 
     for my $key (keys %work) {
+
         my $value = $work{$key};
-        my ( $work, $desc, $name, $id, $d ) = split ( /:/, $key );
+
+        my ($work, $desc, $name, $id, $d) = split( /:/, $key );
 
         # "$scm:$hst:$url:$post";
-        my ( $scheme, $hname, $url, $p ) = split( /:/, $value );
+        my ($scheme, $hname, $url, $p) = split( /:/, $value );
 
         # print "$key => $value\n";
         process_request ($http, $work, $name, $id, $scheme, $hname, $url, $p);
@@ -192,6 +194,47 @@ sub open_config {
     return $perl_data;
 }
 
+# write config file
+sub write_config {
+
+    my ( $conf, $perl_data ) = @_;
+
+    # JSON Object
+    my $json_data = JSON->new->utf8->pretty->encode($perl_data);
+
+    # we will parse now the file
+    if ( defined $ENV{'KRMX_PREFIX'} ) {
+        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
+
+            # print $fh encode_json($data);
+            print $fh $json_data;
+            close $fh;
+            move(
+                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
+                "$ENV{'KRMX_PREFIX'}/etc/$conf"
+            ) or die "Error: cannot update $conf: $!";
+
+        }
+        else {
+            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+            usage();
+        }
+    }
+    else {
+        if ( -e "/opt/kronometrix/etc/$conf" ) {
+            open my $fh, ">", "/opt/kronometrix/etc/$conf.tmp";
+            print $fh $json_data;
+            close $fh;
+            move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
+              or die "Error: cannot update $conf: $!";
+        }
+        else {
+            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
+            usage();
+        }
+    }
+}
 
 # reload configuration
 sub reload_config {
@@ -240,8 +283,11 @@ sub get_workload {
             my $url = $req -> {'path'};
 
             my $post = '';
+
             if ( $met eq 'POST' ) {
-                $post = $req -> {'post'};
+                if ($req -> {'post'}) {
+                    $post = $req -> {'post'};
+                }
             }
 
             # print "$name:$desc:$id:$met => $scm://$hst:$url\n";
@@ -268,7 +314,6 @@ sub process_request {
     #print "scheme: $s\n";
     #print "hostname: $h\n";
     #print "url: $u\n";
-    #print "post: $post\n";
     #print "$url \n\n";
 
     # check for HTTPS
@@ -278,6 +323,7 @@ sub process_request {
     }
 
     if ($id eq "POST") {
+        #print "post value: $post\n";
         $http->setopt(CURLOPT_POST,       1 );
         $http->setopt(CURLOPT_POSTFIELDS, $post );
 
@@ -299,7 +345,7 @@ sub process_request {
                      $load,   $connect,  $dns,    $proto, 
                      $pagesz, $firstpkt, $response);
  
-        } else { print STDERR "$w:$n:$url error processing request\n"; }
+        } else { print STDERR "$w:$n:$url error processing request \n"; }
 
     } elsif ($id eq "GET") {
 
@@ -321,7 +367,7 @@ sub process_request {
                      $load,   $connect,  $dns,    $proto, 
                      $pagesz, $firstpkt, $response);
  
-        } else { print STDERR "$w:$n:$url error processing request\n"; }
+        } else { print STDERR "$w:$n:$url error processing request \n"; }
 
     } else {
             print STDERR "Error: cannot process request: $url \n";
@@ -342,7 +388,7 @@ sub putraw {
         $devid = $reqname;
     }
 
-    printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d\n",
+    printf "%.${tp}f:%s:%.3f:%.3f:%.3f:%.3f:%.3f:%d:%d\n",
                 $timereq, $devid,
                 $ttime  , $ctime   , $dtime  , $ptime,
                 $fpkt   , $psize   , $resp;
@@ -376,7 +422,6 @@ OPTIONS:
   -v        : verbose information
   -V        : release version
   interval  : maximum number of seconds between samples
-
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
@@ -413,11 +458,10 @@ END
     exit 0;
 }
 
-
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.0.18, 2016-01-10 0716
+webrec: 1.0.19, 2015-12-30 0103
 END
     exit 0;
 }
