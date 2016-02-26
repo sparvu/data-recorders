@@ -80,4 +80,5 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
     fi
 
     /etc/rc.d/kdr_agents onestart >/dev/null
+    /etc/rc.d/kdr_transport onestart >/dev/null
 fi
