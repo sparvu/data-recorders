@@ -11,6 +11,11 @@ Bug Management System
 
 Releases
 
+  1.0.19 19-02-2016 Release
+    sysrec illegal division by zero #88
+    update curl-7.47.1
+    update openssl-1.0.2g
+
   1.0.18 30-11-2015 Release
     sysrec nic rxtxkbytes is always 0 on freebsd #75
 

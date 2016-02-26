@@ -22,7 +22,7 @@ Releases
     nicrec linux should discard vif NICs on Xen env #96
     diskrec should be able to report per mount point disk space usage #79
     update curl-7.47.1
-    update openssl-1.0.2f
+    update openssl-1.0.2g
 
   1.0.18 10-01-2016 Release
     diskrec should be able to report per mount point disk space usage #79
