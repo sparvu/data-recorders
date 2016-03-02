@@ -134,7 +134,7 @@ if [ $1 -eq 1 ]; then
     chkconfig --add kdr_agents >/dev/null 2>&1 || :
     chkconfig --add kdr_transport >/dev/null 2>&1 || :
     /etc/init.d/kdr_agents start >/dev/null 2>&1 || :
-    # /etc/init.d/kdr_transport start || :
+    /etc/init.d/kdr_transport start || :
     chown -R krmx:krmx /opt/kronometrix/log || :
 
     # cronjobs
@@ -157,7 +157,7 @@ elif [ $1 -eq 2 ]; then
     # upgrade
     chown -R krmx:krmx /opt/kronometrix || :
     /etc/init.d/kdr_agents start >/dev/null 2>&1 || :
-    /etc/init.d/kdr.transport start >/dev/null 2>&1 || :
+    /etc/init.d/kdr_transport start >/dev/null 2>&1 || :
     chown -R krmx:krmx /opt/kronometrix || :
 fi
 
