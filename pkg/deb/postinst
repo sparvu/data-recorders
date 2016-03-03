@@ -21,7 +21,6 @@ if [ -d /opt/kronometrix ]; then
     chown -R krmx:krmx /opt/kronometrix/log || :
 fi
 /etc/init.d/kdr_agents start >/dev/null 2>&1 || :
-/etc/init.d/kdr_transport start >/dev/null 2>&1 || :
 
 # cronjobs
 if [ -f /etc/cron.allow ]; then
@@ -40,3 +39,5 @@ if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
     cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
 fi
 
+# start transport
+/etc/init.d/kdr_transport start >/dev/null 2>&1 || :
