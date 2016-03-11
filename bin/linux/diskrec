@@ -274,6 +274,7 @@ sub get_fs {
              ($fs->format($_) eq 'usbfs') or
              ($fs->format($_) eq 'rpc_pipefs') or
              ($fs->format($_) eq 'devtmpfs') or
+             ($fs->format($_) eq 'fuse.gvfsd-fuse') or
              ($fs->format($_) eq 'xenfs') or
              ($fs->format($_) eq 'selinuxfs') ) { 
             next;
