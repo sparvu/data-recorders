@@ -20,6 +20,12 @@
  
 %endif
 
+%ifarch ppc64
+
+%define _arch ppc64
+
+%endif
+
 
 Summary: Kronometrix Data Recording
 Name: kdr
