@@ -3,14 +3,14 @@ Kronometrix Data Recording
 
 Platforms
    CentOS release 5,6,7 (Final) x86_64, i386
-   SUSE Linux Enterprise Server 11 x86_64, i386
+   SUSE Linux Enterprise Server 11 x86_64, i386, ppc64
    CloudLinux 5,6 x86_64
    Oracle Linux Server 6 x86_64
    Debian GNU/Linux 7 (wheezy) x86_64, i386
    Ubuntu Server Edition 10,12,14 x86_64, i386
    Raspbian GNU/Linux 7 (wheezy) armv6, armv7
 
-   Note: Kernel: minim 2.6+ x86_64, i386
+   Note: Kernel: minim 2.6+ x86_64, i386, ppc64
 
 Bug Management System
   https://github.com/kronometrix/recording/issues
@@ -20,6 +20,7 @@ Releases
 
   1.0.20 11-03-2016 Release
     diskrec support for gvfs fuse file systems #97
+    support for Linux PowerPC 64 #98
 
   1.0.19 02-03-2016 Release
     nicrec linux should discard vif NICs on Xen env #96
