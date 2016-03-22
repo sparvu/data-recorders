@@ -108,14 +108,14 @@ $http->setopt(CURLOPT_FOLLOWLOCATION, 1);
 $http->setopt(CURLOPT_NOSIGNAL, 1);
 $http->setopt(CURLOPT_TIMEOUT, 60);
 
-my $head = tempfile();
-$http->setopt(CURLOPT_WRITEHEADER, $head);
+#my $head = tempfile();
+#$http->setopt(CURLOPT_WRITEHEADER, $head);
 
-my $body = tempfile();
-$http->setopt(CURLOPT_FILE, $body);
+#my $body = tempfile();
+#$http->setopt(CURLOPT_FILE, $body);
 
 my @myheaders;
-my $agent = "Kronometrix/1.3.2 (kdr 1.0.19 webrec $osname)";
+my $agent = "Kronometrix/1.4 (kdr 1.1.0 webrec $osname)";
 $myheaders[0] = "User-Agent: $agent";
 
 $http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
@@ -127,6 +127,13 @@ $http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
 
 # main loop
 while (1) {
+
+
+    my $head = tempfile();
+    $http->setopt(CURLOPT_WRITEHEADER, $head);
+
+    my $body = tempfile();
+    $http->setopt(CURLOPT_FILE, $body);
 
     for my $key (keys %work) {
 
@@ -463,7 +470,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.0.19, 2016-02-27 1314
+webrec: 1.1.0, 2016-03-22 0958
 END
     exit 0;
 }
