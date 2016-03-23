@@ -307,13 +307,14 @@ sub get_value {
         $delta = ( ($v2 - $v1) / ($t2 - $t1) );
     };
 
-    if ($@) { 
+    if ($@) {
+        chomp ($@);
         write_log("$@");
-        write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+        write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
 
     $delta = 1 if $delta > 1;
-    
+
     return $delta;
 }
 
@@ -642,7 +643,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.0.19, 2016-02-16 1627
+cpurec: 1.0.19, 2016-02-19 1040
 END
     return;
 }

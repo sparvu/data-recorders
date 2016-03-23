@@ -476,8 +476,9 @@ sub get_diff {
     };
 
     if ($@) {
+        chomp ($@);
         write_log("$@");
-	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+	write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
 
     $r = 0 if $r < 0;
@@ -511,8 +512,9 @@ sub get_pct {
     };
 
     if ($@) {
+        chomp ($@);
         write_log("$@");
-	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+	write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
 
     return $r;
@@ -550,8 +552,9 @@ sub get_avg {
     };
 
     if ($@) {
+        chomp ($@);
         write_log("$@");
-	write_log("v2=|$v2| v1=|$v1| t2=|$t2| t1=|$t1|");
+	write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
 
     $r = 0 if $r < 0;
@@ -903,10 +906,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.0.19, 2016-02-16 1627
+diskrec: 1.0.19, 2016-02-19 1040
 END
     return;
 }
-
-
-

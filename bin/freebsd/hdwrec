@@ -190,7 +190,7 @@ sub get_version {
     my $fver = '/opt/kronometrix/VERSION';
     my $rel  = 'NA';
 
-    if (-e $fver) {
+    if (-f $fver) {
         open my $fh, "<", $fver
             or die "error: cannot find VERSION file: $!\n";
         while (<$fh>) {

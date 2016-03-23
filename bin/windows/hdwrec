@@ -255,6 +255,8 @@ sub Startup {
 	if ( $newos ne $os ) { $os = "win" . $newos; }
     }
 
+    # get kdr release version
+    my $kdrrel = get_version();
 
     # end payload
     my $tnow = [gettimeofday];
@@ -274,10 +276,10 @@ sub Startup {
     if ($last_time > 0) {
 
         putraw($$tnow[0], $host,     $hdw,    $hv,
-	       $os,   $relos,    $kernel, 
-	       $pcpu, $ncores,   $vcpu, 
-	       $ht,   $memtotal, $swaptotal, 
-	       $ndisk,$nnic,     $uptime);
+	       $os,       $relos,    $kernel,
+	       $pcpu,     $ncores,   $vcpu,
+	       $ht,       $memtotal, $swaptotal,
+	       $ndisk,    $nnic,     $uptime,    $kdrrel);
 
         $last_time = $$tnow[0];
 	sleep($stime);
@@ -286,10 +288,10 @@ sub Startup {
     } else {
 
         putraw($$tnow[0], $host,     $hdw,    $hv,
-	       $os,   $relos,    $kernel, 
-	       $pcpu, $ncores,   $vcpu, 
-	       $ht,   $memtotal, $swaptotal, 
-	       $ndisk,$nnic,     $uptime);
+	       $os,       $relos,    $kernel, 
+	       $pcpu,     $ncores,   $vcpu, 
+	       $ht,       $memtotal, $swaptotal, 
+	       $ndisk,    $nnic,     $uptime,    $kdrrel);
 
 
         if (!RunningAsService()) {
@@ -366,6 +368,25 @@ sub k_sleep {
 
     return;
 }
+
+sub get_version {
+
+    my $fver = 'C:\\Program Files\\Kronometrix';
+    my $rel  = 'NA';
+
+    if (-f $fver) {
+        open my $fh, "<", $fver
+	   or die "error: cannot find VERSION file: $!\n";
+	while (<$fh>) {
+	    chomp;
+	    $rel = $_;
+	}
+	close $fh;
+    }
+
+    return $rel;
+}
+
 
 
 # printhv - print hypervisor 
@@ -699,17 +720,17 @@ sub putraw {
         $host,      $hdw,       $hv, 
 	$os,        $relos,     $kernel, 
 	$pcpu,      $ncores,    $vcpu,   $ht,
-	$memtotal,  $swaptotal, $ndisk,  $nnic, $uptime ) = @_;
+	$memtotal,  $swaptotal, $ndisk,  $nnic, $uptime, $rel ) = @_;
 
     if (RunningAsService()) {
 
         printf $rawlog 
-            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
+            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s\n",
             $traw , 
             $host,      $hdw,       $hv,
 	    $os,        $relos,     $kernel,
 	    $pcpu,      $ncores,    $vcpu,   $ht,
-	    $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime;
+	    $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime, $rel;
 
 
     } else {
@@ -717,22 +738,22 @@ sub putraw {
         if ( $logging ) {
 
             printf $rawlog
-              "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
+              "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s\n",
               $traw , 
               $host,      $hdw,       $hv,
 	      $os,        $relos,     $kernel,
 	      $pcpu,      $ncores,    $vcpu,   $ht,
-	      $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime;
+	      $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime, $rel;
 	}
 
 
         printf
-          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
+          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s\n",
           $traw , 
           $host,      $hdw,       $hv,
 	  $os,        $relos,     $kernel,
 	  $pcpu,      $ncores,    $vcpu,   $ht,
-	  $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime;
+	  $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime, $rel;
     }
 
     return;
@@ -771,6 +792,7 @@ USAGE: hdwrec [-lhV] | [interval [count]]
   #14 disks      : total number of physical disks, number
   #15 nics       : total number of physical NICs, number
   #16 uptime     : system uptime, string 
+  #17 version    : data recorders release number, string
 
 END
     return;
@@ -781,7 +803,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.19, 2016-02-16 1628
+hdwrec: 1.1.0, 2016-03-23 1516
 END
     return;
 }
