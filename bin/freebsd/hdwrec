@@ -166,10 +166,13 @@ while (1) {
     # num_jvm can be NA or value, defaults to string
     # HT can be NA or value, defaults to string
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s\n", 
+    # get kdr release version
+    my $kdrrel = get_version();
+
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s%s\n", 
         time, $host, $arch, $hypervisor, $os, $relos,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
-        $num_disk, $num_nic, $uptime;
+        $num_disk, $num_nic, $uptime, $kdrrel;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -182,6 +185,24 @@ while (1) {
 
 
 ### SUBROUTINES
+sub get_version {
+
+    my $fver = '/opt/kronometrix/VERSION';
+    my $rel  = 'NA';
+
+    if (-e $fver) {
+        open my $fh, "<", $fver
+            or die "error: cannot find VERSION file: $!\n";
+        while (<$fh>) {
+            chomp;
+            $rel = $_;
+        }
+        close $fh;
+    }
+
+    return $rel;
+}
+
 
 ## sec2human
 sub sec2human {
@@ -301,6 +322,7 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #14 disks      : total number of disks, number
   #15 nics       : total number of NICs, number
   #16 uptime     : system uptime, string
+  #17 version    : data recorders release number, string
 
 END
     exit 0;
@@ -310,7 +332,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.18, 2015-12-12 1609
+hdwrec: 1.1.0, 2016-03-23 1454
 END
     exit 0;
 }

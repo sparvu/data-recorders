@@ -199,7 +199,7 @@ while (1) {
 sub get_version {
 
     my $fver = '/opt/kronometrix/VERSION';
-    my $rel;
+    my $rel  = 'NA';
 
     if (-e $fver) {
         open my $fh, "<", $fver
@@ -209,7 +209,7 @@ sub get_version {
             $rel = $_;
         }
         close $fh;
-    } else { $rel = 'NA'; }
+    }
 
     return $rel;
 }
