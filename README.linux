@@ -34,6 +34,8 @@ README Kronometrix Data Recording
 
 3.Prerequisites
 
+  o CONFIG_BLK_STATS=y, support for block disk device statistics
+
   o dbus
 
   o chkconfig, it is not mandatory but highly recommended

@@ -50,11 +50,11 @@ else {
 
 ###  Variables
 my $sb   = "/sys/block";
-$main::opt_h = 0;  # help option
-$main::opt_V = 0;  # revision option
-my $loop = 0;      # current loop number
-my $tp   = 0;      # time precision
-my $lsb  = "/usr/bin/lsb_release";
+$main::opt_h = 0;                   # help option
+$main::opt_V = 0;                   # revision option
+my $loop = 0;                       # current loop number
+my $tp   = 0;                       # time precision
+my $lsb  = "/usr/bin/lsb_release";  # LSB utility
 local $| = 1;
 
 
@@ -84,6 +84,7 @@ setitimer( ITIMER_REAL, $first_interval, $interval );
 if ( $interval =~ /\./ ) {
     $tp = 3;
 }
+
 
 while (1) {
 
@@ -173,13 +174,16 @@ while (1) {
     $memtotal =~ s/\s+[kK]B$//;
     $swaptotal =~ s/\s+[kK]B$//;
 
+    # get kdr release version
+    my $kdrrel = get_version();
+
     # print metrics
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s\n",
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s\n",
       time, $host, $si->{arch}, $hypervisor, $os, $relos,
       $si->{release},
       $si->{pcpucount}, $ncores, $si->{tcpucount}, $ht,
       $memtotal, $swaptotal, 
-      $num_disk, $num_nic, $si->{uptime};
+      $num_disk, $num_nic, $si->{uptime}, $kdrrel;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -192,6 +196,27 @@ while (1) {
 
 
 ### SUBROUTINES
+sub get_version {
+
+    my $fver = '/opt/kronometrix/VERSION';
+    my $rel;
+
+    if (-e $fver) {
+        open my $fh, "<", $fver
+            or die "error: cannot find VERSION file: $!\n";
+        while (<$fh>) {
+            chomp;
+            $rel = $_;
+        }
+        close $fh;
+    } else { $rel = 'NA'; }
+
+    return $rel;
+}
+
+
+
+
 sub get_lsb {
 
     my ($lsbfh) = @_;
@@ -267,7 +292,7 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #14 disks      : total number of disks, number
   #15 nics       : total number of NICs, number
   #16 uptime     : how long the system has been running, number 
-
+  #17 version    : data recorders release number, string 
 END
     exit 0;
 }
@@ -277,7 +302,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.0.19, 2016-02-12 1307
+hdwrec: 1.1.0, 2016-03-23 1438
 END
     exit 0;
 }
