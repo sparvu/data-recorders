@@ -26,7 +26,6 @@ use Sys::Statistics::Linux;
 use Linux::Distribution qw(distribution_name distribution_version);
 use POSIX qw(pause);
 use Sys::Hostname;
-use Net::Interface;
 
 # Debug Only
 #use Data::Dumper;
