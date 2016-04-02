@@ -26,6 +26,7 @@ use Sys::Statistics::Linux;
 use Linux::Distribution qw(distribution_name distribution_version);
 use POSIX qw(pause);
 use Sys::Hostname;
+use IO::Interface::Simple;
 
 # Debug Only
 #use Data::Dumper;
@@ -177,13 +178,29 @@ while (1) {
     # get kdr release version
     my $kdrrel = get_version();
 
+
+    my @interfaces = IO::Interface::Simple->interfaces;
+
+    my $ifs;
+
+    my $k=0;
+    for my $if (@interfaces) {
+        next if $if->is_loopback;
+        if ( $k > 0 ) {
+            $ifs = ' ' . $if . '_' . $if->address;
+        } else {
+            $ifs = $if . '_' . $if->address;
+        }
+        $k++;
+    }
+
     # print metrics
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s\n",
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s:%s\n",
       time, $host, $si->{arch}, $hypervisor, $os, $relos,
       $si->{release},
       $si->{pcpucount}, $ncores, $si->{tcpucount}, $ht,
       $memtotal, $swaptotal, 
-      $num_disk, $num_nic, $si->{uptime}, $kdrrel;
+      $num_disk, $num_nic, $si->{uptime}, $ifs, $kdrrel;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -292,7 +309,8 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #14 disks      : total number of disks, number
   #15 nics       : total number of NICs, number
   #16 uptime     : how long the system has been running, number 
-  #17 version    : data recorders release number, string 
+  #17 ips        : IP interface settings, string
+  #18 version    : data recorders release number, string 
 END
     exit 0;
 }
@@ -302,7 +320,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-03-23 1438
+hdwrec: 1.1.0, 2016-04-02 1030
 END
     exit 0;
 }
