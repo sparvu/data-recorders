@@ -189,7 +189,7 @@ while (1) {
     for my $if (@interfaces) {
         next if $if->is_loopback;
         if ( $k > 0 ) {
-            $ifs = ' ' . $if . '_' . $if->address;
+            $ifs = $ifs . ' ' . $if . '_' . $if->address;
         } else {
             $ifs = $if . '_' . $if->address;
         }
