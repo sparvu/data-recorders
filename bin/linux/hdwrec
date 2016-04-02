@@ -167,7 +167,9 @@ while (1) {
     my $num_nic = 0;
     foreach my $i (split /, /, $si->{interfaces} ) {
         # print "Interface: $i\n";
-        $num_nic++ if $i !~ /lo/;
+
+        # skip here some interfaces
+        $num_nic++ if $i !~ /lo/ and $i !~ /vif/;
     }
 
     my $memtotal = $si->{memtotal};
