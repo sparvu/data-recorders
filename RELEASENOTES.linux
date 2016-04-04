@@ -19,8 +19,9 @@ Bug Management System
 Releases
 
   1.1.0 3-04-2016 Release
+    hdwrec on foobar linux distro errors #101
     webrec temp body file and disk space utilization #99
-
+    
   1.0.20 14-03-2016 Release
     diskrec support for gvfs fuse file systems #97
     support for Linux PowerPC 64 #98
