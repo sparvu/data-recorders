@@ -161,7 +161,12 @@ while (1) {
                 }
             }
         }
+    }  else {
+        my $distid;
+        ($os, $relos, $distid) = get_lsb("$lsb");
+        $os = lc $os;
     }
+
 
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
@@ -322,7 +327,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-04-02 1030
+hdwrec: 1.1.0, 2016-04-05 0112 
 END
     exit 0;
 }
