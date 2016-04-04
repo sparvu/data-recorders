@@ -23,6 +23,8 @@ Releases
     webrec temp body file and disk space utilization #99
     hdwrec should announce kdr release version #89
     webrec max pending signals linux #80
+    support for ip, routing inventory information #73
+    modbus support #45
  
   1.0.20 14-03-2016 Release
     diskrec support for gvfs fuse file systems #97
