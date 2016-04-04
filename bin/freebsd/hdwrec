@@ -25,6 +25,7 @@ use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Sys::Hostname;
 use BSD::Sysctl qw(sysctl);
+use IO::Interface::Simple;
 
 # Debug Only
 #use Data::Dumper;
@@ -169,10 +170,25 @@ while (1) {
     # get kdr release version
     my $kdrrel = get_version();
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s%s\n", 
+    my @interfaces = IO::Interface::Simple->interfaces;
+
+    my $ifs;
+
+    my $k=0;
+    for my $if (@interfaces) {
+        next if $if->is_loopback;
+        if ( $k > 0 ) {
+            $ifs = $ifs . ' ' . $if . '_' . $if->address;
+        } else {
+            $ifs = $if . '_' . $if->address;
+        }
+        $k++;
+    }
+
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s:%s:%s\n", 
         time, $host, $arch, $hypervisor, $os, $relos,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
-        $num_disk, $num_nic, $uptime, $kdrrel;
+        $num_disk, $num_nic, $uptime, $ifs, $kdrrel;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -322,7 +338,8 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #14 disks      : total number of disks, number
   #15 nics       : total number of NICs, number
   #16 uptime     : system uptime, string
-  #17 version    : data recorders release number, string
+  #17 ips        : IP interface settings, string
+  #18 version    : data recorders release number, string 
 
 END
     exit 0;
@@ -332,7 +349,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-03-23 1454
+hdwrec: 1.1.0, 2016-04-04 1923
 END
     exit 0;
 }
