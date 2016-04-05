@@ -162,9 +162,31 @@ while (1) {
             }
         }
     }  else {
-        my $distid;
-        ($os, $relos, $distid) = get_lsb("$lsb");
-        $os = lc $os;
+
+        if (-e $lsb) {
+            my $distid;
+            ($os, $relos, $distid) = get_lsb("$lsb");
+            $os = lc $os;
+        } else {
+            if (-e "/etc/redhat-release") {
+                open my $rhelrel, "<", "/etc/redhat-release"
+                    or die "error: cannot find redhat-release: $!\n";
+                while (<$rhelrel>) {
+                    chomp;
+                    if ($_ =~ /^CloudLinux/o) {
+                        $os="cloudlinux";
+                        $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
+                    } elsif ($_ =~ /^Foobar/o) {
+                        $os="foobar";
+                        $relos = $1 if $_ =~ /(\d+\.\d+(?:\.\d+)?)/;
+                    } else {
+                        $os = "NA";
+                        $relos = "NA";
+                    }
+                }
+                close $rhelrel;
+            } else { $os = "NA"; $relos = "NA"; }
+        }
     }
 
 
@@ -327,7 +349,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-04-05 0112 
+hdwrec: 1.1.0, 2016-04-05 1541
 END
     exit 0;
 }
