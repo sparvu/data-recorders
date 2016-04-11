@@ -24,18 +24,26 @@ use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use Sys::Statistics::Linux;
 use Linux::Distribution qw(distribution_name distribution_version);
-use POSIX qw(pause);
+use POSIX qw(pause ceil);
 use Sys::Hostname;
 use IO::Interface::Simple;
+use Sys::Filesystem ();
+use Filesys::Df;
+use File::stat;
+use File::Stat::Bits;
+
 
 # Debug Only
 #use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hV') or usage();
+getopts('hvV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
+
+# set debug log
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -50,12 +58,12 @@ else {
 }
 
 ###  Variables
-my $sb   = "/sys/block";
-$main::opt_h = 0;                   # help option
-$main::opt_V = 0;                   # revision option
-my $loop = 0;                       # current loop number
-my $tp   = 0;                       # time precision
-my $lsb  = "/usr/bin/lsb_release";  # LSB utility
+my $sb       = "/sys/block";            # sysblock
+$main::opt_h = 0;                       # help option
+$main::opt_V = 0;                       # revision option
+my $loop     = 0;                       # current loop number
+my $tp       = 0;                       # time precision
+my $lsb      = "/usr/bin/lsb_release";  # LSB utility
 local $| = 1;
 
 
@@ -66,6 +74,7 @@ local $| = 1;
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
 my $lxs = Sys::Statistics::Linux->new(
+    diskstats  => 1,
     sysinfo  => 1,
     procstats  => 1
 );
@@ -86,6 +95,12 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
+# speedup option, default 1hr
+my $boot    = 60;             # we speedup 60 times 60sec
+my $speedup = 1;              # default on
+my $defint  = $interval;      # we save the original interval
+
+if ( $speedup == 1 ) { rstimer($boot); }
 
 while (1) {
 
@@ -117,13 +132,72 @@ while (1) {
 
     # hyper-threading
     my $ht = 'NA';
- 
+
     # disks might become available, check disks every sample
     my $num_disk = 0;
+    my $lsize = 0;
 
     # get disks
     my $rdisks = get_disks();
     $num_disk =  scalar(@$rdisks);
+
+
+    # get GB total storage
+    my @fs = get_fs();
+    my %sp = procswap();
+    my @rdisks = sort $stat->diskstats;
+    my ( $dmajor, $dminor ) = 0;
+    my %dstat;
+
+    ### loop over all disks
+    foreach my $d (@rdisks) {
+        my ( $readReq, $readByt, $writeReq, $writeByt, $totReq, $totByt );
+        my ( $dmajor, $dminor );
+
+        #exceptions
+        next if ($d =~ m/^loop|^ram|^zram/);
+        next if ($d =~ m/^fd0|^hdc/);
+        next if ($d =~ m/^md(?:[0-9])/);
+        next if ($d =~ m/^sr(?:[0-9])$/);
+
+        next if ( exists $sp{$d} );
+
+        ### Get Stats
+        my $disk    = $stat->diskstats;
+
+        if ( defined( $disk->{$d}{major} ) ) {
+            $dmajor = $disk->{$d}{major};
+        }
+
+        if ( defined( $disk->{$d}{minor} ) ) {
+            $dminor = $disk->{$d}{minor};
+        }
+
+        my $key= $dmajor . $dminor;
+
+        for my $filesystem ( @fs ) {
+
+            my ($mj, $mi);
+
+            my $st = stat($filesystem) or
+                die "Can't stat $filesystem: $!";
+
+            if (S_ISDIR($st->mode)) {
+                ($mj, $mi) = dev_split( $st->dev );
+            }
+
+            my $fkey = $mj . $mi;
+
+            if ( $key eq $fkey ) {
+
+                my $ref = df("$filesystem", 1);
+
+                if ( defined($ref) ) {
+                    $lsize  += ceil($ref->{blocks} / 1073741824);
+                }
+            }
+        }
+    }
 
     # fetch dist_id, os, relos 
     my ($os, $relos) = "NA";
@@ -207,7 +281,6 @@ while (1) {
     # get kdr release version
     my $kdrrel = get_version();
 
-
     my @interfaces = IO::Interface::Simple->interfaces;
 
     my $ifs;
@@ -224,19 +297,28 @@ while (1) {
     }
 
     # print metrics
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s:%s\n",
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
       time, $host, $si->{arch}, $hypervisor, $os, $relos,
       $si->{release},
       $si->{pcpucount}, $ncores, $si->{tcpucount}, $ht,
       $memtotal, $swaptotal, 
-      $num_disk, $num_nic, $si->{uptime}, $ifs, $kdrrel;
+      $num_disk, $lsize, $num_nic, $si->{uptime}, $ifs, $kdrrel;
+
 
     ### Check for end
     last if ++$loop == $loop_max;
 
+    ### Check for speedup
+    if ( $speedup > 0 ) {
+        if ( $speedup == $boot ) {
+            rstimer($defint);
+            $speedup = -1;
+        } else { $speedup++; }
+    }
+
+
     ### Interval
     pause;
-
 }
 
 
@@ -259,8 +341,6 @@ sub get_version {
 
     return $rel;
 }
-
-
 
 
 sub get_lsb {
@@ -310,7 +390,85 @@ sub get_disks {
     
     # return array ref
     return \@d;
-}  
+}
+
+
+## get filesystems
+#  will get a list of valid regular fs ignoring
+#  autofs, nfs,usbfs, rpc_pipefs, selinuxfs
+sub get_fs {
+
+    my $fs = Sys::Filesystem->new();
+    my @filesystems = $fs->regular_filesystems();
+    my @lfs;
+
+    for (@filesystems)
+    {
+
+        if ( ($fs->format($_) eq 'autofs') or
+             ($fs->format($_) eq 'nfs') or
+             ($fs->format($_) eq 'udf,iso9660') or
+             ($fs->format($_) eq 'usbfs') or
+             ($fs->format($_) eq 'rpc_pipefs') or
+             ($fs->format($_) eq 'devtmpfs') or
+             ($fs->format($_) eq 'fuse.gvfsd-fuse') or
+             ($fs->format($_) eq 'xenfs') or
+             ($fs->format($_) eq 'selinuxfs') ) { 
+            next;
+        }
+
+        if ($verbose) {
+ 
+            printf("%s is a %s filesystem mounted on %s\n",
+                 $fs->mount_point($_),
+                 $fs->format($_),
+                 $fs->device($_)
+              );
+        }
+
+        # load final
+        push @lfs, $_;
+    }
+
+    return @lfs;
+}
+
+
+sub procswap {
+
+    my %swaps;
+
+    if (-e "/proc/swaps") {
+        open my $pswap, "<", "/proc/swaps"
+          or die "error: cannot open /proc/swaps: $!\n";
+        while (<$pswap>) {
+            chomp;
+            next if $_ =~ m/^Filename/;
+            if ( $_ =~ m/^.*\/(.*?)\s.*$/ ) {
+                my $k = $1;
+                $swaps{$k} = $k;
+            }
+            #if ( grep{/^$d$/} <$pswap>) { next; }
+        }
+        close $pswap;
+    }
+
+    return %swaps;
+}
+
+
+sub rstimer {
+
+    my ($lt) = @_;
+
+    my $fint = $lt;
+
+    setitimer( ITIMER_REAL, $fint, $lt );
+
+    return;
+}
+
+
 
 
 # usage - print usage and exit.
@@ -322,7 +480,7 @@ USAGE: hdwrec [-hV] | [interval [count]]
       hdwrec 1 5     print 5 times, every 1 second
 
  FIELDS:
-  #01 timestamp  : seconds since Epoch, time
+  #01 timestamp  : seconds since Epoch, time (default 60s)
   #02 hostname   : hostname
   #03 hdw        : machine hardware name
   #04 hypervisor : name of the hypervisor, string
@@ -336,10 +494,11 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #12 memtotal   : total physical memory installed, number
   #13 swaptotal  : total physical swap installed, number
   #14 disks      : total number of disks, number
-  #15 nics       : total number of NICs, number
-  #16 uptime     : how long the system has been running, number 
-  #17 ips        : IP interface settings, string
-  #18 version    : data recorders release number, string 
+  #15 storage    : total GB across all disks, number
+  #16 nics       : total number of NICs, number
+  #17 uptime     : how long the system has been running, number
+  #18 ips        : IP interface settings, string
+  #19 version    : data recorders release number, string 
 END
     exit 0;
 }
@@ -349,7 +508,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-04-05 1541
+hdwrec: 1.1.0, 2016-04-11 1129
 END
     exit 0;
 }
