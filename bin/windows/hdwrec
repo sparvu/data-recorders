@@ -371,7 +371,7 @@ sub k_sleep {
 
 sub get_version {
 
-    my $fver = 'C:\\Program Files\\Kronometrix';
+    my $fver = 'C:\\Program Files\\Kronometrix\\VERSION';
     my $rel  = 'NA';
 
     if (-f $fver) {
@@ -790,12 +790,11 @@ USAGE: hdwrec [-lhV] | [interval [count]]
   #12 memtotal   : total physical memory installed, number
   #13 swaptotal  : total physical swap installed, number
   #14 disks      : total number of physical disks, number
-  #15 storage    : total GB across all disks, number 
+  #15 diskspace  : total GB across all disks, number 
   #16 nics       : total number of physical NICs, number
   #17 uptime     : system uptime, string 
   #18 ips        : IP interface settings, string
   #19 version    : data recorders release number, string
-
 END
     return;
 }
