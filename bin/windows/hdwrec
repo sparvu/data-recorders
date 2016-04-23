@@ -790,9 +790,11 @@ USAGE: hdwrec [-lhV] | [interval [count]]
   #12 memtotal   : total physical memory installed, number
   #13 swaptotal  : total physical swap installed, number
   #14 disks      : total number of physical disks, number
-  #15 nics       : total number of physical NICs, number
-  #16 uptime     : system uptime, string 
-  #17 version    : data recorders release number, string
+  #15 storage    : total GB across all disks, number 
+  #16 nics       : total number of physical NICs, number
+  #17 uptime     : system uptime, string 
+  #18 ips        : IP interface settings, string
+  #19 version    : data recorders release number, string
 
 END
     return;
@@ -803,7 +805,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-03-23 1516
+hdwrec: 1.1.0, 2016-04-23 1130
 END
     return;
 }
