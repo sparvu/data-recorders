@@ -494,7 +494,7 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #12 memtotal   : total physical memory installed, number
   #13 swaptotal  : total physical swap installed, number
   #14 disks      : total number of disks, number
-  #15 storage    : total GB across all disks, number
+  #15 diskspace  : total GB across all disks, number
   #16 nics       : total number of NICs, number
   #17 uptime     : how long the system has been running, number
   #18 ips        : IP interface settings, string
