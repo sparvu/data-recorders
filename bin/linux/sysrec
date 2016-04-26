@@ -166,8 +166,10 @@ while (1) {
     # loop over all NICS
     foreach (@nics) {
 
-        # skip here the non eth NICs
-        next if $_ !~ /^eth|^wlan/;
+        # skip here the loopback interface
+        next if $_ =~ /^lo.*/;
+        next if $_ =~ /^vif.*/;
+        next if $_ =~ /^macvtap.*/;
 
         #
         # print "NIC: $_ \n";
@@ -398,7 +400,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.1.0, 2016-04-08 1051
+sysrec: 1.1.0, 2016-04-26 1501
 END
     exit 0;
 }

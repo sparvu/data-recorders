@@ -189,7 +189,7 @@ while ( 1 ) {
             my ($mj, $mi);
 
             my $st = stat($filesystem) or
-                die "Can't stat $filesystem: $!";
+                warn "Can't stat $filesystem: $!";
 
             if (S_ISDIR($st->mode)) {
                 ($mj, $mi) = dev_split( $st->dev );
@@ -276,6 +276,12 @@ sub get_fs {
              ($fs->format($_) eq 'devtmpfs') or
              ($fs->format($_) eq 'fuse.gvfsd-fuse') or
              ($fs->format($_) eq 'xenfs') or
+             ($fs->format($_) eq 'fuse.lxcfs') or
+             ($fs->format($_) eq 'cgroup') or
+             ($fs->format($_) eq 'hugetlbfs') or
+             ($fs->format($_) eq 'mqueue') or
+             ($fs->format($_) eq 'tracefs') or
+             ($fs->format($_) eq 'pstore') or
              ($fs->format($_) eq 'selinuxfs') ) { 
             next;
         }
@@ -367,7 +373,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.0, 2016-04-08 1141
+diskrec: 1.1.0, 2016-04-26 1501
 END
     exit 0;
 }

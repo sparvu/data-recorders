@@ -115,6 +115,7 @@ while (1) {
         # skip here the loopback interface
         next if $n =~ /^lo.*/;
         next if $n =~ /^vif.*/;
+        next if $n =~ /^macvtap.*/;
 
         # filter by interface
         if ( $int_sem == 1 ) {
@@ -247,7 +248,7 @@ END
 sub revision {
 
     print STDERR <<END;
-nicrec: 1.1.0, 2016-04-08 1054
+nicrec: 1.1.0, 2016-04-26 1502
 END
     exit 0;
 }
