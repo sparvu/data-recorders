@@ -80,6 +80,8 @@ my $pdev        = 'PCI|USB|VMBUS';
 my $vdev        = 'ROOT|SW|\{';
 my $vid         = 'Microsoft|VMWare|VirtualBox';
 my $last_time   = 0;                      # first counter
+my $key         = 'Name';
+my $diskwmi     = 'Win32_PerfRawData_PerfDisk_LogicalDisk';
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -118,6 +120,25 @@ if ($logging) {
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
     or die "Cannot initialize WMI interface\n";
+
+
+## disk
+my @diskstats = qw(
+                    DiskReadsPerSec        DiskReadBytesPerSec
+		    Timestamp_PerfTime     Frequency_PerfTime 
+		    Frequency_Sys100NS     Timestamp_Sys100NS
+		   );
+
+my @filter   =   ( 'Harddisk',
+                   '_Total'
+                 );
+
+my $disk_old = {};
+my $list;
+
+# pre-init all default
+init_disk();
+
 
 unless (defined &ContinueRun) {
     *ContinueRun = sub { return 1 };
@@ -211,6 +232,44 @@ sub Startup {
         $ndisk++;
     }
 
+
+    # get total GB of all volumes
+    my $lsize = 0;
+    my $disk = {};
+
+    $list = $wmi->InstancesOf($diskwmi)
+            or die "Failed to get $diskwmi instance object\n";
+
+    foreach my $v (in $list) {
+
+        next if $v->{$key} =~ m/\\/;
+        if (! grep { $v->{$key} =~ /$_/i } @filter ) {
+            map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
+	}
+    }
+
+
+    my $dspace=0;
+    for my $k (keys %$disk) {
+
+        my $dn = $k;
+        $dn =~ s/\://; $dn =~s/\s+//;
+	my $diskname = "disk" . $dn;
+
+
+        # Inventory data
+	my $wdinv =
+	$wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$k'");
+	foreach my $obj (in $wdinv) {
+	    $lsize = sprintf ( "%.2f", $obj->{Size} / 1073741824 );
+	}
+
+	$dspace += $lsize;
+    }
+
+    $disk_old = $disk;
+
+
     # get no of NICs
     my $nicq = "SELECT * from Win32_NetworkAdapter";
 
@@ -220,6 +279,8 @@ sub Startup {
     my $pnic = 0;
     my $vnic = 0;
 
+    my $ips  = 'NA';
+
     foreach my $nic (in $wn) {
 
         my $vendor = $nic->{Manufacturer};
@@ -228,6 +289,8 @@ sub Startup {
         my $id     = $nic->{Index};
 
         if (defined $vendor and defined $pnp) {
+
+            # fetch IP settings
             if    ( $vendor =~ /$vid/i and $pnp !~ /$pdev/i ) { $vnic++; }
             elsif ( $vendor !~ /$vid/i and $pnp =~ /$vdev/i ) { $vnic++; }
             else  { $pnic++; }
@@ -244,6 +307,33 @@ sub Startup {
     # drop Virtual NICs
     $nnic = $pnic;
 
+    my $kk=0;
+
+    my $niconf = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+    foreach my $no (in $niconf) {
+	next unless $no->{IPEnabled};
+
+        my $name = lc $no->{'ServiceName'};
+
+        my $ipaddrs = $no->{'IPAddress'};
+
+        if (defined $ipaddrs) {
+	    foreach my $ip (@$ipaddrs) {
+
+	        if ( $ip  =~ /:/ ) {
+		    $ip =~  s/:/./g;
+		}
+
+                if ( $kk > 0 ) {
+	            $ips = $ips . ' ' . $name . '_' . $ip;
+		} else {
+		    $ips = $name . '_' . $ip;
+		}
+		$kk++;
+	    }
+	}
+    }
+
     # os, relos, kernel correction win2012, win10
     my @winver = split /\./, $osver;
     my $r = $winver[0] . "." . $winver[1];
@@ -254,6 +344,7 @@ sub Startup {
         if ( $k ne $kernel ) { $kernel = $k; }
 	if ( $newos ne $os ) { $os = "win" . $newos; }
     }
+
 
     # get kdr release version
     my $kdrrel = get_version();
@@ -279,7 +370,8 @@ sub Startup {
 	       $os,       $relos,    $kernel,
 	       $pcpu,     $ncores,   $vcpu,
 	       $ht,       $memtotal, $swaptotal,
-	       $ndisk,    $nnic,     $uptime,    $kdrrel);
+	       $ndisk,    $dspace,   $nnic,     
+	       $uptime,   $ips,      $kdrrel);
 
         $last_time = $$tnow[0];
 	sleep($stime);
@@ -291,7 +383,8 @@ sub Startup {
 	       $os,       $relos,    $kernel, 
 	       $pcpu,     $ncores,   $vcpu, 
 	       $ht,       $memtotal, $swaptotal, 
-	       $ndisk,    $nnic,     $uptime,    $kdrrel);
+	       $ndisk,    $dspace,   $nnic,     
+	       $uptime,   $ips,      $kdrrel);
 
 
         if (!RunningAsService()) {
@@ -387,6 +480,22 @@ sub get_version {
     return $rel;
 }
 
+
+sub init_disk {
+
+    $list = $wmi->InstancesOf($diskwmi)
+          or die "Failed to get $diskwmi instance object\n";
+
+    foreach my $v (in $list) {
+
+        next if $v->{$key} =~ m/\\/;
+
+        if (! grep { $v->{$key} =~ /$_/i } @filter ) {
+
+	    map{$disk_old->{$v->{$key}}->{$_} = $v->{$_} }@diskstats;
+	}
+    }
+}
 
 
 # printhv - print hypervisor 
@@ -720,17 +829,18 @@ sub putraw {
         $host,      $hdw,       $hv, 
 	$os,        $relos,     $kernel, 
 	$pcpu,      $ncores,    $vcpu,   $ht,
-	$memtotal,  $swaptotal, $ndisk,  $nnic, $uptime, $rel ) = @_;
+	$memtotal,  $swaptotal, $ndisk,  $ds, 
+        $nnic,      $uptime,    $ips,    $rel ) = @_;
 
     if (RunningAsService()) {
 
         printf $rawlog 
-            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s\n",
-            $traw , 
+            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+            $traw ,
             $host,      $hdw,       $hv,
 	    $os,        $relos,     $kernel,
 	    $pcpu,      $ncores,    $vcpu,   $ht,
-	    $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime, $rel;
+	    $memtotal,  $swaptotal, $ndisk,  $ds, $nnic, $uptime, $ips, $rel;
 
 
     } else {
@@ -738,22 +848,22 @@ sub putraw {
         if ( $logging ) {
 
             printf $rawlog
-              "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s\n",
+              "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
               $traw , 
               $host,      $hdw,       $hv,
 	      $os,        $relos,     $kernel,
 	      $pcpu,      $ncores,    $vcpu,   $ht,
-	      $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime, $rel;
+	      $memtotal,  $swaptotal, $ndisk,  $ds, $nnic, $uptime, $ips, $rel;
 	}
 
 
         printf
-          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%s:%s\n",
+          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
           $traw , 
           $host,      $hdw,       $hv,
 	  $os,        $relos,     $kernel,
 	  $pcpu,      $ncores,    $vcpu,   $ht,
-	  $memtotal,  $swaptotal, $ndisk,  $nnic, $uptime, $rel;
+	  $memtotal,  $swaptotal, $ndisk,  $ds, $nnic, $uptime, $ips, $rel;
     }
 
     return;
@@ -804,7 +914,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-04-23 1130
+hdwrec: 1.1.0, 2016-04-25 1209
 END
     return;
 }
