@@ -156,6 +156,9 @@ while (1) {
         $num_disk++ if $i !~ /cd0/;
     }
 
+    # diskspace in GB
+    my $lsize = 0;
+
     # get NICs
     my $num_nic = $nic - 1;
 
@@ -185,10 +188,10 @@ while (1) {
         $k++;
     }
 
-    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%s:%s:%s:%s:%s\n", 
+    printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n", 
         time, $host, $arch, $hypervisor, $os, $relos,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
-        $num_disk, $num_nic, $uptime, $ifs, $kdrrel;
+        $num_disk, $lsize, $num_nic, $uptime, $ifs, $kdrrel;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -336,11 +339,11 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #12 memtotal   : total physical memory installed, number
   #13 swaptotal  : total physical swap installed, number
   #14 disks      : total number of disks, number
-  #15 nics       : total number of NICs, number
-  #16 uptime     : system uptime, string
-  #17 ips        : IP interface settings, string
-  #18 version    : data recorders release number, string 
-
+  #15 diskspace  : total GB across all disks, number
+  #16 nics       : total number of NICs, number
+  #17 uptime     : how long the system has been running, number
+  #18 ips        : IP interface settings, string
+  #19 version    : data recorders release number, string 
 END
     exit 0;
 }
@@ -349,7 +352,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-04-04 1923
+hdwrec: 1.1.0b01, 2016-04-29 1425
 END
     exit 0;
 }
