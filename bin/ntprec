@@ -91,36 +91,42 @@ tie my %work, "Tie::IxHash";
 %work = get_server($cdata);
 
 # get it as verbose
-print "Total workload requests: " . keys(%work) . ".\n";
+# print "Total workload requests: " . keys(%work) . ".\n";
 
 my $server = 'north-america.pool.ntp.org';
 
 # main loop
 while (1) {
 
-    my $t0 = time;
-    my %h = get_ntp_response($server);
+    for my $key (keys %work) {
+        
+        my $value = $work{$key};
 
-    my $T1 = $t0;                      #Originate Timestamp;
-    my $T2 = $h{'Receive Timestamp'};  #
-    my $T3 = $h{'Transmit Timestamp'}; #
-    my $T4 = time;                     #
+        my ($port, $desc) = split( /:/, $value );
+
+        my $t0 = time;
+        my %h = get_ntp_response($key);
+
+        my $T1 = $t0;                      #Originate Timestamp;
+        my $T2 = $h{'Receive Timestamp'};  #
+        my $T3 = $h{'Transmit Timestamp'}; #
+        my $T4 = time;                     #
   
-    #d = (T4 - T1) - (T3 - T2)     
-    my $d = ($T4 - $T1) - ($T3 - $T2);
+        #d = (T4 - T1) - (T3 - T2)     
+        my $d = ($T4 - $T1) - ($T3 - $T2);
 
-    #t = ((T2 - T1) + (T3 - T4)) / 2.
-    my $t = (($T2 - $T1) + ($T3 - $T4)) / 2;
+        #t = ((T2 - T1) + (T3 - T4)) / 2.
+        my $t = (($T2 - $T1) + ($T3 - $T4)) / 2;
 
-    my $duration = $T4 - $t0;
-    my $delta = $T2 - $T1 - $duration / 2;
+        my $duration = $T4 - $t0;
+        my $delta = $T2 - $T1 - $duration / 2;
   
-    printf "%.${tp}f:%s:%.5f:%.5f\n",
-                $T4, $server, $d, $t;
+        printf "%.${tp}f:%s:%.5f:%.5f\n", $T4, $key, $d, $t;
 
-    #print Dumper( \%h ) . "\nt0=$t0, T4=$T4\ndelay=$d, offset=$t\nelapsed=$duration, delta=$delta\n\n";
-    #print "$server delay=$d, offset=$t, delta=$delta, duration=$duration\n";
-    #print sprintf( "%-30s %.5f\n", $server, $t );
+        #print Dumper( \%h ) . "\nt0=$t0, T4=$T4\ndelay=$d, offset=$t\nelapsed=$duration, delta=$delta\n\n";
+        #print "$server delay=$d, offset=$t, delta=$delta, duration=$duration\n";
+        #print sprintf( "%-30s %.5f\n", $server, $t );
+    }
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -249,8 +255,8 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-  #02 roundtrip delay (d): (T4 - T1) - (T3 - T2), seconds
-  #03 system clock offset (t): ((T2 - T1) + (T3 - T4)) / 2, seconds
+  #02 roundtrip delay, seconds
+  #03 system clock offset, seconds
 
  NOTES:
   When the server reply is received, the client determines a
