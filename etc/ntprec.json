@@ -1,14 +1,14 @@
 {
-  "servers" : [
+  "server" : [
     {
-      "hostname" : "",
-      "port" : 8080,
-      "description" : "US Main NTP Pool",
+      "hostname" : "europe.pool.ntp.org",
+      "port" : 123,
+      "description" : "EU Main NTP Pool"
     },
     {
-      "hostname" : "",
+      "hostname" : "north-america.pool.ntp.org",
       "port" : 123,
-      "description" : "EU Main Pool",
+      "description" : "North US Main Pool"
     }
   ]
 }

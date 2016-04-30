@@ -23,6 +23,7 @@ use warnings;
 use JSON;
 use Getopt::Std;
 use Net::NTP;
+use Tie::IxHash;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 
@@ -51,12 +52,9 @@ else {
 my $loop = 0;              # current loop number
 $main::opt_h = 0;          # help option
 $main::opt_V = 0;          # revision option
-my $cfile = 'webrec.json'; # configuration file
+my $cfile = 'ntprec.json'; # configuration file
 my $cdata;                 # configuration data
-my $tcpka = 0;             # transport TCP keepalive settings
 my $tp = 0;                # time precision
-my $detail = undef;
-my $limit = undef;
 
 local $| = 1;
 
@@ -86,19 +84,20 @@ if ( $interval =~ /\./ ) {
 }
 
 # read configuration
-#$cdata = open_config($cfile);
+$cdata = open_config($cfile);
 
-# workloads
-#tie my %work, "Tie::IxHash";
-#%work = get_workload($cdata);
+# servers
+tie my %work, "Tie::IxHash";
+%work = get_server($cdata);
 
 # get it as verbose
-#print "Total workload requests: " . keys(%work) . ".\n";
-my $server = 'pool.ntp.org';
+print "Total workload requests: " . keys(%work) . ".\n";
+
+my $server = 'north-america.pool.ntp.org';
 
 # main loop
 while (1) {
-    my $bad;
+
     my $t0 = time;
     my %h = get_ntp_response($server);
 
@@ -193,54 +192,30 @@ sub reload_config {
 }
 
 
-# get workloads defintion
-sub get_workload {
+# get NTP Server defintion
+sub get_server {
 
     my ($data) = @_;
-    tie my %appl, "Tie::IxHash";
-    #my %appl;
+    tie my %ntps, "Tie::IxHash";
 
-    my @temp = @{ $data->{'workloads'} };
-
+    my @temp;
+    eval { @temp = @{ $data->{'server'} }; };
+    if ( $@ ) { die "Error: syntax error ntprec.conf, check server";  }
+    
     foreach my $f (@temp) {
-        my ($sid, $tid, $dsid);
 
-        # my $proto = $f->{'protocol'};
-        # my $port  = $f->{'port'};
-        my $ka      = $f->{'keepalive'};
-        my $name    = $f->{'name'};
+        my $host    = $f->{'hostname'};
+        my $port    = $f->{'port'};
         my $desc    = $f->{'description'};
-        my $delay   = $f->{'delay'};
 
-        my @reqs = @{ $f->{'requests'} };
+        # print "$host => $port:$desc \n";
+        my $keyapp = $host;
+        my $hvalue = $port . ":" . $desc;
 
-        foreach my $req (@reqs) {
-            my $id  = $req -> {'id'};
-            my $met = $req -> {'method'};
-            my $scm = $req -> {'scheme'};
-            my $hst = $req -> {'host'};
-            my $prt = $req -> {'port'};
-            my $url = $req -> {'path'};
-
-            my $post = '';
-
-            if ( $met eq 'POST' ) {
-                if ($req -> {'post'}) {
-                    $post = $req -> {'post'};
-                }
-            }
-
-            # print "$name:$desc:$id:$met => $scm://$hst:$url\n";
-            my $keyapp = $name . ":" . $desc . ":" . 
-                         $id   . ":" . $met  . ":" . $delay;
-
-            my $hvalue = $scm . ":" . $hst . ":" . $url . ":" . $post;
-
-            $appl{$keyapp} = $hvalue;
-        }
+        $ntps{$keyapp} = $hvalue;
     }
 
-    return %appl;
+    return %ntps;
 }
 
 
