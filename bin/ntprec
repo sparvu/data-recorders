@@ -21,13 +21,10 @@
 use strict;
 use warnings;
 use JSON;
-use File::Temp qw(tempfile);
 use Getopt::Std;
+use Net::NTP;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
-use Tie::IxHash;
-use HTTP::Response;
-use WWW::Curl::Easy;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -58,6 +55,8 @@ my $cfile = 'webrec.json'; # configuration file
 my $cdata;                 # configuration data
 my $tcpka = 0;             # transport TCP keepalive settings
 my $tp = 0;                # time precision
+my $detail = undef;
+my $limit = undef;
 
 local $| = 1;
 
@@ -67,7 +66,7 @@ local $| = 1;
 # Set a timer for WWW::Curl::Easy object
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
-my $http = WWW::Curl::Easy->new;
+#my $http = WWW::Curl::Easy->new;
 
 ### 0.1sec sleep using a timer
 pause;
@@ -86,67 +85,43 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
-# osname
-my $osname = "$^O";
-
 # read configuration
-$cdata = open_config($cfile);
+#$cdata = open_config($cfile);
 
 # workloads
-tie my %work, "Tie::IxHash";
-%work = get_workload($cdata);
+#tie my %work, "Tie::IxHash";
+#%work = get_workload($cdata);
 
 # get it as verbose
 #print "Total workload requests: " . keys(%work) . ".\n";
-
-if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
-    die "Error: No SSL support";
-}
-
-$http->setopt(CURLOPT_NOPROGRESS, 1);
-$http->setopt(CURLOPT_FOLLOWLOCATION, 1);
-$http->setopt(CURLOPT_NOSIGNAL, 1);
-$http->setopt(CURLOPT_TIMEOUT, 60);
-
-#my $head = tempfile();
-#$http->setopt(CURLOPT_WRITEHEADER, $head);
-
-#my $body = tempfile();
-#$http->setopt(CURLOPT_FILE, $body);
-
-my @myheaders;
-my $agent = "Kronometrix/1.4 (kdr 1.1.0 webrec $osname)";
-$myheaders[0] = "User-Agent: $agent";
-
-$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
-$http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
-
-$http->setopt(CURLOPT_FORBID_REUSE, 1);
-$http->setopt(CURLOPT_FRESH_CONNECT, 1);
-$http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
+my $server = 'pool.ntp.org';
 
 # main loop
 while (1) {
+    my $bad;
+    my $t0 = time;
+    my %h = get_ntp_response($server);
 
+    my $T1 = $t0;                      #Originate Timestamp;
+    my $T2 = $h{'Receive Timestamp'};  #
+    my $T3 = $h{'Transmit Timestamp'}; #
+    my $T4 = time;                     #
+  
+    #d = (T4 - T1) - (T3 - T2)     
+    my $d = ($T4 - $T1) - ($T3 - $T2);
 
-    my $head = tempfile();
-    $http->setopt(CURLOPT_WRITEHEADER, $head);
+    #t = ((T2 - T1) + (T3 - T4)) / 2.
+    my $t = (($T2 - $T1) + ($T3 - $T4)) / 2;
 
-    my $body = tempfile();
-    $http->setopt(CURLOPT_FILE, $body);
+    my $duration = $T4 - $t0;
+    my $delta = $T2 - $T1 - $duration / 2;
+  
+    printf "%.${tp}f:%s:%.5f:%.5f\n",
+                $T4, $server, $d, $t;
 
-    for my $key (keys %work) {
-
-        my $value = $work{$key};
-
-        my ($work, $desc, $name, $id, $d) = split( /:/, $key );
-
-        my ($scheme, $hname, $url, $p) = split( /:/, $value );
-
-        # print "$key => $value\n";
-        process_request ($http, $work, $name, $id, $scheme, $hname, $url, $p);
-        sleep $d;
-    }
+    #print Dumper( \%h ) . "\nt0=$t0, T4=$T4\ndelay=$d, offset=$t\nelapsed=$duration, delta=$delta\n\n";
+    #print "$server delay=$d, offset=$t, delta=$delta, duration=$duration\n";
+    #print sprintf( "%-30s %.5f\n", $server, $t );
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -201,49 +176,7 @@ sub open_config {
     return $perl_data;
 }
 
-# write config file
-sub write_config {
 
-    my ( $conf, $perl_data ) = @_;
-
-    # JSON Object
-    my $json_data = JSON->new->utf8->pretty->encode($perl_data);
-
-    # we will parse now the file
-    if ( defined $ENV{'KRMX_PREFIX'} ) {
-        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
-            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
-
-            # print $fh encode_json($data);
-            print $fh $json_data;
-            close $fh;
-            move(
-                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
-                "$ENV{'KRMX_PREFIX'}/etc/$conf"
-            ) or die "Error: cannot update $conf: $!";
-
-        }
-        else {
-            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-            usage();
-        }
-    }
-    else {
-        if ( -e "/opt/kronometrix/etc/$conf" ) {
-            open my $fh, ">", "/opt/kronometrix/etc/$conf.tmp";
-            print $fh $json_data;
-            close $fh;
-            move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
-              or die "Error: cannot update $conf: $!";
-        }
-        else {
-            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
-            usage();
-        }
-    }
-}
-
-# reload configuration
 sub reload_config {
 
     write_log("info: main - signal HUP received, reload armed...");
@@ -251,10 +184,10 @@ sub reload_config {
     $cdata = open_config($cfile);
 
     ## hostid
-    get_hostid($cdata);
+    # get_hostid($cdata);
 
     ## appliance destination
-    %work = get_workload($cdata);
+    # %work = get_workload($cdata);
 
     return;
 }
@@ -311,99 +244,6 @@ sub get_workload {
 }
 
 
-sub process_request {
-
-    my ($http, $w, $n, $id, $s, $h, $u, $post) = @_;
-
-    # rebuild the entire request url
-    my $url = $s . "://" . $h . $u;
-  
-    #print "scheme: $s\n";
-    #print "hostname: $h\n";
-    #print "url: $u\n";
-    #print "$url \n\n";
-
-    # check for HTTPS
-    if ($s eq "https") {
-        $http->setopt(CURLOPT_SSL_VERIFYPEER,0); # do verify
-        $http->setopt(CURLOPT_SSL_VERIFYHOST,0); # check name
-    }
-
-    if ($id eq "POST") {
-        #print "post value: $post\n";
-        $http->setopt(CURLOPT_POST,       1 );
-        $http->setopt(CURLOPT_POSTFIELDS, $post );
-
-        my $treq = time;
-        $http->setopt(CURLOPT_URL, $url);
-        my $retcode = $http->perform();
-
-        # Get the results
-        my $response = $http->getinfo(CURLINFO_HTTP_CODE);
-        my $load     = $http->getinfo(CURLINFO_TOTAL_TIME);
-        my $connect  = $http->getinfo(CURLINFO_CONNECT_TIME);
-        my $dns      = $http->getinfo(CURLINFO_NAMELOOKUP_TIME);
-        my $proto    = $http->getinfo(CURLINFO_PRETRANSFER_TIME);
-        my $pagesz   = $http->getinfo(CURLINFO_SIZE_DOWNLOAD);
-        my $firstpkt = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dns);
-
-        if ($retcode == 0) { 
-            putraw ( $treq,   $w,        $n, 
-                     $load,   $connect,  $dns,    $proto, 
-                     $pagesz, $firstpkt, $response);
- 
-        } else { my $te = $http->strerror($retcode); my $er = $http->errbuf; 
-                 write_log ("error: $w $n $url - error code:$retcode, type:$te, message:$er"); }
-
-    } elsif ($id eq "GET") {
-
-        my $treq = time;
-        $http->setopt(CURLOPT_URL, $url);
-        my $retcode = $http->perform();
-
-        ## Get the results
-        my $response = $http->getinfo(CURLINFO_HTTP_CODE);
-        my $load     = $http->getinfo(CURLINFO_TOTAL_TIME);
-        my $connect  = $http->getinfo(CURLINFO_CONNECT_TIME);
-        my $dns      = $http->getinfo(CURLINFO_NAMELOOKUP_TIME);
-        my $proto    = $http->getinfo(CURLINFO_PRETRANSFER_TIME);
-        my $pagesz   = $http->getinfo(CURLINFO_SIZE_DOWNLOAD);
-        my $firstpkt = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dns);
-
-        if ($retcode == 0) { 
-            putraw ( $treq,   $w,        $n, 
-                     $load,   $connect,  $dns,    $proto, 
-                     $pagesz, $firstpkt, $response);
-
-        } else { my $te = $http->strerror($retcode); my $er = $http->errbuf; 
-                 write_log ("error: $w $n $url - error code:$retcode, type:$te, message:$er"); }
-
-    } else {
-            write_log ("error: not supported method $id for $url");
-    }
-}
-
-
-#
-sub putraw {
-
-    my ( $timereq, $workload, $reqname,  $ttime, $ctime, $dtime, $ptime, $psize, $fpkt, $resp ) = @_;
-
-    my $devid;
-
-    if ($workload) {
-        $devid = $workload . "_" . $reqname;
-    } else { 
-        $devid = $reqname;
-    }
-
-    printf "%.${tp}f:%s:%.3f:%.3f:%.3f:%.3f:%.3f:%d:%d\n",
-                $timereq, $devid,
-                $ttime  , $ctime   , $dtime  , $ptime,
-                $fpkt   , $psize   , $resp;
-}
-
-
 ## auxiliares
 
 # write log message
@@ -425,7 +265,7 @@ sub write_log {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: webrec [-hvV] | [interval]
+USAGE: ntprec [-hvV] | [interval]
 OPTIONS:
   -h        : help information
   -v        : verbose information
@@ -434,35 +274,36 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
+  #02 roundtrip delay (d): (T4 - T1) - (T3 - T2), seconds
+  #03 system clock offset (t): ((T2 - T1) + (T3 - T4)) / 2, seconds
 
-  #02 request   : the HTTP request name
+ NOTES:
+  When the server reply is received, the client determines a
+  Destination Timestamp variable as the time of arrival according to
+  its clock in NTP timestamp format.  The following table summarizes
+  the four timestamps.
 
-  #03 ttime     : total time, entire operation lasted, seconds
+     Timestamp Name          ID   When Generated
+     ------------------------------------------------------------
+     Originate Timestamp     T1   time request sent by client
+     Receive Timestamp       T2   time request received by server
+     Transmit Timestamp      T3   time reply sent by server
+     Destination Timestamp   T4   time reply received by client
 
-  #04 ctime     : connect time it took from the start until the TCP 
-                  connect to the remote host (or proxy) was completed, seconds
+  The roundtrip delay d and system clock offset t are defined as:
 
-  #05 dnstime   : namelookup time, it took from the start until the name 
-                  resolving was completed, seconds
+     d = (T4 - T1) - (T3 - T2)     t = ((T2 - T1) + (T3 - T4)) / 2.
 
-  #06 ptime :     protocol time, it took from the start until the file 
-                  transfer was just about to begin, seconds
-
-  #07 pktime    : first packet time, it took from the start until the first 
-                  byte was just about to be transferred, seconds
-
-  #08 size      : page size, the total amount of bytes that were downloaded
-
-  #09 status    : response status code, the numerical response code 
-                  that was found in the last retrieved HTTP(S) transfer
-
- NOTES
- webrec reports TTFB (time to first byte) for one or many HTTP workloads, 
- applications, as an indication of the responsiveness. TTFB measures the 
- duration from the virtual user making an HTTP request to the first byte 
- of the page being received by the browser. This time is made up of the 
- socket connection time, the time taken to send the HTTP request, and the 
- time taken to get the first byte of the page.
+  Note that in general both delay and offset are signed quantities and
+  can be less than zero; however, a delay less than zero is possible
+  only in symmetric modes, which SNTP clients are forbidden to use.
+  The following table summarizes the required SNTP client operations in
+  unicast, manycast, and broadcast modes.  The recommended error checks
+  are shown in the Reply and Broadcast columns in the table.  The
+  message should be considered valid only if all the fields shown
+  contain values in the respective ranges.  Whether to believe the
+  message if one or more of the fields marked "ignore" contain invalid
+  values is at the discretion of the implementation. -- RFC 4330
 END
     exit 0;
 }
@@ -470,7 +311,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.1.0, 2016-03-22 0958
+ntprec: 1.1.0, 2016-04-30 1636
 END
     exit 0;
 }

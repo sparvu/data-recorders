@@ -1,0 +1,14 @@
+{
+  "servers" : [
+    {
+      "hostname" : "",
+      "port" : 8080,
+      "description" : "US Main NTP Pool",
+    },
+    {
+      "hostname" : "",
+      "port" : 123,
+      "description" : "EU Main Pool",
+    }
+  ]
+}
