@@ -271,8 +271,8 @@ OPTIONS:
   #02 name : directory name, string
   #03 number of files, number
   #04 number of sub directories, number
-  #05 creation date, seconds
-  #06 modified date, seconds
+  #05 time of last status change, seconds
+  #06 time of last modification, seconds
   #07 capacity in KBytes
  
  NOTES:
