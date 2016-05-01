@@ -255,8 +255,9 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-  #02 roundtrip delay, seconds
-  #03 system clock offset, seconds
+  #02 name: NTP server name, string
+  #03 roundtrip delay, seconds
+  #04 system clock offset, seconds
 
  NOTES:
   ntprec is monitoring one or many NTP servers, defined under 
