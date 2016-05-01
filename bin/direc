@@ -22,6 +22,7 @@ use strict;
 use warnings;
 use JSON;
 use Getopt::Std;
+use File::stat;
 use File::Find;
 use Tie::IxHash;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
@@ -108,10 +109,13 @@ while (1) {
         $dir_total=0;
         $file_total=0;
         $byte_total=0;
-    
+ 
         my $value = $work{$key};
         my $desc = $value;
         next if ( ! -d $key);
+
+        my $mod_time= stat($key)->mtime;
+        my $chg_time= stat($key)->ctime;
 
         get_dirsize($key);
         my $size = sprintf ("%.f", $byte_total / 1024);
@@ -120,7 +124,7 @@ while (1) {
         $key =~ s/\//_/g;
 
         # print dir statistics
-        printf "%.${tp}f:%s:%d:%d:%.f\n", time, $key, $file_total, $dir_total, $size;
+        printf "%.${tp}f:%s:%d:%d:%d:%d:%.f\n", time, $key, $file_total, $dir_total, $chg_time, $mod_time, $size;
     }
 
     ### Check for end
