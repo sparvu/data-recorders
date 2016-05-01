@@ -238,28 +238,6 @@ sub sum_bytes
 }
 
 
-#sub get_dirsize {
-#    my ($dir)  = @_;
-#    my ($size) = 0;
-#    my ($fd);
-# 
-#    opendir($fd, $dir) or die "$!";
-# 
-#    for my $item ( readdir($fd) ) {
-#        next if ( $item =~ /^\.\.?$/ );
-# 
-#        my($path) = "$dir/$item";
-#        $size += ((-d $path) ? get_dirsize($path) : (-f $path ? (stat($path))[7] : 0));
-#    }
-# 
-#    closedir($fd);
-#
-#    return($size);
-#}
- 
-
-
-
 ## auxiliares
 
 # write log message
