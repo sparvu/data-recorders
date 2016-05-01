@@ -22,7 +22,7 @@ use strict;
 use warnings;
 use JSON;
 use Getopt::Std;
-use Net::NTP;
+use File::Find;
 use Tie::IxHash;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
@@ -34,7 +34,7 @@ usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
-my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
 
 # process [interval [count]],
 my ( $interval, $loop_max );
@@ -55,6 +55,9 @@ $main::opt_V = 0;          # revision option
 my $cfile = 'direc.json';  # configuration file
 my $cdata;                 # configuration data
 my $tp = 0;                # time precision
+my $byte_total;
+my $file_total;
+my $dir_total;
 
 local $| = 1;
 
@@ -86,46 +89,38 @@ if ( $interval =~ /\./ ) {
 # read configuration
 $cdata = open_config($cfile);
 
-# servers
+# directories
 tie my %work, "Tie::IxHash";
-%work = get_server($cdata);
+%work = get_dir($cdata);
 
 # get it as verbose
-# print "Total workload requests: " . keys(%work) . ".\n";
+if ($verbose) { 
+    print "Total workload requests: " . keys(%work) . ".\n";
+}
 
-my $server = 'north-america.pool.ntp.org';
+
 
 # main loop
 while (1) {
 
     for my $key (keys %work) {
-        
+    
+        $dir_total=0;
+        $file_total=0;
+        $byte_total=0;
+    
         my $value = $work{$key};
+        my $desc = $value;
+        next if ( ! -d $key);
 
-        my ($port, $desc) = split( /:/, $value );
+        get_dirsize($key);
+        my $size = sprintf ("%.f", $byte_total / 1024);
 
-        my $t0 = time;
-        my %h = get_ntp_response($key);
+        $key =~ s/^\///;
+        $key =~ s/\//_/g;
 
-        my $T1 = $t0;                      #Originate Timestamp;
-        my $T2 = $h{'Receive Timestamp'};  #
-        my $T3 = $h{'Transmit Timestamp'}; #
-        my $T4 = time;                     #
-  
-        #d = (T4 - T1) - (T3 - T2)     
-        my $d = ($T4 - $T1) - ($T3 - $T2);
-
-        #t = ((T2 - T1) + (T3 - T4)) / 2.
-        my $t = (($T2 - $T1) + ($T3 - $T4)) / 2;
-
-        my $duration = $T4 - $t0;
-        my $delta = $T2 - $T1 - $duration / 2;
-  
-        printf "%.${tp}f:%s:%.5f:%.5f\n", $T4, $key, $d, $t;
-
-        #print Dumper( \%h ) . "\nt0=$t0, T4=$T4\ndelay=$d, offset=$t\nelapsed=$duration, delta=$delta\n\n";
-        #print "$server delay=$d, offset=$t, delta=$delta, duration=$duration\n";
-        #print sprintf( "%-30s %.5f\n", $server, $t );
+        # print dir statistics
+        printf "%.${tp}f:%s:%d:%d:%.f\n", time, $key, $file_total, $dir_total, $size;
     }
 
     ### Check for end
@@ -198,31 +193,71 @@ sub reload_config {
 }
 
 
-# get NTP Server defintion
-sub get_server {
+# get directory definition
+sub get_dir {
 
     my ($data) = @_;
-    tie my %ntps, "Tie::IxHash";
+    tie my %dirs, "Tie::IxHash";
 
     my @temp;
-    eval { @temp = @{ $data->{'server'} }; };
-    if ( $@ ) { die "Error: syntax error ntprec.conf, check server";  }
+    eval { @temp = @{ $data->{'directory'} }; };
+    if ( $@ ) { die "Error: syntax error direc.conf, check directory";  }
     
     foreach my $f (@temp) {
 
-        my $host    = $f->{'hostname'};
-        my $port    = $f->{'port'};
+        my $dir     = $f->{'name'};
         my $desc    = $f->{'description'};
 
-        # print "$host => $port:$desc \n";
-        my $keyapp = $host;
-        my $hvalue = $port . ":" . $desc;
+        # print "$dir => $desc \n";
+        my $keyapp = $dir;
+        my $hvalue = $desc;
 
-        $ntps{$keyapp} = $hvalue;
+        $dirs{$keyapp} = $hvalue;
     }
 
-    return %ntps;
+    return %dirs;
 }
+
+
+
+sub get_dirsize {
+
+    my ($dir) = @_;
+    find (\&sum_bytes, "$dir");
+}
+
+sub sum_bytes
+{
+    if (! -f $File::Find::name) {
+        $dir_total++;
+        return();
+    }
+    
+    $byte_total += -s _;
+    $file_total++;
+}
+
+
+#sub get_dirsize {
+#    my ($dir)  = @_;
+#    my ($size) = 0;
+#    my ($fd);
+# 
+#    opendir($fd, $dir) or die "$!";
+# 
+#    for my $item ( readdir($fd) ) {
+#        next if ( $item =~ /^\.\.?$/ );
+# 
+#        my($path) = "$dir/$item";
+#        $size += ((-d $path) ? get_dirsize($path) : (-f $path ? (stat($path))[7] : 0));
+#    }
+# 
+#    closedir($fd);
+#
+#    return($size);
+#}
+ 
+
 
 
 ## auxiliares
@@ -255,13 +290,15 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-  #02 capacity in KBytes
+  #02 name : directory name, string
   #03 number of files, number
-  #04 creation date, seconds
-  #05 modified date, seconds
+  #04 number of sub directories, number
+  #05 creation date, seconds
+  #06 modified date, seconds
+  #07 capacity in KBytes
  
  NOTES:
-  The recorder uses dirrec.json configuration file
+  The recorder uses direc.json configuration file
 END
     exit 0;
 }

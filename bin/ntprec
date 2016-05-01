@@ -34,7 +34,7 @@ usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
-my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
 
 # process [interval [count]],
 my ( $interval, $loop_max );
@@ -91,9 +91,9 @@ tie my %work, "Tie::IxHash";
 %work = get_server($cdata);
 
 # get it as verbose
-# print "Total workload requests: " . keys(%work) . ".\n";
-
-my $server = 'north-america.pool.ntp.org';
+if ($verbose) {
+    print "Total workload requests: " . keys(%work) . ".\n";
+}
 
 # main loop
 while (1) {

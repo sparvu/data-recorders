@@ -36,7 +36,7 @@ usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
-my $verbose_flag = defined $main::opt_v ? $main::opt_v : 0;
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
 
 # process [interval [count]],
 my ( $interval, $loop_max );
@@ -97,7 +97,9 @@ tie my %work, "Tie::IxHash";
 %work = get_workload($cdata);
 
 # get it as verbose
-#print "Total workload requests: " . keys(%work) . ".\n";
+if($verbose) {
+    print "Total workload requests: " . keys(%work) . ".\n";
+}
 
 if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
     die "Error: No SSL support";
@@ -434,25 +436,17 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-
   #02 request   : the HTTP request name
-
   #03 ttime     : total time, entire operation lasted, seconds
-
   #04 ctime     : connect time it took from the start until the TCP 
                   connect to the remote host (or proxy) was completed, seconds
-
   #05 dnstime   : namelookup time, it took from the start until the name 
                   resolving was completed, seconds
-
   #06 ptime :     protocol time, it took from the start until the file 
                   transfer was just about to begin, seconds
-
   #07 pktime    : first packet time, it took from the start until the first 
                   byte was just about to be transferred, seconds
-
   #08 size      : page size, the total amount of bytes that were downloaded
-
   #09 status    : response status code, the numerical response code 
                   that was found in the last retrieved HTTP(S) transfer
 
