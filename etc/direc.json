@@ -1,0 +1,12 @@
+{
+  "directory" : [
+    {
+      "name" : "/tmp",
+      "description" : "Some tmp foo directory"
+    },
+    {
+      "name" : "/opt/kronometrix",
+      "description" : "Kronometrix distro directory"
+    }
+  ]
+}
