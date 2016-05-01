@@ -52,7 +52,7 @@ else {
 my $loop = 0;              # current loop number
 $main::opt_h = 0;          # help option
 $main::opt_V = 0;          # revision option
-my $cfile = 'ntprec.json'; # configuration file
+my $cfile = 'direc.json';  # configuration file
 my $cdata;                 # configuration data
 my $tp = 0;                # time precision
 
@@ -246,7 +246,7 @@ sub write_log {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: ntprec [-hvV] | [interval]
+USAGE: direc [-hvV] | [interval]
 OPTIONS:
   -h        : help information
   -v        : verbose information
@@ -255,40 +255,13 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-  #02 roundtrip delay, seconds
-  #03 system clock offset, seconds
-
+  #02 capacity in KBytes
+  #03 number of files, number
+  #04 creation date, seconds
+  #05 modified date, seconds
+ 
  NOTES:
-  ntprec is monitoring one or many NTP servers, defined under 
-  ntprec.json reporting: the roundtrip delay and the system clock offset.
-  By default ntprec runs every 900 seconds.
-
-  When the server reply is received, the client determines a
-  Destination Timestamp variable as the time of arrival according to
-  its clock in NTP timestamp format.  The following table summarizes
-  the four timestamps.
-
-     Timestamp Name          ID   When Generated
-     ------------------------------------------------------------
-     Originate Timestamp     T1   time request sent by client
-     Receive Timestamp       T2   time request received by server
-     Transmit Timestamp      T3   time reply sent by server
-     Destination Timestamp   T4   time reply received by client
-
-  The roundtrip delay d and system clock offset t are defined as:
-
-     d = (T4 - T1) - (T3 - T2)     t = ((T2 - T1) + (T3 - T4)) / 2.
-
-  Note that in general both delay and offset are signed quantities and
-  can be less than zero; however, a delay less than zero is possible
-  only in symmetric modes, which SNTP clients are forbidden to use.
-  The following table summarizes the required SNTP client operations in
-  unicast, manycast, and broadcast modes.  The recommended error checks
-  are shown in the Reply and Broadcast columns in the table.  The
-  message should be considered valid only if all the fields shown
-  contain values in the respective ranges.  Whether to believe the
-  message if one or more of the fields marked "ignore" contain invalid
-  values is at the discretion of the implementation. -- RFC 4330
+  The recorder uses dirrec.json configuration file
 END
     exit 0;
 }
@@ -296,7 +269,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-ntprec: 1.1.0, 2016-04-30 1636
+direc: 1.1.0, 2016-05-01 1255
 END
     exit 0;
 }
