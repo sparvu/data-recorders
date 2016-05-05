@@ -24,6 +24,7 @@ use JSON;
 use Getopt::Std;
 use File::stat;
 use File::Find;
+use Filesys::DiskUsage qw(du);
 use Tie::IxHash;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
@@ -56,9 +57,8 @@ $main::opt_V = 0;          # revision option
 my $cfile = 'direc.json';  # configuration file
 my $cdata;                 # configuration data
 my $tp = 0;                # time precision
-my $byte_total;
-my $file_total;
-my $dir_total;
+my $files;
+my $dirs;
 
 local $| = 1;
 
@@ -106,9 +106,8 @@ while (1) {
 
     for my $key (keys %work) {
     
-        $dir_total=0;
-        $file_total=0;
-        $byte_total=0;
+        $dirs=0;
+        $files=0;
  
         my $value = $work{$key};
         my $desc = $value;
@@ -117,14 +116,21 @@ while (1) {
         my $mod_time= stat($key)->mtime;
         my $chg_time= stat($key)->ctime;
 
-        get_dirsize($key);
-        my $size = sprintf ("%.f", $byte_total / 1024);
+        get_fds($key);
+
+        my $sz;
+        my %sizes = du({'make-hash' => 1}, $key);
+        foreach my $entry (sort { $sizes{$a} <=> $sizes{$b} } keys %sizes) {
+            $sz = sprintf ("%.f", $sizes{$entry});
+        }
+
+        my $size = sprintf ("%.f", $sz / 1024);
 
         $key =~ s/^\///;
         $key =~ s/\//_/g;
 
         # print dir statistics
-        printf "%.${tp}f:%s:%d:%d:%d:%d:%.f\n", time, $key, $file_total, $dir_total, $chg_time, $mod_time, $size;
+        printf "%.${tp}f:%s:%d:%d:%d:%d:%.f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $size;
     }
 
     ### Check for end
@@ -223,22 +229,25 @@ sub get_dir {
 }
 
 
-
-sub get_dirsize {
+sub get_fds {
 
     my ($dir) = @_;
-    find (\&sum_bytes, "$dir");
-}
 
-sub sum_bytes
-{
-    if (! -f $File::Find::name) {
-        $dir_total++;
-        return();
-    }
-    
-    $byte_total += -s _;
-    $file_total++;
+
+    find(
+        sub {
+            # $_ contains the name of the current file
+            # $File::Find::name contains the full path of the current file relative
+            #  to the directory given to the find() function
+            # $File::Find::dir contains the name of the current directory
+            if ( -d $_ ) {  # if file is a directory
+                $dirs++;
+            } elsif ( -f $_ ) {
+                $files++;
+            }
+        }, $dir);
+
+    return;
 }
 
 
