@@ -118,13 +118,11 @@ while (1) {
 
         get_fds($key);
 
-        my $sz;
+        my $size;
         my %sizes = du({'make-hash' => 1}, $key);
         foreach my $entry (sort { $sizes{$a} <=> $sizes{$b} } keys %sizes) {
-            $sz = sprintf ("%.f", $sizes{$entry});
+            $size = sprintf ("%.f", $sizes{$entry});
         }
-
-        my $size = sprintf ("%.f", $sz / 1024);
 
         $key =~ s/^\///;
         $key =~ s/\//_/g;
@@ -286,7 +284,7 @@ OPTIONS:
   #04 number of sub directories, number
   #05 time of last status change, seconds
   #06 time of last modification, seconds
-  #07 capacity in KBytes
+  #07 capacity in bytes
  
  NOTES:
   The recorder uses direc.json configuration file
@@ -297,7 +295,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-direc: 1.1.0, 2016-05-01 1255
+direc: 1.1.0, 2016-05-05 1040
 END
     exit 0;
 }
