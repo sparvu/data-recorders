@@ -9,7 +9,8 @@
     "cpurec"  : "60",
     "diskrec" : "60",
     "nicrec"  : "60",
-    "hdwrec"  : "60"
+    "hdwrec"  : "300",
+    "direc"  : "300"
   },
   "transport" : {
     "data_file" : [
@@ -24,6 +25,10 @@
       {
         "name" : "disk",
         "file" : "diskrec.krd"
+      },
+      {
+        "name" : "dir",
+	"file" : "direc.krd"
       },
       {
         "name" : "nic",

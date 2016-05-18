@@ -27,8 +27,20 @@
         "file" : "hdwrec.krd"
       },
       {
+        "name" : "snmp",
+	"file" : "snmprec.krd"
+      },
+      {
+	"name" : "dir",
+	"file" : "direc.krd"
+      },
+      {
         "file" : "netrec.krd",
         "name" : "net"
+      },
+      {
+        "file" : "ntprec.krd",
+	"name" : "ntp"
       },
       {
         "file" : "procrec.krd",

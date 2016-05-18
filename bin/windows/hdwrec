@@ -136,6 +136,10 @@ my @filter   =   ( 'Harddisk',
 my $disk_old = {};
 my $list;
 
+my $boot     = 60;
+my $speedup  = 1;
+my $defint;
+
 # pre-init all default
 init_disk();
 
@@ -154,6 +158,10 @@ if (RunningAsService()) {
 
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
+   
+    $defint  = $interval;
+
+    if ($speedup == 1) { $interval=$boot; }
 
     write_log ("info: started");
 }
@@ -402,6 +410,13 @@ sub Startup {
     if (!RunningAsService()) {
         # check count, interval
         last if ++$loop == $loop_max;
+    }
+
+    if ( $speedup > 0 ) {
+        if ( $speedup == $boot ) {
+	    $interval=$defint;
+	    $speedup = -1;
+	} else { $speedup++; }
     }
 
 
