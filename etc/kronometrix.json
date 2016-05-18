@@ -31,8 +31,16 @@
 	"file" : "snmprec.krd"
       },
       {
+        "name" : "db",
+        "file" : "dbrec.krd"
+      },
+      {
 	"name" : "dir",
 	"file" : "direc.krd"
+      },
+      {
+        "name" : "http",
+        "file" : "httprec.krd"
       },
       {
         "file" : "netrec.krd",
