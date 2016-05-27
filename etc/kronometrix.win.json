@@ -10,7 +10,7 @@
     "diskrec" : "60",
     "nicrec"  : "60",
     "hdwrec"  : "300",
-    "direc"  : "300"
+    "direc"   : "300"
   },
   "transport" : {
     "data_file" : [
@@ -27,10 +27,6 @@
         "file" : "diskrec.krd"
       },
       {
-        "name" : "dir",
-	"file" : "direc.krd"
-      },
-      {
         "name" : "nic",
         "file" : "nicrec.krd"
       },
@@ -39,8 +35,28 @@
         "file" : "hdwrec.krd"
       },
       {
+        "name" : "snmp",
+	"file" : "snmprec.krd"
+      },
+      {
+        "name" : "db",
+        "file" : "dbrec.krd"
+      },
+      {
+	"name" : "dir",
+	"file" : "direc.krd"
+      },
+      {
+        "name" : "http",
+        "file" : "httprec.krd"
+      },
+      {
         "file" : "netrec.krd",
         "name" : "net"
+      },
+      {
+        "file" : "ntprec.krd",
+	"name" : "ntp"
       },
       {
         "file" : "procrec.krd",
@@ -61,6 +77,10 @@
       {
         "file" : "wsrec.krd",
         "name" : "ws"
+      },
+      {
+        "file" : "webrec.krd",
+        "name" : "web"
       }
     ],
     "appliance" : [
