@@ -1,0 +1,29 @@
+{
+  "modbus-rtu" : [
+    {
+      "port" : "/dev/ttyUSB0",
+      "baudrate" : 19200,
+      "parity" : "none",
+      "stopbits" : 1,
+      "timeout" : 5,
+      "iaq" : [
+        {
+          "id" : "1",
+          "vendor" : "kronometrix",
+          "model" : "iaq01",
+          "description" : "Kronometrix IAQ Device",
+          "address" : 8,
+          "quantity" : 4 
+        },
+        {
+          "id" : "2",
+          "vendor" : "vaisala",
+          "model" : "gmw90",
+          "description" : "Vaisala GMW90 Series",
+          "address" : 256,
+          "quantity" : 4
+        }
+      ]
+    }
+  ]
+}
