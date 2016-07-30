@@ -11,6 +11,16 @@ Bug Management System
 
 Releases
 
+  1.1.0 17-05-2016 Release
+    hdwrec inventory message rational usage #63
+    NTP server recorder #108
+    direc new directory recorder #107
+    hdwrec slow down mechanism #100
+    webrec temp body file and disk space utilization #99
+    hdwrec should announce kdr release version #89
+    support for ip, routing inventory information #73
+    modbus support #45
+
   1.0.19 02-03-2016 Release
     sysrec illegal division by zero #88
     update curl-7.47.1
