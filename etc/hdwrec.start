@@ -24,7 +24,7 @@
 # ######### #
 
 # resolution interval in seconds
-RES=300
+RES=3600
 
 PWD=`dirname $0`
 if [ "$PWD" = "." ]; then
