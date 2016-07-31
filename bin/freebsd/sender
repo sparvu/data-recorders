@@ -86,7 +86,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "Kronometrix/1.3.2 (kdr 1.0.18 sender $osname)";
+my $agent = "Kronometrix/1.4.0 (kdr 1.1.0 sender $osname)";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -635,14 +635,16 @@ sub get_datafile {
     my ($data) = @_;
     my $schilds = 0;
     my @d;
-    my @temp = @{ $data->{'transport'}->{'data_file'} };
+    my @temp = @{ $data->{'message'} };
 
     # load d array
     foreach my $f (@temp) {
-        push @d, $f->{"name"};
+        next if ($f->{'status'} ne 'active');
+        push @d, $f->{'name'};
         $schilds++;
     }
 
+    # fallback to 5 main data messages if config missing
     @d = @recs if ( $schilds == 0 );
 
     return @d;
