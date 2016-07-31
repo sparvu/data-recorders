@@ -4,109 +4,159 @@
     "base_path" : "/opt/kronometrix/log",
     "daily_path" : "/opt/kronometrix/log/daily"
   },
+  "messages" : [
+    {
+      "name"   : "cpu",
+      "file"   : "cpurec.krd",
+      "status" : "active",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "db",
+      "file"   : "dbrec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd", "wpd" ]
+    },
+    {
+      "name"   : "dir",
+      "file"   : "direc.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "disk",
+      "file"   : "diskrec.krd",
+      "status" : "active",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "dns",
+      "file"   : "dnsrec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "ftp",
+      "file"   : "ftprec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "nic",
+      "file"   : "nicrec.krd",
+      "status" : "active",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "hdw",
+      "file"   : "hdwrec.krd",
+      "status" : "active",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "http",
+      "file"   : "httprec.krd",
+      "status" : "inactive",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "iaq",
+      "file"   : "iaqrec.krd",
+      "status" : "inactive",
+      "domain" : [ "iaqd" ]
+    },
+    {
+      "name"   : "imap",
+      "file"   : "imaprec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "jvm",
+      "file"   : "jvmrec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd", "wpd" ]
+    },
+    {
+      "name"   : "ldap",
+      "file"   : "ldaprec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "nas",
+      "file"   : "nasrec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "net",
+      "file"   : "netrec.krd",
+      "status" : "inactive",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "ntp",
+      "file"   : "ntprec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "pop",
+      "file"   : "poprec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "proc",
+      "file"   : "procrec.krd",
+      "status" : "inactive",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "san",
+      "file"   : "sanrec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "sys",
+      "file"   : "sysrec.krd",
+      "status" : "active",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "smtp",
+      "file"   : "smtprec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "xen",
+      "file"   : "xenrec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "zone",
+      "file"   : "zonerec.krd",
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "ws",
+      "file"   : "wsrec.krd",
+      "status" : "inactive",
+      "domain" : [ "wcd" ]
+    },
+    {
+      "name"   : "web",
+      "file"   : "webrec.krd",
+      "status" : "inactive",
+      "domain" : [ "wpd" ]
+    }
+  ],
   "transport" : {
-    "data_file" : [
-      {
-        "name" : "cpu"
-        "file" : "cpurec.krd",
-      },
-      {
-        "name" : "db",
-        "file" : "dbrec.krd"
-      },
-      {
-        "name" : "dir",
-        "file" : "direc.krd"
-      },
-      {
-        "name" : "disk",
-        "file" : "diskrec.krd"
-      },
-      {
-        "name" : "dns"
-        "file" : "dnsrec.krd",
-      },
-      {
-        "name" : "ftp"
-        "file" : "ftprec.krd",
-      },
-      {
-        "name" : "nic",
-        "file" : "nicrec.krd"
-      },
-      {
-        "name" : "hdw",
-        "file" : "hdwrec.krd"
-      },
-      {
-        "name" : "http",
-        "file" : "httprec.krd"
-      },
-      {
-        "name" : "iaq",
-        "file" : "iaqrec.krd"
-      },
-      {
-        "name" : "imap"
-        "file" : "imaprec.krd",
-      },
-      {
-        "name" : "jvm",
-        "file" : "jvmrec.krd"
-      },
-      {
-        "name" : "ldap"
-        "file" : "ldaprec.krd",
-      },
-      {
-        "name" : "nas"
-        "file" : "nasrec.krd",
-      },
-      {
-        "name" : "net"
-        "file" : "netrec.krd",
-      },
-      {
-	"name" : "ntp"
-        "file" : "ntprec.krd",
-      },
-      {
-        "name" : "pop"
-        "file" : "poprec.krd",
-      },
-      {
-        "name" : "proc"
-        "file" : "procrec.krd",
-      },
-      {
-        "name" : "san",
-        "file" : "sanrec.krd"
-      },
-      {
-        "name" : "sys",
-        "file" : "sysrec.krd"
-      },
-      {
-        "name" : "smtp"
-        "file" : "smtprec.krd",
-      },
-      {
-        "name" : "xen"
-        "file" : "xenrec.krd",
-      },
-      {
-        "name" : "zone",
-        "file" : "zonerec.krd"
-      },
-      {
-        "name" : "ws"
-        "file" : "wsrec.krd",
-      },
-      {
-        "name" : "web"
-        "file" : "webrec.krd",
-      }
-    ],
     "appliance" : [
       {
         "port" : 80,
