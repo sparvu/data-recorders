@@ -4,7 +4,7 @@
     "base_path" : "/opt/kronometrix/log",
     "daily_path" : "/opt/kronometrix/log/daily"
   },
-  "messages" : [
+  "message" : [
     {
       "name"   : "cpu",
       "file"   : "cpurec.krd",
