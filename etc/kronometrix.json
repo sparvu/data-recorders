@@ -7,16 +7,28 @@
   "transport" : {
     "data_file" : [
       {
-        "name" : "sys",
-        "file" : "sysrec.krd"
+        "name" : "cpu"
+        "file" : "cpurec.krd",
       },
       {
-        "file" : "cpurec.krd",
-        "name" : "cpu"
+        "name" : "db",
+        "file" : "dbrec.krd"
+      },
+      {
+        "name" : "dir",
+        "file" : "direc.krd"
       },
       {
         "name" : "disk",
         "file" : "diskrec.krd"
+      },
+      {
+        "name" : "dns"
+        "file" : "dnsrec.krd",
+      },
+      {
+        "name" : "ftp"
+        "file" : "ftprec.krd",
       },
       {
         "name" : "nic",
@@ -27,52 +39,72 @@
         "file" : "hdwrec.krd"
       },
       {
-        "name" : "snmp",
-	"file" : "snmprec.krd"
-      },
-      {
-        "name" : "db",
-        "file" : "dbrec.krd"
-      },
-      {
-	"name" : "dir",
-	"file" : "direc.krd"
-      },
-      {
         "name" : "http",
         "file" : "httprec.krd"
       },
       {
-        "file" : "netrec.krd",
-        "name" : "net"
+        "name" : "iaq",
+        "file" : "iaqrec.krd"
       },
       {
-        "file" : "ntprec.krd",
-	"name" : "ntp"
-      },
-      {
-        "file" : "procrec.krd",
-        "name" : "proc"
+        "name" : "imap"
+        "file" : "imaprec.krd",
       },
       {
         "name" : "jvm",
         "file" : "jvmrec.krd"
       },
       {
-        "file" : "xenrec.krd",
+        "name" : "ldap"
+        "file" : "ldaprec.krd",
+      },
+      {
+        "name" : "nas"
+        "file" : "nasrec.krd",
+      },
+      {
+        "name" : "net"
+        "file" : "netrec.krd",
+      },
+      {
+	"name" : "ntp"
+        "file" : "ntprec.krd",
+      },
+      {
+        "name" : "pop"
+        "file" : "poprec.krd",
+      },
+      {
+        "name" : "proc"
+        "file" : "procrec.krd",
+      },
+      {
+        "name" : "san",
+        "file" : "sanrec.krd"
+      },
+      {
+        "name" : "sys",
+        "file" : "sysrec.krd"
+      },
+      {
+        "name" : "smtp"
+        "file" : "smtprec.krd",
+      },
+      {
         "name" : "xen"
+        "file" : "xenrec.krd",
       },
       {
         "name" : "zone",
         "file" : "zonerec.krd"
       },
       {
-        "file" : "wsrec.krd",
         "name" : "ws"
+        "file" : "wsrec.krd",
       },
       {
-        "file" : "webrec.krd",
         "name" : "web"
+        "file" : "webrec.krd",
       }
     ],
     "appliance" : [
