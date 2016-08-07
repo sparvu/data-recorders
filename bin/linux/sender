@@ -22,7 +22,6 @@ use strict;
 use warnings;
 use JSON;
 use File::Tail;
-use File::Temp qw(tempfile);
 use File::Copy;
 use File::Basename;
 use UUID::Tiny ':std';
@@ -638,10 +637,11 @@ sub get_datafile {
     my ($data) = @_;
     my $schilds = 0;
     my @d;
-    my @temp = @{ $data->{'transport'}->{'data_file'} };
+    my @temp = @{ $data->{'message'} };
 
     # load d array
     foreach my $f (@temp) {
+        next if ($f->{'status'} ne 'active');
         push @d, $f->{"name"};
         $schilds++;
     }
