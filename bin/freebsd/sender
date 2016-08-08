@@ -22,7 +22,6 @@ use strict;
 use warnings;
 use JSON;
 use File::Tail;
-use File::Temp qw(tempfile);
 use File::Copy;
 use File::Basename;
 use UUID::Tiny ':std';

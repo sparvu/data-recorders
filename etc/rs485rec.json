@@ -8,25 +8,25 @@
       "timeout" : 10,
       "iaq" : [
         {
-          "id" : "1",
-          "vendor" : "kronometrix",
-          "model" : "iaq01",
-          "description" : "Kronometrix IAQ01 Series",
-          "modbus-function" : 4,
-          "data" : [
+          "id": 1,
+          "vendor": "kronometrix",
+          "model": "iaq01",
+          "description": "Kronometrix IAQ01 Series",
+          "modbus-function": 4,
+          "data": [
             {
-              "name" : "ta",
-              "type" : "numeric",
-              "register" : 10,
-              "length" : 1,
-              "factor" : "0.1"
+              "name": "ta",
+              "type": "numeric",
+              "register": 10,
+              "length": 1,
+              "factor": 0.1
             },
             {
               "name": "rh",
               "type": "numeric",
               "register": 11,
               "length": 1,
-              "factor" : "0.1"
+              "factor": 0.1
             },
             {
               "name": "td",
@@ -40,57 +40,57 @@
               "type": "numeric",
               "register": 8,
               "length": 1,
-              "factor" : "1"
+              "factor": 1
             },
             {
               "name": "voc",
               "type": "numeric",
               "register": 9,
               "length": 1,
-              "factor" : "1"
+              "factor": 0.1 
             }
-          }
+          ]
         },
         {
-          "id" : "2",
-          "vendor" : "vaisala",
-          "model" : "gmw90",
-          "description" : "Vaisala GMW90 Series",
-          "function" : 3,
-          "data" : [
+          "id": 2,
+          "vendor": "vaisala",
+          "model": "gmw90",
+          "description": "Vaisala GMW90 Series",
+          "function": 3,
+          "data": [
             {
               "name": "ta",
               "type": "numeric",
               "register": 259,
               "length": 1,
-              "factor" : "0.01"
+              "factor": 0.01
             },
             {
               "name": "rh",
               "type": "numeric",
               "register": 258,
               "length": 1,
-              "factor" : "0.01"
+              "factor": 0.01
             },
             {
               "name": "td",
               "type": "numeric",
               "register": 260,
               "length": 1,
-              "factor" : "0.01"
+              "factor": 0.01
             },
             {
               "name": "co2",
               "type": "numeric",
               "register": 257,
-              "length": 1
-              "factor" : "1"
+              "length": 1,
+              "factor": 1
             },
             {
               "name": "voc",
               "type": "NA"
             }
-          }
+          ]
         }
       ]
     }
