@@ -326,7 +326,11 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
+<<<<<<< HEAD
 rs485rec: 1.1.0, 2016-08-08 2310
+=======
+rs485rec: 1.1.0, 2016-08-12 1403
+>>>>>>> 8f32bddc5469be5cfff31e48a92f2f2bbc0c7068
 END
     exit 0;
 }
