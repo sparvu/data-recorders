@@ -116,7 +116,7 @@ while (1) {
         my ($v, $p, $b, $par, $s, $t) = split( /:/, $value );
 
         print "Processing $key => $value ...\n";
-        modbus_rtu($id, $f, $a, $q, $par, $s);
+        # modbus_rtu($id, $f, $a, $q, $par, $s);
     }
 
     ### Check for end
@@ -193,22 +193,60 @@ sub get_devices {
         foreach my $dev (@reqs) {
             my $vendor   = $dev -> {'vendor'};
             my $model    = $dev -> {'model'};
-            my $func     = $dev -> {'modbus-function'};
+            my $mf       = $dev -> {'function'};
 
-            # my @registers = @{ $f->{'data'} };
+            my @registers = @{ $dev->{'data'} };
 
-            # foreach my $data (@registers) {
-            my $keyapp = $model . ":" . $vendor; 
-            my $hvalue = $func;
-            #  my $keyapp = $model . ":" . $func . ":" . 
-            #             $addr . ":" . $qnty;
-            #
-            #    my $hvalue = $vendor . ":" . $port . ":" . $baudrate . ":" . 
-            #             $parity . ":" . $stopbits . ":" . $timeout;
-            #
-            #    $devs{$keyapp} = $hvalue;
-            #}
-            print "Device: $model:$vendor:$func\n";
+            my $k=0;
+            my $params;
+            foreach my $dt (@registers) {
+                my ($dname, $dtype);
+                my $dreg; my $dlen; my $dfct;
+
+                if ( $dt -> {'type'} eq 'uint16' or
+                     $dt -> {'type'} eq 'floatinv'  ) {
+
+                    $dname = $dt -> {'name'};
+                    $dtype = $dt -> {'type'};
+
+                    $dreg = $dt -> {'register'};
+                    $dlen = $dt -> {'length'};
+                    $dfct = $dt -> {'factor'};
+                    $dname .=  '_' . $dtype . '_' . $dreg . '_' . $dlen . '_' . $dfct;
+
+                } elsif ( $dt -> {'type'} eq 'virtual' ) {
+
+                    $dname = $dt -> {'name'};
+                    $dtype = $dt -> {'type'};
+                    my $did = $dt -> {'id'};
+                    my @args = @{ $dt->{'args'} };
+                    $dname .=  '_' . $dtype . '_' . $did . '_'  . join("_", @args);
+
+                } elsif ( $dt -> {'type'} eq 'NA' ) {
+
+                    $dname = $dt -> {'name'};
+                    $dtype = $dt -> {'type'};
+                    $dname .=  '_' . $dtype;
+ 
+                } else { next; }
+
+                #$devs{$keyapp} = $hvalue;
+
+                # print "dname=$dname\n";
+
+                if ($k > 0) {
+                    $params .= ':' . $dname;
+                } else {
+                    $params .= $dname;
+                }
+
+                $k++;
+
+            }
+            my $keyapp = $model . ":" . $mf . ":" . $vendor;  
+            my $hvalue = $params;
+
+            print "$keyapp -> $hvalue\n";
         }
     }
 
