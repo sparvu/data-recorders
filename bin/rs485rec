@@ -50,25 +50,27 @@ else {
 }
 
 ###  Variables
-my $loop = 0;              # current loop number
-$main::opt_h = 0;          # help option
-$main::opt_V = 0;          # revision option
-my $cfile = 'webrec.json'; # configuration file
-my $cdata;                 # configuration data
-my $tcpka = 0;             # transport TCP keepalive settings
-my $tp = 0;                # time precision
+my $loop = 0;                # current loop number
+$main::opt_h = 0;            # help option
+$main::opt_V = 0;            # revision option
+my $cfile = 'rs485rec.json'; # configuration file
+my $cdata;                   # configuration data
+my $tp = 0;                  # time precision
+my $port;
+my $baudrate;
+my $timeout;
+my $parity;
+my $stopbits;
 
 local $| = 1;
 
-
 ### MAIN BODY #
 
-# Set a timer for WWW::Curl::Easy object
+# Set a timer
 local $SIG{ALRM} = sub { };
-setitimer( ITIMER_REAL, .1, .1 );
-my $http = WWW::Curl::Easy->new;
+setitimer( ITIMER_REAL, .2, .2 );
 
-### 0.1sec sleep using a timer
+### 0.2sec sleep using a timer
 pause;
 
 # how often do we trigger (seconds)?
@@ -85,47 +87,36 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
-# osname
-my $osname = "$^O";
-
+# we need all info
 # read configuration
 $cdata = open_config($cfile);
 
 # workloads
-tie my %work, "Tie::IxHash";
-%work = get_workload($cdata);
+tie my %devices, "Tie::IxHash";
+%devices = get_devices($cdata);
 
 # get it as verbose
 if($verbose) {
-    print "Total workload requests: " . keys(%work) . ".\n";
+    print "Total devices: " . keys(%devices) . ".\n";
+    for my $key (keys %devices) {
+        my $value = $devices{$key};
+        print "$key => $value\n";
+    }
 }
-
-if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
-    die "Error: No SSL support";
-}
-
 
 # main loop
 while (1) {
 
+    for my $key (keys %devices) {
 
-    my $head = tempfile();
-    $http->setopt(CURLOPT_WRITEHEADER, $head);
+        my $value = $devices{$key};
 
-    my $body = tempfile();
-    $http->setopt(CURLOPT_FILE, $body);
+        my ($id, $m, $f, $a, $q) = split( /:/, $key );
 
-    for my $key (keys %work) {
+        my ($v, $p, $b, $par, $s, $t) = split( /:/, $value );
 
-        my $value = $work{$key};
-
-        my ($work, $desc, $name, $id, $d) = split( /:/, $key );
-
-        my ($scheme, $hname, $url, $p) = split( /:/, $value );
-
-        # print "$key => $value\n";
-        process_request ($http, $work, $name, $id, $scheme, $hname, $url, $p);
-        sleep $d;
+        print "Processing $key => $value ...\n";
+        modbus_rtu($id, $f, $a, $q, $par, $s);
     }
 
     ### Check for end
@@ -137,7 +128,6 @@ while (1) {
 
 
 ### Subroutines
-
 ## configuration file
 
 # open JSON configuration file
@@ -181,76 +171,86 @@ sub open_config {
 }
 
 
-
-# get workloads defintion
-sub get_workload {
+# get  defintion
+sub get_devices {
 
     my ($data) = @_;
-    tie my %appl, "Tie::IxHash";
-    #my %appl;
+    tie my %devs, "Tie::IxHash";
 
-    my @temp = @{ $data->{'workloads'} };
+    my @temp = @{ $data->{'modbus-rtu'} };
 
     foreach my $f (@temp) {
         my ($sid, $tid, $dsid);
 
-        # my $proto = $f->{'protocol'};
-        # my $port  = $f->{'port'};
-        my $ka      = $f->{'keepalive'};
-        my $name    = $f->{'name'};
-        my $desc    = $f->{'description'};
-        my $delay   = $f->{'delay'};
+        $port      = $f->{'port'};
+        $baudrate  = $f->{'baudrate'};
+        $timeout   = $f->{'timeout'};
+        $parity    = $f->{'parity'};
+        $stopbits  = $f->{'stopbits'};
 
-        my @reqs = @{ $f->{'requests'} };
+        my @reqs = @{ $f->{'iaq'} };
 
-        foreach my $req (@reqs) {
-            my $id  = $req -> {'id'};
-            my $met = $req -> {'method'};
-            my $scm = $req -> {'scheme'};
-            my $hst = $req -> {'host'};
-            my $prt = $req -> {'port'};
-            my $url = $req -> {'path'};
+        foreach my $dev (@reqs) {
+            my $vendor   = $dev -> {'vendor'};
+            my $model    = $dev -> {'model'};
+            my $func     = $dev -> {'modbus-function'};
 
-            my $post = '';
+            # my @registers = @{ $f->{'data'} };
 
-            if ( $met eq 'POST' ) {
-                if ($req -> {'post'}) {
-                    $post = $req -> {'post'};
-                }
-            }
-
-            # print "$name:$desc:$id:$met => $scm://$hst:$url\n";
-            my $keyapp = $name . ":" . $desc . ":" .
-                         $id   . ":" . $met  . ":" . $delay;
-
-            my $hvalue = $scm . ":" . $hst . ":" . $url . ":" . $post;
-
-            $appl{$keyapp} = $hvalue;
+            # foreach my $data (@registers) {
+            my $keyapp = $model . ":" . $vendor; 
+            my $hvalue = $func;
+            #  my $keyapp = $model . ":" . $func . ":" . 
+            #             $addr . ":" . $qnty;
+            #
+            #    my $hvalue = $vendor . ":" . $port . ":" . $baudrate . ":" . 
+            #             $parity . ":" . $stopbits . ":" . $timeout;
+            #
+            #    $devs{$keyapp} = $hvalue;
+            #}
+            print "Device: $model:$vendor:$func\n";
         }
     }
 
-    return %appl;
+    return %devs;
 }
 
 
-sub do_rs {
+sub modbus_rtu {
+
+    my ( $unit, $function, $address, $quantity, $par, $sbits ) = @_;
+    my $req;
+
+    print "unit: $unit, function: $function, address: $address, quantity: $quantity, parity: $par, stopbits: $sbits\n";
 
     my $client = Device::Modbus::RTU::Client->new(
-    port     => '/dev/ttyUSB0',
-    baudrate => 19200,
-    parity   => 'none',
-    stopbits => '1',
-    timeout => '5');
- 
-    my $req = $client->read_input_registers(
-    unit     => 1,
-    address  => 8,
-    quantity => 4);
+        port     => $port,
+        baudrate => $baudrate,
+        timeout  => $timeout,
+        parity   => $par,
+        stopbits => $sbits
+    );
+
+    if ( $function == 3 ) {
+        $req = $client->read_holding_registers( unit     => $unit,
+                                                address  => $address,
+                                                quantity => $quantity );
+    } elsif ( $function == 4 ) {
+        $req = $client->read_input_registers( unit     => $unit,
+                                              address  => $address,
+                                              quantity => $quantity);
+    } else { return; }
 
     $client->send_request($req);
     my $resp = $client->receive_response;
 
-    print Dumper($resp);
+    for ( @{ $resp->{message}->{values} } ) {
+        print "$_\n";
+    }
+
+    print $resp->{message}->{values}->[0];
+
+    #print Dumper($resp);
 
     $client->disconnect;
 }
@@ -296,36 +296,29 @@ sub write_log {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: webrec [-hvV] | [interval]
+USAGE: rs485rec [-hvV] | [interval]
 OPTIONS:
   -h        : help information
   -v        : verbose information
   -V        : release version
   interval  : maximum number of seconds between samples
 
+ MESSAGES:
+ IAQREC Indoor Air Quality Message
+
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-  #02 request   : the HTTP request name
-  #03 ttime     : total time, entire operation lasted, seconds
-  #04 ctime     : connect time it took from the start until the TCP
-                  connect to the remote host (or proxy) was completed, seconds
-  #05 dnstime   : namelookup time, it took from the start until the name
-                  resolving was completed, seconds
-  #06 ptime :     protocol time, it took from the start until the file
-                  transfer was just about to begin, seconds
-  #07 pktime    : first packet time, it took from the start until the first
-                  byte was just about to be transferred, seconds
-  #08 size      : page size, the total amount of bytes that were downloaded
-  #09 status    : response status code, the numerical response code
-                  that was found in the last retrieved HTTP(S) transfer
+  #02 devid     : the device id
+  #03 ta        : air termperature, in C
+  #04 rh        : relative humidity, in %
+  #05 td        : dew point, in C
+  #06 co2       : CO2 level, in ppm
+  #07 voc       : volatile organic compound, in ppm
 
  NOTES
- webrec reports TTFB (time to first byte) for one or many HTTP workloads,
- applications, as an indication of the responsiveness. TTFB measures the
- duration from the virtual user making an HTTP request to the first byte
- of the page being received by the browser. This time is made up of the
- socket connection time, the time taken to send the HTTP request, and the
- time taken to get the first byte of the page.
+ rs485rec is a multi-message data recorder, capable to handle multiple 
+ devices on RS485 wires, using different protocols, MODBUS RTU, MODBUS TCP, 
+ MODBUS ASCII. Currently, rs485rec does support MODBUS RTU.
 END
     exit 0;
 }
@@ -333,7 +326,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.1.0, 2016-03-22 0958
+rs485rec: 1.1.0, 2016-08-08 2310
 END
     exit 0;
 }
