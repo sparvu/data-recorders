@@ -304,7 +304,7 @@ OPTIONS:
   interval  : maximum number of seconds between samples
 
  MESSAGES:
- IAQREC Indoor Air Quality Message
+ iaqrec - indoor air quality data message
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
@@ -317,8 +317,8 @@ OPTIONS:
 
  NOTES
  rs485rec is a multi-message data recorder, capable to handle multiple 
- devices on RS485 wires, using different protocols, MODBUS RTU, MODBUS TCP, 
- MODBUS ASCII. Currently, rs485rec does support MODBUS RTU.
+ devices on RS485 wire, using different protocols, like: MODBUS RTU, 
+ MODBUS TCP, MODBUS ASCII. Currently, rs485rec does support MODBUS RTU.
 END
     exit 0;
 }
@@ -326,11 +326,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-<<<<<<< HEAD
-rs485rec: 1.1.0, 2016-08-08 2310
-=======
-rs485rec: 1.1.0, 2016-08-12 1403
->>>>>>> 8f32bddc5469be5cfff31e48a92f2f2bbc0c7068
+rs485rec: 1.1.0, 2016-08-22 1243
 END
     exit 0;
 }
