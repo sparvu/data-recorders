@@ -15,50 +15,37 @@
           "data": [
             {
               "name": "ta",
-              "data_type": "numeric",
-              "format": {
-                "type": "uint16",
-                "register": 10,
-                "length": 1,
-                "factor":  0.1
-              }
+              "type": "uint16",
+              "register": 10,
+              "length": 1,
+              "factor":  0.1
             },
             {
               "name": "rh",
-              "data_type": "numeric",
-              "format": {
-                "type" "floatinv",
-                "register": 6,
-                "length": 2
-              }
+              "type": "floatinv",
+              "register": 6,
+              "length": 2,
+              "factor": "NA"
             },
             {
               "name": "td",
-              "data_type": "virtual",
-              "format": {
-                  "type": "dewpoint",
-                  "params": [ "ta", "rh" ]
-              }
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "rh" ]
             },
             {
               "name": "co2",
-              "data_type": "numeric",
-              "format": {
-                "type": "uint16",
-                "register": 8,
-                "length": 1,
-                "factor": 1
-              }
+              "type": "uint16",
+              "register": 8,
+              "length": 1,
+              "factor": 1
             },
             {
               "name": "voc",
-              "data_type": "numeric",
-              "format": {
-                "type": "uint16",
-                "register": 9,
-                "length": 1,
-                "factor": 0.1 
-              }
+              "type": "uint16",
+              "register": 9,
+              "length": 1,
+              "factor": 0.1 
             }
           ]
         },
@@ -70,50 +57,35 @@
           "data": [
             {
               "name": "ta",
-              "data_type": "numeric",
-              "format": {
-                "type": "uint16",
-                "register": 259,
-                "length": 1,
-                "factor": 0.01
-              }
+              "type": "uint16",
+              "register": 259,
+              "length": 1,
+              "factor": 0.01
             },
             {
               "name": "rh",
-              "data_type": "numeric",
-              "format": {
-                "type": "uint16",
-                "register": 258,
-                "length": 1,
-                "factor": 0.01
-              }
+              "type": "uint16",
+              "register": 258,
+              "length": 1,
+              "factor": 0.01
             },
             {
               "name": "td",
-              "data_type": "numeric",
-              "format": {
-                "type": "uint16",
-                "register": 260,
-                "length": 1,
-                "factor": 0.01
-              }
+              "type": "uint16",
+              "register": 260,
+              "length": 1,
+              "factor": 0.01
             },
             {
               "name": "co2",
-              "data_type": "numeric",
-              "format": {
-                "type": "uint16",
-                "register": 257,
-                "length": 1,
-                "factor": 1
-              }
+              "type": "uint16",
+              "register": 257,
+              "length": 1,
+              "factor": 1
             },
             {
               "name": "voc",
-              "data_type": "virtual",
-              "format": {
-                "type": "NA"
-              }
+              "type": "NA"
             }
           ]
         }
