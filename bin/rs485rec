@@ -107,16 +107,28 @@ if($verbose) {
 # main loop
 while (1) {
 
+    my $client;
+    eval {
+        $client = Device::Modbus::RTU::Client->new(
+            port     => $port,
+            baudrate => $baudrate,
+            timeout  => $timeout,
+            parity   => $parity,
+            stopbits => $stopbits
+         );
+    };
+    warn() if (@$);
+
     for my $key (keys %devices) {
 
         my $value = $devices{$key};
 
-        my ($id, $m, $f, $a, $q) = split( /:/, $key );
+        my ($dev_name, $modbus_id, $modbus_func, $desc) = split( /:/, $key );
 
-        my ($v, $p, $b, $par, $s, $t) = split( /:/, $value );
+        my @values = split( /:/, $value );
 
-        print "Processing $key => $value ...\n";
-        # modbus_rtu($id, $f, $a, $q, $par, $s);
+        # print "Processing $key => $value ...\n";
+        modbus_rtu($client, $dev_name, $modbus_id, $modbus_func, @values);
     }
 
     ### Check for end
@@ -191,9 +203,10 @@ sub get_devices {
         my @reqs = @{ $f->{'iaq'} };
 
         foreach my $dev (@reqs) {
-            my $vendor   = $dev -> {'vendor'};
-            my $model    = $dev -> {'model'};
-            my $mf       = $dev -> {'function'};
+            my $unit    = $dev -> {'unit'};
+            my $vendor  = $dev -> {'vendor'};
+            my $model   = $dev -> {'model'};
+            my $mf      = $dev -> {'function'};
 
             my @registers = @{ $dev->{'data'} };
 
@@ -212,6 +225,7 @@ sub get_devices {
                     $dreg = $dt -> {'register'};
                     $dlen = $dt -> {'length'};
                     $dfct = $dt -> {'factor'};
+             
                     $dname .=  '_' . $dtype . '_' . $dreg . '_' . $dlen . '_' . $dfct;
 
                 } elsif ( $dt -> {'type'} eq 'virtual' ) {
@@ -230,10 +244,6 @@ sub get_devices {
  
                 } else { next; }
 
-                #$devs{$keyapp} = $hvalue;
-
-                # print "dname=$dname\n";
-
                 if ($k > 0) {
                     $params .= ':' . $dname;
                 } else {
@@ -241,12 +251,10 @@ sub get_devices {
                 }
 
                 $k++;
-
             }
-            my $keyapp = $model . ":" . $mf . ":" . $vendor;  
+            my $keyapp = $model . ':' . $unit . ':' . $mf . ':' . $vendor;  
             my $hvalue = $params;
-
-            print "$keyapp -> $hvalue\n";
+            $devs{$keyapp} = $hvalue;
         }
     }
 
@@ -254,43 +262,38 @@ sub get_devices {
 }
 
 
+
 sub modbus_rtu {
 
-    my ( $unit, $function, $address, $quantity, $par, $sbits ) = @_;
-    my $req;
+    my ( $rtu_client, $name, $uid, $fid, @vals ) = @_;
 
-    print "unit: $unit, function: $function, address: $address, quantity: $quantity, parity: $par, stopbits: $sbits\n";
+    print "name: $name, unit: $uid, function: $fid, @vals\n";
 
-    my $client = Device::Modbus::RTU::Client->new(
-        port     => $port,
-        baudrate => $baudrate,
-        timeout  => $timeout,
-        parity   => $par,
-        stopbits => $sbits
-    );
+    #if ( $function == 3 ) {
+    #    $req = $client->read_holding_registers( unit     => $unit,
+    #                                            address  => $address,
+    #                                            quantity => $quantity );
+    #} elsif ( $function == 4 ) {
+    #    $req = $client->read_input_registers( unit     => $unit,
+    #                                          address  => $address,
+    #                                          quantity => $quantity);
+    #} else { return; }
 
-    if ( $function == 3 ) {
-        $req = $client->read_holding_registers( unit     => $unit,
-                                                address  => $address,
-                                                quantity => $quantity );
-    } elsif ( $function == 4 ) {
-        $req = $client->read_input_registers( unit     => $unit,
-                                              address  => $address,
-                                              quantity => $quantity);
-    } else { return; }
+    #$client->send_request($req);
+    #my $resp = $client->receive_response;
 
-    $client->send_request($req);
-    my $resp = $client->receive_response;
+    #for ( @{ $resp->{message}->{values} } ) {
+    #    print "$_\n";
+    #}
 
-    for ( @{ $resp->{message}->{values} } ) {
-        print "$_\n";
-    }
-
-    print $resp->{message}->{values}->[0];
+    #print $resp->{message}->{values}->[0];
 
     #print Dumper($resp);
 
-    $client->disconnect;
+    # closing all
+    if (defined $rtu_client) {
+        $rtu_client->disconnect;
+    }
 }
 
 #

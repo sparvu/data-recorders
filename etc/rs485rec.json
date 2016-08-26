@@ -8,6 +8,7 @@
       "timeout" : 10,
       "iaq" : [
         {
+          "unit": 1,
           "vendor": "kronometrix",
           "model": "iaq01",
           "description": "Kronometrix IAQ01 Series",
@@ -50,6 +51,7 @@
           ]
         },
         {
+          "unit": 2,
           "vendor": "vaisala",
           "model": "gmw90",
           "description": "Vaisala GMW90 Series",
