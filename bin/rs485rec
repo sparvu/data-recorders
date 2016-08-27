@@ -26,7 +26,7 @@ use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Tie::IxHash;
 use Device::Modbus::RTU::Client;
-use Data::Dumper;
+#use Data::Dumper;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -117,19 +117,26 @@ while (1) {
             stopbits => $stopbits
          );
     };
-    warn() if (@$);
 
-    for my $key (keys %devices) {
+    if ($@) {
+        print "Cannot access device, check rs485rec.conf\n";
+    } else {
 
-        my $value = $devices{$key};
+        for my $key (keys %devices) {
 
-        my ($dev_name, $modbus_id, $modbus_func, $desc) = split( /:/, $key );
-
-        my @values = split( /:/, $value );
-
-        # print "Processing $key => $value ...\n";
-        modbus_rtu($client, $dev_name, $modbus_id, $modbus_func, @values);
+            my $value = $devices{$key};
+            my ($dev_name, $modbus_id, $modbus_func, $desc) = split( /:/, $key );
+            my @values = split( /:/, $value );
+            # print "Processing $key => $value ...\n";
+            modbus_rtu($client, $dev_name, $modbus_id, $modbus_func, @values);
+            sleep 2;
+        }
     }
+
+
+    # closing all
+    $client->disconnect;
+
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -191,7 +198,7 @@ sub get_devices {
 
     my @temp = @{ $data->{'modbus-rtu'} };
 
-    foreach my $f (@temp) {
+    for my $f (@temp) {
         my ($sid, $tid, $dsid);
 
         $port      = $f->{'port'};
@@ -202,7 +209,7 @@ sub get_devices {
 
         my @reqs = @{ $f->{'iaq'} };
 
-        foreach my $dev (@reqs) {
+        for my $dev (@reqs) {
             my $unit    = $dev -> {'unit'};
             my $vendor  = $dev -> {'vendor'};
             my $model   = $dev -> {'model'};
@@ -212,7 +219,7 @@ sub get_devices {
 
             my $k=0;
             my $params;
-            foreach my $dt (@registers) {
+            for my $dt (@registers) {
                 my ($dname, $dtype);
                 my $dreg; my $dlen; my $dfct;
 
@@ -262,57 +269,161 @@ sub get_devices {
 }
 
 
+sub getval {
+
+    my ( $client, $modbus_id, $modbus_f, $type, $address, $quantity, $factor ) = @_;
+    my $rvalue;
+
+    # MODBUS-RTU FUNCTION 4
+    if ( $type ne 'NA' ) {
+
+
+        if ( $modbus_f == 3 ) {
+
+            my $req = $client->read_holding_registers( unit     => $modbus_id,
+                                                       address  => $address,
+                                                       quantity => $quantity);
+            $client->send_request($req);
+            my $resp = $client->receive_response;
+
+            if ( $type eq 'uint16' ) {
+
+                $rvalue = $resp->{message}->{values}->[0] * $factor;
+
+            } elsif ( $type eq 'floatinv' ) {
+
+                $rvalue  = sprintf ("%.2f", unpack 'f', pack 'v*',
+                                            reverse @{ $resp->{message}->{values} } );
+            }
+
+        }
+
+        elsif ( $modbus_f == 4 ) {
+        
+            my $req = $client->read_input_registers( unit     => $modbus_id,
+                                                     address  => $address,
+                                                     quantity => $quantity);
+            $client->send_request($req);
+            my $resp = $client->receive_response;
+
+            if ( $type eq 'uint16' ) {
+
+                $rvalue = $resp->{message}->{values}->[0] * $factor;
+
+            } elsif ( $type eq 'floatinv' ) {
+
+                $rvalue  = sprintf ("%.2f", unpack 'f', pack 'v*', 
+                                            reverse @{ $resp->{message}->{values} } );
+            }
+        }
+
+    } else {
+
+        $rvalue = 'NA' ;
+    }
+
+    # return register single value
+    return $rvalue;
+
+}
+
 
 sub modbus_rtu {
 
-    my ( $rtu_client, $name, $uid, $fid, @vals ) = @_;
+    my ( $rtu, $name, $modbus_id, $modbus_f, @vals ) = @_;
 
-    print "name: $name, unit: $uid, function: $fid, @vals\n";
+    tie my %metrix, "Tie::IxHash";
 
-    #if ( $function == 3 ) {
-    #    $req = $client->read_holding_registers( unit     => $unit,
-    #                                            address  => $address,
-    #                                            quantity => $quantity );
-    #} elsif ( $function == 4 ) {
-    #    $req = $client->read_input_registers( unit     => $unit,
-    #                                          address  => $address,
-    #                                          quantity => $quantity);
-    #} else { return; }
+    my $val;
+    my $fval;
 
-    #$client->send_request($req);
-    #my $resp = $client->receive_response;
+    print "name: $name, unit: $modbus_id, function: $modbus_f, @vals\n"
+        if ($verbose);
 
-    #for ( @{ $resp->{message}->{values} } ) {
-    #    print "$_\n";
-    #}
+    my $treq = time;
+    #$fval .= $treq . ':' . $name;
 
-    #print $resp->{message}->{values}->[0];
+    for my $metric (@vals) {
+        my @v = split("_",  $metric);
 
-    #print Dumper($resp);
+        # metric name
+        # $v[0];
+      
+        if ( $v[1] eq 'virtual' ) {
 
-    # closing all
-    if (defined $rtu_client) {
-        $rtu_client->disconnect;
+            # virtual data type
+            my $vf = $v[2];
+
+            # virtual function list: dewpoint
+            if ($vf eq 'dewpoint' ) {
+
+                # check metrix buffer
+                my @fname_args = @v[3..$#v];
+
+                my ($temp, $humidity);
+
+                for my $fa (@fname_args) {
+
+                    if ( $fa eq 'ta' ) {
+ 
+                        if (exists $metrix{$fa}) {
+                            my $arg = $metrix{$fa};
+                            $temp = $arg;
+                        }
+
+                     } elsif ( $fa eq 'rh' ) {
+
+                        if (exists $metrix{$fa}) {
+                            my $arg = $metrix{$fa};
+                            $humidity = $arg;
+                        }
+                        
+                    }
+                }
+
+                $val = sprintf ("%.2f", dewpoint ($temp, $humidity) );
+
+            } else { next; }
+
+        } else {
+
+            # numeric data types
+            $val = getval ($rtu, $modbus_id, $modbus_f, $v[1], $v[2], $v[3], $v[4]);
+        }
+
+        # all metrix buffer        
+        $metrix{$v[0]} = $val;
+
+        print "Metric: $v[0] -> $val\n" if ($verbose);
+        $fval .=  ':' . $val;
     }
+    #print "$fval\n";
+
+    printf "%.${tp}f:%s%s\n", time, $name, $fval;
+
 }
+
+
+##
+## Return dew point based on temperature & humidity
+## http://en.wikipedia.org/wiki/Dew_Point
+##
+sub dewpoint {
+        my $temp = shift;
+        my $humidity = shift;
+        $humidity /= 100.0;
+        my $gamma = (17.271 * $temp) / (237.7 + $temp) + log($humidity) ;
+        return (237.7 * $gamma) / (17.271 - $gamma);
+}
+
 
 #
 sub putraw {
 
-    my ( $timereq, $workload, $reqname,  $ttime, $ctime, $dtime, $ptime, $psize, $fpkt, $resp ) = @_;
-
-    my $devid;
-
-    if ($workload) {
-        $devid = $workload . "_" . $reqname;
-    } else {
-        $devid = $reqname;
-    }
+    my ( $t, $devid, $ta, $rh, $td, $co2, $voc ) = @_;
 
     printf "%.${tp}f:%s:%.3f:%.3f:%.3f:%.3f:%.3f:%d:%d\n",
-                $timereq, $devid,
-                $ttime  , $ctime   , $dtime  , $ptime,
-                $fpkt   , $psize   , $resp;
+                $t, $devid, $ta, $rh, $td, $co2, $voc;
 }
 
 
@@ -367,7 +478,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.1.0, 2016-08-22 1243
+rs485rec: 1.1.0, 2016-08-26 1243
 END
     exit 0;
 }

@@ -16,10 +16,10 @@
           "data": [
             {
               "name": "ta",
-              "type": "uint16",
-              "register": 10,
-              "length": 1,
-              "factor":  0.1
+              "type": "floatinv",
+              "register": 4,
+              "length": 2,
+              "factor": "NA"
             },
             {
               "name": "rh",
@@ -43,10 +43,10 @@
             },
             {
               "name": "voc",
-              "type": "uint16",
-              "register": 9,
-              "length": 1,
-              "factor": 0.1 
+              "type": "floatinv",
+              "register": 2,
+              "length": 2,
+              "factor": "NA"
             }
           ]
         },
@@ -60,28 +60,28 @@
             {
               "name": "ta",
               "type": "uint16",
-              "register": 259,
+              "register": 258,
               "length": 1,
               "factor": 0.01
             },
             {
               "name": "rh",
               "type": "uint16",
-              "register": 258,
+              "register": 257,
               "length": 1,
               "factor": 0.01
             },
             {
               "name": "td",
               "type": "uint16",
-              "register": 260,
+              "register": 259,
               "length": 1,
               "factor": 0.01
             },
             {
               "name": "co2",
               "type": "uint16",
-              "register": 257,
+              "register": 256,
               "length": 1,
               "factor": 1
             },
