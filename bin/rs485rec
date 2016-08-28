@@ -288,7 +288,7 @@ sub getval {
 
             if ( $type eq 'uint16' ) {
 
-                $rvalue = $resp->{message}->{values}->[0] * $factor;
+                $rvalue = sprintf ("%.2f", $resp->{message}->{values}->[0] * $factor);
 
             } elsif ( $type eq 'floatinv' ) {
 
@@ -308,7 +308,7 @@ sub getval {
 
             if ( $type eq 'uint16' ) {
 
-                $rvalue = $resp->{message}->{values}->[0] * $factor;
+                $rvalue = sprintf ("%.2f", $resp->{message}->{values}->[0] * $factor);
 
             } elsif ( $type eq 'floatinv' ) {
 
@@ -397,6 +397,7 @@ sub modbus_rtu {
         print "Metric: $v[0] -> $val\n" if ($verbose);
         $fval .=  ':' . $val;
     }
+
     #print "$fval\n";
 
     printf "%.${tp}f:%s%s\n", time, $name, $fval;

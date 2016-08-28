@@ -16,17 +16,17 @@
           "data": [
             {
               "name": "ta",
-              "type": "floatinv",
-              "register": 4,
-              "length": 2,
-              "factor": "NA"
+              "type": "uint16",
+              "register": 10,
+              "length": 1,
+              "factor": 0.1
             },
             {
               "name": "rh",
-              "type": "floatinv",
-              "register": 6,
-              "length": 2,
-              "factor": "NA"
+              "type": "uint16",
+              "register": 11,
+              "length": 1,
+              "factor": 0.1
             },
             {
               "name": "td",
@@ -43,10 +43,10 @@
             },
             {
               "name": "voc",
-              "type": "floatinv",
-              "register": 2,
-              "length": 2,
-              "factor": "NA"
+              "type": "uint16",
+              "register": 9,
+              "length": 1,
+              "factor": 0.1
             }
           ]
         },
