@@ -9,9 +9,9 @@
       "iaq" : [
         {
           "unit": 1,
-          "vendor": "kronometrix",
-          "model": "iaq01",
-          "description": "Kronometrix IAQ01 Series",
+          "vendor": "Kronometrix",
+          "model": "iaq",
+          "description": "Kronometrix IAQ Series",
           "function": 4,
           "data": [
             {
@@ -47,6 +47,14 @@
               "register": 9,
               "length": 1,
               "factor": 0.1
+            },
+            {
+              "name": "pm2",
+              "type": "NA"
+            }, 
+            {
+              "name": "pm10",
+              "type": "NA"
             }
           ]
         },
@@ -87,6 +95,14 @@
             },
             {
               "name": "voc",
+              "type": "NA"
+            },
+            {
+              "name": "pm2",
+              "type": "NA"
+            },
+            {
+              "name": "pm10",
               "type": "NA"
             }
           ]
