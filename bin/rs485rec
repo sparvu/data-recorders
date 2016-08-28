@@ -467,8 +467,8 @@ OPTIONS:
   #05 td        : dew point, in C
   #06 co2       : CO2 level, in ppm
   #07 voc       : volatile organic compound, in ppm
-  #08 pm2       : particulate matter 2.5 micrometers in diameter, in mcg/m3
-  #09 pm10      : particulate matter 10 micrometers in diameter, in mcg/m3
+  #08 pm2       : particulate matter 2.5 micrometers diameter, in mcg/m3
+  #09 pm10      : particulate matter 10 micrometers diameter, in mcg/m3
 
  NOTES
  rs485rec is a multi-message data recorder, capable to handle multiple 
