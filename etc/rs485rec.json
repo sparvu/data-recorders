@@ -6,7 +6,7 @@
       "parity" : "none",
       "stopbits" : 2,
       "timeout" : 10,
-      "vociaq" : [
+      "iaq_voc" : [
         {
           "unit": 1,
           "vendor": "Kronometrix",
@@ -51,7 +51,7 @@
           ]
         }
       ],
-      "co2iaq" : [
+      "iaq_co2" : [
         {
           "unit": 2,
           "vendor": "vaisala",
@@ -90,7 +90,7 @@
           ]
         }
       ],
-      "pmiaq" : [
+      "iaq_pm" : [
         {
           "unit": 1,
           "vendor": "Kronometrix",
