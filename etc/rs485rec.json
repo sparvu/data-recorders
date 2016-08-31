@@ -6,11 +6,11 @@
       "parity" : "none",
       "stopbits" : 2,
       "timeout" : 10,
-      "iaq_voc" : [
+      "iaq" : [
         {
           "unit": 1,
-          "vendor": "Kronometrix",
-          "model": "iaq",
+          "vendor": "tongdy",
+          "model": "g01",
           "description": "Kronometrix IAQ Series",
           "function": 4,
           "data": [
@@ -49,9 +49,7 @@
               "factor": 0.1
             }
           ]
-        }
-      ],
-      "iaq_co2" : [
+        },
         {
           "unit": 2,
           "vendor": "vaisala",
@@ -89,66 +87,7 @@
             }
           ]
         }
-      ],
-      "iaq_pm" : [
-        {
-          "unit": 1,
-          "vendor": "Kronometrix",
-          "model": "iaq",
-          "description": "Kronometrix IAQ Series",
-          "function": 4,
-          "data": [
-            {
-              "name": "ta",
-              "type": "uint16",
-              "register": 10,
-              "length": 1,
-              "factor": 0.1
-            },
-            {
-              "name": "rh",
-              "type": "uint16",
-              "register": 11,
-              "length": 1,
-              "factor": 0.1
-            },
-            {
-              "name": "td",
-              "type": "virtual",
-              "id": "dewpoint",
-              "args": [ "ta", "rh" ]
-            },
-            {
-              "name": "co2",
-              "type": "uint16",
-              "register": 8,
-              "length": 1,
-              "factor": 1
-            },
-            {
-              "name": "voc",
-              "type": "uint16",
-              "register": 9,
-              "length": 1,
-              "factor": 0.1
-            },
-            {
-              "name": "pm2",
-              "type": "uint16",
-              "register": 12,
-              "length": 1,
-              "factor": 0.1
-            },
-            {
-              "name": "pm10",
-              "type": "uint16",
-              "register": 14,
-              "length": 1,
-              "factor": 0.1
-            }
-          ]
-        }
-      ],
+      ]
     }
   ]
 }
