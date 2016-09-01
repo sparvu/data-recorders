@@ -288,9 +288,9 @@ sub get_devices {
 
                 $k++;
             }
-            my $rfile = 'iaq' . '_' . $model;
-            my $fname = $model . '_' . $unit;
-            my $keyapp = $rfile . ':' . $fname . ':'  . $unit . ':' . $mf . ':' . $vendor;
+            my $rfile = 'iaq' . '_' . $model . 'rec';
+            my $devname = $model . '_' . $unit;
+            my $keyapp = $rfile . ':' . $devname . ':'  . $unit . ':' . $mf . ':' . $vendor;
             my $hvalue = $params;
             $devs{$keyapp} = $hvalue;
         }
@@ -548,7 +548,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.1.0, 2016-09-01 2238
+rs485rec: 1.1.0, 2016-09-02 0149
 END
     exit 0;
 }

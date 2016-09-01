@@ -22,6 +22,7 @@ use strict;
 use warnings;
 use JSON;
 use File::Tail;
+use File::Temp qw(tempfile);
 use File::Copy;
 use File::Basename;
 use UUID::Tiny ':std';
@@ -85,7 +86,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "Kronometrix/1.3.2 (kdr 1.0.19 sender $osname)";
+my $agent = "Kronometrix/1.4 (kdr 1.1.1 sender $osname)";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -184,31 +185,35 @@ while (1) {
             my $devid;
             my $lmoid;
 
-            my $sysrec_on  = 0;
-            my $cpurec_on  = 0;
-            my $diskrec_on = 0;
-            my $nicrec_on  = 0;
-            my $hdwrec_on  = 0;
-            my $procrec_on = 0;
-            my $netrec_on  = 0;
-            my $zonerec_on = 0;
-            my $jvmrec_on  = 0;
-            my $xenrec_on  = 0;
-            my $wsrec_on   = 0;
-            my $webrec_on  = 0;
+            my $sysrec_on    = 0;
+            my $cpurec_on    = 0;
+            my $diskrec_on   = 0;
+            my $nicrec_on    = 0;
+            my $hdwrec_on    = 0;
+            my $procrec_on   = 0;
+            my $netrec_on    = 0;
+            my $zonerec_on   = 0;
+            my $jvmrec_on    = 0;
+            my $xenrec_on    = 0;
+            my $wsrec_on     = 0;
+            my $webrec_on    = 0;
+            my $iaq_g01rec_on   = 0;
+            my $iaq_gmw90rec_on = 0;
 
-            if ( $_->{"input"} =~ /sysrec/  ) { $sysrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /cpurec/  ) { $cpurec_on  = 1; }
-         elsif ( $_->{"input"} =~ /diskrec/ ) { $diskrec_on = 1; }
-         elsif ( $_->{"input"} =~ /nicrec/  ) { $nicrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /netrec/  ) { $netrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /jvmrec/  ) { $jvmrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /procrec/ ) { $procrec_on = 1; } 
-         elsif ( $_->{"input"} =~ /zonerec/ ) { $zonerec_on = 1; }
-         elsif ( $_->{"input"} =~ /hdwrec/  ) { $hdwrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /xenrec/  ) { $xenrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /wsrec/   ) { $wsrec_on   = 1; }
-         elsif ( $_->{"input"} =~ /webrec/ )  { $webrec_on  = 1; }
+            if ( $_->{"input"} =~ /sysrec/  )   { $sysrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /cpurec/  )   { $cpurec_on  = 1; }
+         elsif ( $_->{"input"} =~ /diskrec/ )   { $diskrec_on = 1; }
+         elsif ( $_->{"input"} =~ /nicrec/  )   { $nicrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /netrec/  )   { $netrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /jvmrec/  )   { $jvmrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /procrec/ )   { $procrec_on = 1; } 
+         elsif ( $_->{"input"} =~ /zonerec/ )   { $zonerec_on = 1; }
+         elsif ( $_->{"input"} =~ /hdwrec/  )   { $hdwrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /xenrec/  )   { $xenrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /wsrec/   )   { $wsrec_on   = 1; }
+         elsif ( $_->{"input"} =~ /webrec/ )    { $webrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /iaq_g01rec/  )  { $iaq_g01rec_on  = 1; }
+         elsif ( $_->{"input"} =~ /iaq_gmw90rec/ ) { $iaq_gmw90rec_on  = 1; }
 
             # each appliance
             for my $key ( keys %appliance ) {
@@ -287,6 +292,22 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-jvmrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-jvmrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-jvmrec"; }
+
+                } elsif ($iaq_g01rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_g01"; }
+
+                } elsif ($iaq_gmw90rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_gmw90"; }
 
                 } elsif ($procrec_on) {
 
@@ -557,7 +578,7 @@ sub get_hostid {
 sub make_dsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('amd', 'cpd', 'dpd', 'wcd', 'wpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd');
 
     # sid - subscription id
     # dsid - data source id
@@ -637,11 +658,10 @@ sub get_datafile {
     my ($data) = @_;
     my $schilds = 0;
     my @d;
-    my @temp = @{ $data->{'message'} };
+    my @temp = @{ $data->{'transport'}->{'data_file'} };
 
     # load d array
     foreach my $f (@temp) {
-        next if ($f->{'status'} ne 'active');
         push @d, $f->{"name"};
         $schilds++;
     }
@@ -658,7 +678,7 @@ sub get_appliance {
     my ($data) = @_;
     my %appl;
 
-    my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd');
+    my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd', 'iaqd');
 
     my @temp = @{ $data->{'transport'}->{'appliance'} };
 
@@ -735,7 +755,7 @@ sub send_data {
 
     my ($hash, $post);
 
-    if ( $msg_id =~ /cpurec|diskrec|nicrec|ttfb/ ) {
+    if ( $msg_id =~ /cpurec|diskrec|nicrec|iaq_g01|iaq_gmw90|ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
     } else {

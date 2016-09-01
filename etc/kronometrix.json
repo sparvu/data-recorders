@@ -69,8 +69,22 @@
       "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
-      "name"   : "iaq",
-      "file"   : "iaqrec.krd",
+      "name"   : "iaq_g01",
+      "file"   : "iaq_g01rec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "iaqd" ]
+    },
+    {
+      "name"   : "iaq_msd1618",
+      "file"   : "iaq_msd1618rec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "iaqd" ]
+    },
+    {
+      "name"   : "iaq_gmw90",
+      "file"   : "iaq_gmw90rec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "iaqd" ]
