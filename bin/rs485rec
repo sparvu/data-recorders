@@ -50,17 +50,19 @@ else {
 }
 
 ###  Variables
-my $loop = 0;                # current loop number
-$main::opt_h = 0;            # help option
-$main::opt_V = 0;            # revision option
-my $cfile = 'rs485rec.json'; # configuration file
-my $cdata;                   # configuration data
-my $tp = 0;                  # time precision
-my $port;
-my $baudrate;
-my $timeout;
-my $parity;
-my $stopbits;
+my $loop      = 0;                  # current loop number
+$main::opt_h  = 0;                  # help option
+$main::opt_V  = 0;                  # revision option
+my $cfile     = 'rs485rec.json';    # configuration file
+my $kfile     = 'kronometrix.json'; # configuration file
+my $tp        = 0;                  # time precision
+my $port;                           # serial port config
+my $baudrate;                       # serial baudrate config
+my $timeout;                        # serial timeout config
+my $parity;                         # serial line parity config
+my $stopbits;                       # serial stopbits config
+my ($cdata, $kdata);                # configuration data
+my ( $baselog, $curlog, $rlog);
 
 local $| = 1;
 
@@ -88,8 +90,16 @@ if ( $interval =~ /\./ ) {
 }
 
 # we need all info
-# read configuration
+# read rs485rec configuration
 $cdata = open_config($cfile);
+
+# kronometrix.json config file
+$kdata = open_config($kfile);
+## logs
+( $baselog, $curlog ) = get_log($kdata);
+$rlog = $baselog . "/rs485rec.log";
+my $log = open_file($rlog);
+
 
 # workloads
 tie my %devices, "Tie::IxHash";
@@ -97,12 +107,14 @@ tie my %devices, "Tie::IxHash";
 
 # get it as verbose
 if($verbose) {
-    print "Total devices: " . keys(%devices) . ".\n";
+    print $log "Total devices: " . keys(%devices) . ".\n";
     for my $key (keys %devices) {
         my $value = $devices{$key};
         print "$key => $value\n";
     }
 }
+
+write_log ("info: started");
 
 # main loop
 while (1) {
@@ -119,16 +131,21 @@ while (1) {
     };
 
     if ($@) {
-        print "Cannot access device, check rs485rec.conf\n";
+        write_log ("error: cannot initialize RTU client port: $port, check rs485rec.conf");
     } else {
 
         for my $key (keys %devices) {
 
             my $value = $devices{$key};
-            my ($dev_name, $modbus_id, $modbus_func, $desc) = split( /:/, $key );
+            my ($rawfile, $dev_name, $modbus_id, $modbus_func, $desc) = split( /:/, $key );
             my @values = split( /:/, $value );
-            # print "Processing $key => $value ...\n";
-            modbus_rtu($client, $dev_name, $modbus_id, $modbus_func, @values);
+            eval {
+                modbus_rtu($client, $rawfile, $dev_name, $modbus_id, $modbus_func, @values);
+            };
+
+            if ($@) {
+                write_log ("error: cannot access device: $dev_name, check $cfile");
+            }
             sleep 2;
         }
     }
@@ -136,7 +153,6 @@ while (1) {
 
     # closing all
     $client->disconnect;
-
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -190,7 +206,20 @@ sub open_config {
 }
 
 
+# get log defintion
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
 # get  defintion
+#
 sub get_devices {
 
     my ($data) = @_;
@@ -259,7 +288,9 @@ sub get_devices {
 
                 $k++;
             }
-            my $keyapp = $model . ':' . $unit . ':' . $mf . ':' . $vendor;  
+            my $rfile = 'iaq' . '_' . $model;
+            my $fname = $model . '_' . $unit;
+            my $keyapp = $rfile . ':' . $fname . ':'  . $unit . ':' . $mf . ':' . $vendor;
             my $hvalue = $params;
             $devs{$keyapp} = $hvalue;
         }
@@ -269,6 +300,8 @@ sub get_devices {
 }
 
 
+# MODBUS RTU fetch register value, returns a single value
+#
 sub getval {
 
     my ( $client, $modbus_id, $modbus_f, $type, $address, $quantity, $factor ) = @_;
@@ -328,17 +361,23 @@ sub getval {
 }
 
 
+# MODBUS RTU Client communication
+#
 sub modbus_rtu {
 
-    my ( $rtu, $name, $modbus_id, $modbus_f, @vals ) = @_;
+    my ( $rtu, $rawfile, $name, $modbus_id, $modbus_f, @vals ) = @_;
 
     tie my %metrix, "Tie::IxHash";
 
     my $val;
     my $fval;
 
-    print "name: $name, unit: $modbus_id, function: $modbus_f, @vals\n"
+    write_log ("krd: $rawfile, dev: $name, unit: $modbus_id, function: $modbus_f, @vals")
         if ($verbose);
+ 
+    # set krs raw file
+    $rawfile = $curlog . "/" . $rawfile . ".krd";
+    print "rawfile=$rawfile\n" if ($verbose);
 
     my $treq = time;
     #$fval .= $treq . ':' . $name;
@@ -398,17 +437,15 @@ sub modbus_rtu {
         $fval .=  ':' . $val;
     }
 
-    #print "$fval\n";
-
-    printf "%.${tp}f:%s%s\n", time, $name, $fval;
-
+    my $rawkrd = open_file($rawfile);
+    printf $rawkrd "%.${tp}f:%s%s\n", time, $name, $fval;
+    close ($rawkrd);
 }
 
 
-##
-## Return dew point based on temperature & humidity
-## http://en.wikipedia.org/wiki/Dew_Point
-##
+# Return dew point based on temperature & humidity
+# http://en.wikipedia.org/wiki/Dew_Point
+#
 sub dewpoint {
         my $temp = shift;
         my $humidity = shift;
@@ -418,31 +455,51 @@ sub dewpoint {
 }
 
 
-#
-sub putraw {
-
-    my ( $t, $devid, $ta, $rh, $td, $co2, $voc ) = @_;
-
-    printf "%.${tp}f:%s:%.3f:%.3f:%.3f:%.3f:%.3f:%d:%d\n",
-                $t, $devid, $ta, $rh, $td, $co2, $voc;
-}
-
-
 ## auxiliares
 
-# write log message
+
+# write_log - write log message
+#
 sub write_log {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
-      localtime(time);
+    localtime(time);
 
     my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
-      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 
-    print STDERR "\n$dt $logbuf";
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
 
     return;
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+	  die "error: open_file - cannot open $file $!";
+	seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+	  die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
 }
 
 
@@ -485,7 +542,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.1.0, 2016-08-28 1759
+rs485rec: 1.1.0, 2016-09-01 2043
 END
     exit 0;
 }
