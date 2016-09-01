@@ -196,14 +196,14 @@
     }
   ],
   "transport" : {
-    "appliance" : [
+    "platform" : [
       {
         "port" : 80,
         "keepalive" : 0,
-        "name" : "Kronometrix Appliance",
+        "name" : "Kronometrix Data Analytics Platform",
         "host" : "change me",
         "protocol" : "http",
-        "description" : "Kronometrix Appliance Details",
+        "description" : "Kronometrix Platform Details",
         "cpd" : [
           {
             "dsid" : "",
