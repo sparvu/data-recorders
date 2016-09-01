@@ -204,12 +204,12 @@ while ( 1 ) {
                 if ( defined($ref) ) {
                     #my $used = $ref->{used} / 1073741824;
 
-                    $lsize  = ceil($ref->{blocks} / 1073741824);
+                    $lsize  = sprintf("%.2f", $ref->{blocks} / 1073741824);
 
                     #my $avail = ceil($ref->{bavail} / 1073741824);
                     #print "Avail: $avail \n";
 
-                    $lfree = ceil ($ref->{bfree} / 1073741824);
+                    $lfree = sprintf("%.2f", $ref->{bfree} / 1073741824);
 
                     $lused = ceil(100 - (100 * ($lfree / $lsize)));
                 }
@@ -373,7 +373,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.0, 2016-04-26 1501
+diskrec: 1.1.0, 2016-09-01 1326
 END
     exit 0;
 }
