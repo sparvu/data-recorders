@@ -167,6 +167,13 @@
       "domain" : [ "dpd" ]
     },
     {
+      "name"   : "ethsw",
+      "file"   : "ethswrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
       "name"   : "xen",
       "file"   : "xenrec.krd",
       "sample" : 60,
@@ -203,7 +210,7 @@
         "name" : "Kronometrix Data Analytics Platform",
         "host" : "change me",
         "protocol" : "http",
-        "description" : "Kronometrix Platform Details",
+        "description" : "Kronometrix Data Analytics Platform",
         "cpd" : [
           {
             "dsid" : "",
