@@ -1,7 +1,4 @@
 {
-
-  "log"
-
   "modbus-rtu" : [
     {
       "port" : "/dev/ttyUSB0",
