@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/diskrec $RES >> ${DISKREC_CUR} 2>> ${DISKREC_LOG} &
+${KRMX_BIN}/diskrec $RES 2>> ${DISKREC_LOG} &
 echo "$!" > ${KRMX_LOG}/diskrec.pid
