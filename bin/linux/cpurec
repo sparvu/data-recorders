@@ -20,6 +20,7 @@
 
 use strict;
 use warnings;
+use JSON;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use Sys::Statistics::Linux qw(CpuStats);
@@ -48,13 +49,16 @@ else {
 
 ### Variables
 my $HZ;
-my $update;        # used for deltas
-my %cpudataOld;    # cpu_stats data
-my $loop = 0;      # current loop number
-$main::opt_h = 0;  # help option
-$main::opt_V = 0;  # revision option
-my $tp = 0;        # time precision
-local $| = 1;      # autoflush
+my $loop     = 0;                  # current loop number
+$main::opt_h = 0;                  # help option
+$main::opt_V = 0;                  # revision option
+my $tp       = 0;                  # time precision
+my $kfile    = 'kronometrix.json'; # configuration file
+my $update;                        # used for deltas
+my %cpudataOld;                    # cpu_stats data
+my $kdata;                         # configuration data
+my ($baselog, $curlog, $clog);     # log files
+local $| = 1;                      # autoflush
 
 
 
@@ -83,6 +87,16 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
+# kronometrix.json config file
+$kdata = open_config($kfile);
+## logs
+( $baselog, $curlog ) = get_log($kdata);
+my $rawfile = $curlog . '/' . 'cpurec' . '.krd';
+$clog = $baselog . "/cpurec.log";
+my $log = open_file($clog);
+
+write_log ("info: started");
+
 while (1) {
 
     ### Get Stats
@@ -97,12 +111,16 @@ while (1) {
     # get the cpu-ids
     my @cpus = sort $stat->cpustats;
 
+    my $rawkrd = open_file($rawfile);
+
     # loop over all cpus
     foreach (@cpus) {
         next if ( $_ eq "cpu" );
-        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+        printf $rawkrd "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
           time, $_, @{ $cpu->{$_} }{@order};
     }
+
+    close ($rawkrd);
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -114,6 +132,106 @@ while (1) {
 
 
 ### SUBROUTINES
+
+
+# open JSON configuration file
+#
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+
+# get log defintion
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# write_log - write log message
+#
+sub write_log {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
 
 # usage - print usage and exit.
 #
@@ -147,7 +265,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.1.0 2016-04-08 1052
+cpurec: 1.1.1 2016-09-03 1607
 END
     exit 0;
 }
