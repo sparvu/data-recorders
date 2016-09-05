@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/rs485rec $RES &
+${KRMX_BIN}/rs485rec -l $RES 2>> ${RS485REC_LOG} &
 echo "$!" > ${KRMX_LOG}/rs485rec.pid

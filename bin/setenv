@@ -77,6 +77,7 @@ DIREC_LOG=${KRMX_LOG}/direc.log
 NICREC_LOG=${KRMX_LOG}/nicrec.log
 JVMREC_LOG=${KRMX_LOG}/jvmrec.log
 HDWREC_LOG=${KRMX_LOG}/hdwrec.log
+RS485REC_LOG=${KRMX_LOG}/rs485rec.log
 PROCREC_LOG=${KRMX_LOG}/procrec.log
 VMWREC_LOG=${KRMX_LOG}/vmwrec.log
 XENREC_LOG=${KRMX_LOG}/xenrec.log
