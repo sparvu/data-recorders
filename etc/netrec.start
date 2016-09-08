@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/netrec $RES >> ${NETREC_CUR} 2>> ${NETREC_LOG} &
+${KRMX_BIN}/netrec -l $RES 2>> ${NETREC_LOG} &
 echo "$!" > ${KRMX_LOG}/netrec.pid

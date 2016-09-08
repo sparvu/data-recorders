@@ -33,5 +33,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/zonerec $RES >> ${ZONEREC_CUR} 2>> ${ZONEREC_LOG} &
+${KRMX_BIN}/zonerec -l $RES 2>> ${ZONEREC_LOG} &
 print "$!" > ${KRMX_LOG}/zonerec.pid

@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/procrec $RES >> ${PROCREC_CUR} 2>> ${PROCREC_LOG} &
+${KRMX_BIN}/procrec -l $RES 2>> ${PROCREC_LOG} &
 echo "$!" > ${KRMX_LOG}/procrec.pid

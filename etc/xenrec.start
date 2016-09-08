@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/xenrec $RES >> ${XENREC_CUR} 2>> ${XENREC_LOG} &
+${KRMX_BIN}/xenrec -l $RES 2>> ${XENREC_LOG} &
 print "$!" > ${KRMX_LOG}/xenrec.pid

@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/jvmrec $RES >> ${JVMREC_CUR} 2>> ${JVMREC_LOG} &
+${KRMX_BIN}/jvmrec -l $RES 2>> ${JVMREC_LOG} &
 echo "$!" > ${KRMX_LOG}/jvmrec.pid
