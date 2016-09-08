@@ -101,11 +101,6 @@ $cdata = open_config($cfile);
 tie my %work, "Tie::IxHash";
 %work = get_dir($cdata);
 
-# get it as verbose
-if ($verbose) { 
-    print "Total workload requests: " . keys(%work) . ".\n";
-}
-
 # logging option
 if ($logging) {
 
@@ -119,6 +114,13 @@ if ($logging) {
     $log = open_file($dirlog);
 
     write_log ("info: started");
+}
+
+# get it as verbose
+if ($verbose) {
+    write_log ("Total workload requests: " . keys(%work) . ".\n");
+} else {
+    print "Total workload requests: " . keys(%work) . ".\n";
 }
 
 
@@ -270,48 +272,6 @@ sub open_file {
     }
 
     return $fh;
-}
-
-
-## configuration file
-# open JSON configuration file
-sub open_config {
-
-    my ($conf) = @_;
-
-    my $json_data;
-
-    {
-        local $/;
-
-        # we will parse now the file
-        if ( defined $ENV{'KRMX_PREFIX'} ) {
-            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
-                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
-                $json_data = <$fh>;
-                close $fh;
-            }
-            else {
-                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-                usage();
-            }
-        }
-        else {
-            if ( -e "/opt/kronometrix/etc/$conf" ) {
-                open my $fh, "<", "/opt/kronometrix/etc/$conf";
-                $json_data = <$fh>;
-                close $fh;
-            }
-            else {
-                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
-                usage();
-            }
-        }
-    }
-
-    my $perl_data = JSON->new->utf8->decode($json_data);
-
-    return $perl_data;
 }
 
 
