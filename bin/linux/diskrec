@@ -33,12 +33,15 @@ use List::Util qw(all);
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hd:vV') or usage();
+getopts('d:hlvV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # set debug log
 my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -59,12 +62,14 @@ my $ds        = "/proc/diskstats";
 my $loop      = 0;                  # current loop number
 $main::opt_h  = 0;                  # help option
 $main::opt_V  = 0;                  # revision option
+$main::opt_l  = 0;                  # logging option
 my $disk_sem  = 0;                  # disk mode
 my @def_disks = ();                 # default disks
 my $tp        = 0;                  # time precision
 my $kfile     = 'kronometrix.json'; # configuration file
+my $rawfile;                        # krd raw data file
 my $kdata;                          # configuration data
-my ($baselog, $curlog, $dlog);
+my ($baselog, $curlog, $dlog, $log);
 local $| = 1;
 
 
@@ -101,15 +106,20 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
-# kronometrix.json config file
-$kdata = open_config($kfile);
-## logs
-( $baselog, $curlog ) = get_log($kdata);
-my $rawfile = $curlog . '/' . 'diskrec' . '.krd';
-$dlog = $baselog . "/diskrec.log";
-my $log = open_file($dlog);
+# logging option
+if ($logging) {
 
-write_log ("info: started");
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'diskrec' . '.krd';
+    $dlog = $baselog . "/diskrec.log";
+    $log = open_file($dlog);
+
+    write_log ("info: started");
+}
 
 while ( 1 ) {
 
@@ -128,6 +138,11 @@ while ( 1 ) {
 
     my ( $dmajor, $dminor ) = 0;
     my %dstat;
+
+    my $rawkrd;
+    if ($logging) {
+        $rawkrd = open_file($rawfile);
+    }
 
     ### loop over all disks
     foreach my $d (@rdisks) {
@@ -160,7 +175,11 @@ while ( 1 ) {
 
         ### verbose
         if ($verbose) {
-            print "time: $print_time, disk: $d \n";
+            if ($logging) {
+                print $log "time: $print_time, disk: $d \n";
+            } else {
+                print "time: $print_time, disk: $d \n";
+            }
         }
 
 
@@ -228,8 +247,6 @@ while ( 1 ) {
                     $lused = ceil(100 - (100 * ($lfree / $lsize)));
                 }
 
-                #print "Processing $filesystem ...\n";
-
                 my $nfs;
                 if ( $filesystem =~ /^\/$/ ) {
                     $nfs  = "root";
@@ -239,7 +256,6 @@ while ( 1 ) {
                 }
                 $d = $d . $nfs;
 
-                # $filesystem = $mdev{$fkey} . $filesystem;
             } 
             #else { print "Not found major, minor same: $d, $filesystem\n"; }
         }
@@ -249,17 +265,28 @@ while ( 1 ) {
 
         ### verbose
         if ($verbose) {
-            print "  requests: $totReq ( reads: $readReq writes: $writeReq) \n";
-            print "  bytes:  $totByt ( reads: $readByt writes: $writeByt) \n";
+            if ($logging) {
+                print $log "  requests: $totReq ( reads: $readReq writes: $writeReq) \n";
+                print $log "  bytes:  $totByt ( reads: $readByt writes: $writeByt) \n";
+            } else {
+                print "  requests: $totReq ( reads: $readReq writes: $writeReq) \n";
+                print "  bytes:  $totByt ( reads: $readByt writes: $writeByt) \n";
+            }
         }
 
-
-        my $rawkrd = open_file($rawfile);
-        
-        printf $rawkrd "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%s:%s:%s\n",
+        if ($logging) {
+            printf $rawkrd "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%s:%s:%s\n",
                 $print_time, $d, $readReq, $readByt, $writeReq, $writeByt, 
                 $totReq, $totByt, $lsize, $lfree, $lused;
+        } else {
+            printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%s:%s:%s\n",
+                $print_time, $d, $readReq, $readByt, $writeReq, $writeByt, 
+                $totReq, $totByt, $lsize, $lfree, $lused;
+        }
 
+    }
+
+    if ($logging) {
         close ($rawkrd);
     }
 
@@ -406,12 +433,17 @@ sub get_fs {
         }
 
         if ($verbose) {
- 
-            printf("%s is a %s filesystem mounted on %s\n",
-                 $fs->mount_point($_),
-                 $fs->format($_),
-                 $fs->device($_)
-              );
+            if ($logging) {
+                printf $log "%s is a %s filesystem mounted on %s\n",
+                   $fs->mount_point($_),
+                   $fs->format($_),
+                   $fs->device($_);
+            } else {
+                printf "%s is a %s filesystem mounted on %s\n",
+                   $fs->mount_point($_),
+                   $fs->format($_),
+                   $fs->device($_);
+            }
         }
 
         # load final
@@ -492,7 +524,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.1, 2016-09-03 1611
+diskrec: 1.1.1, 2016-09-08 1205
 END
     exit 0;
 }
