@@ -484,15 +484,17 @@ sub procswap {
 sub usage {
 
     print STDERR <<END;
-USAGE: diskrec [-hvV] [-d disk[,disk...]] | [interval [count]]
+USAGE: diskrec [-hlvV] [-d disk[,disk...]] | [interval [count]]
 OPTIONS:
   -h          : help information
+  -l          : log raw data to krd file, no STDOUT
   -v          : verbose mode
   -V          : release version
   -d disk,... : monitor a list of disks only
 
- e.g. diskrec 60             print every 60secs all found disks
-      diskrec -d sda1 120    print every 120sec sda1 disk only
+ e.g. diskrec 60           print every 60secs all found disks
+      diskrec -d sda1 120  print every 120sec sda1 disk only
+      diskrec -l 60        print continuously, every 60 seconds to raw datafile
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time

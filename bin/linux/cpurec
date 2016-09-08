@@ -257,9 +257,10 @@ sub open_file {
 #
 sub usage {
     print STDERR <<END;
-USAGE: cpurec [-hV] | [interval [count]]
+USAGE: cpurec [-hlV] | [interval [count]]
  e.g. cpurec 5       print continuously, every 5 seconds
       cpurec 1 5     print 5 times, every 1 second
+      cpurec -l 60   print continuously, every 60 seconds to raw datafile
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time

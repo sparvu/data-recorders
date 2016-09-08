@@ -480,10 +480,11 @@ sub get_part {
 #
 sub usage {
     print STDERR <<END;
-USAGE: sysrec [-hV] | [interval [count]]
- e.g. sysrec 5        print continuously, every 5 seconds
-      sysrec 1 5      print 5 times, every 1 second
-      sysrec .5       print continuously, every 0.5 seconds
+USAGE: sysrec [-hlV] | [interval [count]]
+ e.g. sysrec 5       print continuously, every 5 seconds
+      sysrec 1 5     print 5 times, every 1 second
+      sysrec .5      print continuously, every 0.5 seconds
+      sysrec -l 60   print continuously, every 60 seconds to raw datafile
 
  FIELDS:
   CPU

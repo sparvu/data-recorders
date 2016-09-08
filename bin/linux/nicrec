@@ -184,8 +184,7 @@ sub print_nicstats {
         $txcolls, $txcarr,  $txcompr, $ttpks, $ttKB
     ) = @_;
 
-    printf
-"%.${tp}f:%s:%.2f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.2f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.2f\n",
+    printf "%.${tp}f:%s:%.2f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.2f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.f:%.2f\n",
       time, $nic, $rKB, $rxpks, $rxerr, $rxdrop, $rxfifo, $rxframe, $rxcompr,
       $rxmulti,
       $tKB, $txpks, $txerr, $txdrop, $txfifo, $txcolls, $txcarr, $txcompr,
@@ -248,7 +247,7 @@ END
 sub revision {
 
     print STDERR <<END;
-nicrec: 1.1.0, 2016-04-26 1502
+nicrec: 1.1.1, 2016-09-08 1215
 END
     exit 0;
 }
