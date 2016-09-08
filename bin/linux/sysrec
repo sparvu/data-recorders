@@ -28,9 +28,12 @@ use POSIX qw(pause);
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hV') or usage();
+getopts('lhV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
 
 # process [interval [count]],
 my ( $interval, $loop_max );
@@ -49,12 +52,12 @@ my $sb         = "/sys/block";       # sys block dir
 my $loop       = 0;                  # current loop number
 my $tp         = 0;                  # time precision
 $main::opt_h   = 0;                  # help option
+$main::opt_l   = 0;                  # logging option
 $main::opt_V   = 0;                  # revision option
 my $kfile      = 'kronometrix.json'; # configuration file
 my $kdata;                           # configuration data
-my ($baselog, $curlog, $slog);
+my ($baselog, $curlog, $slog, $log);
 local $| = 1;
-
 
 
 ### MAIN BODY
@@ -85,15 +88,22 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
-# kronometrix.json config file
-$kdata = open_config($kfile);
-## logs
-( $baselog, $curlog ) = get_log($kdata);
-my $rawfile = $curlog . '/' . 'sysrec' . '.krd';
-$slog = $baselog . "/sysrec.log";
-my $log = open_file($slog);
+my $rawfile;
 
-write_log ("info: started");
+# logging option
+if ($logging) {
+
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'sysrec' . '.krd';
+    $slog = $baselog . "/sysrec.log";
+    $log = open_file($slog);
+
+    write_log ("info: started");
+}
 
 while (1) {
 
@@ -235,7 +245,7 @@ while (1) {
 
     # get runq_sz and process count from /proc/loadavg
     open my $plavg, '<', '/proc/loadavg'
-      or die "Error: Cannot find proc partitions file: $!\n";
+      or die "Error: Cannot find proc loadavg file: $!\n";
 
     ($rqsz, $tcount) = (split m@/@, (split /\s+/, <$plavg>)[3]);
 
@@ -244,10 +254,12 @@ while (1) {
     # exclude from runqa_sz current process
     $rqsz--;
 
-    my $rawkrd = open_file($rawfile);
+    if ($logging) {
+    
+        my $rawkrd = open_file($rawfile);
 
-    printf $rawkrd
-         "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
+        printf $rawkrd
+        "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
           time,
           $cpu->{total},  $ncpu,        $hcpu, 
           $cpu->{user},   $cpu->{nice}, $cpu->{system},  $cpu->{idle},
@@ -272,7 +284,36 @@ while (1) {
           $la->{avg_1}, $la->{avg_5}, $la->{avg_15};
 
 
-    close ($rawkrd);
+        close ($rawkrd);
+
+    } else {
+
+        printf
+        "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
+          time,
+          $cpu->{total},  $ncpu,        $hcpu,
+          $cpu->{user},   $cpu->{nice}, $cpu->{system},  $cpu->{idle},
+          $cpu->{iowait}, $cpu->{irq},  $cpu->{softirq}, $cpu->{steal},
+          $rqsz,       $tcount,
+          $mem->{memusedper},  $mem->{memused},
+          $mem->{memfree},     $mem->{memtotal},
+          $mem->{buffers},     $mem->{cached},
+          $mem->{realfree},    $mem->{realfreeper},
+          $mem->{swapusedper}, $mem->{swapused},
+          $mem->{swapfree},    $mem->{swaptotal},
+          $mem->{swapcached},
+
+          $reads,  $rkbytes,
+          $writes, $wkbytes,
+          $iops,   $rwkbytes,
+
+          $rxpkt, $rxkbytes, $rxerr, $rxdrop,
+          $txpkt, $txkbytes, $txerr, $txdrop,
+          $rxtxpkt, $rxtxkbytes,
+
+          $la->{avg_1}, $la->{avg_5}, $la->{avg_15};         
+
+    }
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -518,7 +559,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.1.1, 2016-09-03 1544
+sysrec: 1.1.1, 2016-09-08 1133
 END
     exit 0;
 }

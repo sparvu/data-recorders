@@ -31,9 +31,12 @@ use POSIX qw(pause);
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('hV') or usage();
+getopts('lhV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -49,16 +52,18 @@ else {
 
 ### Variables
 my $HZ;
-my $loop     = 0;                  # current loop number
-$main::opt_h = 0;                  # help option
-$main::opt_V = 0;                  # revision option
-my $tp       = 0;                  # time precision
-my $kfile    = 'kronometrix.json'; # configuration file
-my $update;                        # used for deltas
-my %cpudataOld;                    # cpu_stats data
-my $kdata;                         # configuration data
-my ($baselog, $curlog, $clog);     # log files
-local $| = 1;                      # autoflush
+my $loop     = 0;                    # current loop number
+$main::opt_h = 0;                    # help option
+$main::opt_l = 0;                    # logging option
+$main::opt_V = 0;                    # revision option
+my $tp       = 0;                    # time precision
+my $kfile    = 'kronometrix.json';   # configuration file
+my $update;                          # used for deltas
+my $rawfile;                         # krd raw data file
+my %cpudataOld;                      # cpu_stats data
+my $kdata;                           # configuration data
+my ($baselog, $curlog, $clog, $log); # log files
+local $| = 1;                        # autoflush
 
 
 
@@ -87,15 +92,21 @@ if ( $interval =~ /\./ ) {
     $tp = 3;
 }
 
-# kronometrix.json config file
-$kdata = open_config($kfile);
-## logs
-( $baselog, $curlog ) = get_log($kdata);
-my $rawfile = $curlog . '/' . 'cpurec' . '.krd';
-$clog = $baselog . "/cpurec.log";
-my $log = open_file($clog);
 
-write_log ("info: started");
+# logging option
+if ($logging) {
+
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'cpurec' . '.krd';
+    $clog = $baselog . "/cpurec.log";
+    $log = open_file($clog);
+
+    write_log ("info: started");
+}
 
 while (1) {
 
@@ -111,16 +122,25 @@ while (1) {
     # get the cpu-ids
     my @cpus = sort $stat->cpustats;
 
-    my $rawkrd = open_file($rawfile);
-
+    my $rawkrd;
+    if ($logging) {
+        $rawkrd = open_file($rawfile);
+    }
     # loop over all cpus
     foreach (@cpus) {
         next if ( $_ eq "cpu" );
-        printf $rawkrd "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
-          time, $_, @{ $cpu->{$_} }{@order};
+        if ($logging) {
+            printf $rawkrd "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+              time, $_, @{ $cpu->{$_} }{@order};
+        } else { 
+            printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f\n",
+              time, $_, @{ $cpu->{$_} }{@order};
+        }
     }
 
-    close ($rawkrd);
+    if ($logging) {
+        close ($rawkrd);
+    }
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -265,7 +285,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.1.1 2016-09-03 1607
+cpurec: 1.1.1 2016-09-08 1142
 END
     exit 0;
 }
