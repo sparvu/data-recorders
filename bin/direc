@@ -118,14 +118,22 @@ if ($logging) {
 
 # get it as verbose
 if ($verbose) {
-    write_log ("Total workload requests: " . keys(%work) . ".\n");
-} else {
-    print "Total workload requests: " . keys(%work) . ".\n";
+    if ($logging) {
+        write_log ("Total workload requests: " . keys(%work) . ".\n");
+    } else {
+        print "Total workload requests: " . keys(%work) . ".\n";
+    }
 }
 
 
 # main loop
 while (1) {
+
+    my $rawkrd;
+
+    if ($logging) {
+        $rawkrd = open_file($rawfile);
+    }
 
     for my $key (keys %work) {
     
@@ -153,15 +161,17 @@ while (1) {
 
         my $rawkrd;
         if ($logging) {
-            $rawkrd = open_file($rawfile);
-            # print dir statistics
             printf $rawkrd "%.${tp}f:%s:%d:%d:%d:%d:%.f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $size;
-            close ($rawkrd);
         } else {
             # print dir statistics
             printf "%.${tp}f:%s:%d:%d:%d:%d:%.f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $size;
         }
         
+    }
+
+    # close krd rawdata file
+    if ($logging) {
+        close ($rawkrd);
     }
 
     ### Check for end
