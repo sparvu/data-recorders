@@ -491,6 +491,7 @@ USAGE: procrec [-hV] [-n name] [-p pid[,pid...]] [-u user]
 OPTIONS:
   -h         : help information
   -V         : release version
+  -l         : log raw data to krd file, no STDOUT
   -x         : extended mode, enables command line arguments
   -n name    : monitor a list of processes with a specific name, 
                where name is a Perl regex
@@ -503,11 +504,12 @@ OPTIONS:
       procrec -n java 120    print every 120sec all java processes stats
       procrec -xn java 120   print every 120sec all java processes ext stats
       procrec -xn 'com*' 360 print every 360secs all com JVMs
-                               including extended statistics
+                              including extended statistics
       procrec -u krmx -x 
          -e 'pts.[0-2]' 5    print every 5sec all processes which belong to
-                             krmx user, in extended mode, but only those 
-                             which contain regex 'pts.[0-2]'
+                              krmx user, in extended mode, but only those 
+                              which contain regex 'pts.[0-2]'
+      procrec -l 60          print continuously, every 60 seconds to raw datafile
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
