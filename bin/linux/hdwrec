@@ -221,11 +221,14 @@ while (1) {
                 my $ref = df("$filesystem", 1);
 
                 if ( defined($ref) ) {
-                    $lsize  += ceil($ref->{blocks} / 1073741824);
+                    $lsize  += $ref->{blocks} / 1073741824;
                 }
             }
         }
     }
+
+    # roundup for best match of storage
+    $lsize = ceil($lsize);
 
     # fetch dist_id, os, relos 
     my ($os, $relos) = "NA";
@@ -326,7 +329,7 @@ while (1) {
 
     if ($logging) {
         # print metrics
-        printf $rawkrd "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+        printf $rawkrd "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%.2f:%d:%s:%s:%s\n",
           time, $host, $si->{arch}, $hypervisor, $os, $relos,
           $si->{release},
           $si->{pcpucount}, $ncores, $si->{tcpucount}, $ht,
@@ -335,7 +338,7 @@ while (1) {
 
     } else {
         # print metrics
-        printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+        printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%.2f:%d:%s:%s:%s\n",
           time, $host, $si->{arch}, $hypervisor, $os, $relos,
           $si->{release},
           $si->{pcpucount}, $ncores, $si->{tcpucount}, $ht,
