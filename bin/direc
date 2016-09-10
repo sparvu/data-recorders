@@ -24,6 +24,7 @@ use JSON;
 use Getopt::Std;
 use File::stat;
 use File::Find;
+no warnings 'File::Find';
 use Filesys::DiskUsage qw(du);
 use Tie::IxHash;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
@@ -112,6 +113,7 @@ if ($logging) {
     $rawfile = $curlog . '/' . 'direc' . '.krd';
     $dirlog = $baselog . "/direc.log";
     $log = open_file($dirlog);
+    *STDERR = $log;
 
     write_log ("info: started");
 }
@@ -158,8 +160,6 @@ while (1) {
         $key =~ s/^\///;
         $key =~ s/\//_/g;
 
-
-        my $rawkrd;
         if ($logging) {
             printf $rawkrd "%.${tp}f:%s:%d:%d:%d:%d:%.f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $size;
         } else {
@@ -330,19 +330,20 @@ sub get_dir {
 sub get_fds {
 
     my ($dir) = @_;
-
-
+    local $^W;
     find(
         sub {
             # $_ contains the name of the current file
             # $File::Find::name contains the full path of the current file relative
             #  to the directory given to the find() function
             # $File::Find::dir contains the name of the current directory
-            if ( -d $_ ) {  # if file is a directory
+            #print "Processing: $_ \n";
+
+            if ( -d ) {  # if file is a directory
                 $dirs++;
-            } elsif ( -f $_ ) {
+            } elsif ( -f ) {
                 $files++;
-            }
+            } else { return; }
         }, $dir);
 
     return;

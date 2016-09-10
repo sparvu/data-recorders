@@ -1,7 +1,7 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2014 Steve Cliffe (steve@sjcnet.id.au).
-#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2014 Steve Cliffe (steve@sjcnet.id.au)
+#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org)
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -30,7 +30,7 @@ use Time::HiRes qw(setitimer ITIMER_REAL);
 
 my $VENDOR = 0x1941;
 my $PRODUCT = 0x8021;
-#my $debug = 0;	
+#my $debug = 0;
 my $wu_upload_file = "/tmp/wu-wupload.htx"; 	# Set to empty string to disable
 
 #
