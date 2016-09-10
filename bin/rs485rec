@@ -168,9 +168,9 @@ while (1) {
 
             if ($@) {
                 if ($logging) {
-                    write_log ("error: cannot access device, $dev_name, check $cfile");
+                    write_log ("error: cannot access device $dev_name, check $cfile");
                 } else {
-                    print "error: cannot access device, $dev_name, check $cfile";
+                    print "error: cannot access device $dev_name, check $cfile";
                 }
             }
             sleep 2;
@@ -603,7 +603,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.1.1, 2016-09-10 1223
+rs485rec: 1.1.1, 2016-09-10 1244
 END
     exit 0;
 }
