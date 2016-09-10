@@ -151,9 +151,9 @@ while (1) {
 
     if ($@) {
         if ($logging) {
-            write_log ("error: cannot initialize RTU client port: $port, check rs485rec.conf");
+            write_log ("error: cannot initialize RTU client port $port, check rs485rec.conf");
         } else {
-            print "error: cannot initialize RTU client port: $port, check rs485rec.conf";
+            print "error: cannot initialize RTU client port $port, check rs485rec.conf";
         }
     } else {
 
@@ -168,9 +168,9 @@ while (1) {
 
             if ($@) {
                 if ($logging) {
-                    write_log ("error: cannot access device: $dev_name, check $cfile");
+                    write_log ("error: cannot access device, $dev_name, check $cfile");
                 } else {
-                    print "error: cannot access device: $dev_name, check $cfile";
+                    print "error: cannot access device, $dev_name, check $cfile";
                 }
             }
             sleep 2;
