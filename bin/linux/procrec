@@ -157,6 +157,9 @@ if ($logging) {
     $plog = $baselog . "/procrec.log";
     $log = open_file($plog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 
@@ -553,7 +556,7 @@ END
 sub revision {
 
     print STDERR <<END;
-procrec: 1.1.1, 2016-09-08 1520
+procrec: 1.1.1, 2016-09-10 2035
 END
     exit 0;
 }

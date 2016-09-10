@@ -105,6 +105,9 @@ if ($logging) {
     $clog = $baselog . "/cpurec.log";
     $log = open_file($clog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 
@@ -286,7 +289,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.1.1 2016-09-08 1142
+cpurec: 1.1.1 2016-09-10 2034
 END
     exit 0;
 }

@@ -118,6 +118,9 @@ if ($logging) {
     $dlog = $baselog . "/diskrec.log";
     $log = open_file($dlog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 
@@ -526,7 +529,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.1, 2016-09-08 1205
+diskrec: 1.1.1, 2016-09-10 2034
 END
     exit 0;
 }

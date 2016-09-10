@@ -91,6 +91,9 @@ if ($logging) {
     $netlog = $baselog . "/netrec.log";
     $log = open_file($netlog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 
@@ -325,7 +328,7 @@ sub get_netstat {
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-netrec: 1.1.1, 2016-09-08 1508
+netrec: 1.1.1, 2016-09-10 2036
 END
     exit 0;
 }

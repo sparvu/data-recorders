@@ -108,6 +108,9 @@ if ($logging) {
     $ntplog = $baselog . "/ntprec.log";
     $log = open_file($ntplog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 

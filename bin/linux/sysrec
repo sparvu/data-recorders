@@ -102,6 +102,9 @@ if ($logging) {
     $slog = $baselog . "/sysrec.log";
     $log = open_file($slog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 
@@ -560,7 +563,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.1.1, 2016-09-08 1133
+sysrec: 1.1.1, 2016-09-10 2034
 END
     exit 0;
 }

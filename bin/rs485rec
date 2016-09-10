@@ -114,6 +114,9 @@ if ($logging) {
     $rlog = $baselog . "/rs485rec.log";
     $log = open_file($rlog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 
@@ -153,7 +156,7 @@ while (1) {
         if ($logging) {
             write_log ("error: cannot initialize RTU client port $port, check rs485rec.conf");
         } else {
-            print "error: cannot initialize RTU client port $port, check rs485rec.conf";
+            print "error: cannot initialize RTU client port $port, check rs485rec.conf\n";
         }
     } else {
 
@@ -170,7 +173,7 @@ while (1) {
                 if ($logging) {
                     write_log ("error: cannot access device $dev_name, check $cfile");
                 } else {
-                    print "error: cannot access device $dev_name, check $cfile";
+                    print "error: cannot access device $dev_name, check $cfile\n";
                 }
             }
             sleep 2;

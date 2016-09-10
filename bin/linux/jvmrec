@@ -146,6 +146,9 @@ if ($logging) {
     $jlog = $baselog . "/jvmrec.log";
     $log = open_file($jlog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 
@@ -646,7 +649,7 @@ END
 sub revision {
 
     print STDERR <<END;
-jvmrec: 1.1.1, 2016-09-08 1625
+jvmrec: 1.1.1, 2016-09-10 2036
 END
     exit 0;
 }
