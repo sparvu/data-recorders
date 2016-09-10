@@ -177,9 +177,10 @@ while (1) {
         }
     }
 
-
-    # closing all
-    $client->disconnect;
+    if ($client) {
+        # closing all
+        $client->disconnect;
+    }
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -602,7 +603,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.1.1, 2016-09-05 2254
+rs485rec: 1.1.1, 2016-09-10 1223
 END
     exit 0;
 }
