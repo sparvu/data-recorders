@@ -142,6 +142,9 @@ if ($logging) {
     $wlog = $baselog . "/webrec.log";
     $log = open_file($wlog);
 
+    # save STDERR to log file
+    *STDERR = $log;
+
     write_log ("info: started");
 }
 
