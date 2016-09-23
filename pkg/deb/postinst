@@ -41,3 +41,8 @@ fi
 
 # start transport
 /etc/init.d/kdr_transport start >/dev/null 2>&1 || :
+
+# udev rules
+if [ ! -f /etc/udev/rules.d/41-kronometrix.rules ]; then
+    echo "ATTRS{idVendor}==\"1941\", ATTRS{idProduct}==\"8021\", SUBSYSTEMS==\"usb\", ACTION==\"add\", MODE=\"0666\", GROUP=\"krmx\"" > /etc/udev/rules.d/41-kronometrix.rules || :
+fi
