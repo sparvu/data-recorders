@@ -20,6 +20,7 @@
 
 use strict;
 use warnings;
+use JSON;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use BSD::Sysctl qw(sysctl);
@@ -34,6 +35,9 @@ getopts('hV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
+
 # process [[interval [count]]
 my ( $interval, $loop_max );
 if ( defined $ARGV[0] ) {
@@ -47,15 +51,18 @@ else {
 }
 
 ### Variables
-my $update;        # used for deltas
-my %old_cpudata;   # cpu_stats data
-my %old_nicdata;   # nic_stats data
-my $loop = 0;      # current loop number
-$main::opt_h = 0;  # help option
-$main::opt_V = 0;  # revision option
-my $tp = 0;        # time precision
-my $pgfactor = 4;  # default pagesize factor
-local $| = 1;      # autoflush
+my $kdata;                           # configuration data
+my $update;                          # used for deltas
+my %old_cpudata;                     # cpu_stats data
+my %old_nicdata;                     # nic_stats data
+my $loop     = 0;                    # current loop number
+$main::opt_h = 0;                    # help option
+$main::opt_V = 0;                    # revision option
+my $tp       = 0;                    # time precision
+my $pgfactor = 4;                    # default pagesize factor
+my $kfile    = 'kronometrix.json';   # configuration file
+my ($baselog, $curlog, $slog, $log); # logs
+local $| = 1;                        # autoflush
 
 
 
