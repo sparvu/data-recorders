@@ -1,9 +1,9 @@
 name: "kdr"
 version: "1.0.12"
 origin: "sysutils/kronometrix"
-comment: "A time-series data monitoring and analysis system"
+comment: "Kronometrix Data Recording module"
 arch: "freebsd:10:i386" 
-desc: "All in a simple package: consistent data recording across various types of systems, easy access to raw data, built to handle data messages in real-time and designed for time series analysis."
+desc: "A real-time, event based data analytics platform for ICT, IoT, Environmental Monitoring and Meteorology, focusing on deep domain expertise and prescriptive analytics."
 maintainer: support@kronometrix.org
 www: https://www.kronometrix.org
 prefix: /opt/kronometrix
