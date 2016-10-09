@@ -351,18 +351,18 @@ while (1) {
 
     if ($logging) {
         close ($rawkrd);
-
-        ### Check for speedup
-        if ( $speedup > 0 ) {
-            if ( $speedup == $boot ) {
-                rstimer($defint);
-                $speedup = -1;
-            } else { $speedup++; }
-        }
     }
 
     ### Check for end
     last if ++$loop == $loop_max;
+
+    ### Check for speedup
+    if ( $speedup > 0 ) {
+        if ( $speedup == $boot ) {
+            rstimer($defint);
+            $speedup = -1;
+        } else { $speedup++; }
+    }
 
     ### Interval
     pause;
