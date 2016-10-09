@@ -477,7 +477,7 @@ sub reload_config {
     ## datafile
     @dbs = get_datafile($cdata);
 
-    ## appliance destination
+    ## destination
     %platform = get_platform($cdata);
 
     return;
@@ -571,22 +571,22 @@ sub make_dsid {
     # get all sids and generate dsid for each
     # dsid must be unique per sid
 
-    my @applx = @{ $data->{'transport'}->{'appliance'} };
+    my @applx = @{ $data->{'transport'}->{'platform'} };
 
-    # populate dsid for each appliance and lmo
-    foreach my $appliance (@applx) {
+    # populate dsid for each platform and lmo
+    foreach my $plat (@applx) {
         my ($sid, $tid, $dsid);
 
-        my $host  = $appliance->{'host'};
-        my $port  = $appliance->{'port'};
+        my $host  = $plat->{'host'};
+        my $port  = $plat->{'port'};
 
         # last call, look for subscription id, sid
 
         foreach my $mo (@lmo) {
 
-            if ($appliance->{"$mo"}) {
+            if ($plat->{"$mo"}) {
 
-                my @sub = @{ $appliance->{"$mo"} };
+                my @sub = @{ $plat->{"$mo"} };
 
                 #if ( $mo ne 'wpd' ) { 
 
@@ -673,7 +673,7 @@ sub get_platform {
 
     my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd', 'iaqd');
 
-    my @temp = @{ $data->{'transport'}->{'appliance'} };
+    my @temp = @{ $data->{'transport'}->{'platform'} };
 
     foreach my $f (@temp) {
         my ($sid, $tid, $dsid);
