@@ -328,7 +328,7 @@ sub get_netstat {
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-netrec: 1.1.1, 2016-09-10 2036
+netrec: 1.1.2, 2016-10-09 1207
 END
     exit 0;
 }
