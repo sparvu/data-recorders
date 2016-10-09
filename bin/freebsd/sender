@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -36,7 +36,7 @@ use HTTP::Response;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('t:fhvV') or usage();
+getopts('t:hvV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
@@ -71,7 +71,7 @@ my @files;
 ## configuration
 my ( $baselog, $curlog, $slog );
 my @dbs;
-my %appliance;
+my %platform;
 
 local $| = 1;
 
@@ -85,7 +85,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "Kronometrix/1.4.0 (kdr 1.1.0 sender $osname)";
+my $agent = "Kronometrix/1.4 (kdr 1.1.2 sender $osname)";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -100,12 +100,12 @@ $slog = $baselog . "/sender.log";
 # datafile
 @dbs = get_datafile($cdata);
 
-# appliance destination
-%appliance = get_appliance($cdata);
+# platform destination
+%platform = get_platform($cdata);
 
-print "appliance hash: " . keys(%appliance) . ".\n";
-for my $key ( keys %appliance ) {
-    my $value = $appliance{$key};
+print "platform hash: " . keys(%platform) . ".\n";
+for my $key ( keys %platform ) {
+    my $value = $platform{$key};
     print "$key => $value\n";
 }
 
@@ -183,18 +183,20 @@ while (1) {
             my $devid;
             my $lmoid;
 
-            my $sysrec_on  = 0;
-            my $cpurec_on  = 0;
-            my $diskrec_on = 0;
-            my $nicrec_on  = 0;
-            my $hdwrec_on  = 0;
-            my $procrec_on = 0;
-            my $netrec_on  = 0;
-            my $zonerec_on = 0;
-            my $jvmrec_on  = 0;
-            my $xenrec_on  = 0;
-            my $wsrec_on   = 0;
-            my $webrec_on  = 0;
+            my $sysrec_on       = 0;
+            my $cpurec_on       = 0;
+            my $diskrec_on      = 0;
+            my $nicrec_on       = 0;
+            my $hdwrec_on       = 0;
+            my $procrec_on      = 0;
+            my $netrec_on       = 0;
+            my $zonerec_on      = 0;
+            my $jvmrec_on       = 0;
+            my $xenrec_on       = 0;
+            my $wsrec_on        = 0;
+            my $webrec_on       = 0;
+            my $iaq_g01rec_on   = 0;
+            my $iaq_gmw90rec_on = 0;
 
             if ( $_->{"input"} =~ /sysrec/  ) { $sysrec_on  = 1; }
          elsif ( $_->{"input"} =~ /cpurec/  ) { $cpurec_on  = 1; }
@@ -208,14 +210,12 @@ while (1) {
          elsif ( $_->{"input"} =~ /xenrec/  ) { $xenrec_on  = 1; }
          elsif ( $_->{"input"} =~ /wsrec/   ) { $wsrec_on   = 1; }
          elsif ( $_->{"input"} =~ /webrec/ )  { $webrec_on  = 1; }
+         elsif ( $_->{"input"} =~ /iaq_g01rec/  )  { $iaq_g01rec_on  = 1; }
+         elsif ( $_->{"input"} =~ /iaq_gmw90rec/ ) { $iaq_gmw90rec_on  = 1; }
 
-            # each appliance
-            for my $key ( keys %appliance ) {
-                my $value = $appliance{$key};
-
-                ## value format
-                # cpd:hostname2:443:00000000000000000000000000000000
-                # lmo:host:port:sid => $token:$proto:$ka
+            # each k platform 
+            for my $key ( keys %platform ) {
+                my $value = $platform{$key};
 
                 my ( $lid, $sid, $tid, $dsid ) = split ( /:/, $key );
                 my ( $proto, $hname, $port, $ka ) = split( /:/, $value );
@@ -286,6 +286,22 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-jvmrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-jvmrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-jvmrec"; }
+
+                } elsif ($iaq_g01rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_g01"; }
+
+                } elsif ($iaq_gmw90rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_gmw90"; }
 
                 } elsif ($procrec_on) {
 
@@ -363,7 +379,6 @@ while (1) {
 ### Subroutines
 
 ## configuration file
-
 
 # open JSON configuration file
 sub open_config {
@@ -463,7 +478,7 @@ sub reload_config {
     @dbs = get_datafile($cdata);
 
     ## appliance destination
-    %appliance = get_appliance($cdata);
+    %platform = get_platform($cdata);
 
     return;
 }
@@ -650,13 +665,13 @@ sub get_datafile {
 }
 
 
-# get appliance information
-sub get_appliance {
+# get k analytics platform information
+sub get_platform {
 
     my ($data) = @_;
     my %appl;
 
-    my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd');
+    my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd', 'iaqd');
 
     my @temp = @{ $data->{'transport'}->{'appliance'} };
 
@@ -751,7 +766,7 @@ sub send_data {
 
     my ($hash, $post);
 
-    if ( $msg_id =~ /cpurec|diskrec|nicrec|ttfb/ ) {
+    if ( $msg_id =~ /cpurec|diskrec|nicrec|iaq_g01|iaq_gmw90|ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
     } else {
@@ -820,7 +835,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.0b01, 2016-04-29 1425
+sender: 1.1.2, 2016-10-09 1152
 END
     exit 0;
 }
