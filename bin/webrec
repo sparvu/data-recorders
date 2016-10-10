@@ -566,7 +566,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.1.1, 2016-09-08 1725
+webrec: 1.1.2, 2016-10-10 0935
 END
     exit 0;
 }
