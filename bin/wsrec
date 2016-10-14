@@ -18,8 +18,8 @@
 #  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 #  (http://www.gnu.org/copyleft/gpl.html)
-
-# use strict;
+use strict;
+use warnings;
 use Device::USB;
 use Data::Dumper;
 use Carp::Assert;
@@ -27,19 +27,18 @@ use Getopt::Std;
 use POSIX qw(sysconf pause strftime);
 use Time::HiRes qw(setitimer ITIMER_REAL);
 
-
 my $VENDOR = 0x1941;
 my $PRODUCT = 0x8021;
-#my $debug = 0;
 my $wu_upload_file = "/tmp/wu-wupload.htx"; 	# Set to empty string to disable
 
 #
 # Command line arguments
 #
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('dhvp') or usage();
+getopts('dhpV') or usage();
 usage() if defined $main::opt_h;
-revision() if defined $main::opt_v;
+revision() if defined $main::opt_V;
+
 my $csv   = defined $main::opt_p ? $main::opt_p : 0;
 my $debug = defined $main::opt_d ? $main::opt_d : 0;
 
@@ -61,172 +60,10 @@ my $line = $PAGESIZE;   # counter for lines printed
 my $max_rain_jump = 10;	# To filter out spurios rainfall spikes
 
 $main::opt_h = 0;
-$main::opt_v = 0;
+$main::opt_V = 0;       # revision option
 $main::opt_d = 0;
-$| = 1;                    # autoflush
+$| = 1;                 # autoflush
 
-
-##
-## usage - print usage and exit.
-##
-sub usage {
-        print STDERR <<END;
-USAGE: wsrec [-dp] | [interval [count]]
-   eg, wsrec         # print human readable output
-       wsrec 5       # print every 5 seconds
-       wsrec 1 5     # print 5 times, every 1 second
-       wsrec -p 60   # print every 60 seconds parseable output
-
- FIELDS:
-   #01 timestamp  : seconds since Epoch, time
-   #02 ih         : indoor humidity, number
-   #03 oh         : outdoor humidity,, number
-   #04 ita        : indoor air temperature Celsius, number
-   #05 ota        : outdoor air temperature Celsius, number
-   #06 dpa        : outdoor dew point air temperature Celsius , number
-   #07 wca        : outdoor wind chill temperature, Celsius, number
-   #08 wind       : wind speed m/s, rate
-   #09 wgust      : wind gust m/s, rate
-   #10 windir     : wind Direction
-   #11 rain1      : rain 1 hours, number
-   #12 rain24     : rain 24 hours, number
-   #13 totalrain  : total rain, number
-   #14 pres       : absolute air pressure, number
-
- NOTES: Retrieves and logs the weather stats from the following weather 
-        stations: WH-1080/1081
-
-END
-  exit 0;
-}
-
-##
-## revision - print revision and exit
-##
-sub revision {
-       print STDERR <<END;
-wsrec: 1.0.16, 2015-08-31 1052
-END
-       exit 1;
-}
-
-
-##
-## Connect to the Weather Station
-##
-
-sub open_ws {
-
-	my $usb = shift;
-	my $namebuf = "\0" x 256;
-	my $dev = $usb->find_device($VENDOR, $PRODUCT);
-
-        return if (! $dev);
-
-    	$dev->open();
-	if ($dev->get_driver_np(0, $namebuf, 256) == 0) {
-        	$dev->detach_kernel_driver_np(0);
-    	}	
-
-	if ($dev->claim_interface(0) != 0) {
-		printf "usb_claim_interface failed\n";
-		return 0;
-	}
-	$dev->set_altinterface(0);
-
-	return $dev;
-}
-
-##
-## Close the connection to the Weather Station & exit
-##
-
-sub close_ws {
-    if ($dev) {
-        $dev->release_interface(0);
-    }
-
-    exit 0;
-}
-
-##
-## Dump a buffer in hex for debugging purposes
-##
-
-sub print_bytes {
-	my $buf = shift;
-	my $len = shift;
-   
-	if ($len <= 0) {
-		return;
-	}
-	my @bytes = unpack("C$len", $buf);
-
-    	if ($len > 0) {
-        	for (my $i=0; $i<$len; $i++) {
-            		printf "%02x ", $bytes[$i];
-        	}
-    	}
-	printf "\n";
-}
-
-##
-## Read a 32 byte block of data from the WS
-##
-
-sub read_block {
-	my $dev = shift;
-	my $offset = shift;
-
-        my $xbuf = "\0" x 256;
-
-	my $lsb = $offset & 0xFF;
-	my $msb = $offset >>8 & 0xFF;
-	my $tbuf = pack('CCCCCCCC', 0xA1, $msb, $lsb, 32, 0xA1, $msb, $lsb, 32);
-        my $retval = $dev->control_msg(0x21, 9, 0x200, 0, $tbuf, 8, 1000);
-        my $count = $dev->interrupt_read(0x81, $buf, 32, 1000);
-	if ($debug) {
-                printf ("Retval: %d, Read %d bytes\n", $retval, $count);
-        }
-
-	return $buf;
-}
-
-##
-## Return dew point based on temperature & humidity
-##
-## http://en.wikipedia.org/wiki/Dew_Point
-##
-
-sub dew_point {
-	my $temp = shift;
-	my $humidity = shift;
-	$humidity /= 100.0;
-	my $gamma = (17.271 * $temp) / (237.7 + $temp) + log($humidity) ;
-	return (237.7 * $gamma) / (17.271 - $gamma);
-}
-
-##
-## Return wind chill temp based on temperature & wind speed
-##
-## http://en.wikipedia.org/wiki/Wind_chill
-##
-
-sub wind_chill {
-	my $temp = shift;
-	my $wind = shift;
-
-	my $wind_kph = 3.6 * $wind;
-	if (($wind_kph <= 4.8) || ($temp > 10.0)) {
-		return $temp;
-	}
-	my $wct = 13.12 + (0.6215 * $temp) - (11.37 * ($wind_kph ** 0.16)) + (0.3965 * $temp * ($wind_kph ** 0.16));
-	if ($wct < $temp) {
-		return $wct;
-	} else {
-		return $temp;
-	}
-}
 
 ##
 ##
@@ -315,7 +152,7 @@ while (1) {
         $tlsb = unpack('x5C', $current_block);
         $tmsb = unpack('x6C', $current_block) & 0x7f;
         $tsign = unpack('x6C', $current_block) >> 7;
-        $outdoor_temperature = ($tmsb * 256 + $tlsb) * 0.1;
+        my $outdoor_temperature = ($tmsb * 256 + $tlsb) * 0.1;
         if ($tsign) {
                 $outdoor_temperature *= -1;
         }
@@ -328,8 +165,8 @@ while (1) {
         # print "wind_dir $wind_dir\n";
 	my $total_rain = unpack('x13S', $current_block) * 0.3;
 
-	$wind_speed = ($wind + (($wind_extra & 0x0F) <<8)) * 0.38;	# Was 0.1
-	$gust_speed = ($gust + (($wind_extra & 0xF0) <<4)) * 0.38;	# Was 0.1
+	my $wind_speed = ($wind + (($wind_extra & 0x0F) <<8)) * 0.38;	# Was 0.1
+	my $gust_speed = ($gust + (($wind_extra & 0xF0) <<4)) * 0.38;	# Was 0.1
 	
 	my $outdoor_dew_point = dew_point($outdoor_temperature, $outdoor_humidity);
 	my $wind_chill_temp = wind_chill($outdoor_temperature, $wind_speed);
@@ -419,4 +256,169 @@ while (1) {
         ### Interval
         pause;
 
+}
+
+
+
+##
+## Connect to the Weather Station
+##
+
+sub open_ws {
+
+        my $usb = shift;
+        my $namebuf = "\0" x 256;
+        my $dev = $usb->find_device($VENDOR, $PRODUCT);
+
+        return if (! $dev);
+
+        $dev->open();
+        if ($dev->get_driver_np(0, $namebuf, 256) == 0) {
+                $dev->detach_kernel_driver_np(0);
+        }
+
+        if ($dev->claim_interface(0) != 0) {
+                printf "usb_claim_interface failed\n";
+                return 0;
+        }
+        $dev->set_altinterface(0);
+
+        return $dev;
+}
+
+
+##
+## Close the connection to the Weather Station & exit
+##
+
+sub close_ws {
+    if ($dev) {
+        $dev->release_interface(0);
+    }
+
+    exit 0;
+}
+
+##
+## Dump a buffer in hex for debugging purposes
+##
+
+sub print_bytes {
+	my $buf = shift;
+	my $len = shift;
+   
+	if ($len <= 0) {
+		return;
+	}
+	my @bytes = unpack("C$len", $buf);
+
+    	if ($len > 0) {
+        	for (my $i=0; $i<$len; $i++) {
+            		printf "%02x ", $bytes[$i];
+        	}
+    	}
+	printf "\n";
+}
+
+##
+## Read a 32 byte block of data from the WS
+##
+
+sub read_block {
+	my $dev = shift;
+	my $offset = shift;
+        my $buf;
+        my $xbuf = "\0" x 256;
+
+	my $lsb = $offset & 0xFF;
+	my $msb = $offset >>8 & 0xFF;
+	my $tbuf = pack('CCCCCCCC', 0xA1, $msb, $lsb, 32, 0xA1, $msb, $lsb, 32);
+        my $retval = $dev->control_msg(0x21, 9, 0x200, 0, $tbuf, 8, 1000);
+        my $count = $dev->interrupt_read(0x81, $buf, 32, 1000);
+	if ($debug) {
+                printf ("Retval: %d, Read %d bytes\n", $retval, $count);
+        }
+
+	return $buf;
+}
+
+##
+## Return dew point based on temperature & humidity
+##
+## http://en.wikipedia.org/wiki/Dew_Point
+##
+
+sub dew_point {
+	my $temp = shift;
+	my $humidity = shift;
+	$humidity /= 100.0;
+	my $gamma = (17.271 * $temp) / (237.7 + $temp) + log($humidity) ;
+	return (237.7 * $gamma) / (17.271 - $gamma);
+}
+
+##
+## Return wind chill temp based on temperature & wind speed
+##
+## http://en.wikipedia.org/wiki/Wind_chill
+##
+
+sub wind_chill {
+	my $temp = shift;
+	my $wind = shift;
+
+	my $wind_kph = 3.6 * $wind;
+	if (($wind_kph <= 4.8) || ($temp > 10.0)) {
+		return $temp;
+	}
+	my $wct = 13.12 + (0.6215 * $temp) - (11.37 * ($wind_kph ** 0.16)) + (0.3965 * $temp * ($wind_kph ** 0.16));
+	if ($wct < $temp) {
+		return $wct;
+	} else {
+		return $temp;
+	}
+}
+
+
+##
+## usage - print usage and exit.
+##
+sub usage {
+        print STDERR <<END;
+USAGE: wsrec [-dp] | [interval [count]]
+   eg, wsrec         # print human readable output
+       wsrec 5       # print every 5 seconds
+       wsrec 1 5     # print 5 times, every 1 second
+       wsrec -p 60   # print every 60 seconds parseable output
+
+ FIELDS:
+   #01 timestamp  : seconds since Epoch, time
+   #02 ih         : indoor humidity, number
+   #03 oh         : outdoor humidity,, number
+   #04 ita        : indoor air temperature Celsius, number
+   #05 ota        : outdoor air temperature Celsius, number
+   #06 dpa        : outdoor dew point air temperature Celsius , number
+   #07 wca        : outdoor wind chill temperature, Celsius, number
+   #08 wind       : wind speed m/s, rate
+   #09 wgust      : wind gust m/s, rate
+   #10 windir     : wind Direction
+   #11 rain1      : rain 1 hours, number
+   #12 rain24     : rain 24 hours, number
+   #13 totalrain  : total rain, number
+   #14 pres       : absolute air pressure, number
+
+ NOTES: Retrieves and logs the weather stats from the following weather
+        stations: WH-1080/1081
+
+END
+  exit 0;
+}
+
+##
+## revision - print revision and exit
+##
+sub revision {
+       print STDERR <<END;
+wsrec: 1.1.2, 2016-10-14 1534
+END
+       exit 1;
 }
