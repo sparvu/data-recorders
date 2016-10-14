@@ -92,8 +92,8 @@ $SIG{'TERM'} = 'close_ws';
 my $usb = Device::USB->new();
 my $dev = open_ws($usb);
 if ($dev ==  0) {
-	printf "Couldn't connect to the Weather Station\n";
-	exit 1;
+    printf "Couldn't connect to the Weather Station\n";
+    exit 1;
 }
 
 # Loop forever polling the Weather Station
@@ -108,12 +108,12 @@ while (1) {
         }
 
         if (unpack('C', $fixed_block) != 0x55) {
-                printf (STDERR "Error: Got a dud fixed block - reconnecting\n");
-                $dev->release_interface(0);
-		undef $dev;
-                sleep 5;
-                $dev = open_ws($usb);
-                next;
+            printf (STDERR "Error: Got a dud fixed block - reconnecting\n");
+            $dev->release_interface(0);
+	    undef $dev;
+            sleep 5;
+            $dev = open_ws($usb);
+            next;
         }
 
         # Get the current weather record
