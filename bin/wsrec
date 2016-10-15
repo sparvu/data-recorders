@@ -29,7 +29,7 @@ use Time::HiRes qw(setitimer ITIMER_REAL);
 
 my $VENDOR = 0x1941;
 my $PRODUCT = 0x8021;
-my $wu_upload_file = "/tmp/wu-wupload.htx"; 	# Set to empty string to disable
+my $wu_upload_file = "/tmp/wu-wupload.htx"; # Set to empty string to disable
 
 #
 # Command line arguments
@@ -66,9 +66,7 @@ $| = 1;                 # autoflush
 
 
 ##
-##
 ## Main Loop
-##
 ##
 
 my @hourly_rain = ((0) x 60);
@@ -128,8 +126,8 @@ while (1) {
         if ($line >= $PAGESIZE) {
             # print human readable
             if ($csv == 0) {
-                printf "%8s %3s %3s %6s %6s %6s %6s %5s %5s %3s %4s %4s %5s %6s\n",
-                   "Time", "IH%", "OH%", "IT(C)", "OT(C)", "DP(C)", "WC(C)", "W(m/s)", "G(m/s)", "WD",
+                printf "%8s %3s %3s %5s %5s %5s %5s %5s %5s %3s %4s %5s %3s %6s\n",
+                   "Time", "iRh", "oRh", "iTa", "oTa", "oTd", "Twc", "W", "G", "WD",
                    "1Hr", "24Hr", "T", "P";
 
             }
@@ -164,11 +162,10 @@ while (1) {
 	my $wind_dir = unpack('x12C', $current_block);
         # print "wind_dir $wind_dir\n";
 	my $total_rain = unpack('x13S', $current_block) * 0.3;
-
-	my $wind_speed = ($wind + (($wind_extra & 0x0F) <<8)) * 0.38;	# Was 0.1
-	my $gust_speed = ($gust + (($wind_extra & 0xF0) <<4)) * 0.38;	# Was 0.1
-	
-	my $outdoor_dew_point = dew_point($outdoor_temperature, $outdoor_humidity);
+	my $wind_speed = ($wind + (($wind_extra & 0x0F) <<8)) * 0.38;# Was 0.1
+	my $gust_speed = ($gust + (($wind_extra & 0xF0) <<4)) * 0.38;# Was 0.1
+	my $outdoor_dew_point = 
+            dew_point($outdoor_temperature, $outdoor_humidity);
 	my $wind_chill_temp = wind_chill($outdoor_temperature, $wind_speed);
 
 	# Calculate rainfall rates
@@ -178,7 +175,7 @@ while (1) {
 	}
 	my $rain_diff = $total_rain - $previous_rain;
 
-	if ($rain_diff > $max_rain_jump) {		# Filter rainfall spikes
+	if ($rain_diff > $max_rain_jump) {	# Filter rainfall spikes
 		$rain_diff = 0;
 		$total_rain = $previous_rain;
 	}
@@ -194,13 +191,14 @@ while (1) {
 	($daily_rain_rate += $_) for @daily_rain;
 	
 	if ($csv == 1) {
-	    printf("%d:%d:%d:%.1f:%.1f:%.1f:%.1f:%.1f:%.1f:%s:%.1f:%.1f:%.1f:%.1f\n",
+	    printf "%d:%d:%d:%.1f:%.1f:%.1f:%.1f:%.1f:%.1f:%s:%.1f:%.1f:%.1f:%.1f\n",
 	        time,
-                $indoor_humidity, $outdoor_humidity, $indoor_temperature, $outdoor_temperature, 
+                $indoor_humidity, $outdoor_humidity, 
+                $indoor_temperature, $outdoor_temperature, 
 		$outdoor_dew_point, $wind_chill_temp, $wind_speed, $gust_speed, 
                 $wind_dirs[$wind_dir], 
                 $hourly_rain_rate, $daily_rain_rate, $total_rain,
-                $abs_pressure);
+                $abs_pressure;
 	} else {
             my @Time = localtime();
             printf 
@@ -273,8 +271,13 @@ sub open_ws {
         return if (! $dev);
 
         $dev->open();
-        if ($dev->get_driver_np(0, $namebuf, 256) == 0) {
+
+        my $xv = $dev->get_driver_np(0, $namebuf, 256);
+        if ($xv) {
+        
+            if ($dev->get_driver_np(0, $namebuf, 256) == 0) {
                 $dev->detach_kernel_driver_np(0);
+            } 
         }
 
         if ($dev->claim_interface(0) != 0) {
@@ -418,7 +421,7 @@ END
 ##
 sub revision {
        print STDERR <<END;
-wsrec: 1.1.2, 2016-10-14 1534
+wsrec: 1.1.2, 2016-10-15 1022
 END
        exit 1;
 }
