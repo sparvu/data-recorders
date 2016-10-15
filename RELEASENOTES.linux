@@ -18,14 +18,22 @@ Bug Management System
 
 Releases
 
-  1.1.0 17-05-2016 Release
+  1.1.2 17-10-2016 Release
+
+    wsrec does not have a release version #117
+    direc errors opening certain directories #116
+    recorders cannot properly recover after shortage of disk space #115
+    diskrec debian tmp size is not calculated #114
+    diskrec debian wrong disk usage size #113
+    kronometrix.json active messages support #112
+    rs485rec options #111
+    direc new directory recorder #107
+    diskrec, hdwrec storage listing warnings on Ubuntu 16 #106
+    sysrec on Ubuntu 16 errors on NIC throughput #105
+    diskrec on Ubuntu root error mappings #104
     hdwrec inventory message rational usage #63
     NTP server recorder #108
-    direc new directory recorder #107
     hdwrec slow down mechanism #100
-    sysrec on Ubuntu 16 errors on NIC throughput #105
-    diskrec, hdwrec storage listing warnings on Ubuntu 16 #106
-    diskrec on Ubuntu root error mappings #104
     hdwrec on foobar linux distro errors #101
     webrec temp body file and disk space utilization #99
     hdwrec should announce kdr release version #89
