@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# make a copy of kronometrix.json
+if [ -f /opt/kronometrix/etc/kronometrix.json ]; then
+    if [ ! -d /opt/kronometrix/backup ]; then
+        mkdir /opt/kronometrix/backup
+    fi
+    cp /opt/kronometrix/etc/kronometrix.json /opt/kronometrix/backup || :
+fi
+
 update-rc.d -f kdr_agents remove >/dev/null 2>&1 || : 
 update-rc.d -f kdr_transport remove >/dev/null 2>&1 || :
 
@@ -23,11 +31,3 @@ fi
 
 # wipeout krmx crontab
 crontab -u krmx -r  2>/dev/null || :
-
-# make a copy of kronometrix.json
-if [ -f /opt/kronometrix/etc/kronometrix.json ]; then
-    if [ ! -d /opt/kronometrix/backup ]; then
-        mkdir /opt/kronometrix/backup
-    fi
-    cp /opt/kronometrix/etc/kronometrix.json /opt/kronometrix/backup || :
-fi
