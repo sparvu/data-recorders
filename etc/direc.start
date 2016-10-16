@@ -27,12 +27,12 @@
 RES=60
 
 PWD=`dirname $0`
-if [ $PWD = "." ]; then
+if [ "$PWD" = "." ]; then
     . ../bin/setenv
 else
     PWD=`echo $PWD | sed 's/etc.*//'`
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/wsrec -p $RES -l 2>> ${WSREC_LOG} &
-echo "$!" > ${KRMX_LOG}/wsrec.pid
+${KRMX_BIN}/direc -l $RES 2>> ${DIREC_LOG} &
+echo "$!" > ${KRMX_LOG}/direc.pid

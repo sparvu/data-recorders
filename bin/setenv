@@ -75,6 +75,7 @@ NTPREC_LOG=${KRMX_LOG}/ntprec.log
 DISKREC_LOG=${KRMX_LOG}/diskrec.log
 DIREC_LOG=${KRMX_LOG}/direc.log
 NICREC_LOG=${KRMX_LOG}/nicrec.log
+NTPREC_LOG=${KRMX_LOG}/ntprec.log
 JVMREC_LOG=${KRMX_LOG}/jvmrec.log
 HDWREC_LOG=${KRMX_LOG}/hdwrec.log
 RS485REC_LOG=${KRMX_LOG}/rs485rec.log
