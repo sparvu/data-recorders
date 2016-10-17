@@ -11,15 +11,20 @@ Bug Management System
 
 Releases
 
-  1.1.0 30-07-2016 Release
+  1.1.2 17-10-2016 Release
+
+    wsrec does not have a release version #117
+    direc errors opening certain directories #116
+    recorders cannot properly recover after shortage of disk space #115
+    kronometrix.json active messages support #112
+    rs485rec options #111
+    direc new directory recorder #107
     hdwrec inventory message rational usage #63
     NTP server recorder #108
-    direc new directory recorder #107
     hdwrec slow down mechanism #100
     webrec temp body file and disk space utilization #99
     hdwrec should announce kdr release version #89
     support for ip, routing inventory information #73
-    modbus support #45
 
   1.0.19 02-03-2016 Release
     sysrec illegal division by zero #88
