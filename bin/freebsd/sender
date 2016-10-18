@@ -564,7 +564,7 @@ sub get_hostid {
 sub make_dsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('amd', 'cpd', 'dpd', 'wcd', 'wpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd');
 
     # sid - subscription id
     # dsid - data source id
