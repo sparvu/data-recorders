@@ -5,8 +5,8 @@
       "description" : "Kronometrix raw data on Windows"
     },
     {
-      "name" : "C:\\Program Fles\\Kronometrix",
-      "description" : "Kronometrix bnary directory"
+      "name" : "C:\\Program Files\\Kronometrix",
+      "description" : "Kronometrix binary directory"
     }
   ]
 }
