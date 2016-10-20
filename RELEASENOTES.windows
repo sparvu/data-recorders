@@ -11,6 +11,15 @@ Bug Management System
 
 Releases
 
+  1.1.2 21-10-2016 Release
+    direc errors opening certain directories #116
+    kronometrix.json active messages support #112
+    direc new directory recorder #107
+    hdwrec inventory message rational usage #63
+    hdwrec slow down mechanism #100
+    support for ip, routing inventory information #73
+    update perl 5.22.2
+
   1.0.19 19-02-2016 Release
     detection breaks in a multihomed configuration #94 
     Win32_NetworkAdapter class is very slow #93 
