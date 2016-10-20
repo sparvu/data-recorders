@@ -614,8 +614,17 @@ sub open_config {
 #
 sub get_ssi {
     my ($data) = @_;
+    my $ssi;
 
-    my $ssi = $data->{'sampling_interval'}->{"$recid"};
+    my $rpref = substr($recid,0,-3);
+
+    my @recs = @{ $data->{'message'} };
+
+    foreach my $rh (@recs) {
+        next if ( $rh->{'name'} ne $rpref );
+	$ssi = $rh->{'sample'};
+    }
+
     $ssi = 60 if (! defined $ssi);
 
     return $ssi;
@@ -929,7 +938,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.0, 2016-04-29 1520
+hdwrec: 1.1.2, 2016-10-20 1251
 END
     return;
 }

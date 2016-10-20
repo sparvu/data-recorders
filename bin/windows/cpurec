@@ -136,7 +136,7 @@ unless (defined &ContinueRun) {
 if (RunningAsService()) {
 
     # get service sample interval
-    $interval = get_Ssi($cdata);
+    $interval = get_ssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
@@ -428,10 +428,19 @@ sub open_config {
 
 # get_Ssi - get service sample interval
 #
-sub get_Ssi {
+sub get_ssi {
     my ($data) = @_;
+    my $ssi;
 
-    my $ssi = $data->{'sampling_interval'}->{"$recid"};
+    my $rpref = substr($recid,0,-3);
+
+    my @recs = @{ $data->{'message'} };
+
+    foreach my $rh (@recs) {
+        next if ( $rh->{'name'} ne $rpref );
+	$ssi = $rh->{'sample'};
+    }
+
     $ssi = 60 if (! defined $ssi);
 
     return $ssi;
@@ -643,7 +652,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.1.0, 2016-03-23 1527
+cpurec: 1.1.2, 2016-10-20 1225
 END
     return;
 }
