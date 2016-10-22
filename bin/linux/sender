@@ -86,7 +86,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "Kronometrix/1.4 (kdr 1.1.1 sender $osname)";
+my $agent = "Kronometrix/1.4 (kdr 1.1.2 sender $osname)";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -825,7 +825,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.2, 2016-10-09 1206
+sender: 1.1.2, 2016-10-22 2304
 END
     exit 0;
 }
