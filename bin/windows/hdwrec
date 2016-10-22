@@ -412,12 +412,13 @@ sub Startup {
         last if ++$loop == $loop_max;
     }
 
+    if (RunningAsService()) {
     if ( $speedup > 0 ) {
         if ( $speedup == $boot ) {
 	    $interval=$defint;
 	    $speedup = -1;
 	} else { $speedup++; }
-    }
+    } }
 
 
     } # while loop
@@ -938,7 +939,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.2, 2016-10-20 1251
+hdwrec: 1.1.2, 2016-10-21 1034
 END
     return;
 }
