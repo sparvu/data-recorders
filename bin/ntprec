@@ -277,7 +277,7 @@ sub get_server {
 
     my @temp;
     eval { @temp = @{ $data->{'server'} }; };
-    if ( $@ ) { die "Error: syntax error ntprec.conf, check server";  }
+    if ( $@ ) { die "Error: syntax error ntprec.json, check server";  }
     
     foreach my $f (@temp) {
 

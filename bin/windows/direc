@@ -24,20 +24,17 @@ use warnings;
 use JSON;
 use File::Copy;
 use File::stat;
-use File::Find;
 use Tie::IxHash;
 use Getopt::Long;
+use File::Find;
 no warnings 'File::Find';
-use Filesys::Diskusage qw(du);
+use Filesys::DiskUsage qw(du);
 use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Date::Calc qw(:all);
-use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
 use Win32::Process;
 use JSON;
-
-exit 1;
 
 # Debug Only
 #use Data::Dumper;
@@ -74,11 +71,18 @@ else {
 }
 
 ### Variables
-my $loop        = 0;                      # current loop number
-my $cf          = 'kronometrix.json';     # default json config
-my $logtime     = '0000';                 # min time check 23:59
-my $stime;                                # sleep timer
-my $last_time   = 0;                      # first counter
+my $loop        = 0;                   # current loop number
+my $cfile       = 'direc.json';        # configuration file
+my $cdata;                             # configuration data
+my $kfile       = 'kronometrix.json';  # configuration file
+my $rawfile;                           # krd raw data file
+my $kdata;                             # configuration data
+my ($baselog, $curlog, $dirlog, $log); # logs
+my $logtime     = '0000';              # min time check 23:59
+my $stime;                             # sleep timer
+my $last_time   = 0;                   # first counter
+my $files;
+my $dirs;
 $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -95,13 +99,20 @@ if (Win32::Process::Open($curentProcess, $pid, 0)) {
     $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
 }
 
-# read configuration
-my $cdata = open_config($cf);
-
-my ( $blog, $clog, $dlog ) = get_log($cdata);
-
+# read k configuration
+my $kdata = open_config($kfile);
+my ( $blog, $clog, $dlog ) = get_log($kdata);
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
+
+
+# read configuration
+my $cdata = open_config($cfile);
+
+# directories
+tie my %work, "Tie::IxHash";
+%work = get_dir($cdata);
+
 
 # log, rawlog files
 my ($log, $rawlog);
@@ -110,27 +121,6 @@ if ($logging) {
     $rawlog = open_file($fkrd);
     $log = open_file($fname);
     write_log ("info: started");
-}
-
-# get stats
-my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-    or die "Cannot initialize WMI interface\n";
-
-
-my $key = 'Name';
-
-my @cpustats = qw(
-                   PercentIdleTime       PercentProcessorTime 
-		   PercentPrivilegedTime PercentUserTime 
-		   PercentInterruptTime  PercentDPCTime TimeStamp_Sys100NS);
-my $hash1 = {};
-
-my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-        or die "Failed to get instance object\n";
-
-foreach my $w32 (in $list) {
-    next if $w32->{$key} eq '_Total';
-    map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
 }
 
 unless (defined &ContinueRun) {
@@ -142,7 +132,7 @@ unless (defined &ContinueRun) {
 if (RunningAsService()) {
 
     # get service sample interval
-    $interval = get_Ssi($cdata);
+    $interval = get_ssi($kdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
@@ -162,45 +152,34 @@ sub Startup {
     k_sleep();
 
 
-    my ($cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct);
-    my %cstat;
+    for my $key (keys %work) {
 
-    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-	        or die "Failed to get instance object\n";
+        $dirs=0;
+	$files=0;
 
-    my $hash = {};
+	my $value = $work{$key};
+	my $desc = $value;
+	next if ( ! -d $key);
 
-    foreach my $w32 (in $list) {
-	next if $w32->{$key} eq '_Total';
-	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
+	my $mod_time= stat($key)->mtime;
+	my $chg_time= stat($key)->ctime;
+
+	get_fds($key);
+
+	my $size;
+	my %sizes = du({'make-hash' => 1}, $key);
+	foreach my $entry (sort { $sizes{$a} <=> $sizes{$b} } keys %sizes) {
+	    $size = sprintf ("%.f", $sizes{$entry});
+	}
+
+	$key =~ s/^\///;
+	$key =~ s/\//_/g;
+
+	# print dir statistics
+	printf "%s:%s:%d:%d:%d:%d:%.f\n", 
+	   time, $key, $files, $dirs, $chg_time, $mod_time, $size;
     }
 
-    #print "cpus " . keys(%$hash) . ".\n";
-    # print Dumper($hash);
-
-    for my $k (keys %$hash) {
-
-        $cpuid = $k;
-
-        $totalpct = sprintf("%.2f", (1 - get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentProcessorTime' )) * 100);
-
-	#$idlepct = sprintf("%.2f", 100-$totalpct);
-
-        $userpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentUserTime' )* 100);
-
-        $syspct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' )* 100);
-
-        $irqpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentInterruptTime' )* 100);
-
-        $dpcpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentDPCTime' )* 100);
-
-        $idlepct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentIdleTime' )* 100);
-
-	$cstat{$cpuid} = "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
-
-    }
-
-    $hash1 = $hash;
 
     # end payload
     my $tnow = [gettimeofday];
@@ -212,13 +191,13 @@ sub Startup {
 
     if ($last_time > 0) {
 
-        putraw($$tnow[0], %cstat);
+        # putraw($$tnow[0], %cstat);
 
         $last_time = $$tnow[0];
 
     } else {
 
-        putraw($$tnow[0], %cstat);
+        # putraw($$tnow[0], %cstat);
 
         if (!RunningAsService()) {
             # check count, interval
@@ -258,7 +237,7 @@ sub Install {
 
     if (RunningAsService()) {
         # check for proper config file
-        if (! defined $cdata) {
+        if (! defined $kdata) {
             die "Cant install $Config{ServiceName} service, exiting...\n";
         }
 
@@ -291,36 +270,6 @@ sub k_sleep {
     usleep($delta * 1_000_000);
 
     return;
-}
-
-
-# get_value - get delta between samples
-#
-sub get_value {
-
-    my ($h1, $h2, $property) = @_; 
-
-    my $delta = 0;
-
-    my $v2  = $h2->{$property};
-    my $v1  = $h1->{$property};
-
-    my $t2  = $h2->{'TimeStamp_Sys100NS'};
-    my $t1  = $h1->{'TimeStamp_Sys100NS'};
-
-    eval {
-        $delta = ( ($v2 - $v1) / ($t2 - $t1) );
-    };
-
-    if ($@) {
-        chomp ($@);
-        write_log("$@");
-        write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
-    }
-
-    $delta = 1 if $delta > 1;
-
-    return $delta;
 }
 
 
@@ -625,7 +574,6 @@ sub get_yesterday {
 }
 
 
-
 # get directory definition
 sub get_dir {
 
@@ -634,10 +582,9 @@ sub get_dir {
 
     my @temp;
     eval { @temp = @{ $data->{'directory'} }; };
-    if ( $@ ) { die "Error: syntax error direc.conf, check directory";  }
+    if ( $@ ) { die "Error: syntax error direc.json, check directory";  }
     
     foreach my $f (@temp) {
-
         my $dir     = $f->{'name'};
         my $desc    = $f->{'description'};
 
@@ -652,25 +599,27 @@ sub get_dir {
 }
 
 
-
-sub get_dirsize {
+sub get_fds {
 
     my ($dir) = @_;
-    find (\&sum_bytes, "$dir");
+    local $^W;
+    find(
+        sub {
+            # $_ contains the name of the current file
+            # $File::Find::name contains the full path of the current file relative
+            #  to the directory given to the find() function
+            # $File::Find::dir contains the name of the current directory
+            #print "Processing: $_ \n";
+
+            if ( -d ) {  # if file is a directory
+                $dirs++;
+            } elsif ( -f ) {
+                $files++;
+            } else { return; }
+        }, $dir);
+
+    return;
 }
-
-
-sub sum_bytes
-{
-    if (! -f $File::Find::name) {
-        $dir_total++;
-        return();
-    }
-    
-    $byte_total += -s _;
-    $file_total++;
-}
-
 
 
 # usage - print usage and exit.

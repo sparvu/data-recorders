@@ -309,7 +309,7 @@ sub get_dir {
 
     my @temp;
     eval { @temp = @{ $data->{'directory'} }; };
-    if ( $@ ) { die "Error: syntax error direc.conf, check directory";  }
+    if ( $@ ) { die "Error: syntax error direc.json, check directory";  }
     
     foreach my $f (@temp) {
 
