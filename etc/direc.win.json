@@ -1,12 +1,12 @@
 {
   "directory" : [
     {
-      "name" : "C:\\ProgramData\\Kronometrix\\log",
-      "description" : "Kronometrix raw data on Windows"
+      "name" : "C:\\ProgramData",
+      "description" : "Program Data directory"
     },
     {
-      "name" : "C:\\Program Files\\Kronometrix",
-      "description" : "Kronometrix binary directory"
+      "name" : "C:\\Program Files",
+      "description" : "Program Files directory"
     }
   ]
 }
