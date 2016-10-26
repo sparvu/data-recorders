@@ -160,9 +160,7 @@ while (1) {
         $key =~ s/^\///;
         $key =~ s/\//_/g;
 
-        print "Size: $size bytes\n";
         my $msize = sprintf ("%.2f", $size / (1024*1024));
-        print "MB Size: $msize MB\n";
 
         if ($logging) {
             printf $rawkrd "%.${tp}f:%s:%d:%d:%d:%d:%.2f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $msize;
@@ -374,7 +372,7 @@ OPTIONS:
   #04 number of sub directories, number
   #05 time of last status change, seconds
   #06 time of last modification, seconds
-  #07 capacity in bytes
+  #07 real capacity in MBytes
  
  NOTES:
   The recorder uses direc.json configuration file
@@ -385,7 +383,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-direc: 1.1.2, 2016-10-10 0936
+direc: 1.1.2, 2016-10-26 1530
 END
     exit 0;
 }
