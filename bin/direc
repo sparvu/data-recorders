@@ -160,11 +160,15 @@ while (1) {
         $key =~ s/^\///;
         $key =~ s/\//_/g;
 
+        print "Size: $size bytes\n";
+        my $msize = sprintf ("%.2f", $size / (1024*1024));
+        print "MB Size: $msize MB\n";
+
         if ($logging) {
-            printf $rawkrd "%.${tp}f:%s:%d:%d:%d:%d:%.f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $size;
+            printf $rawkrd "%.${tp}f:%s:%d:%d:%d:%d:%.2f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $msize;
         } else {
             # print dir statistics
-            printf "%.${tp}f:%s:%d:%d:%d:%d:%.f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $size;
+            printf "%.${tp}f:%s:%d:%d:%d:%d:%.2f\n", time, $key, $files, $dirs, $chg_time, $mod_time, $msize;
         }
         
     }
