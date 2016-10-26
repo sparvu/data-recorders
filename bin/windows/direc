@@ -25,6 +25,7 @@ use JSON;
 use File::Copy;
 use File::stat;
 use Tie::IxHash;
+use File::Spec;
 use Getopt::Long;
 use File::Find;
 no warnings 'File::Find';
@@ -33,6 +34,7 @@ use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Date::Calc qw(:all);
 use Sys::Hostname;
 use Time::Local;
+use Capture::Tiny ':all';
 use Win32::Process;
 use JSON;
 
@@ -83,7 +85,7 @@ my $stime;                             # sleep timer
 my $last_time   = 0;                   # first counter
 my $files;
 my $dirs;
-$|= 1;                                    # autoflush
+local $|= 1;                                    # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
@@ -100,14 +102,14 @@ if (Win32::Process::Open($curentProcess, $pid, 0)) {
 }
 
 # read k configuration
-my $kdata = open_config($kfile);
+$kdata = open_config($kfile);
 my ( $blog, $clog, $dlog ) = get_log($kdata);
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
 
 
 # read configuration
-my $cdata = open_config($cfile);
+$cdata = open_config($cfile);
 
 # directories
 tie my %work, "Tie::IxHash";
@@ -115,7 +117,7 @@ tie my %work, "Tie::IxHash";
 
 
 # log, rawlog files
-my ($log, $rawlog);
+my $rawlog;
 
 if ($logging) {
     $rawlog = open_file($fkrd);
@@ -151,6 +153,7 @@ sub Startup {
 
     k_sleep();
 
+    my %dirs;
 
     for my $key (keys %work) {
 
@@ -164,7 +167,14 @@ sub Startup {
 	my $mod_time= stat($key)->mtime;
 	my $chg_time= stat($key)->ctime;
 
+        # SAVE STDERR
+	#open *OLDSTDERR, '>&STDERR';
 	get_fds($key);
+
+	# RESTORe STDERR
+        #open *STDERR, '>&OLDSTDERR' or 
+	#   die "Cannot restore STDERR: $!\n";
+        #close OLDSTDERR;
 
 	my $size;
 	my %sizes = du({'make-hash' => 1}, $key);
@@ -172,14 +182,23 @@ sub Startup {
 	    $size = sprintf ("%.f", $sizes{$entry});
 	}
 
-	$key =~ s/^\///;
-	$key =~ s/\//_/g;
+	$key =~ s/\s//g;
+	$key =~ s/:\\/_/g;
+	$key =~ s/\\/_/g;
+
+        print "$key Size: $size KB\n";
+        my $msize = sprintf ("%.2f", $size / ( 1024 * 1024 ));
+        print "$key Size: $msize MB\n";
+
+
+
+        $dirs{$key} = "$key:$files:$dirs:$chg_time:$mod_time:$size";
 
 	# print dir statistics
-	printf "%s:%s:%d:%d:%d:%d:%.f\n", 
-	   time, $key, $files, $dirs, $chg_time, $mod_time, $size;
-    }
+	# printf "%s:%s:%d:%d:%d:%d:%.f\n", 
+	#  time, $key, $files, $dirs, $chg_time, $mod_time, $size;
 
+    }
 
     # end payload
     my $tnow = [gettimeofday];
@@ -191,13 +210,13 @@ sub Startup {
 
     if ($last_time > 0) {
 
-        # putraw($$tnow[0], %cstat);
+        putraw($$tnow[0], %dirs);
 
         $last_time = $$tnow[0];
 
     } else {
 
-        # putraw($$tnow[0], %cstat);
+        putraw($$tnow[0], %dirs);
 
         if (!RunningAsService()) {
             # check count, interval
@@ -276,25 +295,25 @@ sub k_sleep {
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ($traw, %c)  = @_;
+    my ($traw, %d)  = @_;
 
     if (RunningAsService()) {
 
-	for my $k (sort keys %c) {
-            printf $rawlog "%s:%s\n", $traw, $c{$k};
+	for my $k (sort keys %d) {
+            printf $rawlog "%s:%s\n", $traw, $d{$k};
 	}
 
     } else {
         if ( $logging ) {
 
-	    for my $k (sort keys %c) {
-                printf $rawlog "%s:%s\n", $traw, $c{$k};
+	    for my $k (sort keys %d) {
+                printf $rawlog "%s:%s\n", $traw, $d{$k};
 	    }
 
 	}
 
-	for my $k (sort keys %c) {
-            printf "%s:%s\n", $traw, $c{$k};
+	for my $k (sort keys %d) {
+            printf "%s:%s\n", $traw, $d{$k};
 	}
     }
 }
@@ -588,7 +607,6 @@ sub get_dir {
         my $dir     = $f->{'name'};
         my $desc    = $f->{'description'};
 
-        # print "$dir => $desc \n";
         my $keyapp = $dir;
         my $hvalue = $desc;
 
@@ -603,20 +621,22 @@ sub get_fds {
 
     my ($dir) = @_;
     local $^W;
+
+    open STDERR, '>', File::Spec->devnull() or die "Cannot open STDERR: $!\n";
     find(
         sub {
             # $_ contains the name of the current file
             # $File::Find::name contains the full path of the current file relative
             #  to the directory given to the find() function
             # $File::Find::dir contains the name of the current directory
-            #print "Processing: $_ \n";
-
+            # print "Processing: $_ \n";
+            
             if ( -d ) {  # if file is a directory
                 $dirs++;
             } elsif ( -f ) {
                 $files++;
             } else { return; }
-        }, $dir);
+        }, $dir); 
 
     return;
 }
@@ -639,7 +659,7 @@ OPTIONS:
   #04 number of sub directories, number
   #05 time of last status change, seconds
   #06 time of last modification, seconds
-  #07 capacity in KBytes
+  #07 capacity in MBytes
  
  NOTES:
   The recorder uses direc.json configuration file
@@ -652,7 +672,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-direc: 1.1.2, 2016-10-20 1515
+direc: 1.1.2, 2016-10-26 1400
 END
     exit 0;
 }
