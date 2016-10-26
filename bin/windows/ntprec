@@ -636,37 +636,116 @@ sub get_fds {
 }
 
 
+# get NTP Server defintion
+sub get_server {
+
+    my ($data) = @_;
+    tie my %ntps, "Tie::IxHash";
+
+    my @temp;
+    eval { @temp = @{ $data->{'server'} }; };
+    if ( $@ ) { die "Error: syntax error ntprec.json, check server";  }
+    
+    foreach my $f (@temp) {
+
+        my $host    = $f->{'hostname'};
+        my $port    = $f->{'port'};
+        my $desc    = $f->{'description'};
+
+        # print "$host => $port:$desc \n";
+        my $keyapp = $host;
+        my $hvalue = $port . ":" . $desc;
+
+        $ntps{$keyapp} = $hvalue;
+    }
+
+    return %ntps;
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
 # usage - print usage and exit.
+#
 sub usage {
     print STDERR <<END;
-USAGE: direc [-hvV] | [interval]
+USAGE: ntprec [-hlvV] | [interval]
 OPTIONS:
   -h        : help information
+  -l          : log raw data to krd file, no STDOUT
   -v        : verbose information
   -V        : release version
   interval  : maximum number of seconds between samples
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-  #02 name : directory name, string
-  #03 number of files, number
-  #04 number of sub directories, number
-  #05 time of last status change, seconds
-  #06 time of last modification, seconds
-  #07 capacity in MBytes
- 
+  #02 name: NTP server name, string
+  #03 roundtrip delay, seconds
+  #04 system clock offset, seconds
+
  NOTES:
-  The recorder uses direc.json configuration file
+  ntprec is monitoring one or many NTP servers, defined under 
+  ntprec.json reporting: the roundtrip delay and the system clock offset.
+  By default ntprec runs every 900 seconds.
+
+  When the server reply is received, the client determines a
+  Destination Timestamp variable as the time of arrival according to
+  its clock in NTP timestamp format.  The following table summarizes
+  the four timestamps.
+
+     Timestamp Name          ID   When Generated
+     ------------------------------------------------------------
+     Originate Timestamp     T1   time request sent by client
+     Receive Timestamp       T2   time request received by server
+     Transmit Timestamp      T3   time reply sent by server
+     Destination Timestamp   T4   time reply received by client
+
+  The roundtrip delay d and system clock offset t are defined as:
+
+     d = (T4 - T1) - (T3 - T2)     t = ((T2 - T1) + (T3 - T4)) / 2.
+
+  Note that in general both delay and offset are signed quantities and
+  can be less than zero; however, a delay less than zero is possible
+  only in symmetric modes, which SNTP clients are forbidden to use.
+  The following table summarizes the required SNTP client operations in
+  unicast, manycast, and broadcast modes.  The recommended error checks
+  are shown in the Reply and Broadcast columns in the table.  The
+  message should be considered valid only if all the fields shown
+  contain values in the respective ranges.  Whether to believe the
+  message if one or more of the fields marked "ignore" contain invalid
+  values is at the discretion of the implementation. -- RFC 4330
 END
     exit 0;
 }
 
 
-
 # revision - print revision and exit
+#
 sub revision {
     print STDERR <<END;
-direc: 1.1.2, 2016-10-26 1400
+ntprec: 1.1.2, 2016-10-26 2227
 END
     exit 0;
 }
