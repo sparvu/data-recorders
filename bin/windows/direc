@@ -34,7 +34,6 @@ use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Date::Calc qw(:all);
 use Time::Local;
 use Win32::Process;
-use JSON;
 
 # Debug Only
 #use Data::Dumper;

@@ -22,19 +22,12 @@ package PerlSvc;
 use strict;
 use warnings;
 use JSON;
-use File::Copy;
-use File::stat;
 use Tie::IxHash;
-use File::Spec;
 use Getopt::Long;
-use File::Find;
-no warnings 'File::Find';
-use Filesys::DiskUsage qw(du);
 use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Date::Calc qw(:all);
 use Time::Local;
 use Win32::Process;
-use JSON;
 
 # Debug Only
 #use Data::Dumper;
@@ -584,55 +577,6 @@ sub get_yesterday {
     # print "PREVDATE: $prevdate \n";
 
     return $prevdate;
-}
-
-
-# get directory definition
-sub get_dir {
-
-    my ($data) = @_;
-    tie my %dirs, "Tie::IxHash";
-
-    my @temp;
-    eval { @temp = @{ $data->{'directory'} }; };
-    if ( $@ ) { die "Error: syntax error direc.json, check directory";  }
-    
-    foreach my $f (@temp) {
-        my $dir     = $f->{'name'};
-        my $desc    = $f->{'description'};
-
-        my $keyapp = $dir;
-        my $hvalue = $desc;
-
-        $dirs{$keyapp} = $hvalue;
-    }
-
-    return %dirs;
-}
-
-
-sub get_fds {
-
-    my ($dir) = @_;
-    local $^W;
-
-    open STDERR, '>', File::Spec->devnull() or die "Cannot open STDERR: $!\n";
-    find(
-        sub {
-            # $_ contains the name of the current file
-            # $File::Find::name contains the full path of the current file relative
-            #  to the directory given to the find() function
-            # $File::Find::dir contains the name of the current directory
-            # print "Processing: $_ \n";
-            
-            if ( -d ) {  # if file is a directory
-                $dirs++;
-            } elsif ( -f ) {
-                $files++;
-            } else { return; }
-        }, $dir); 
-
-    return;
 }
 
 
