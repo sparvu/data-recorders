@@ -32,9 +32,7 @@ no warnings 'File::Find';
 use Filesys::DiskUsage qw(du);
 use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Date::Calc qw(:all);
-use Sys::Hostname;
 use Time::Local;
-use Capture::Tiny ':all';
 use Win32::Process;
 use JSON;
 
@@ -186,13 +184,9 @@ sub Startup {
 	$key =~ s/:\\/_/g;
 	$key =~ s/\\/_/g;
 
-        print "$key Size: $size KB\n";
         my $msize = sprintf ("%.2f", $size / ( 1024 * 1024 ));
-        print "$key Size: $msize MB\n";
 
-
-
-        $dirs{$key} = "$key:$files:$dirs:$chg_time:$mod_time:$size";
+        $dirs{$key} = "$key:$files:$dirs:$chg_time:$mod_time:$msize";
 
 	# print dir statistics
 	# printf "%s:%s:%d:%d:%d:%d:%.f\n", 
