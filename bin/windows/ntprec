@@ -22,6 +22,7 @@ package PerlSvc;
 use strict;
 use warnings;
 use JSON;
+use Net::NTP;
 use Tie::IxHash;
 use Getopt::Long;
 use Time::HiRes qw(time gettimeofday usleep tv_interval);
@@ -35,7 +36,7 @@ use Win32::Process;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my $recid           = 'direc';
+my $recid           = 'ntprec';
 my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
 my ($l, $v, $h, $V) = 0;
 our %Config         = (ServiceName => $recid);
@@ -65,7 +66,7 @@ else {
 
 ### Variables
 my $loop        = 0;                   # current loop number
-my $cfile       = 'direc.json';        # configuration file
+my $cfile       = 'ntprec.json';       # configuration file
 my $cdata;                             # configuration data
 my $kfile       = 'kronometrix.json';  # configuration file
 my $rawfile;                           # krd raw data file
@@ -104,7 +105,7 @@ $cdata = open_config($cfile);
 
 # directories
 tie my %work, "Tie::IxHash";
-%work = get_dir($cdata);
+%work = get_server($cdata);
 
 
 # log, rawlog files
@@ -144,48 +145,39 @@ sub Startup {
 
     k_sleep();
 
-    my %dirs;
+    my %ntps;
 
     for my $key (keys %work) {
+        
+        my $value = $work{$key};
 
-        $dirs=0;
-	$files=0;
+        my ($port, $desc) = split( /:/, $value );
 
-	my $value = $work{$key};
-	my $desc = $value;
-	next if ( ! -d $key);
+        my $t0 = time;
+        my %h = get_ntp_response($key);
 
-	my $mod_time= stat($key)->mtime;
-	my $chg_time= stat($key)->ctime;
+        my $T1 = $t0;                      #Originate Timestamp;
+        my $T2 = $h{'Receive Timestamp'};  #
+        my $T3 = $h{'Transmit Timestamp'}; #
+        my $T4 = time;                    #
+  
+        my $d = ($T4 - $T1) - ($T3 - $T2);
 
-        # SAVE STDERR
-	#open *OLDSTDERR, '>&STDERR';
-	get_fds($key);
+        #t = ((T2 - T1) + (T3 - T4)) / 2.
+        my $t = (($T2 - $T1) + ($T3 - $T4)) / 2;
 
-	# RESTORe STDERR
-        #open *STDERR, '>&OLDSTDERR' or 
-	#   die "Cannot restore STDERR: $!\n";
-        #close OLDSTDERR;
+        my $duration = $T4 - $t0;
+        my $delta = $T2 - $T1 - $duration / 2;
 
-	my $size;
-	my %sizes = du({'make-hash' => 1}, $key);
-	foreach my $entry (sort { $sizes{$a} <=> $sizes{$b} } keys %sizes) {
-	    $size = sprintf ("%.f", $sizes{$entry});
-	}
+        $d = sprintf ("%.5f", $d);
+        $t = sprintf ("%.5f", $t);
 
-	$key =~ s/\s//g;
-	$key =~ s/:\\/_/g;
-	$key =~ s/\\/_/g;
+        #printf "%s:%s:%.5f:%.5f\n", $T4, $key, $d, $t;
 
-        my $msize = sprintf ("%.2f", $size / ( 1024 * 1024 ));
-
-        $dirs{$key} = "$key:$files:$dirs:$chg_time:$mod_time:$msize";
-
-	# print dir statistics
-	# printf "%s:%s:%d:%d:%d:%d:%.f\n", 
-	#  time, $key, $files, $dirs, $chg_time, $mod_time, $size;
-
+        $ntps{$key} = "$key:$d:$t";
     }
+
+
 
     # end payload
     my $tnow = [gettimeofday];
@@ -197,13 +189,13 @@ sub Startup {
 
     if ($last_time > 0) {
 
-        putraw($$tnow[0], %dirs);
+        putraw($$tnow[0], %ntps);
 
         $last_time = $$tnow[0];
 
     } else {
 
-        putraw($$tnow[0], %dirs);
+        putraw($$tnow[0], %ntps);
 
         if (!RunningAsService()) {
             # check count, interval
@@ -604,30 +596,6 @@ sub get_server {
     }
 
     return %ntps;
-}
-
-
-# open_data - open data file
-#
-sub open_file {
-
-    my ($file) = @_;
-    my $fh;
-
-    if (-f $file) {
-        open $fh, "+>>", "$file" or 
-          die "error: open_file - cannot open $file $!";
-        seek $fh, 0, 2;
-        select ((select ($fh), $| = 1)[0]);
-
-    } else {
-        open $fh, "+>", "$file" or 
-          die "error: open_file - cannot open $file $!";
-        select ((select ($fh), $| = 1)[0]);
-
-    }
-
-    return $fh;
 }
 
 
