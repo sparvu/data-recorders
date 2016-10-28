@@ -11,12 +11,14 @@ Bug Management System
 
 Releases
 
-  1.1.2 21-10-2016 Release
+  1.1.2 30-10-2016 Release
     direc errors opening certain directories #116
     kronometrix.json active messages support #112
+    NTP server recorder #108
     direc new directory recorder #107
     hdwrec inventory message rational usage #63
     hdwrec slow down mechanism #100
+    hdwrec should announce kdr release version #89
     support for ip, routing inventory information #73
     update perl 5.22.2
 
