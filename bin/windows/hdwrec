@@ -71,7 +71,7 @@ else {
 ### Variables
 my $loop        = 0;                      # current loop number
 my $cf          = 'kronometrix.json';     # default json config
-my $logtime     = '0000';                 # min time check 23:59
+my $logtime     = '00';                   # min time check 23:59
 my $hv          = 'NA';                   # hypervisor
 my $ht          = 'NA';                   # hyper-threading
 my $stime;                                # sleep timer
@@ -722,7 +722,7 @@ sub cktime {
     my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = 
        localtime(time);
 
-    my $tcheck = sprintf ("%02d%02d", $hour, $min);
+    my $tcheck = sprintf ("%02d", $hour);
 
     my $yesterday = get_yesterday();
     # print "time check: $tcheck";
