@@ -209,8 +209,8 @@
       "domain" : [ "dpd" ]
     },
     {
-      "name"   : "netsw",
-      "name"   : "netswrec.krd",
+      "name"   : "ethsw",
+      "name"   : "ethswrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "dpd" ]
