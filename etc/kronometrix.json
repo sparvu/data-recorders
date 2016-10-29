@@ -6,6 +6,13 @@
   },
   "message" : [
     {
+      "name"   : "sys",
+      "file"   : "sysrec.krd",
+      "sample" : 60,
+      "status" : "active",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
       "name"   : "cpu",
       "file"   : "cpurec.krd",
       "sample" : 60,
@@ -13,39 +20,11 @@
       "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
-      "name"   : "db",
-      "file"   : "dbrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "dpd", "wpd" ]
-    },
-    {
-      "name"   : "dir",
-      "file"   : "direc.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "dpd" ]
-    },
-    {
       "name"   : "disk",
       "file"   : "diskrec.krd",
       "sample" : 60,
       "status" : "active",
       "domain" : [ "cpd", "dpd", "wpd" ]
-    },
-    {
-      "name"   : "dns",
-      "file"   : "dnsrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "dpd" ]
-    },
-    {
-      "name"   : "ftp",
-      "file"   : "ftprec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "dpd" ]
     },
     {
       "name"   : "nic",
@@ -60,6 +39,76 @@
       "sample" : 3600,
       "status" : "active",
       "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "net",
+      "file"   : "netrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "jvm",
+      "file"   : "jvmrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd", "wpd" ]
+    },
+    {
+      "name"   : "proc",
+      "file"   : "procrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "cpd", "dpd", "wpd" ]
+    },
+    {
+      "name"   : "xen",
+      "file"   : "xenrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "zone",
+      "file"   : "zonerec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "dir",
+      "file"   : "direc.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "ntp",
+      "file"   : "ntprec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "db",
+      "file"   : "dbrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd", "wpd" ]
+    },
+    {
+      "name"   : "dns",
+      "file"   : "dnsrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
+    },
+    {
+      "name"   : "ftp",
+      "file"   : "ftprec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "dpd" ]
     },
     {
       "name"   : "http",
@@ -97,13 +146,6 @@
       "domain" : [ "dpd" ]
     },
     {
-      "name"   : "jvm",
-      "file"   : "jvmrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "dpd", "wpd" ]
-    },
-    {
       "name"   : "ldap",
       "file"   : "ldaprec.krd",
       "sample" : 60,
@@ -118,20 +160,6 @@
       "domain" : [ "dpd" ]
     },
     {
-      "name"   : "net",
-      "file"   : "netrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "cpd", "dpd", "wpd" ]
-    },
-    {
-      "name"   : "ntp",
-      "file"   : "ntprec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "dpd" ]
-    },
-    {
       "name"   : "pop",
       "file"   : "poprec.krd",
       "sample" : 60,
@@ -139,25 +167,11 @@
       "domain" : [ "dpd" ]
     },
     {
-      "name"   : "proc",
-      "file"   : "procrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "cpd", "dpd", "wpd" ]
-    },
-    {
       "name"   : "san",
       "file"   : "sanrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "dpd" ]
-    },
-    {
-      "name"   : "sys",
-      "file"   : "sysrec.krd",
-      "sample" : 60,
-      "status" : "active",
-      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "smtp",
@@ -169,20 +183,6 @@
     {
       "name"   : "ethsw",
       "file"   : "ethswrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "dpd" ]
-    },
-    {
-      "name"   : "xen",
-      "file"   : "xenrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "dpd" ]
-    },
-    {
-      "name"   : "zone",
-      "file"   : "zonerec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "dpd" ]
