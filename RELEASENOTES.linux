@@ -19,7 +19,6 @@ Bug Management System
 Releases
 
   1.1.2 17-10-2016 Release
-
     wsrec does not have a release version #117
     direc errors opening certain directories #116
     recorders cannot properly recover after shortage of disk space #115
