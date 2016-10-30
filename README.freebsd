@@ -5,16 +5,18 @@ README Kronometrix Data Recording
 1.Supported Operating Systems
 
   We support the following FreeBSD based operating systems:
-    FreeBSD 10, 10.1, 10.2 amd64, i386
+    FreeBSD 10 amd64, i386
+    FreeBSD 11 amd64, i386
 
 
 2.Package Content
 
-  Kronometrix 1.0 FreeBSD edition contains, all data records and the 
+  Kronometrix FreeBSD edition contains, all data records and the 
   transport utility. Along with these come the manual pages and 
   documentation, all for free:
 
-    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec
+    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec, webrec, netrec,
+      rs485rec, direc, ntprec
 
     - transport: sender at the moment uses HTTP protocol
 
@@ -182,18 +184,18 @@ README Kronometrix Data Recording
     this section, should not be changed or removed.
 
 
-    Appliance section
+    Platform section
  
     This is the section where users should defined where they want to 
-    send data. The appliance section describes the details of one or
-    many data analytics appliances, each with own settings.
+    send data. The platform section describes the details of one or
+    many data analytics platforms, each with own settings.
 
-    All raw data can be transported to one or many appliances at the same
+    All raw data can be transported to one or many platforms at the same
     time. Under this section we need to define and configure, the following:
 
-      o appliance port number, the port number default 80
+      o platform port number, the port number default 80
      
-      o appliance hostname, IP or FQD of the appliance 
+      o platform hostname, IP or FQD of the platform 
   
       o protocol: HTTP or HTTPS, currently we support HTTP only
 

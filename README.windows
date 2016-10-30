@@ -6,7 +6,9 @@ README Kronometrix Data Recording
 
   We support the following Windows operating systems:
 
-    Windows 2008R2 2012R2 Server x64
+    Windows 2016 Server x64
+    Windows 2012 R2 Server x64
+    Windows 2008 R2 Server x64
     Windows 7 8 10 x64
 
 
@@ -15,7 +17,7 @@ README Kronometrix Data Recording
   Kronometrix Windows edition contains, all data records and the 
   transport utility and additional tools:
 
-    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec
+    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec, direc, ntprec
 
     - transport: sender at the moment uses HTTP protocol
 
@@ -144,18 +146,18 @@ README Kronometrix Data Recording
     this section, should not be changed or removed.
 
 
-    Appliance section
+    Platform section
  
     This is the section where users should defined where they want to 
-    send data. The appliance section describes the details of one or
-    many data analytics appliances, each with own settings.
+    send data. The platform section describes the details of one or
+    many data analytics platforms, each with own settings.
 
-    All raw data can be transported to one or many appliances at the same
+    All raw data can be transported to one or many platforms at the same
     time. Under this section we need to define and configure, the following:
 
-      o appliance port number, the port number default 80
+      o platform port number, the port number default 80
      
-      o appliance hostname, IP or FQD of the appliance 
+      o platform hostname, IP or FQD of the platform 
   
       o protocol: HTTP or HTTPS, currently we support HTTP only
 
