@@ -2,7 +2,8 @@
 Kronometrix Data Recording
 
 Platforms
-   FreeBSD 10, 11 amd64, i386
+    FreeBSD 10 amd64, i386
+    FreeBSD 11 amd64, i386
 
 Bug Management System
   https://github.com/kronometrix/recording/issues
