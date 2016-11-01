@@ -132,43 +132,43 @@
       "domain" : [ "whpd", "dpd" ]
     },
     {
-      "name"   : "dns",
-      "file"   : "dnsrec.krd",
+      "name"   : "svc_dns",
+      "file"   : "svc_dnsrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "whpd", "dpd" ]
     },
     {
-      "name"   : "ftp",
-      "file"   : "ftprec.krd",
+      "name"   : "svc_ftp",
+      "file"   : "svc_ftprec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "whpd", "dpd" ]
     },
     {
-      "name"   : "imap",
-      "file"   : "imaprec.krd",
+      "name"   : "svc_imap",
+      "file"   : "svc_imaprec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "whpd", "dpd" ]
     },
     {
-      "name"   : "ldap",
-      "file"   : "ldaprec.krd",
+      "name"   : "svc_ldap",
+      "file"   : "svc_ldaprec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "whpd", "dpd" ]
     },
     {
-      "name"   : "pop",
-      "file"   : "poprec.krd",
+      "name"   : "svc_pop",
+      "file"   : "svc_poprec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "whpd", "dpd" ]
     },
     {
-      "name"   : "smtp",
-      "file"   : "smtprec.krd",
+      "name"   : "svc_smtp",
+      "file"   : "svc_smtprec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "whpd", "dpd" ]
