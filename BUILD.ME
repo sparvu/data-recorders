@@ -1,6 +1,6 @@
 
-SDR RECORDING MODULE SOURCE CODE
-================================
+RECORDING MODULE SOURCE CODE
+============================
 
 
 Pre-Requirements
@@ -10,11 +10,11 @@ Pre-Requirements
 
 2. builder & others
 
-Make sure you have installed and have a proper SDR sfw 
+Make sure you have installed and have a proper Kronometrix
 catalog in place. Usually the utilities are found under
 /opt/builder and all source code is available under:
 
-http://www.systemdatarecorder.org/download/index.html
+http://www.kronometrix.org/download/index.html
 
   # mkdir -p /opt/build/bin
   # mkdir /opt/build/etc
@@ -22,9 +22,10 @@ http://www.systemdatarecorder.org/download/index.html
   # mkdir /opt/build/log
   # mkdir /opt/build/cpan
 
-As well create the target directory for SDR sfw, default to /opt/sdr
+As well create the target directory for Kronometrix sfw, default to 
+/opt/kronometrix
 
-  # mkdir /opt/sdr
+  # mkdir /opt/kronometrix
 
 Example:
 
@@ -52,38 +53,23 @@ Example:
  /opt/build/sfw/
    upstream
    pdq
-   dbdpg
    fcgiwrap
    gettext
-   fontconfig
-   cairo
-   gd
-   rrd
    libxml2
-   libssh2
    openssl
    sysstat
    readline
    pkg-config
-   pixman
-   freetype
    nginx -> ws
    pkgconfig -> pkg-config
    perl
    curl
    iconv
-   rggplot2
-   rcairo
    ws
    fcgi
-   Net-SSH2
    WWW-Curl
    idn
-   pango
-   glib
-   libpng
    pcre
-   R
    XML-LibXML
 
 
@@ -92,31 +78,31 @@ Follow the next steps:
 
 
 
-Step 1: sdr user account
+Step 1: krmx user account
 If you want to have a dedicated user to build SDR create under
-your new system sdr group and user account. 
+your new system krmx group and user account. 
  
-   # groupadd sdr
-   # useradd -d /home/sdr -g sdr -m sdr
+   # groupadd krmx
+   # useradd -d /home/krmx -g krmx -m krmx
 
 
 Step 2: builder & others ownership
 Change the owner of builder and all other sfw utilities
-to sdr:sdr. As well if you have a target directory sdr
-change this to sdr as well:
+to krmx:krmx. As well if you have a target directory krmx
+change this to krmx as well:
 
-   # chown -R sdr:sdr /opt/builder
-   # chown -R sdr:sdr /opt/sdr
+   # chown -R krmx:krmx /opt/builder
+   # chown -R krmx:krmx /opt/kronometrix
 
 
 Step 3: the workspace
-Change user to sdr and create your workspace. Under this
+Change user to krmx and create your workspace. Under this
 place you will maintain config specs what builder will
 use to build and install the software. For example create
 here the config spec for 0.73.4 release:
 
-   $ mkdir -p workspace/SDR/build/rec
-   $ cd workspace/SDR/build/rec
+   $ mkdir -p workspace/kronometrix/build/rec
+   $ cd workspace/kronometrix/build/rec
    $ mkdir 0.73.4 
 
 
@@ -124,13 +110,13 @@ Step 4: the source code
 Unpack the source code under the config spec directory, 
 eg. 0.73.4 and start building !
 
-   $ cd workspace/SDR/build/rec/0.73.4
-   $ wget http://www.systemdatarecorder.org/pkgs/src/sdrrec-src.tar.gz
-   $ gzip -dc sdrrec-src.tar.gz | tar xvf -
+   $ cd workspace/kronometrix/build/rec/0.73.4
+   $ wget http://www.kronometrix.org/pkgs/src/kdr-src.tar.gz
+   $ gzip -dc kdr-src.tar.gz | tar xvf -
 
    $ /opt/build/bin/builder rec 0.73.4
 
 
 
 For errors or logs check /opt/build/log !
-For the final software check /opt/sdr, as this is the default target !
+For the final software check /opt/kronometrix, as this is the default target !
