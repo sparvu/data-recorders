@@ -209,35 +209,41 @@ sub Startup {
             my $devid;
             my $lmoid;
 
-            my $sysrec_on  = 0;
-            my $cpurec_on  = 0;
-            my $diskrec_on = 0;
-            my $nicrec_on  = 0;
-            my $hdwrec_on  = 0;
-            my $procrec_on = 0;
-            my $netrec_on  = 0;
-            my $zonerec_on = 0;
-            my $jvmrec_on  = 0;
-            my $xenrec_on  = 0;
-            my $wsrec_on   = 0;
-            my $webrec_on  = 0;
-	    my $iaq_g01rec_on = 0;
-	    my $iaq_gmw90rec_on = 0;
+            my $sysrec_on         = 0;
+            my $cpurec_on         = 0;
+            my $diskrec_on        = 0;
+            my $nicrec_on         = 0;
+            my $hdwrec_on         = 0;
+            my $procrec_on        = 0;
+            my $netrec_on         = 0;
+            my $zonerec_on        = 0;
+            my $jvmrec_on         = 0;
+            my $xenrec_on         = 0;
+            my $wsrec_on          = 0;
+            my $webrec_on         = 0;
+            my $direc_on          = 0;
+            my $ntprec_on         = 0;
+            my $iaq_g01rec_on     = 0;
+            my $iaq_gmw90rec_on   = 0;
+            my $iaq_msd1618rec_on = 0;
 
-            if ( $_->{"input"} =~ /sysrec/  ) { $sysrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /cpurec/  ) { $cpurec_on  = 1; }
-         elsif ( $_->{"input"} =~ /diskrec/ ) { $diskrec_on = 1; }
-         elsif ( $_->{"input"} =~ /nicrec/  ) { $nicrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /netrec/  ) { $netrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /jvmrec/  ) { $jvmrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /procrec/ ) { $procrec_on = 1; } 
-         elsif ( $_->{"input"} =~ /zonerec/ ) { $zonerec_on = 1; }
-         elsif ( $_->{"input"} =~ /hdwrec/  ) { $hdwrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /xenrec/  ) { $xenrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /wsrec/   ) { $wsrec_on   = 1; }
-         elsif ( $_->{"input"} =~ /webrec/ )  { $webrec_on  = 1; }
-         elsif ( $_->{"input"} =~ /iaq_g01rec/ )  { $iaq_g01rec_on  = 1; }
-         elsif ( $_->{"input"} =~ /iaq_gmw90rec/ )  { $iaq_gmw90rec_on  = 1; }
+           if ( $_->{"input"} =~ /sysrec/  ) { $sysrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /cpurec/  ) { $cpurec_on  = 1; }
+        elsif ( $_->{"input"} =~ /diskrec/ ) { $diskrec_on = 1; }
+        elsif ( $_->{"input"} =~ /nicrec/  ) { $nicrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /netrec/  ) { $netrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /jvmrec/  ) { $jvmrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /procrec/ ) { $procrec_on = 1; } 
+        elsif ( $_->{"input"} =~ /zonerec/ ) { $zonerec_on = 1; }
+        elsif ( $_->{"input"} =~ /hdwrec/  ) { $hdwrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /xenrec/  ) { $xenrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /wsrec/   ) { $wsrec_on   = 1; }
+        elsif ( $_->{"input"} =~ /webrec/  ) { $webrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /direc/   ) { $direc_on   = 1; }
+        elsif ( $_->{"input"} =~ /ntrpec/  ) { $ntprec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_g01rec/     ) { $iaq_g01rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_gmw90rec/   ) { $iaq_gmw90rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_msd1618rec/ ) { $iaq_msd1618rec_on  = 1; }
 
             # each platform 
             for my $key ( keys %platform ) {
@@ -265,6 +271,7 @@ sub Startup {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-sysrec";     }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-sysrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-sysrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-sysrec"; }
 
                 } elsif ($cpurec_on) {
@@ -275,6 +282,7 @@ sub Startup {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-cpurec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-cpurec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-cpurec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-cpurec"; }
 
                 } elsif ($diskrec_on) {
@@ -285,7 +293,19 @@ sub Startup {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-diskrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-diskrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-diskrec";}
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-diskrec"; }
+
+                } elsif ($direc_on) {
+                    
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'cpd')  { $f=1; $msgid = "$osname-direc"; }
+                 elsif ($lid eq 'wpd')  { $f=1; $msgid = "wpd-$osname-direc"; }
+                 elsif ($lid eq 'whpd') { $f=1; $msgid = "whpd-$osname-direc"; }
+                 elsif ($lid eq 'dpd')  { $f=1; $msgid = "dpd-$osname-direc"; }
 
                 } elsif ($nicrec_on) {
 
@@ -295,6 +315,7 @@ sub Startup {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-nicrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-nicrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-nicrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-nicrec"; }
 
                 } elsif ($netrec_on) {
@@ -305,7 +326,17 @@ sub Startup {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-netrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-netrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-netrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-netrec"; }
+
+                } elsif ($ntprec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'whpd') { $f=1; $msgid = "whpd-$osname-ntprec";}
+                 elsif ($lid eq 'dpd' ) { $f=1; $msgid = "dpd-$osname-ntprec"; }
 
                 } elsif ($jvmrec_on) {
 
@@ -315,23 +346,32 @@ sub Startup {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-jvmrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-jvmrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-jvmrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-jvmrec"; }
 
                 } elsif ($iaq_g01rec_on) {
 
-		    # device id
-		    $devid = get_devid(1, $delta);
+                    # device id
+                    $devid = get_devid(1, $delta);
 
-		    # message id
-		    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq-g01"; }
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_g01"; }
 
-                } elsif ($iaq_g01rec_on) {
+                } elsif ($iaq_gmw90rec_on) {
 
-		    # device id
-		    $devid = get_devid(1, $delta);
+                    # device id
+                    $devid = get_devid(1, $delta);
 
-		    # message id
-		    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq-gmw90"; }
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_gmw90"; }
+
+                } elsif ($iaq_msd1618rec_on) {
+                 
+                    # device id
+                    $devid = get_devid(1, $delta);
+                
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_msd1618"; }
 
                 } elsif ($procrec_on) {
 
@@ -341,6 +381,7 @@ sub Startup {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-procrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-procrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-procrec";}
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-procrec"; }
 
                 } elsif ($zonerec_on) {
@@ -350,7 +391,6 @@ sub Startup {
 
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-zonerec"; }
-                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-zonerec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-zonerec"; }
 
                 } elsif ($hdwrec_on) {
@@ -361,6 +401,7 @@ sub Startup {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-hdwrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-hdwrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-hdwrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-hdwrec"; }
 
                 } elsif ($xenrec_on) {
@@ -370,7 +411,6 @@ sub Startup {
 
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-xenrec"; }
-                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-xenrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-xenrec"; }
 
                 } elsif ($wsrec_on) {
@@ -388,6 +428,7 @@ sub Startup {
 
                     # message id
                     if ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-ttfb"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-ttfb"; }
 
                 }
 
@@ -820,7 +861,7 @@ sub send_data {
 
     my ($hash, $post);
 
-    if ( $msg_id =~ /cpurec|diskrec|nicrec|iaq_g01|iaq_gmw90|ttfb/ ) {
+    if ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|iaq_g01|iaq_gmw90|iaq_msd1618|ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
     } else {
