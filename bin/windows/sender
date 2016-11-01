@@ -571,7 +571,7 @@ sub get_hostid {
 sub make_dsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd', 'whpd');
 
     # sid - subscription id
     # dsid - data source id
@@ -738,7 +738,7 @@ sub get_platform {
     my ($data) = @_;
     my %appl;
 
-    my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd', 'iaqd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd', 'whpd');
 
     my @temp = @{ $data->{'transport'}->{'platform'} };
 
