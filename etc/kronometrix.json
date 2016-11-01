@@ -52,7 +52,7 @@
       "file"   : "jvmrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
     },
     {
       "name"   : "proc",
@@ -122,7 +122,7 @@
       "file"   : "direc.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "whpd", "dpd" ]
+      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
     },
     {
       "name"   : "ntp",

@@ -78,7 +78,7 @@ local $| = 1;
 ### MAIN BODY #
 
 # Default krd
-my @recs = qw(sys cpu disk nic hdw web);
+my @recs = qw(sys cpu disk nic hdw);
 
 # daemon name
 my $dname = basename($0);
@@ -273,9 +273,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-diskrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-diskrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-diskrec"; }
-
-
-
 
                 } elsif ($nicrec_on) {
 
@@ -592,7 +589,7 @@ sub get_hostid {
 sub make_dsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd', 'whpd');
 
     # sid - subscription id
     # dsid - data source id
@@ -699,7 +696,7 @@ sub get_platform {
     my ($data) = @_;
     my %appl;
 
-    my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd', 'iaqd');
+    my @lmo = ('cpd', 'amd', 'wcd', 'wpd', 'dpd', 'iaqd', 'whpd');
 
     my @temp = @{ $data->{'transport'}->{'platform'} };
 
@@ -863,7 +860,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.2, 2016-10-09 1152
+sender: 1.1.2, 2016-11-01 1120
 END
     exit 0;
 }
