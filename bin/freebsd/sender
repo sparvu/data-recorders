@@ -270,9 +270,10 @@ while (1) {
                     $devid = get_devid(1, $delta);
 
                     # message id
-                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-diskrec"; }
-                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-diskrec"; }
-                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-diskrec"; }
+                    if ($lid eq 'cpd')  { $f=1; $msgid = "$osname-direc"; }
+                 elsif ($lid eq 'wpd')  { $f=1; $msgid = "wpd-$osname-direc"; }
+                 elsif ($lid eq 'whpd') { $f=1; $msgid = "whpd-$osname-direc"; }
+                 elsif ($lid eq 'dpd')  { $f=1; $msgid = "dpd-$osname-direc"; }
 
                 } elsif ($nicrec_on) {
 
@@ -293,6 +294,15 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-netrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-netrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-netrec"; }
+
+                } elsif ($ntprec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'whpd') { $f=1; $msgid = "whpd-$osname-ntprec";}
+                 elsif ($lid eq 'dpd' ) { $f=1; $msgid = "dpd-$osname-ntprec"; }
 
                 } elsif ($jvmrec_on) {
 
