@@ -73,7 +73,7 @@ my $cf          = 'kronometrix.json';     # default json config
 my $logtime     = '0000';                 # min time check 23:59
 my $stime;                                # sleep timer
 my $last_time   = 0;                      # first counter
-$|= 1;                                    # autoflush
+local $|= 1;                              # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
@@ -98,7 +98,8 @@ my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
 
 # log, rawlog files
-my ($log, $rawlog);
+my $log;
+my $rawlog;
 
 if ($logging) {
     $rawlog = open_file($fkrd);
@@ -652,7 +653,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.1.2, 2016-10-20 1225
+cpurec: 1.1.2, 2016-11-02 1209
 END
     return;
 }
