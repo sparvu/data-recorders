@@ -83,29 +83,64 @@
       "domain" : [ "wpd", "whpd" ]
     },
     {
-      "name"   : "apache",
-      "file"   : "apacherec.krd",
+      "name"   : "a2",
+      "file"   : "a2rec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "wpd", "whpd" ]
     },
     {
-      "name"   : "nginx",
-      "file"   : "nginxrec.krd",
+      "name"   : "a2inv",
+      "file"   : "a2invrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "wpd", "whpd" ]
     },
     {
-      "name"   : "pgsql",
-      "file"   : "pgsqlrec.krd",
+      "name"   : "a2bus",
+      "file"   : "a2busrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "wpd", "whpd" ]
     },
     {
-      "name"   : "mariadb",
-      "file"   : "mariadbrec.krd",
+      "name"   : "ngx",
+      "file"   : "ngxrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "wpd", "whpd" ]
+    },
+    {
+      "name"   : "ngxinv",
+      "file"   : "ngxinvrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "wpd", "whpd" ]
+    },
+    {
+      "name"   : "pg",
+      "file"   : "pgrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "wpd", "whpd" ]
+    },
+    {
+      "name"   : "pginv",
+      "file"   : "pginvrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "wpd", "whpd" ]
+    },
+    {
+      "name"   : "mdb",
+      "file"   : "mdbrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "wpd", "whpd" ]
+    },
+    {
+      "name"   : "mdbinv",
+      "file"   : "mdbinvrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "wpd", "whpd" ]
@@ -113,6 +148,13 @@
     {
       "name"   : "mysql",
       "file"   : "mysqlrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "wpd", "whpd" ]
+    },
+    {
+      "name"   : "mysqlinv",
+      "file"   : "mysqlinvrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "wpd", "whpd" ]
