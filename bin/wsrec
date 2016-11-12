@@ -22,7 +22,7 @@ use strict;
 use warnings;
 use JSON;
 use Device::USB;
-use Data::Dumper;
+#use Data::Dumper;
 use Carp::Assert;
 use Getopt::Std;
 use POSIX qw(sysconf pause strftime);
@@ -125,130 +125,128 @@ if ($dev ==  0) {
 # Loop forever polling the Weather Station
 
 while (1) {
-        if (! $dev) { $dev = open_ws($usb); sleep 5; next; }
+    if (! $dev) { $dev = open_ws($usb); sleep 5; next; }
 
-	# Get the first 32 bytes of the fixed block
-	my $fixed_block = read_block($dev, 0);
-        if ($debug) {
-                print_bytes($fixed_block, 32);
+    # Get the first 32 bytes of the fixed block
+    my $fixed_block = read_block($dev, 0);
+    if ($debug) {
+        print_bytes($fixed_block, 32);
+    }
+
+    if (unpack('C', $fixed_block) != 0x55) {
+        if ($logging) {
+            printf $log "Error: Got a dud fixed block - reconnecting\n";
+        } else {
+            printf STDERR "Error: Got a dud fixed block - reconnecting\n";
         }
+        $dev->release_interface(0);
+	undef $dev;
+        sleep 5;
+        $dev = open_ws($usb);
+        next;
+    }
 
-        if (unpack('C', $fixed_block) != 0x55) {
-            if ($logging) {
-                printf $log "Error: Got a dud fixed block - reconnecting\n";
-            } else {
-                printf STDERR "Error: Got a dud fixed block - reconnecting\n";
-            }
-            $dev->release_interface(0);
-	    undef $dev;
-            sleep 5;
-            $dev = open_ws($usb);
-            next;
+    # Get the current weather record
+
+    my $curpos = unpack('x30S',$fixed_block);
+    my $current_block = read_block($dev, $curpos);
+    if ($debug) {
+        print_bytes($current_block, 32);
+        if ($logging) {
+            printf $log "Current position is %x\n", $curpos;
+        } else {
+            printf "Current position is %x\n", $curpos;
         }
+    }
 
-        # Get the current weather record
-
-        my $curpos = unpack('x30S',$fixed_block);
-        my $current_block = read_block($dev, $curpos);
-        if ($debug) {
-            print_bytes($current_block, 32);
-            if ($logging) {
-                printf $log "Current position is %x\n", $curpos;
-            } else {
-                printf "Current position is %x\n", $curpos;
-            }
+    if ($line >= $PAGESIZE) {
+        # print human readable
+        if ($csv == 0) {
+            printf "%8s %3s %3s %5s %5s %5s %5s %5s %5s %3s %4s %5s %3s %6s\n",
+                   "Time", "iRh", "oRh", "iTa", "oTa", "oTd", "Twc", "W", "G", "WD",
+                   "1Hr", "24Hr", "T", "Pa";
         }
+        $line = 0;
+    }
+	
+    # Decode current stats
+	
+    my $indoor_humidity = unpack('xC', $current_block);
+    my $tlsb = unpack('xxC', $current_block);
+    my $tmsb = unpack('xxxC', $current_block) & 0x7f;
+    my $tsign = unpack('xxxC', $current_block) >> 7;
+    my $indoor_temperature = ($tmsb * 256 + $tlsb) * 0.1;
+    if ($tsign) {
+        $indoor_temperature *= -1;
+    }
+	
+    my $outdoor_humidity = unpack('x4C', $current_block);
+    $tlsb = unpack('x5C', $current_block);
+    $tmsb = unpack('x6C', $current_block) & 0x7f;
+    $tsign = unpack('x6C', $current_block) >> 7;
+    my $outdoor_temperature = ($tmsb * 256 + $tlsb) * 0.1;
+    if ($tsign) {
+        $outdoor_temperature *= -1;
+    }
 
-        if ($line >= $PAGESIZE) {
-            # print human readable
-            if ($csv == 0) {
-             printf "%8s %3s %3s %5s %5s %5s %5s %5s %5s %3s %4s %5s %3s %6s\n",
-               "Time", "iRh", "oRh", "iTa", "oTa", "oTd", "Twc", "W", "G", "WD",
-               "1Hr", "24Hr", "T", "Pa";
-            }
-            $line = 0;
+    my $abs_pressure= unpack('x7S', $current_block) * 0.1;
+    my $wind = unpack('x9C', $current_block);
+    my $gust = unpack('x10C', $current_block);
+    my $wind_extra = unpack('x11C', $current_block);
+    my $wind_dir = unpack('x12C', $current_block);
+    # print "wind_dir $wind_dir\n";
+    my $total_rain = unpack('x13S', $current_block) * 0.3;
+    my $wind_speed = ($wind + (($wind_extra & 0x0F) <<8)) * 0.38;# Was 0.1
+    my $gust_speed = ($gust + (($wind_extra & 0xF0) <<4)) * 0.38;# Was 0.1
+    my $outdoor_dew_point = 
+    dew_point($outdoor_temperature, $outdoor_humidity);
+    my $wind_chill_temp = wind_chill($outdoor_temperature, $wind_speed);
+
+    # Calculate rainfall rates
+	
+    if ($previous_rain == 0) {
+        $previous_rain = $total_rain;
+    }
+
+    my $rain_diff = $total_rain - $previous_rain;
+
+    if ($rain_diff > $max_rain_jump) {	# Filter rainfall spikes
+        $rain_diff = 0;
+	$total_rain = $previous_rain;
+    }
+
+    $previous_rain = $total_rain;
+    shift @hourly_rain;
+    shift @daily_rain;
+    push @hourly_rain, $rain_diff;
+    push @daily_rain, $rain_diff;
+    my $hourly_rain_rate = 0;
+    my $daily_rain_rate = 0;
+    ($hourly_rain_rate += $_) for @hourly_rain;
+    ($daily_rain_rate += $_) for @daily_rain;
+	
+    if ($csv == 1) {
+        if ($logging) {
+            my $rawkrd = open_file($rawfile);
+            printf $rawkrd "%d:%d:%d:%.1f:%.1f:%.1f:%.1f:%.1f:%.1f:%s:%.1f:%.1f:%.1f:%.1f\n",
+                   time, $indoor_humidity, $outdoor_humidity, 
+                   $indoor_temperature, $outdoor_temperature, 
+                   $outdoor_dew_point, $wind_chill_temp, $wind_speed, $gust_speed,
+                   $wind_dirs[$wind_dir], 
+                   $hourly_rain_rate, $daily_rain_rate, $total_rain,
+                   $abs_pressure;
+            close ($rawkrd);
+        } else {
+	    printf "%d:%d:%d:%.1f:%.1f:%.1f:%.1f:%.1f:%.1f:%s:%.1f:%.1f:%.1f:%.1f\n",
+	           time, $indoor_humidity, $outdoor_humidity, 
+                   $indoor_temperature, $outdoor_temperature, 
+	           $outdoor_dew_point, $wind_chill_temp, $wind_speed, $gust_speed, 
+                   $wind_dirs[$wind_dir], $hourly_rain_rate, $daily_rain_rate, $total_rain,
+                   $abs_pressure;
         }
-	
-	# Decode current stats
-	
-	my $indoor_humidity = unpack('xC', $current_block);
-	my $tlsb = unpack('xxC', $current_block);
- 	my $tmsb = unpack('xxxC', $current_block) & 0x7f;
-	my $tsign = unpack('xxxC', $current_block) >> 7;
-	my $indoor_temperature = ($tmsb * 256 + $tlsb) * 0.1;
-	if ($tsign) {
-		$indoor_temperature *= -1;
-	}
-	
-	my $outdoor_humidity = unpack('x4C', $current_block);
-        $tlsb = unpack('x5C', $current_block);
-        $tmsb = unpack('x6C', $current_block) & 0x7f;
-        $tsign = unpack('x6C', $current_block) >> 7;
-        my $outdoor_temperature = ($tmsb * 256 + $tlsb) * 0.1;
-        if ($tsign) {
-                $outdoor_temperature *= -1;
-        }
-
-	my $abs_pressure= unpack('x7S', $current_block) * 0.1;
-	my $wind = unpack('x9C', $current_block);
-	my $gust = unpack('x10C', $current_block);
-	my $wind_extra = unpack('x11C', $current_block);
-	my $wind_dir = unpack('x12C', $current_block);
-        # print "wind_dir $wind_dir\n";
-	my $total_rain = unpack('x13S', $current_block) * 0.3;
-	my $wind_speed = ($wind + (($wind_extra & 0x0F) <<8)) * 0.38;# Was 0.1
-	my $gust_speed = ($gust + (($wind_extra & 0xF0) <<4)) * 0.38;# Was 0.1
-	my $outdoor_dew_point = 
-            dew_point($outdoor_temperature, $outdoor_humidity);
-	my $wind_chill_temp = wind_chill($outdoor_temperature, $wind_speed);
-
-	# Calculate rainfall rates
-	
-	if ($previous_rain == 0) {
-		$previous_rain = $total_rain;
-	}
-	my $rain_diff = $total_rain - $previous_rain;
-
-	if ($rain_diff > $max_rain_jump) {	# Filter rainfall spikes
-		$rain_diff = 0;
-		$total_rain = $previous_rain;
-	}
-
-	$previous_rain = $total_rain;
-	shift @hourly_rain;
-	shift @daily_rain;
-	push @hourly_rain, $rain_diff;
-	push @daily_rain, $rain_diff;
-	my $hourly_rain_rate = 0;
-	my $daily_rain_rate = 0;
-	($hourly_rain_rate += $_) for @hourly_rain;
-	($daily_rain_rate += $_) for @daily_rain;
-	
-	if ($csv == 1) {
-            if ($logging) {
-                my $rawkrd = open_file($rawfile);
-                printf $rawkrd "%d:%d:%d:%.1f:%.1f:%.1f:%.1f:%.1f:%.1f:%s:%.1f:%.1f:%.1f:%.1f\n",
-                time,
-                $indoor_humidity, $outdoor_humidity, 
-                $indoor_temperature, $outdoor_temperature, 
-                $outdoor_dew_point, $wind_chill_temp, $wind_speed, $gust_speed,
-                $wind_dirs[$wind_dir], 
-                $hourly_rain_rate, $daily_rain_rate, $total_rain,
-                $abs_pressure;
-                close ($rawkrd);
-            } else {
-	        printf "%d:%d:%d:%.1f:%.1f:%.1f:%.1f:%.1f:%.1f:%s:%.1f:%.1f:%.1f:%.1f\n",
-	        time,
-                $indoor_humidity, $outdoor_humidity, 
-                $indoor_temperature, $outdoor_temperature, 
-	        $outdoor_dew_point, $wind_chill_temp, $wind_speed, $gust_speed, 
-                $wind_dirs[$wind_dir], 
-                $hourly_rain_rate, $daily_rain_rate, $total_rain,
-                $abs_pressure;
-            }
-	} else {
-            my @Time = localtime();
-            printf 
+    } else {
+        my @Time = localtime();
+        printf 
                "%02d:%02d:%02d %3d %3d %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f %3s %4.1f %4.1f %4.1f %5.1f\n", 
                $Time[2], $Time[1], $Time[0],
                $indoor_humidity,
@@ -265,42 +263,42 @@ while (1) {
 	       $total_rain,
 	       $abs_pressure;
 
-               # add a newline for clarity in debug mode
-               print "\n" if ($debug);
+        # add a newline for clarity in debug mode
+        print "\n" if ($debug);
 
-               $line++;
-	}
+        $line++;
+    }
         
-	# Write template file for Weather Underground upload
+    # Write template file for Weather Underground upload
 
-	if (length ($wu_upload_file) > 0) {
-		open (FH, ">$wu_upload_file")
-			or die ("Unable to open $wu_upload_file : $!");
-		my $now_date = strftime "%m/%d/%y", localtime;
-		my $now_time = strftime "%H:%M", localtime;
-		print (FH "stationDate=$now_date\n");
-		print (FH "stationTime=$now_time\n");
-		print (FH "windDir=$wind_dirs_degs[$wind_dir]\n");
-		print (FH "wind10Avg=$wind_speed\n");
-		print (FH "windSpeed=$gust_speed\n");
-		print (FH "outsideHumidity=$outdoor_humidity\n");
-		print (FH "outsideTemp=$outdoor_temperature\n");
-		print (FH "dailyRain=$daily_rain_rate\n");
-		print (FH "barometer=$abs_pressure\n");
-		print (FH "tempUnit=C\n");
-		print (FH "windUnit=km/h\n");
-		print (FH "barUnit=hPa\n");
-		print (FH "rainUnit=mm\n");
-		close (FH);
-	}
+    if (length ($wu_upload_file) > 0) {
+        open (FH, ">$wu_upload_file")
+	or die ("Unable to open $wu_upload_file : $!");
+        my $now_date = strftime "%m/%d/%y", localtime;
+        my $now_time = strftime "%H:%M", localtime;
+        print (FH "stationDate=$now_date\n");
+        print (FH "stationTime=$now_time\n");
+        print (FH "windDir=$wind_dirs_degs[$wind_dir]\n");
+        print (FH "wind10Avg=$wind_speed\n");
+        print (FH "windSpeed=$gust_speed\n");
+        print (FH "outsideHumidity=$outdoor_humidity\n");
+        print (FH "outsideTemp=$outdoor_temperature\n");
+        print (FH "dailyRain=$daily_rain_rate\n");
+        print (FH "barometer=$abs_pressure\n");
+        print (FH "tempUnit=C\n");
+        print (FH "windUnit=km/h\n");
+        print (FH "barUnit=hPa\n");
+        print (FH "rainUnit=mm\n");
+        close (FH);
+    }
 		
-        ### Check for end
-        last if ++$loop == $loop_max;
+    ### Check for end
+    last if ++$loop == $loop_max;
 
-        ### Interval
-        pause;
-
+    ### Interval
+    pause;
 }
+
 
 ### Subroutines
 
@@ -417,17 +415,13 @@ sub open_ws {
         $dev->open();
 
         my $xv = $dev->get_driver_np(0, $namebuf, 256);
-        if ($xv) {
-        
-            if ($dev->get_driver_np(0, $namebuf, 256) == 0) {
-                $dev->detach_kernel_driver_np(0);
-            } 
-        }
-
+        $dev->detach_kernel_driver_np(0);
+         
         if ($dev->claim_interface(0) != 0) {
                 printf "usb_claim_interface failed\n";
                 return 0;
         }
+
         $dev->set_altinterface(0);
 
         return $dev;
