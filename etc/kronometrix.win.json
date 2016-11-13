@@ -253,14 +253,14 @@
     },
     {
       "name"   : "ethsw",
-      "name"   : "ethswrec.krd",
+      "file"   : "ethswrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "dpd" ]
     },
     {
       "name"   : "ws",
-      "name"   : "wsrec.krd",
+      "file"   : "wsrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "wcd" ]
