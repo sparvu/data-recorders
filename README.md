@@ -10,7 +10,7 @@
 
 ## Overview
 
-A simple, efficient and complete set of data recorders and transport utilities fo ICT, Environmental Monitoring, Meteorology and IoT industries. 
+A simple and efficient set of data recorders and transport utilities fo ICT, Environmental Monitoring, Meteorology and IoT industries, responsible to record top essential performance metrics, store raw data and transport them for further analysis. 
 
 ## Time Series
 All recorded observations we call them raw data. Raw data is produced by a monitoring agent, part of a data source.  This set of data is not modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format.
@@ -61,10 +61,10 @@ We plan to support and record data from different types of industries. For some 
 
 #### Environmental Monitoring
 
- * rs485rec: IAQ Vaisala GMW90, Tongdy G01, Tongdy MSD - Indoor Air Quality 
+ * rs485rec - RS485 MODBUS RTU recorder. Currently supporting Vaisala GMW90, Tongdy G01, Tongdy MSD Indoor Air Quality 
 
 
 #### General Meteorology
 
- * wsrec: WH1080, WH1081, WH1090, WH20xx
+ * wsrec - Weather data recorder. Curretnly supporting WH1080, WH1081, WH1090, WH20xx
   
