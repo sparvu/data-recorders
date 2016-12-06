@@ -61,7 +61,7 @@ We plan to support and record data from different types of industries. For some 
 
 #### Environmental Monitoring
 
- * rs485rec - RS485 MODBUS RTU recorder. Currently supporting Vaisala GMW90, Tongdy G01, Tongdy MSD Indoor Air Quality 
+ * rs485rec - RS485 MODBUS RTU recorder. Currently supporting Vaisala GMW90, Tongdy G01, Tongdy MSD IAQ  
 
 
 #### General Meteorology
