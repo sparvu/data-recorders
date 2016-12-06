@@ -10,7 +10,7 @@
 
 ## Overview
 
-A simple and efficient set of data recorders and transport utilities fo ICT, Environmental Monitoring, Meteorology and IoT industries, responsible to record top essential performance metrics, store raw data and transport them for further analysis. 
+A simple and efficient set of data recorders and transport utilities fo ICT, Environmental Monitoring, Meteorology and IoT industries, responsible to record top essential performance metrics, save raw data and transport it for further analysis. 
 
 ## Time Series
 All recorded observations we call them raw data. Raw data is produced by a monitoring agent, part of a data source.  This set of data is not modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format.
