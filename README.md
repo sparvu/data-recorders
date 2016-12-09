@@ -6,15 +6,14 @@
 |   <| | | (_) | | | | (_) | | | | | |  __/ |_| |  | |>  < 
 |_|\_\_|  \___/|_| |_|\___/|_| |_| |_|\___|\__|_|  |_/_/\_\
 
-```                                                           
+```
 
 ## Overview
 
-All recorded observations we call them raw data. Raw data is produced by a monitoring agent, part of a data source.  This set of data is not modified, altered or changed in any way.
+A simple and efficient set of data recorders and transport utilities fo ICT, Environmental Monitoring, Meteorology and IoT industries, responsible to record top essential performance metrics, save raw data and transport it for further analysis. 
 
 ## Time Series
-
-All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format.
+All recorded observations we call them raw data. Raw data is produced by a monitoring agent, part of a data source.  This set of data is not modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format.
 
 Time series let us understand what has happened in past and look in the future, using various statistical models. In addition , having access to these historical time series will help us to build a simple capacity planning model.
 
@@ -40,25 +39,32 @@ It is important to understand that we process data based on a unique data source
 ### Industries
 We plan to support and record data from different types of industries. For some we have already developed data recorderds, like IT, Meteorology and we need help to enhance it. For some, we plan using data loggers to enahnce and speed-up the recording process. For each case, raw data will be presented as messages, based on [LMO](https://github.com/kronometrix/lmo). 
 
- * Business Analytics (BA)
- * Climatology
  * Environmental Monitoring
- * Finance
- * Healthcare
- * Information Technology (IT)
+ * Information and Communications Technology (ICT)
  * Meteorology
+ * Internet of Things 
 
 
-#### Information Technology
+#### Information and Communications Technology
 
- * sysrec overall system CPU, MEM, DISK, NIC utilization
- * cpurec per-CPU statistics
- * nicrec per-NIC statistics
- * diskrec per-DISK statistics
- * hdwrec hardware, software inventory 
+ * sysrec - overall system CPU, MEM, DISK, NIC utilization, throughput and errors
+ * cpurec - per-CPU statistics
+ * nicrec - per NIC statistics
+ * diskrec - per DISK statistics
+ * hdwrec - the hardware, software data inventory
+ * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
+ * direc - per directory statistics 
+ * ntprec - NTP server statistics
+ * procrec - per process statistics
+ * webrec - Web response time analyzer
+
+
+#### Environmental Monitoring
+
+ * rs485rec - RS485 MODBUS RTU recorder. Currently supporting Vaisala GMW90, Tongdy G01, Tongdy MSD IAQ  
 
 
 #### General Meteorology
 
- * wsrec: WH1080, WH1081, WH1090, WH20xx
+ * wsrec - Weather data recorder. Curretnly supporting WH1080, WH1081, WH1090, WH20xx
   
