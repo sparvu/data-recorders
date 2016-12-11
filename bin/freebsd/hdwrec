@@ -26,7 +26,7 @@ use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Sys::Hostname;
 use BSD::Sysctl qw(sysctl);
-use IO::Interface::Simple;
+use Sys::HostIP;
 
 # Debug Only
 #use Data::Dumper;
@@ -214,17 +214,25 @@ while (1) {
     # get kdr release version
     my $kdrrel = get_version();
 
-    my @interfaces = IO::Interface::Simple->interfaces;
+    my $hostip     = Sys::HostIP->new;
+    my $interfaces = $hostip->interfaces;
+
+    #foreach my $interface ( keys %{$interfaces} ) {
+    #    next if $interface =~ /lo/;
+    #    my $ip = $interfaces->{$interface};
+    #    print "$interface $ip\n";
+    #}
 
     my $ifs;
 
     my $k=0;
-    for my $if (@interfaces) {
-        next if $if->is_loopback;
+    for my $if (keys %{$interfaces}) {
+        next if $if =~ /lo/;
+        my $ip = $interfaces->{$if};
         if ( $k > 0 ) {
-            $ifs = $ifs . ' ' . $if . '_' . $if->address;
+            $ifs = $ifs . ' ' . $if . '_' . $ip;
         } else {
-            $ifs = $if . '_' . $if->address;
+            $ifs = $if . '_' . $ip;
         }
         $k++;
     }
