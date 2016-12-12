@@ -1,5 +1,4 @@
 #!/opt/kronometrix/perl/bin/perl
-#
 #  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
@@ -69,7 +68,7 @@ my @files;
 
 ## configuration
 my $hostid;
-my ( $baselog, $curlog, $slog );
+my ($baselog, $curlog, $slog);
 my @dbs;
 my %platform;
 
@@ -86,7 +85,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "Kronometrix/1.4 (kdr 1.1.2 sender $osname)";
+my $agent = "Kronometrix/1.4.2 (kdr 1.1.3 sender $osname)";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -184,6 +183,7 @@ while (1) {
             my $msgid;
             my $devid;
             my $lmoid;
+            my $dsname;
 
             my $sysrec_on         = 0;
             my $cpurec_on         = 0;
@@ -197,26 +197,28 @@ while (1) {
             my $xenrec_on         = 0;
             my $wsrec_on          = 0;
             my $webrec_on         = 0;
+            my $webinvrec_on      = 0;
             my $direc_on          = 0;
             my $ntprec_on         = 0;
             my $iaq_g01rec_on     = 0;
             my $iaq_gmw90rec_on   = 0;
             my $iaq_msd1618rec_on = 0;
 
-           if ( $_->{"input"} =~ /sysrec/  ) { $sysrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /cpurec/  ) { $cpurec_on  = 1; }
-        elsif ( $_->{"input"} =~ /diskrec/ ) { $diskrec_on = 1; }
-        elsif ( $_->{"input"} =~ /nicrec/  ) { $nicrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /netrec/  ) { $netrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /jvmrec/  ) { $jvmrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /procrec/ ) { $procrec_on = 1; } 
-        elsif ( $_->{"input"} =~ /zonerec/ ) { $zonerec_on = 1; }
-        elsif ( $_->{"input"} =~ /hdwrec/  ) { $hdwrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /xenrec/  ) { $xenrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /wsrec/   ) { $wsrec_on   = 1; }
-        elsif ( $_->{"input"} =~ /webrec/  ) { $webrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /direc/   ) { $direc_on   = 1; }
-        elsif ( $_->{"input"} =~ /ntrpec/  ) { $ntprec_on  = 1; }
+           if ( $_->{"input"} =~ /sysrec/         ) { $sysrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /cpurec/         ) { $cpurec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /diskrec/        ) { $diskrec_on = 1;    }
+        elsif ( $_->{"input"} =~ /nicrec/         ) { $nicrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /netrec/         ) { $netrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /jvmrec/         ) { $jvmrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /procrec/        ) { $procrec_on = 1;    } 
+        elsif ( $_->{"input"} =~ /zonerec/        ) { $zonerec_on = 1;    }
+        elsif ( $_->{"input"} =~ /hdwrec/         ) { $hdwrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /xenrec/         ) { $xenrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /wsrec/          ) { $wsrec_on   = 1;    }
+        elsif ( $_->{"input"} =~ /webrec/         ) { $webrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /webinvrec/      ) { $webinvrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /direc/          ) { $direc_on   = 1;    }
+        elsif ( $_->{"input"} =~ /ntrpec/         ) { $ntprec_on  = 1;    }
         elsif ( $_->{"input"} =~ /iaq_g01rec/     ) { $iaq_g01rec_on  = 1; }
         elsif ( $_->{"input"} =~ /iaq_gmw90rec/   ) { $iaq_gmw90rec_on  = 1; }
         elsif ( $_->{"input"} =~ /iaq_msd1618rec/ ) { $iaq_msd1618rec_on  = 1; }
@@ -399,13 +401,51 @@ while (1) {
 
                 } elsif ($webrec_on) {
 
+                    # message id
+                    if ($lid eq 'wpd') {
+                        $f=1; 
+                        $devid = get_devid(1, $delta);
+                        $msgid = "wpd-$osname-ttfb";
+
+                    } elsif ($lid eq 'whpd'){
+
+                        $f=1;
+ 
+                        my $devtemp = get_devid(1, $delta);
+
+                        if ( $devtemp =~ /_/ ) {
+
+                            my $dsname;
+                            ($dsname, $devid ) = split ( /_/, $devtemp );
+                            $dsid = make_wdsid($dsname, $hostid);
+
+                        } else {
+
+                            $dsname = $devtemp;
+                            $dsid = make_wdsid($dsname, $hostid);
+                            $devid = "system";
+                        }
+
+                        $msgid = "whpd-ttfb"; 
+                    }
+
+                } elsif ($webinvrec_on) {
+
                     # device id
-                    $devid = get_devid(1, $delta);
+                    # $devid = get_devid(1, $delta);
 
                     # message id
-                    if ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-ttfb"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-ttfb"; }
+                    if ($lid eq 'whpd') {
 
+                        $f=1;
+                        my $devtemp = get_devid(1, $delta);
+
+                        $dsname = $devtemp;
+                        $dsid = make_wdsid($dsname, $hostid);
+                        $devid = "system";
+
+                        $msgid = "whpd-inv";
+                    }
                 }
 
                 if($f) {
@@ -573,7 +613,6 @@ sub process_hid {
 }
 
 
-
 # get hostuuid
 sub new_hostid {
 
@@ -592,8 +631,9 @@ sub new_hostid {
         $hid = process_hid ("$etcid");
     }
     else {
-        my $str = rand(time) . $osname;
-        $hid = create_uuid_as_string(UUID_V5,$str);
+        die "No valid machine-id found on this host. Please consult dbus\n"
+        #my $str = rand(time) . $osname;
+        #$hid = create_uuid_as_string(UUID_V5,$str);
     }
 
     chomp($hid);
@@ -602,46 +642,47 @@ sub new_hostid {
     return $hid;
 }
 
+
 # get hostid
 sub get_hostid {
 
     my ($data) = @_;
 
     # get hostuuid
-    my $h = new_hostid;
+    $hostid = new_hostid;
 
     # populate DSID
-    make_dsid($data, $h);
+    make_hdsid($data, $hostid);
 }
 
 
 # make data source ids, dsid
-sub make_dsid {
+sub make_hdsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd', 'whpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd');
 
     # sid - subscription id
     # dsid - data source id
     # get all sids and generate dsid for each
     # dsid must be unique per sid
 
-    my @applx = @{ $data->{'transport'}->{'platform'} };
+    my @kplt = @{ $data->{'transport'}->{'platform'} };
 
     # populate dsid for each platform and lmo
-    foreach my $platform (@applx) {
+    foreach my $plt (@kplt) {
         my ($sid, $tid, $dsid);
 
-        my $host  = $platform->{'host'};
-        my $port  = $platform->{'port'};
+        my $host  = $plt->{'host'};
+        my $port  = $plt->{'port'};
 
         # last call, look for subscription id, sid
 
         foreach my $mo (@lmo) {
 
-            if ($platform->{"$mo"}) {
+            if ($plt->{"$mo"}) {
 
-                my @sub = @{ $platform->{"$mo"} };
+                my @sub = @{ $plt->{"$mo"} };
 
                 foreach my $sd (@sub) {
 
@@ -683,6 +724,20 @@ sub make_dsid {
 }
 
 
+# make website data source ids, dsid
+sub make_wdsid {
+
+    my ($name, $huuid) = @_;
+
+    my $str = $name . $huuid;
+    my $wdsid = create_uuid_as_string(UUID_V5,$str);
+    chomp($wdsid);
+    print "wdsid=$wdsid\n";
+
+    return $wdsid;
+}
+
+
 # get logs
 sub get_log {
     my ($data) = @_;
@@ -720,7 +775,7 @@ sub get_datafile {
 sub get_platform {
 
     my ($data) = @_;
-    my %appl;
+    my %kplt;
 
     my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd', 'whpd');
 
@@ -744,27 +799,28 @@ sub get_platform {
 
                 foreach my $sd (@sub) {
 
+                    
                     # get sid, tid, dsid
                     $sid  = $sd ->{'sid'};
                     $tid  = $sd ->{'tid'};
+                   
                     $dsid = $sd ->{'dsid'};
 
                     if ( defined($host)
                          and defined($sid)
-                         and defined($dsid)
                          and defined($tid)
                          and defined($proto)
                          and defined($port)
                          and defined($ka) ) {
                         my $keyapp = $mo . ":" . $sid . ":" . "$tid" . ":" . $dsid;
-                        $appl{$keyapp} = "$proto:$host:$port:$ka";
+                        $kplt{$keyapp} = "$proto:$host:$port:$ka";
                     }
                 }
             }
         }
     }
 
-    return %appl;
+    return %kplt;
 }
 
 
@@ -799,13 +855,30 @@ sub send_data {
 
     my ($hash, $post);
 
-    if ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|iaq_g01|iaq_gmw90|iaq_msd1618|ttfb/ ) {
+    # WHPD-TTFB                              - WPD DOMAIN
+    if ( $msg_id =~ /whpd-ttfb/ ) {
+
+            #1481544913:www.fi:0.243:0.202:0.163:0.202:0.080:1719:200
+            my ( $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7 ) = split ( /:/, $delta );
+            $n = $dev_id;
+            $delta = join(':', $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7); 
+            $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
+            $post   = "$msg_id:$sid:$dsid:$delta:$hash";
+
+    # TTFB                                   - WPD DOMAIN
+    # IAQ_G01, IAQ_GMW90, IAQ_MSD            - IAQD DOMAIN
+    # CPUREC, DISKREC, NICREC, DIREC, NTPREC - CPD DOMAIN
+    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|iaq_g01|iaq_gmw90|iaq_msd1618|wpd/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
+
+    # SYSREC, HDWREC                         - CPD DOMAIN
+    # WHPD-INV                               - WHPD DOMAIN
     } else {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$dev_id:$delta");
         $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
     }
+
     writelog("info: send_data - $post data to be delivered")
         if ( $verbose == 1 );
 
@@ -865,7 +938,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.2, 2016-11-01 1223
+sender: 1.1.3, 2016-12-12 1615
 END
     exit 0;
 }
