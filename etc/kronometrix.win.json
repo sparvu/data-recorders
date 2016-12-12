@@ -84,6 +84,13 @@
       "domain" : [ "wpd", "whpd" ]
     },
     {
+      "name"   : "webinv",
+      "file"   : "webinvrec.krd",
+      "sample" : 3600,
+      "status" : "inactive",
+      "domain" : [ "wpd", "whpd" ]
+    },
+    {
       "name"   : "a2",
       "file"   : "a2rec.krd",
       "sample" : 60,
