@@ -563,7 +563,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.1.2, 2016-10-09 1205
+sysrec: 1.1.3, 2016-12-12 1735
 END
     exit 0;
 }
