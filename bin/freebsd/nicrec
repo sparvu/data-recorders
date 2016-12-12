@@ -353,7 +353,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-nicrec: 1.1.2, 2016-10-09 1102
+nicrec: 1.1.3, 2016-12-13 0004
 END
     exit 0;
 }
