@@ -92,6 +92,11 @@ $cdata = open_config($cfile);
 tie my %work, "Tie::IxHash";
 %work = get_workload($cdata);
 
+# speedup option, default 1hr
+my $boot    = 60;             # we speedup 60 times 60sec
+my $speedup = 1;              # default on
+my $defint  = $interval;      # we save the original interval
+
 my $rawkrd;
 # logging option
 if ($logging) {
@@ -139,6 +144,14 @@ while (1) {
 
     ### Check for end
     last if ++$loop == $loop_max;
+
+    ### Check for speedup
+    if ( $speedup > 0 ) {
+        if ( $speedup == $boot ) {
+            rstimer($defint);
+            $speedup = -1;
+        } else { $speedup++; }
+    }
 
     ### Interval
     pause;
