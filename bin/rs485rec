@@ -606,7 +606,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.1.2, 2016-10-10 0934
+rs485rec: 1.1.3, 2016-12-12 1740
 END
     exit 0;
 }
