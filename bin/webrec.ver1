@@ -1,0 +1,572 @@
+#!/opt/kronometrix/perl/bin/perl
+#
+#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use File::Temp qw(tempfile);
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use Tie::IxHash;
+use HTTP::Response;
+use WWW::Curl::Easy;
+
+###  Process command line args
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hlvV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# verbose flag
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
+
+# process [interval [count]],
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+###  Variables
+my $loop = 0;                        # current loop number
+$main::opt_h = 0;                    # help option
+$main::opt_V = 0;                    # revision option
+my $cfile = 'webrec.json';           # configuration file
+my $cdata;                           # configuration data
+my $tcpka = 0;                       # transport TCP keepalive settings
+my $tp = 0;                          # time precision
+my $kfile     = 'kronometrix.json';  # configuration file
+my $rawfile;                         # krd raw data file
+my $kdata;                           # configuration data
+my ($baselog, $curlog, $wlog, $log); # logs
+local $| = 1;
+
+
+### MAIN BODY #
+
+# Set a timer for WWW::Curl::Easy object
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $http = WWW::Curl::Easy->new;
+
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+# check interval input
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+# osname
+my $osname = "$^O";
+
+# read configuration
+$cdata = open_config($cfile);
+
+# workloads
+tie my %work, "Tie::IxHash";
+%work = get_workload($cdata);
+
+if (&WWW::Curl::Easy::version() !~ /ssl|nss/i) {
+    die "Error: No SSL support";
+}
+
+$http->setopt(CURLOPT_NOPROGRESS, 1);
+$http->setopt(CURLOPT_FOLLOWLOCATION, 1);
+$http->setopt(CURLOPT_NOSIGNAL, 1);
+$http->setopt(CURLOPT_TIMEOUT, 60);
+
+#my $head = tempfile();
+#$http->setopt(CURLOPT_WRITEHEADER, $head);
+
+#my $body = tempfile();
+#$http->setopt(CURLOPT_FILE, $body);
+
+my @myheaders;
+my $agent = "Kronometrix/1.4 (kdr 1.1.0 webrec $osname)";
+$myheaders[0] = "User-Agent: $agent";
+
+$http->setopt(CURLOPT_HTTPHEADER, \@myheaders);
+$http->setopt(CURLOPT_COOKIEJAR, "cookies.txt"); 
+
+$http->setopt(CURLOPT_FORBID_REUSE, 1);
+$http->setopt(CURLOPT_FRESH_CONNECT, 1);
+$http->setopt(CURLOPT_CAINFO,"ca-bundle.crt");
+
+
+my $rawkrd;
+# logging option
+if ($logging) {
+
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'webrec' . '.krd';
+    $wlog = $baselog . "/webrec.log";
+    $log = open_file($wlog);
+
+    # save STDERR to log file
+    *STDERR = $log;
+
+    write_log ("info: started");
+}
+
+# get it as verbose
+if($verbose) {
+    if ($logging) {
+        write_log ("Total workload requests: " . keys(%work));
+    } else {
+        print "Total workload requests: " . keys(%work) . ".\n";
+    }    
+}
+
+
+# main loop
+while (1) {
+
+    if ($logging) {
+        $rawkrd = open_file($rawfile);
+    }
+
+    my $head = tempfile();
+    $http->setopt(CURLOPT_WRITEHEADER, $head);
+
+    my $body = tempfile();
+    $http->setopt(CURLOPT_FILE, $body);
+
+    for my $key (keys %work) {
+
+        my $value = $work{$key};
+
+        my ($work, $desc, $name, $id, $d) = split( /:/, $key );
+
+        my ($scheme, $hname, $url, $p) = split( /:/, $value );
+
+        process_request ($http, $work, $name, $id, $scheme, $hname, $url, $p);
+        sleep $d;
+    }
+
+    if ($logging) {
+        close ($rawkrd);
+    }
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+}
+
+
+
+### Subroutines
+
+## configuration file
+
+# open JSON configuration file
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+# write config file
+sub write_config {
+
+    my ( $conf, $perl_data ) = @_;
+
+    # JSON Object
+    my $json_data = JSON->new->utf8->pretty->encode($perl_data);
+
+    # we will parse now the file
+    if ( defined $ENV{'KRMX_PREFIX'} ) {
+        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
+
+            # print $fh encode_json($data);
+            print $fh $json_data;
+            close $fh;
+            move(
+                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
+                "$ENV{'KRMX_PREFIX'}/etc/$conf"
+            ) or die "Error: cannot update $conf: $!";
+
+        }
+        else {
+            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+            usage();
+        }
+    }
+    else {
+        if ( -e "/opt/kronometrix/etc/$conf" ) {
+            open my $fh, ">", "/opt/kronometrix/etc/$conf.tmp";
+            print $fh $json_data;
+            close $fh;
+            move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
+              or die "Error: cannot update $conf: $!";
+        }
+        else {
+            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
+            usage();
+        }
+    }
+}
+
+# reload configuration
+sub reload_config {
+
+    write_log("info: main - signal HUP received, reload armed...");
+
+    $cdata = open_config($cfile);
+
+    ## hostid
+    get_hostid($cdata);
+
+    ## appliance destination
+    %work = get_workload($cdata);
+
+    return;
+}
+
+
+# get workloads defintion
+sub get_workload {
+
+    my ($data) = @_;
+    tie my %appl, "Tie::IxHash";
+    #my %appl;
+
+    my @temp = @{ $data->{'workloads'} };
+
+    foreach my $f (@temp) {
+        my ($sid, $tid, $dsid);
+
+        # my $proto = $f->{'protocol'};
+        # my $port  = $f->{'port'};
+        my $ka      = $f->{'keepalive'};
+        my $name    = $f->{'name'};
+        my $desc    = $f->{'description'};
+        my $delay   = $f->{'delay'};
+
+        my @reqs = @{ $f->{'requests'} };
+
+        foreach my $req (@reqs) {
+            my $id  = $req -> {'id'};
+            my $met = $req -> {'method'};
+            my $scm = $req -> {'scheme'};
+            my $hst = $req -> {'host'};
+            my $prt = $req -> {'port'};
+            my $url = $req -> {'path'};
+
+            my $post = '';
+
+            if ( $met eq 'POST' ) {
+                if ($req -> {'post'}) {
+                    $post = $req -> {'post'};
+                }
+            }
+
+            # print "$name:$desc:$id:$met => $scm://$hst:$url\n";
+            my $keyapp = $name . ":" . $desc . ":" . 
+                         $id   . ":" . $met  . ":" . $delay;
+
+            my $hvalue = $scm . ":" . $hst . ":" . $url . ":" . $post;
+
+            $appl{$keyapp} = $hvalue;
+        }
+    }
+
+    return %appl;
+}
+
+
+sub process_request {
+
+    my ($http, $w, $n, $id, $s, $h, $u, $post) = @_;
+
+    # rebuild the entire request url
+    my $url = $s . "://" . $h . $u;
+  
+    #print "scheme: $s\n";
+    #print "hostname: $h\n";
+    #print "url: $u\n";
+    #print "$url \n\n";
+
+    # check for HTTPS
+    if ($s eq "https") {
+        $http->setopt(CURLOPT_SSL_VERIFYPEER,0); # do verify
+        $http->setopt(CURLOPT_SSL_VERIFYHOST,0); # check name
+    }
+
+    if ($id eq "POST") {
+        #print "post value: $post\n";
+        $http->setopt(CURLOPT_POST,       1 );
+        $http->setopt(CURLOPT_POSTFIELDS, $post );
+
+        my $treq = time;
+        $http->setopt(CURLOPT_URL, $url);
+        my $retcode = $http->perform();
+
+        # Get the results
+        my $response = $http->getinfo(CURLINFO_HTTP_CODE);
+        my $load     = $http->getinfo(CURLINFO_TOTAL_TIME);
+        my $connect  = $http->getinfo(CURLINFO_CONNECT_TIME);
+        my $dns      = $http->getinfo(CURLINFO_NAMELOOKUP_TIME);
+        my $proto    = $http->getinfo(CURLINFO_PRETRANSFER_TIME);
+        my $pagesz   = $http->getinfo(CURLINFO_SIZE_DOWNLOAD);
+        my $firstpkt = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dns);
+
+        if ($retcode == 0) { 
+            putraw ( $treq,   $w,        $n, 
+                     $load,   $connect,  $dns,    $proto, 
+                     $pagesz, $firstpkt, $response);
+ 
+        } else { my $te = $http->strerror($retcode); my $er = $http->errbuf; 
+                 write_log ("error: $w $n $url - error code:$retcode, type:$te, message:$er"); }
+
+    } elsif ($id eq "GET") {
+
+        my $treq = time;
+        $http->setopt(CURLOPT_URL, $url);
+        my $retcode = $http->perform();
+
+        ## Get the results
+        my $response = $http->getinfo(CURLINFO_HTTP_CODE);
+        my $load     = $http->getinfo(CURLINFO_TOTAL_TIME);
+        my $connect  = $http->getinfo(CURLINFO_CONNECT_TIME);
+        my $dns      = $http->getinfo(CURLINFO_NAMELOOKUP_TIME);
+        my $proto    = $http->getinfo(CURLINFO_PRETRANSFER_TIME);
+        my $pagesz   = $http->getinfo(CURLINFO_SIZE_DOWNLOAD);
+        my $firstpkt = abs($http->getinfo(CURLINFO_STARTTRANSFER_TIME) - $dns);
+
+        if ($retcode == 0) { 
+            putraw ( $treq,   $w,        $n, 
+                     $load,   $connect,  $dns,    $proto, 
+                     $pagesz, $firstpkt, $response);
+
+        } else { my $te = $http->strerror($retcode); my $er = $http->errbuf; 
+                 write_log ("error: $w $n $url - error code:$retcode, type:$te, message:$er"); }
+
+    } else {
+            write_log ("error: not supported method $id for $url");
+    }
+}
+
+
+#
+sub putraw {
+
+    my ( $timereq, $workload, $reqname,  $ttime, $ctime, $dtime, $ptime, $psize, $fpkt, $resp ) = @_;
+
+    my $devid;
+
+    if ($workload) {
+        $devid = $workload . "_" . $reqname;
+    } else { 
+        $devid = $reqname;
+    }
+
+    if ($logging) {
+        printf $rawkrd "%.${tp}f:%s:%.3f:%.3f:%.3f:%.3f:%.3f:%d:%d\n",
+                $timereq, $devid,
+                $ttime  , $ctime   , $dtime  , $ptime,
+                $fpkt   , $psize   , $resp;
+    } else {
+        printf "%.${tp}f:%s:%.3f:%.3f:%.3f:%.3f:%.3f:%d:%d\n",
+                $timereq, $devid,
+                $ttime  , $ctime   , $dtime  , $ptime,
+                $fpkt   , $psize   , $resp;
+    }
+}
+
+
+# get log defintion
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# write_log - write log message
+#
+sub write_log {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+## auxiliares
+
+# write log message
+#sub write_log {
+#
+#    my ($logbuf) = @_;
+#    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+#      localtime(time);
+#
+#    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+#      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+#
+#    print STDERR "\n$dt $logbuf";
+#
+#    return;
+#}
+
+
+# usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: webrec [-hlvV] | [interval]
+OPTIONS:
+  -h        : help information
+  -l        : log raw data to krd file, no STDOUT
+  -v        : verbose information
+  -V        : release version
+  interval  : maximum number of seconds between samples
+
+ FIELDS:
+  #01 timestamp : seconds since Epoch, time
+  #02 request   : the HTTP request name
+  #03 ttime     : total time, entire operation lasted, seconds
+  #04 ctime     : connect time it took from the start until the TCP 
+                  connect to the remote host (or proxy) was completed, seconds
+  #05 dnstime   : namelookup time, it took from the start until the name 
+                  resolving was completed, seconds
+  #06 ptime :     protocol time, it took from the start until the file 
+                  transfer was just about to begin, seconds
+  #07 pktime    : first packet time, it took from the start until the first 
+                  byte was just about to be transferred, seconds
+  #08 size      : page size, the total amount of bytes that were downloaded
+  #09 status    : response status code, the numerical response code 
+                  that was found in the last retrieved HTTP(S) transfer
+
+ NOTES
+ webrec reports TTFB (time to first byte) for one or many HTTP workloads, 
+ applications, as an indication of the responsiveness. TTFB measures the 
+ duration from the virtual user making an HTTP request to the first byte 
+ of the page being received by the browser. This time is made up of the 
+ socket connection time, the time taken to send the HTTP request, and the 
+ time taken to get the first byte of the page.
+END
+    exit 0;
+}
+
+# revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+webrec: 1.1.3, 2016-12-12 1741
+END
+    exit 0;
+}
