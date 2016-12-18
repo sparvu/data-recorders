@@ -1,0 +1,14 @@
+{
+  "certificates" : [
+    {
+      "hostname" : "mail.kronometrix.org",
+      "port" : 993,
+      "description" : "Kronometrix.org IMAPS Server"
+    },
+    {
+      "hostname" : "mail.kronometrix.org",
+      "port" : 465,
+      "description" : "Kronometrix.org SMTPS Server"
+    }
+  ]
+}
