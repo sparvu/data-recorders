@@ -3,12 +3,32 @@
     {
       "hostname" : "mail.kronometrix.org",
       "port" : 993,
+      "type" : "ssl",
       "description" : "Kronometrix.org IMAPS Server"
     },
     {
       "hostname" : "mail.kronometrix.org",
       "port" : 465,
+      "type" : "ssl",
       "description" : "Kronometrix.org SMTPS Server"
+    },
+    {
+      "hostname" : "mail.kronometrix.com",
+      "port" : 465,
+      "type" : "ssl",
+      "description" : "Kronometrix.com IMAPS Server"
+    },
+    {
+      "hostname" : "mail.kronometrix.com",
+      "port" : 993,
+      "type" : "ssl",
+      "description" : "Kronometrix.com SMTPS Server"
+    },
+    {
+      "hostname" : "www.nordnet.fi",
+      "port" : 443,
+      "type" : "https",
+      "description" : "Nordnet HTTP Server"
     }
   ]
 }
