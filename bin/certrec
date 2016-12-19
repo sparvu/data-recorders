@@ -117,6 +117,7 @@ if ($verbose) {
     }
 }
 
+
 # main loop
 while (1) {
 
@@ -135,7 +136,22 @@ while (1) {
         
         my $value = $work{$key};
 
+        #my $keyapp = $name . ":" . $id . ":" . $desc;
+        #my $hvalue = $host . ":" . $port . ":" . $type;
+
+        my ($name, $id, $desc) = split( /:/, $key );
         my ($host, $port, $type) = split( /:/, $value );
+
+        my $idn;
+        if ($name) {
+            $idn = $name;
+        } else {
+            $idn = $id;
+        }
+
+        if ($verbose) {
+            print "name=$idn host=$host port=$port type=$type\n";
+        }
 
         my $t0 = time;
 
@@ -164,9 +180,9 @@ while (1) {
         }
 
         if ($logging) {          
-            printf $rawkrd "%.${tp}f:%s:%s:%d:%d\n", $t0, $key, $duration, $days, $status;
+            printf $rawkrd "%.${tp}f:%s:%s:%d:%d\n", $t0, $idn, $duration, $days, $status;
         } else {
-            printf "%.${tp}f:%s:%s:%d:%d\n", $t0, $key, $duration, $days, $status;
+            printf "%.${tp}f:%s:%s:%d:%d\n", $t0, $idn, $duration, $days, $status;
         }
     }
 
@@ -283,22 +299,32 @@ sub get_cert {
     my ($data) = @_;
     tie my %certs, "Tie::IxHash";
 
-    my @temp;
-    eval { @temp = @{ $data->{'certificates'} }; };
-    if ( $@ ) { die "Error: syntax error certrec.json, check configuration";  }
-    
+    my @temp = @{ $data->{'server'} };
+
     foreach my $f (@temp) {
 
-        my $id     = $f->{'id'};
-        my $host   = $f->{'host'};
-        my $port   = $f->{'port'};
-        my $type   = $f->{'type'};
+        my $name    = $f->{'name'};
+        my $desc    = $f->{'description'};
 
-        # print "$host => $port:$desc \n";
-        my $keyapp = $id;
-        my $hvalue = $host . ':' . $port . ':' . $type;
+        my @reqs = @{ $f->{'certificates'} };
 
-        $certs{$keyapp} = $hvalue;
+        foreach my $req (@reqs) {
+            my $id   = $req -> {'id'};
+            my $type = $req -> {'type'};
+            my $host = $req -> {'host'};
+            my $port = $req -> {'port'};
+
+            my $keyapp;
+            if ($name) {
+                $keyapp = $name . "_" . $id . ":" . $id . ":" . $desc;
+            } else { 
+                $keyapp = $name . ":" . $id . ":" . $desc;
+            }
+                
+            my $hvalue = $host . ":" . $port . ":" . $type;
+
+            $certs{$keyapp} = $hvalue;
+        }
     }
 
     return %certs;
