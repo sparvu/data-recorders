@@ -146,7 +146,8 @@ foreach (@dbs) {
             name               => "$n",
             interval           => 1,
             maxinterval        => $interval,
-            ignore_nonexistant => 1
+            ignore_nonexistant => 1,
+            reset_tail         => "c<0>"
         )
     );
 }
@@ -156,6 +157,8 @@ my $http = HTTP::Tiny->new(
           keep_alive => $tcpka,
           agent => "User-Agent: $agent");
 
+# whpd lookup table
+my %lwhpd;
 
 # main loop
 while (1) {
@@ -165,13 +168,13 @@ while (1) {
 
     # timeout - do something else here, if you need to
     unless ($nfound) {
-        writelog("info: main - no krd raw data found, checking...")
+        writelog("info: main - waiting for raw data...")
           if ( $verbose == 1 );
     }
     else {
 
         ## raw data arrival
-        writelog("info: main - krd raw data found")
+        writelog("info: main - raw data found")
           if ( $verbose == 1 );
 
         my $rcode = 0;
@@ -417,12 +420,27 @@ while (1) {
 
                             my $dsname;
                             ($dsname, $devid ) = split ( /_/, $devtemp );
-                            $dsid = make_wdsid($dsname, $hostid);
+                             
+                            # no dsid in the lookup whpd table
+                            if (! exists($lwhpd{$dsname})) {
+                                $dsid = make_wdsid($dsname, $hostid);
+                                $lwhpd{$dsname} = $dsid;
+                            } else {
+                                $dsid = $lwhpd{$dsname};
+                            }
+                            
 
                         } else {
 
                             $dsname = $devtemp;
-                            $dsid = make_wdsid($dsname, $hostid);
+                            # no dsid in the lookup whpd table
+                            if (! exists($lwhpd{$dsname})) {
+                                $dsid = make_wdsid($dsname, $hostid);
+                                $lwhpd{$dsname} = $dsid;
+                            } else {
+                                $dsid = $lwhpd{$dsname};
+                            }
+
                             $devid = "system";
                         }
 
@@ -441,7 +459,13 @@ while (1) {
                         my $devtemp = get_devid(1, $delta);
 
                         $dsname = $devtemp;
-                        $dsid = make_wdsid($dsname, $hostid);
+                        # no dsid in the lookup whpd table
+                        if (! exists($lwhpd{$dsname})) {
+                            $dsid = make_wdsid($dsname, $hostid);
+                            $lwhpd{$dsname} = $dsid;
+                        } else {
+                            $dsid = $lwhpd{$dsname};
+                        }
                         $devid = "system";
 
                         $msgid = "whpd-inv";
@@ -732,7 +756,6 @@ sub make_wdsid {
     my $str = $name . $huuid;
     my $wdsid = create_uuid_as_string(UUID_V5,$str);
     chomp($wdsid);
-    print "wdsid=$wdsid\n";
 
     return $wdsid;
 }
@@ -938,7 +961,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.3, 2016-12-12 1615
+sender: 1.1.3, 2016-12-17 2008
 END
     exit 0;
 }
