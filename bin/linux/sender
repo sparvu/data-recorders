@@ -190,6 +190,7 @@ while (1) {
 
             my $sysrec_on         = 0;
             my $cpurec_on         = 0;
+            my $certrec_on        = 0;
             my $diskrec_on        = 0;
             my $nicrec_on         = 0;
             my $hdwrec_on         = 0;
@@ -209,6 +210,7 @@ while (1) {
 
            if ( $_->{"input"} =~ /sysrec/         ) { $sysrec_on  = 1;    }
         elsif ( $_->{"input"} =~ /cpurec/         ) { $cpurec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /certrec/        ) { $certrec_on  = 1;   }
         elsif ( $_->{"input"} =~ /diskrec/        ) { $diskrec_on = 1;    }
         elsif ( $_->{"input"} =~ /nicrec/         ) { $nicrec_on  = 1;    }
         elsif ( $_->{"input"} =~ /netrec/         ) { $netrec_on  = 1;    }
@@ -401,6 +403,44 @@ while (1) {
 
                     # message id
                     if ($lid eq 'wcd') { $f=1; $msgid = "$osname-wsrec"; }
+
+                } elsif ($certrec_on) {
+
+                    if ($lid eq 'whpd') {
+                    
+                        $f=1;
+                    
+                        my $devtemp = get_devid(1, $delta);
+                 
+                        if ( $devtemp =~ /_/ ) {
+                
+                            my $dsname;
+                            ($dsname, $devid ) = split ( /_/, $devtemp );
+                    
+                            # no dsid in the lookup whpd table
+                            if (! exists($lwhpd{$dsname})) {
+                                $dsid = make_wdsid($dsname, $hostid);
+                                $lwhpd{$dsname} = $dsid;
+                            } else {
+                                $dsid = $lwhpd{$dsname};
+                            }
+
+                        } else {
+
+                            $dsname = $devtemp;
+                            # no dsid in the lookup whpd table
+                            if (! exists($lwhpd{$dsname})) {
+                                $dsid = make_wdsid($dsname, $hostid);
+                                $lwhpd{$dsname} = $dsid;
+                            } else {
+                                $dsid = $lwhpd{$dsname};
+                            }
+
+                            $devid = "system";
+                        }
+
+                        $msgid = "whpd-cert";
+                    }
 
                 } elsif ($webrec_on) {
 
@@ -753,7 +793,7 @@ sub make_wdsid {
 
     my ($name, $huuid) = @_;
 
-    my $str = $name . $huuid;
+    my $str = $name;
     my $wdsid = create_uuid_as_string(UUID_V5,$str);
     chomp($wdsid);
 
@@ -881,12 +921,21 @@ sub send_data {
     # WHPD-TTFB                              - WPD DOMAIN
     if ( $msg_id =~ /whpd-ttfb/ ) {
 
-            #1481544913:www.fi:0.243:0.202:0.163:0.202:0.080:1719:200
-            my ( $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7 ) = split ( /:/, $delta );
-            $n = $dev_id;
-            $delta = join(':', $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7); 
-            $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
-            $post   = "$msg_id:$sid:$dsid:$delta:$hash";
+        #1481544913:www.fi:0.243:0.202:0.163:0.202:0.080:1719:200
+        my ( $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7 ) = split ( /:/, $delta );
+        $n = $dev_id;
+        $delta = join(':', $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7); 
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
+        $post   = "$msg_id:$sid:$dsid:$delta:$hash";
+
+    } elsif ( $msg_id =~ /whpd-cert/ ) {
+
+        #1481544913:imaps:1506258005:279:1
+        my ( $t, $n, $v1, $v2, $v3 ) = split ( /:/, $delta );
+        $n = $dev_id;
+        $delta = join(':', $t, $n, $v1, $v2, $v3);
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
+        $post   = "$msg_id:$sid:$dsid:$delta:$hash";
 
     # TTFB                                   - WPD DOMAIN
     # IAQ_G01, IAQ_GMW90, IAQ_MSD            - IAQD DOMAIN
