@@ -6,7 +6,7 @@
       "description" : "Main Website",
       "delay" : 0.1,
       "proxy" : {
-        "hostname" : "proxy.domain",
+        "hostname" : "",
         "port" : 8080,
         "username" : "",
         "password" : ""
