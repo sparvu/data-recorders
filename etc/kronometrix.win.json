@@ -126,6 +126,13 @@
       "domain" : [ "wpd", "whpd" ]
     },
     {
+      "name"   : "cert",
+      "file"   : "certrec.krd",
+      "sample" : 60,
+      "status" : "active",
+      "domain" : [ "dpd", "whpd" ]
+    },
+    {
       "name"   : "pg",
       "file"   : "pgrec.krd",
       "sample" : 60,
