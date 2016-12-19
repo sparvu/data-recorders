@@ -3,7 +3,7 @@
     {
       "name" : "kronometrix.org",
       "description" : "IMAPS, SMTPS kronometrix.org",
-      "certs" : [
+      "certificates" : [
         {
           "id" : "imaps",
           "type" : "ssl",
@@ -16,23 +16,25 @@
           "host" : "kronometrix.org",
           "port" : "465"
         }
+      ]
     },
     {
       "name" : "kronometrix.com",
       "description" : "IMAP, SMTPS kronometrix.com",
-      "certs" : [
+      "certificates" : [
         {
           "id" : "imaps",
           "type" : "ssl",
           "host" : "kronometrix.com",
-          "port" : "993" 
+          "port" : "993"
         },
         {
           "id" : "smtps",
           "type" : "ssl",
           "host" : "kronometrix.com",
-          "port" : "465" 
-        } 
+          "port" : "465"
+        }
+      ]
     }
   ]
 }
