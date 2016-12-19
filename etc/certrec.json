@@ -1,32 +1,38 @@
 {
-  "certificates" : [
+  "server" : [
     {
-      "id" : "kronometrix.org.imap",
-      "host" : "mail.kronometrix.org",
-      "port" : 993,
-      "type" : "ssl",
-      "description" : "Kronometrix.org IMAPS Server"
+      "name" : "kronometrix.org",
+      "description" : "IMAPS, SMTPS kronometrix.org",
+      "certs" : [
+        {
+          "id" : "imaps",
+          "type" : "ssl",
+          "host" : "kronometrix.org",
+          "port" : "993"
+        },
+        {
+          "id" : "smtps",
+          "type" : "ssl",
+          "host" : "kronometrix.org",
+          "port" : "465"
+        }
     },
     {
-      "id" : "kronometrix.org.smtps",
-      "host" : "mail.kronometrix.org",
-      "port" : 465,
-      "type" : "ssl",
-      "description" : "Kronometrix.org SMTPS Server"
-    },
-    {
-      "id" : "kronometrix.com.smtps",
-      "host" : "mail.kronometrix.com",
-      "port" : 465,
-      "type" : "ssl",
-      "description" : "Kronometrix.com SMTPS Server"
-    },
-    {
-      "id" : "kronometrix.com.imaps",
-      "host" : "mail.kronometrix.com",
-      "port" : 993,
-      "type" : "ssl",
-      "description" : "Kronometrix.com IMAPS Server"
+      "name" : "kronometrix.com",
+      "description" : "IMAP, SMTPS kronometrix.com",
+      "certs" : [
+        {
+          "id" : "imaps",
+          "type" : "ssl",
+          "host" : "kronometrix.com",
+          "port" : "993" 
+        },
+        {
+          "id" : "smtps",
+          "type" : "ssl",
+          "host" : "kronometrix.com",
+          "port" : "465" 
+        } 
     }
   ]
 }
