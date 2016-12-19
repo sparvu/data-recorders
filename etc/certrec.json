@@ -4,24 +4,28 @@
       "id" : "kronometrix.org.imap",
       "host" : "mail.kronometrix.org",
       "port" : 993,
+      "type" : "ssl",
       "description" : "Kronometrix.org IMAPS Server"
     },
     {
       "id" : "kronometrix.org.smtps",
       "host" : "mail.kronometrix.org",
       "port" : 465,
+      "type" : "ssl",
       "description" : "Kronometrix.org SMTPS Server"
     },
     {
       "id" : "kronometrix.com.smtps",
       "host" : "mail.kronometrix.com",
       "port" : 465,
+      "type" : "ssl",
       "description" : "Kronometrix.com SMTPS Server"
     },
     {
       "id" : "kronometrix.com.imaps",
       "host" : "mail.kronometrix.com",
       "port" : 993,
+      "type" : "ssl",
       "description" : "Kronometrix.com IMAPS Server"
     }
   ]
