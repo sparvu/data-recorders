@@ -153,14 +153,9 @@ while (1) {
             my $dt_resolved = $format->parse_datetime($expire_date);
  
             my $dur = $dt_resolved->delta_days($dt_current);
-<<<<<<< HEAD
             $days = $dur->in_units('days');    
 
             $duration = $dt_resolved->epoch();
-=======
-            $days = $dur->in_units('days');             
-            ($duration = $dt_resolved) =~ s/-|://g;
->>>>>>> 32eeb5581f0b6637c80efe64626c867f4edd5e44
 
             # examine already expired
             my $expired = $ed->is_expired;
@@ -346,15 +341,9 @@ OPTIONS:
   interval  : maximum number of seconds between samples
 
  FIELDS:
-<<<<<<< HEAD
   #01 timestamp : UNIX time, time
   #02 name: certificate name, string
   #03 duration: time until expiration defined as UNIX time, string
-=======
-  #01 timestamp : seconds since Epoch, time
-  #02 name: certificate name, string
-  #03 duration: ISO8601 date until expiration, string
->>>>>>> 32eeb5581f0b6637c80efe64626c867f4edd5e44
   #04 days: number of days until expiration, string
   #05 status, cetificate status: 1: valid or 0: invalid
 
@@ -370,11 +359,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-<<<<<<< HEAD
 certrec: 1.1.0, 2016-12-19 2016
-=======
-certrec: 1.1.0, 2016-12-18 2016
->>>>>>> 32eeb5581f0b6637c80efe64626c867f4edd5e44
 END
     exit 0;
 }
