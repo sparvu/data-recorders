@@ -1,0 +1,1016 @@
+#!/opt/kronometrix/perl/bin/perl
+#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use File::Tail;
+use File::Temp qw(tempfile);
+use File::Copy;
+use File::Basename;
+use UUID::Tiny ':std';
+use Digest::SHA;
+use HTTP::Tiny;
+use Getopt::Std;
+use Proc::Daemon;
+use Proc::PID::File;
+use Time::HiRes;
+use HTTP::Response;
+
+###  Process command line args
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('t:hvV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# verbose flag
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+# timeout
+my $timeout = defined $main::opt_t ? $main::opt_t : 25;
+
+# process [interval]
+my $interval;
+
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    usage() if $interval == 0;
+}
+else {
+    $interval = 60;
+}
+
+###  Variables
+$main::opt_h = 0;                # help option
+$main::opt_V = 0;                # revision option
+my $cfile = 'kronometrix.json';  # configuration file
+my $cdata;                       # configuration data
+my $tcpka = 0;                   # transport TCP keepalive settings
+my $sid   = "";                  # subscription id
+my $token = "NA";                # token id
+my @files;
+
+## configuration
+my $hostid;
+my ($baselog, $curlog, $slog);
+my @dbs;
+my %platform;
+
+local $| = 1;
+
+
+### MAIN BODY #
+
+# Default krd
+my @recs = qw(sys cpu disk nic hdw);
+
+# daemon name
+my $dname = basename($0);
+
+# osname
+my $osname = "$^O";
+my $agent = "Kronometrix/1.4.2 (kdr 1.1.3 sender $osname)";
+
+# read configuration
+$cdata = open_config($cfile);
+
+## hostid
+get_hostid($cdata);
+
+## logs
+( $baselog, $curlog ) = get_log($cdata);
+$slog = $baselog . "/sender.log";
+
+## datafile
+@dbs = get_datafile($cdata);
+
+## platform destination
+%platform = get_platform($cdata);
+
+print "platform hash: " . keys(%platform) . ".\n";
+for my $key ( keys %platform ) {
+    my $value = $platform{$key};
+    print "$key => $value\n";
+}
+
+## SIGHUP handler
+$SIG{HUP} = \&reload_config;
+
+# Daemonize
+eval {
+    Proc::Daemon::Init(
+        {
+            child_STDOUT => "+>>$slog",
+            child_STDERR => "+>>$slog"
+        }
+    );
+};
+
+if ($@) {
+    die "error: boot - cannot start daemon: $@";
+}
+else {
+    writelog("info: boot - daemon $dname initialized");
+}
+
+# If already running, then exit
+if ( Proc::PID::File->running( { dir => "$baselog" } ) ) {
+    exit(0);
+}
+
+# cd krd raw data directory
+chdir("$curlog")
+  or die "error: main - cannot open raw data directory, $!\n";
+
+foreach (@dbs) {
+    my $n = $_ . "rec.krd";
+    push(
+        @files,
+        File::Tail->new(
+            name               => "$n",
+            interval           => 1,
+            maxinterval        => $interval,
+            ignore_nonexistant => 1,
+            reset_tail         => "c<0>"
+        )
+    );
+}
+
+# init HTTP transport
+my $http = HTTP::Tiny->new(
+          keep_alive => $tcpka,
+          agent => "User-Agent: $agent");
+
+# whpd lookup table
+my %lwhpd;
+
+# main loop
+while (1) {
+
+    my ( $nfound, $timeleft, @pending ) =
+      File::Tail::select( undef, undef, undef, $timeout, @files );
+
+    # timeout - do something else here, if you need to
+    unless ($nfound) {
+        writelog("info: main - waiting for raw data...")
+          if ( $verbose == 1 );
+    }
+    else {
+
+        ## raw data arrival
+        writelog("info: main - raw data found")
+          if ( $verbose == 1 );
+
+        my $rcode = 0;
+        foreach (@pending) {
+            my $delta = $_->read;
+            chomp($delta);
+
+            # parse id
+            my $msgid;
+            my $devid;
+            my $lmoid;
+            my $dsname;
+
+            my $sysrec_on         = 0;
+            my $cpurec_on         = 0;
+            my $certrec_on        = 0;
+            my $diskrec_on        = 0;
+            my $nicrec_on         = 0;
+            my $hdwrec_on         = 0;
+            my $procrec_on        = 0;
+            my $netrec_on         = 0;
+            my $zonerec_on        = 0;
+            my $jvmrec_on         = 0;
+            my $xenrec_on         = 0;
+            my $wsrec_on          = 0;
+            my $webrec_on         = 0;
+            my $webinvrec_on      = 0;
+            my $direc_on          = 0;
+            my $ntprec_on         = 0;
+            my $iaq_g01rec_on     = 0;
+            my $iaq_gmw90rec_on   = 0;
+            my $iaq_msd1618rec_on = 0;
+
+           if ( $_->{"input"} =~ /sysrec/         ) { $sysrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /cpurec/         ) { $cpurec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /certrec/        ) { $certrec_on  = 1;   }
+        elsif ( $_->{"input"} =~ /diskrec/        ) { $diskrec_on = 1;    }
+        elsif ( $_->{"input"} =~ /nicrec/         ) { $nicrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /netrec/         ) { $netrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /jvmrec/         ) { $jvmrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /procrec/        ) { $procrec_on = 1;    } 
+        elsif ( $_->{"input"} =~ /zonerec/        ) { $zonerec_on = 1;    }
+        elsif ( $_->{"input"} =~ /hdwrec/         ) { $hdwrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /xenrec/         ) { $xenrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /wsrec/          ) { $wsrec_on   = 1;    }
+        elsif ( $_->{"input"} =~ /webrec/         ) { $webrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /webinvrec/      ) { $webinvrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /direc/          ) { $direc_on   = 1;    }
+        elsif ( $_->{"input"} =~ /ntrpec/         ) { $ntprec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /iaq_g01rec/     ) { $iaq_g01rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_gmw90rec/   ) { $iaq_gmw90rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_msd1618rec/ ) { $iaq_msd1618rec_on  = 1; }
+
+            # each platform
+            for my $key ( keys %platform ) {
+                my $value = $platform{$key};
+
+                ## value format
+                # cpd:hostname2:443:00000000000000000000000000000000
+                # lmo:host:port:sid => $token:$proto:$ka
+
+                my ( $lid, $sid, $tid, $dsid ) = split ( /:/, $key );
+                my ( $proto, $hname, $port, $ka ) = split( /:/, $value );
+
+                if ($verbose == 1) {
+                    writelog("info: main - $lid => $sid:$tid:$dsid value=$proto:$hname:$port:$ka");
+                }
+ 
+                # ready to fire data
+                my $f = 0;
+
+                if ($sysrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-sysrec";     }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-sysrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-sysrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-sysrec"; }
+
+                } elsif ($cpurec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-cpurec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-cpurec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-cpurec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-cpurec"; }
+
+                } elsif ($diskrec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-diskrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-diskrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-diskrec";}
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-diskrec"; }
+
+                } elsif ($direc_on) {
+                    
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'cpd')  { $f=1; $msgid = "$osname-direc"; }
+                 elsif ($lid eq 'wpd')  { $f=1; $msgid = "wpd-$osname-direc"; }
+                 elsif ($lid eq 'whpd') { $f=1; $msgid = "whpd-$osname-direc"; }
+                 elsif ($lid eq 'dpd')  { $f=1; $msgid = "dpd-$osname-direc"; }
+
+                } elsif ($nicrec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-nicrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-nicrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-nicrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-nicrec"; }
+
+                } elsif ($netrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-netrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-netrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-netrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-netrec"; }
+
+                } elsif ($ntprec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'whpd') { $f=1; $msgid = "whpd-$osname-ntprec";}
+                 elsif ($lid eq 'dpd' ) { $f=1; $msgid = "dpd-$osname-ntprec"; }
+
+                } elsif ($jvmrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-jvmrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-jvmrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-jvmrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-jvmrec"; }
+
+                } elsif ($iaq_g01rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_g01"; }
+
+                } elsif ($iaq_gmw90rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_gmw90"; }
+
+                } elsif ($iaq_msd1618rec_on) {
+                 
+                    # device id
+                    $devid = get_devid(1, $delta);
+                
+                    # message id
+                    if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_msd1618"; }
+
+                } elsif ($procrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-procrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-procrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-procrec";}
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-procrec"; }
+
+                } elsif ($zonerec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-zonerec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-zonerec"; }
+
+                } elsif ($hdwrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-hdwrec"; }
+                 elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-hdwrec"; }
+                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-hdwrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-hdwrec"; }
+
+                } elsif ($xenrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'cpd') { $f=1; $msgid = "$osname-xenrec"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-xenrec"; }
+
+                } elsif ($wsrec_on) {
+
+                    # device id
+                    $devid = "system";
+
+                    # message id
+                    if ($lid eq 'wcd') { $f=1; $msgid = "$osname-wsrec"; }
+
+                } elsif ($certrec_on) {
+
+                    if ($lid eq 'whpd') {
+                    
+                        $f=1;
+                    
+                        my $devtemp = get_devid(1, $delta);
+                 
+                        if ( $devtemp =~ /_/ ) {
+                
+                            ($dsname, $devid ) = split ( /_/, $devtemp );
+                    
+                            # no dsid in the lookup whpd table
+                            if (! exists($lwhpd{$dsname})) {
+                                $dsid = make_wdsid($dsname, $hostid);
+                                $lwhpd{$dsname} = $dsid;
+                            } else {
+                                $dsid = $lwhpd{$dsname};
+                            }
+
+                        } else {
+
+                            $dsname = $devtemp;
+                            # no dsid in the lookup whpd table
+                            if (! exists($lwhpd{$dsname})) {
+                                $dsid = make_wdsid($dsname, $hostid);
+                                $lwhpd{$dsname} = $dsid;
+                            } else {
+                                $dsid = $lwhpd{$dsname};
+                            }
+
+                            $devid = "system";
+                        }
+
+                        $msgid = "whpd-cert";
+                    }
+
+                } elsif ($webrec_on) {
+
+                    # message id
+                    if ($lid eq 'wpd') {
+                        $f=1; 
+                        $devid = get_devid(1, $delta);
+                        $msgid = "wpd-$osname-ttfb";
+
+                    } elsif ($lid eq 'whpd'){
+
+                        $f=1;
+
+                        my $devtemp = get_devid(1, $delta);
+
+                        if ( $devtemp =~ /_/ ) {
+
+                            ($dsname, $devid ) = split ( /_/, $devtemp );
+                             
+                            # no dsid in the lookup whpd table
+                            if (! exists($lwhpd{$dsname})) {
+                                $dsid = make_wdsid($dsname, $hostid);
+                                $lwhpd{$dsname} = $dsid;
+                            } else {
+                                $dsid = $lwhpd{$dsname};
+                            }
+                            
+
+                        } else {
+
+                            $dsname = $devtemp;
+                            # no dsid in the lookup whpd table
+                            if (! exists($lwhpd{$dsname})) {
+                                $dsid = make_wdsid($dsname, $hostid);
+                                $lwhpd{$dsname} = $dsid;
+                            } else {
+                                $dsid = $lwhpd{$dsname};
+                            }
+
+                            $devid = "system";
+                        }
+
+                        $msgid = "whpd-ttfb"; 
+                    }
+
+                } elsif ($webinvrec_on) {
+
+                    # device id
+                    # $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'whpd') {
+
+                        $f=1;
+                        my $devtemp = get_devid(1, $delta);
+
+                        $dsname = $devtemp;
+                        # no dsid in the lookup whpd table
+                        if (! exists($lwhpd{$dsname})) {
+                            $dsid = make_wdsid($dsname, $hostid);
+                            $lwhpd{$dsname} = $dsid;
+                        } else {
+                            $dsid = $lwhpd{$dsname};
+                        }
+
+                        $devid = "system";
+                        $msgid = "whpd-inv";
+                    }
+                }
+
+                if($f) {
+                    send_data ($http, $hname, $sid, $tid, $dsid, $msgid,
+                               $devid, $proto, $port, $dsname, $delta);
+                }
+            }
+
+            print "\n" . $_->{"input"} . " payload[" . $delta . "]"
+              if ( $verbose == 1 );
+
+        }    # for
+
+    }    # else raw data
+
+}    # while loop
+
+### Subroutines
+
+## configuration file
+
+# open JSON configuration file
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+
+# write config file
+sub write_config {
+
+    my ( $conf, $perl_data ) = @_;
+
+    # JSON Object
+    my $json_data = JSON->new->utf8->pretty->encode($perl_data);
+
+    # we will parse now the file
+    if ( defined $ENV{'KRMX_PREFIX'} ) {
+        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
+
+            # print $fh encode_json($data);
+            print $fh $json_data;
+            close $fh;
+            move(
+                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
+                "$ENV{'KRMX_PREFIX'}/etc/$conf"
+            ) or die "Error: cannot update $conf: $!";
+
+        }
+        else {
+            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+            usage();
+        }
+    }
+    else {
+        if ( -e "/opt/kronometrix/etc/$conf" ) {
+            open my $fh, ">", "/opt/kronometrix/etc/$conf.tmp";
+            print $fh $json_data;
+            close $fh;
+            move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
+              or die "Error: cannot update $conf: $!";
+        }
+        else {
+            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
+            usage();
+        }
+    }
+}
+
+
+# reload configuration
+sub reload_config {
+
+    writelog("info: main - signal HUP received, reload armed...");
+
+    $cdata = open_config($cfile);
+
+    ## hostid
+    get_hostid($cdata);
+
+    ## datafile
+    @dbs = get_datafile($cdata);
+
+    ## platform destination
+    %platform = get_platform($cdata);
+
+    return;
+}
+
+# get_devid, returns device_id
+sub get_devid {
+
+    my ( $pos, $krd ) = @_;
+    my $device_id;
+
+    my @krd = split( /:/, $krd );
+
+    $device_id = $krd[$pos];
+
+    writelog("info: get_devid - devid=$device_id")
+      if ( $verbose == 1 );
+
+    # device_id
+    return $device_id;
+}
+
+
+# process host uuid file
+sub process_hid {
+
+    my ($dbusfile) = @_;
+    my $host_uuid;
+
+    open my $fh, "<", "$dbusfile"
+        or die "error: cannot open $dbusfile: $!\n";
+
+    my @mid = <$fh>;
+
+    close $fh;
+
+    foreach my $h (@mid) {
+        substr( $h, 8,  0 ) = '-';
+        substr( $h, 13, 0 ) = '-';
+        substr( $h, 18, 0 ) = '-';
+        substr( $h, 23, 0 ) = '-';
+        $host_uuid = $h;
+    }
+
+    return $host_uuid;
+}
+
+
+# get hostuuid
+sub new_hostid {
+
+    # machine-id
+    my $varid = '/var/lib/dbus/machine-id';
+    my $etcid = '/etc/machine-id';
+    my @machineid;
+    my $hid;
+
+    # fetches machine-id from DBUS
+    if ( -e $varid ) {
+        $hid = process_hid ("$varid");
+    }
+    # RHEL, CentOS 7
+    elsif ( -e $etcid ) {
+        $hid = process_hid ("$etcid");
+    }
+    else {
+        die "No valid machine-id found on this host. Please consult dbus\n"
+        #my $str = rand(time) . $osname;
+        #$hid = create_uuid_as_string(UUID_V5,$str);
+    }
+
+    chomp($hid);
+
+    # return new host UUID
+    return $hid;
+}
+
+
+# get hostid
+sub get_hostid {
+
+    my ($data) = @_;
+
+    # get hostuuid
+    $hostid = new_hostid;
+
+    # populate DSID
+    make_hdsid($data, $hostid);
+}
+
+
+# make data source ids, dsid
+sub make_hdsid {
+
+    my ($data, $huuid) = @_;
+    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd');
+
+    # sid - subscription id
+    # dsid - data source id
+    # get all sids and generate dsid for each
+    # dsid must be unique per sid
+
+    my @kplt = @{ $data->{'transport'}->{'platform'} };
+
+    # populate dsid for each platform and lmo
+    foreach my $plt (@kplt) {
+        my ($sid, $tid, $dsid);
+
+        my $host  = $plt->{'host'};
+        my $port  = $plt->{'port'};
+
+        # last call, look for subscription id, sid
+
+        foreach my $mo (@lmo) {
+
+            if ($plt->{"$mo"}) {
+
+                my @sub = @{ $plt->{"$mo"} };
+
+                foreach my $sd (@sub) {
+
+                    # get sid, tid
+                    $sid = $sd ->{'sid'};
+                    $tid = $sd ->{'tid'};
+
+                    # get dsid
+                    $dsid = $sd ->{'dsid'};
+                   
+                    if ($dsid eq "" ) {
+
+                        if ( $sid ne "" ) {
+                            my $str = $huuid . $sid;
+                            $dsid = create_uuid_as_string(UUID_V5,$str);
+                            chomp($dsid);
+                            # print "sid=$sid tid=$tid dsid=$dsid\n";
+                            $sd->{'dsid'} = $dsid;
+                            write_config( $cfile, $data );
+                        } else {
+                            exit 1;
+                        }
+                    } else {
+                        my $str = $huuid . $sid;
+                        my $dsid_man = create_uuid_as_string(UUID_V5,$str);
+                        chomp($dsid_man);
+
+                        if ( $dsid ne $dsid_man ) {
+                            # we need to update json file
+                            # print "Not OK: $dsid => $dsid_man\n";
+                            $sd->{'dsid'} = $dsid_man;
+                            write_config( $cfile, $data );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+# make website data source ids, dsid
+sub make_wdsid {
+
+    my ($name, $huuid) = @_;
+
+    my $str = $name;
+    my $wdsid = create_uuid_as_string(UUID_V5,$str);
+    chomp($wdsid);
+
+    writelog("info: make_dsid - name=$name => $wdsid");
+
+    return $wdsid;
+}
+
+
+# get logs
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# get datafile
+sub get_datafile {
+
+    my ($data) = @_;
+    my $schilds = 0;
+    my @d;
+    my @temp = @{ $data->{'message'} };
+
+    # load d array
+    foreach my $f (@temp) {
+        next if ($f->{'status'} ne 'active');
+        push @d, $f->{'name'};
+        $schilds++;
+    }
+
+    # fallback to 5 main data messages if config missing
+    @d = @recs if ( $schilds == 0 );
+
+    return @d;
+}
+
+
+# get k analytics platform information
+sub get_platform {
+
+    my ($data) = @_;
+    my %kplt;
+
+    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd', 'whpd');
+
+    my @temp = @{ $data->{'transport'}->{'platform'} };
+
+    foreach my $f (@temp) {
+        my ($sid, $tid, $dsid);
+
+        my $ka    = $f->{'keepalive'};
+        my $proto = $f->{'protocol'};
+        my $host  = $f->{'host'};
+        my $port  = $f->{'port'};
+
+        # last call, look for subscription
+
+        foreach my $mo (@lmo) {
+
+            if ($f->{"$mo"}) {
+
+                my @sub = @{ $f->{"$mo"} };
+
+                foreach my $sd (@sub) {
+
+                    
+                    # get sid, tid, dsid
+                    $sid  = $sd ->{'sid'};
+                    $tid  = $sd ->{'tid'};
+                   
+                    $dsid = $sd ->{'dsid'};
+
+                    if ( defined($host)
+                         and defined($sid)
+                         and defined($tid)
+                         and defined($proto)
+                         and defined($port)
+                         and defined($ka) ) {
+                        my $keyapp = $mo . ":" . $sid . ":" . "$tid" . ":" . $dsid;
+                        $kplt{$keyapp} = "$proto:$host:$port:$ka";
+                    }
+                }
+            }
+        }
+    }
+
+    return %kplt;
+}
+
+
+## auxiliares
+
+# write log message
+sub writelog {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+      localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    print "\n$dt $logbuf";
+
+    return;
+}
+
+
+sub send_data {
+
+    my (
+        $curl,  $dest,   $sid,   $token, $dsid,
+        $msg_id, $dev_id, $proto, $port,  $dname, $delta
+    ) = @_;
+    my $response;
+
+    ## http://server:port/api/private/send_data
+    my $url = "$proto://" . $dest . ":" . $port . "/api/private/send_data";
+
+    my ($hash, $post);
+
+    # WHPD-TTFB                              - WPD DOMAIN
+    if ( $msg_id =~ /whpd-ttfb/ ) {
+
+        #1481544913:www.fi:0.243:0.202:0.163:0.202:0.080:1719:200
+        my ( $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7 ) = split ( /:/, $delta );
+        $n = $dev_id;
+        $delta = join(':', $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7); 
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
+        $post   = "$msg_id:$sid:$dsid:$delta:$hash";
+
+    } elsif ( $msg_id =~ /whpd-cert/ ) {
+
+        #1481544913:imaps:1506258005:279:1
+        my ( $t, $n, $v1, $v2, $v3 ) = split ( /:/, $delta );
+        $n = $dev_id;
+        $delta = join(':', $t, $n, $v1, $v2, $v3);
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$dname:$delta");
+        $post   = "$msg_id:$sid:$dsid:$dname:$delta:$hash";
+
+    # TTFB                                   - WPD DOMAIN
+    # IAQ_G01, IAQ_GMW90, IAQ_MSD            - IAQD DOMAIN
+    # CPUREC, DISKREC, NICREC, DIREC, NTPREC - CPD DOMAIN
+    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|iaq_g01|iaq_gmw90|iaq_msd1618|wpd/ ) {
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
+        $post   = "$msg_id:$sid:$dsid:$delta:$hash";
+
+    # SYSREC, HDWREC                         - CPD DOMAIN
+    # WHPD-INV                               - WHPD DOMAIN
+    } else {
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$dev_id:$delta");
+        $post   = "$msg_id:$sid:$dsid:$dev_id:$delta:$hash";
+    }
+
+    writelog("info: send_data - $post data to be delivered")
+        if ( $verbose == 1 );
+
+    $response = $http->request('POST', $url, {
+        content => $post,
+        headers => { 'Token' => "$token",
+                     'content-type' => 'text/plain'},});
+
+    my $status = $response->{status};
+
+    if ( $verbose == 1 ) {
+
+        if ($response->{success} ) {
+            writelog("info: send_data - $msg_id krd data delivered");
+        } else {
+            writelog(
+            "error: send_data - cant send $msg_id krd data, transport error");
+        }
+    }
+
+    return;
+}
+
+
+# NIST SHA-256 message digest for krd raw data
+sub sha256krd {
+    my ($message) = @_;
+
+    # compute SHA-256
+    my $state = Digest::SHA->new(256);
+
+    $state->add($message);
+    my $digest = $state->hexdigest;
+
+    return $digest;
+}
+
+
+# usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: sender [-t secs] [-hvV] | [interval]
+OPTIONS:
+  -t        : timeout in seconds
+  -h        : help information
+  -v        : verbose information
+  -V        : release version
+  interval  : maximum number of seconds between samples, default 60, will 
+              never spend more than that without checking data
+
+ e.g. sender     check and send krd raw data, every 60 secs
+      sender 10  check and send krd raw data, every 10 secs
+END
+    exit 0;
+}
+
+# revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+sender: 1.1.3, 2016-12-17 2008
+END
+    exit 0;
+}
