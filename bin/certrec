@@ -359,7 +359,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-certrec: 1.1.0, 2016-12-19 2016
+certrec: 1.1.0, 2016-12-19 1352
 END
     exit 0;
 }
