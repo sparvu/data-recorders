@@ -65,6 +65,7 @@ VMWREC_CUR=${KRMX_CURRENT}/vmwrec.krd
 XENREC_CUR=${KRMX_CURRENT}/xenrec.krd
 WEBREC_CUR=${KRMX_CURRENT}/webrec.krd
 WEBINVREC_CUR=${KRMX_CURRENT}/webinvrec.krd
+CERTREC_CUR=${KRMX_CURRENT}/certrec.krd
 WSREC_CUR=${KRMX_CURRENT}/wsrec.krd
 
 
@@ -85,6 +86,7 @@ VMWREC_LOG=${KRMX_LOG}/vmwrec.log
 XENREC_LOG=${KRMX_LOG}/xenrec.log
 WEBREC_LOG=${KRMX_LOG}/webrec.log
 WEBINVREC_LOG=${KRMX_LOG}/webinvrec.log
+CERTREC_LOG=${KRMX_LOG}/certrec.log
 WSREC_LOG=${KRMX_LOG}/wsrec.log
 
 
