@@ -35,4 +35,4 @@ else
 fi
 
 ${KRMX_BIN}/certrec -l $RES 2>> ${CERTREC_LOG} &
-echo "$!" > ${KRMX_LOG}/webrec.pid
+echo "$!" > ${KRMX_LOG}/certrec.pid
