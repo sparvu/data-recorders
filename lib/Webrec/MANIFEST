@@ -1,0 +1,30 @@
+bin/webrec
+Changes
+lib/Kronometrix/Webrec/Queue.pm
+lib/Kronometrix/Webrec/Request.pm
+Makefile.PL
+MANIFEST
+README
+t/etc/conf1.json
+t/etc/kronometrix.json
+t/etc/multiple.json
+t/etc/post.json
+t/etc/proxy.json
+t/etc/secure.json
+t/etc/webrec-error.json
+t/etc/webrec-long.json
+t/etc/webrec.json
+t/etc/webrec.krd
+t/etc/webrec.log
+t/etc/webrec500.json
+t/log/current/webrec.krd
+t/log/webrec.log
+t/logging.t
+t/multiple.t
+t/simple-constructor.t
+t/simple-error-sync.t
+t/simple-error.t
+t/simple-queue.t
+t/simple-single.t
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

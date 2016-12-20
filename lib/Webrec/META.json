@@ -1,0 +1,48 @@
+{
+   "abstract" : "Queue of URL requests for Kronometrix",
+   "author" : [
+      "Julio Fraire <julio@>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "ExtUtils::MakeMaker version 7.1001, CPAN::Meta::Converter version 2.150005",
+   "license" : [
+      "unknown"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Kronometrix-Webrec-Queue",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "inc"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Capture::Tiny" : "0",
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Carp" : "0",
+            "JSON" : "0",
+            "List::Util" : "0",
+            "Net::Curl" : "0",
+            "Scalar::Util" : "0",
+            "Time::HiRes" : "0"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "version" : "v1.1.4",
+   "x_serialization_backend" : "JSON::PP version 2.27300"
+}

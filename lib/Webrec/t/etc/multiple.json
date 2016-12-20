@@ -1,0 +1,130 @@
+{
+  "workloads" : [
+    {
+      "keepalive" : 0,
+      "name" : "",
+      "description" : "Main Website",
+      "delay" : 5,
+      "proxy" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "password" : ""
+      },
+      "requests" : [
+        {
+          "id" : "main",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "about",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/about.html"
+        },
+         {
+          "id" : "test",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "7mavida.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "test2",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "7mavida.com",
+          "port" : "80",
+          "path" : "/page/about"
+        },
+        {
+          "id" : "contact",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/contact.html"
+        },
+        {
+          "id" : "recording",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/recording/design.html"
+        },
+       {
+          "id"     : "B",
+          "method" : "GET",
+          "scheme" : "http",
+          "host"   : "www.ubuntu.com",
+          "port"   : "80",
+          "path"   : "/"
+        },
+       {
+          "id"     : "D",
+          "method" : "GET",
+          "scheme" : "http",
+          "host"   : "www.nytimes.com",
+          "port"   : "80",
+          "path"   : "/"
+        },
+       {
+          "id"     : "F",
+          "method" : "GET",
+          "scheme" : "http",
+          "host"   : "www.gnuplotting.org",
+          "port"   : "80",
+          "path"   : "/"
+        },
+        {
+          "id"     : "G",
+          "method" : "GET",
+          "scheme" : "http",
+          "host"   : "www.lefigaro.fr",
+          "port"   : "80",
+          "path"   : "/"
+        },
+        {
+          "id"     : "H",
+          "method" : "GET",
+          "scheme" : "http",
+          "host"   : "www.lemonde.com",
+          "port"   : "80",
+          "path"   : "/"
+        },
+       {
+          "id"     : "K",
+          "method" : "GET",
+          "scheme" : "http",
+          "host"   : "blogs.perl.org",
+          "port"   : "80",
+          "path"   : "/"
+        },
+        {
+          "id"     : "L",
+          "method" : "GET",
+          "scheme" : "http",
+          "host"   : "perl6.org",
+          "port"   : "80",
+          "path"   : "/"
+        },
+        {
+          "id"     : "P",
+          "method" : "GET",
+          "scheme" : "http",
+          "host"   : "www.kodak.com",
+          "port"   : "80",
+          "path"   : "/"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "workloads" : [
+    {
+      "keepalive" : 0,
+      "name" : "",
+      "description" : "Authenticated proxy test",
+      "delay" : 5,
+      "proxy" : {
+        "hostname" : "localhost",
+        "port" : "80",
+        "username" : "krono",
+        "password" : "burris"
+      },
+      "requests" : [
+        {
+          "id" : "proxy",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.7mavida.com",
+          "port" : "80",
+          "path" : "/article/comida_en_la_granja"
+        }
+      ]
+    }
+  ]
+}

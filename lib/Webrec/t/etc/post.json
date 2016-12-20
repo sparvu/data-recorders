@@ -1,0 +1,27 @@
+{
+  "workloads" : [
+    {
+      "keepalive" : 0,
+      "name" : "",
+      "description" : "POST test",
+      "delay" : 5,
+      "proxy" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "password" : ""
+      },
+      "requests" : [
+        {
+          "id" : "post test",
+          "method" : "POST",
+          "scheme" : "http",
+          "host" : "127.0.0.1",
+          "port" : "8080",
+          "post" : "username=demo@mysite.com&password=pass123&submit=Sign%20in",
+          "path" : "/user/login"
+        }
+      ]
+    }
+  ]
+}
