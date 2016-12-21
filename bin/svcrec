@@ -23,8 +23,7 @@ use strict;
 use warnings;
 use JSON;
 use Getopt::Std;
-use Net::SSL::ExpireDate;
-use DateTime::Format::ISO8601;
+use Net::Ping;
 use Tie::IxHash;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
@@ -57,7 +56,7 @@ else {
 my $loop = 0;                           # current loop number
 $main::opt_h = 0;                       # help option
 $main::opt_V = 0;                       # revision option
-my $cfile = 'certrec.json';             # configuration file
+my $cfile = 'svcrec.json';              # configuration file
 my $cdata;                              # configuration data
 my $tp = 0;                             # time precision
 my $kfile     = 'kronometrix.json';     # configuration file
@@ -65,7 +64,6 @@ my $rawfile;                            # krd raw data file
 my $kdata;                              # configuration data
 my ($baselog, $curlog, $certlog, $log); # logs
 local $| = 1;
-
 
 ### MAIN BODY #
 
@@ -86,9 +84,9 @@ if ( $interval =~ /\./ ) {
 # read configuration
 $cdata = open_config($cfile);
 
-# servers
+# services
 tie my %work, "Tie::IxHash";
-%work = get_cert($cdata);
+%work = get_svc($cdata);
 
 # logging option
 if ($logging) {
@@ -98,8 +96,8 @@ if ($logging) {
 
     ## logs
     ( $baselog, $curlog ) = get_log($kdata);
-    $rawfile = $curlog . '/' . 'certrec' . '.krd';
-    $certlog = $baselog . "/certrec.log";
+    $rawfile = $curlog . '/' . 'svcrec' . '.krd';
+    $certlog = $baselog . "/svcrec.log";
     $log = open_file($certlog);
 
     # save STDERR to log file
@@ -128,16 +126,10 @@ while (1) {
     }
 
     # now time
-    my $format = DateTime::Format::ISO8601->new();
-    my $now = DateTime->now->iso8601;
-    my $dt_current  = $format->parse_datetime($now);
 
     for my $key (keys %work) {
         
         my $value = $work{$key};
-
-        #my $keyapp = $name . ":" . $id . ":" . $desc;
-        #my $hvalue = $host . ":" . $port . ":" . $type;
 
         my ($name, $id, $desc) = split( /:/, $key );
         my ($host, $port, $type) = split( /:/, $value );
@@ -154,35 +146,23 @@ while (1) {
         }
 
         my $t0 = time;
-
-        my $destination = $host . ':' . $port;
-        my $ed = Net::SSL::ExpireDate->new( $type => $destination );
-        my $duration;
-        my $days;
-        my $status;
-
-        if (defined $ed->expire_date) {
-            #
-            # return DateTime instance
-            my $expire_date = $ed->expire_date;
-
-            my $dt_resolved = $format->parse_datetime($expire_date);
- 
-            my $dur = $dt_resolved->delta_days($dt_current);
-            $days = $dur->in_units('days');    
-
-            $duration = $dt_resolved->epoch();
-
-            # examine already expired
-            my $expired = $ed->is_expired;
-            if (!$expired) { $status = 1; } 
-            else { $status=0; }
+        my $p = Net::Ping->new("tcp", 2);
+        $p->hires();
+        $p->port_number($port);
+        my ($ret, $duration, $ip) = $p->ping($host, 5);
+        my $status = 0;
+        my $pktime = 0;
+        $type = uc $type;
+        my $proto = $type . "(" . $port . ")"; 
+        if($ret) {
+            $status = 1;
+            $pktime = 1000 * $duration;
         }
 
         if ($logging) {          
-            printf $rawkrd "%.${tp}f:%s:%s:%d:%d\n", $t0, $idn, $duration, $days, $status;
+            printf $rawkrd "%.${tp}f:%s:%.2f:%s:%d\n", $t0, $idn, $pktime, $proto, $status;
         } else {
-            printf "%.${tp}f:%s:%s:%d:%d\n", $t0, $idn, $duration, $days, $status;
+            printf "%.${tp}f:%s:%.2f:%s:%d\n", $t0, $idn, $pktime, $proto, $status;
         }
     }
 
@@ -286,18 +266,18 @@ sub reload_config {
     ## hostid
     # get_hostid($cdata);
 
-    ## appliance destination
+    ## platform destination
     # %work = get_workload($cdata);
 
     return;
 }
 
 
-# get CertName defintion
-sub get_cert {
+# get service defintion
+sub get_svc {
 
     my ($data) = @_;
-    tie my %certs, "Tie::IxHash";
+    tie my %svcs, "Tie::IxHash";
 
     my @temp = @{ $data->{'server'} };
 
@@ -306,12 +286,12 @@ sub get_cert {
         my $name    = $f->{'name'};
         my $desc    = $f->{'description'};
 
-        my @reqs = @{ $f->{'certificates'} };
+        my @reqs = @{ $f->{'service'} };
 
         foreach my $req (@reqs) {
             my $id   = $req -> {'id'};
-            my $type = $req -> {'type'};
             my $host = $req -> {'host'};
+            my $type = $req -> {'type'};
             my $port = $req -> {'port'};
 
             my $keyapp;
@@ -323,11 +303,11 @@ sub get_cert {
                 
             my $hvalue = $host . ":" . $port . ":" . $type;
 
-            $certs{$keyapp} = $hvalue;
+            $svcs{$keyapp} = $hvalue;
         }
     }
 
-    return %certs;
+    return %svcs;
 }
 
 
@@ -358,7 +338,7 @@ sub open_file {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: certrec [-hlvV] | [interval]
+USAGE: svcrec [-hlvV] | [interval]
 OPTIONS:
   -h        : help information
   -l        : log raw data to krd file, no STDOUT
@@ -367,17 +347,12 @@ OPTIONS:
   interval  : maximum number of seconds between samples
 
  FIELDS:
-  #01 timestamp : UNIX time, time
+  #01 timestamp : UNIX time, number
   #02 name: service name, string
-  #03 duration: time until expiration defined as UNIX time, string
-  #04 days: number of days until expiration, string
-  #05 status, cetificate status: 1: valid or 0: invalid
+  #03 duration: paket return time in ms, number
+  #04 status, service status: 1: active or 0: not active
 
  NOTES:
-  certificate name is a generic name refering to a hostname, port where
-  a certain service, like IMAP, SMTP, POP3, HTTPS has been configured to
-  run using a X509 certificate. certrec is a single data message recorder, 
-  the output file: certrec.krd
 END
     exit 0;
 }
@@ -385,7 +360,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-svcrec: 1.1.0, 2016-12-20 1624
+svcrec: 1.1.0, 2016-12-21 1038
 END
     exit 0;
 }

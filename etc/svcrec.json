@@ -7,11 +7,13 @@
         {
           "id" : "imaps",
           "host" : "kronometrix.org",
+          "type" : "imaps",
           "port" : "993"
         },
         {
           "id" : "smtps",
           "host" : "kronometrix.org",
+          "type" : "smtps",
           "port" : "465"
         }
       ]
@@ -22,12 +24,14 @@
       "service" : [
         {
           "id" : "imaps",
-          "host" : "kronometrix.com",
+          "host" : "mail.kronometrix.com",
+          "type" : "imaps",
           "port" : "993"
         },
         {
           "id" : "smtps",
-          "host" : "kronometrix.com",
+          "host" : "mail.kronometrix.com",
+          "type" : "smtps",
           "port" : "465"
         }
       ]
