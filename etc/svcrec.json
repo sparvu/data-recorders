@@ -6,31 +6,27 @@
       "service" : [
         {
           "id" : "imaps",
-          "type" : "ssl",
           "host" : "kronometrix.org",
           "port" : "993"
         },
         {
           "id" : "smtps",
-          "type" : "ssl",
           "host" : "kronometrix.org",
           "port" : "465"
         }
       ]
     },
     {
-      "name" : "kronometrix.com",
+      "name" : "mail.kronometrix.com",
       "description" : "IMAP, SMTPS kronometrix.com",
       "service" : [
         {
           "id" : "imaps",
-          "type" : "ssl",
           "host" : "kronometrix.com",
           "port" : "993"
         },
         {
           "id" : "smtps",
-          "type" : "ssl",
           "host" : "kronometrix.com",
           "port" : "465"
         }
