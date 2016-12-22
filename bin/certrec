@@ -90,8 +90,15 @@ $cdata = open_config($cfile);
 tie my %work, "Tie::IxHash";
 %work = get_cert($cdata);
 
+# speedup option, default 1hr
+my $boot    = 60;             # we speedup 60 times 60sec
+my $speedup = 1;              # default on
+my $defint  = $interval;      # we save the original interval
+
 # logging option
 if ($logging) {
+
+    if ( $speedup == 1 ) { rstimer($boot); }
 
     # kronometrix.json config file
     $kdata = open_config($kfile);
@@ -136,9 +143,6 @@ while (1) {
         
         my $value = $work{$key};
 
-        #my $keyapp = $name . ":" . $id . ":" . $desc;
-        #my $hvalue = $host . ":" . $port . ":" . $type;
-
         my ($name, $id, $desc) = split( /:/, $key );
         my ($host, $port, $type) = split( /:/, $value );
 
@@ -156,10 +160,11 @@ while (1) {
         my $t0 = time;
 
         my $destination = $host . ':' . $port;
+        my $duration = 'NA';
+        my $days = 'NA';
+        my $status = 'NA';
+
         my $ed = Net::SSL::ExpireDate->new( $type => $destination );
-        my $duration;
-        my $days;
-        my $status;
 
         if (defined $ed->expire_date) {
             #
@@ -177,12 +182,19 @@ while (1) {
             my $expired = $ed->is_expired;
             if (!$expired) { $status = 1; } 
             else { $status=0; }
+        } else { print "i dont wanna be here ..."; }
+
+        if ($@) {
+            print "Error: cannot connect to: $host:$port\n";
+            $duration='NA';
+            $days='NA';
+            $status='NA';
         }
 
         if ($logging) {          
-            printf $rawkrd "%.${tp}f:%s:%s:%d:%d\n", $t0, $idn, $duration, $days, $status;
+            printf $rawkrd "%.${tp}f:%s:%s:%s:%s\n", $t0, $idn, $duration, $days, $status;
         } else {
-            printf "%.${tp}f:%s:%s:%d:%d\n", $t0, $idn, $duration, $days, $status;
+            printf "%.${tp}f:%s:%s:%s:%s\n", $t0, $idn, $duration, $days, $status;
         }
     }
 
@@ -192,6 +204,14 @@ while (1) {
 
     ### Check for end
     last if ++$loop == $loop_max;
+
+    ### Check for speedup
+    if ( $speedup > 0 ) {
+        if ( $speedup == $boot ) {
+            rstimer($defint);
+            $speedup = -1;
+        } else { $speedup++; }
+    }
 
     ### Interval
     pause;
@@ -355,6 +375,15 @@ sub open_file {
 }
 
 
+sub rstimer {
+
+    my ($lt) = @_;
+    my $fint = $lt;
+    setitimer( ITIMER_REAL, $fint, $lt );
+    return;
+}
+
+
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
@@ -385,7 +414,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-certrec: 1.1.0, 2016-12-19 1352
+certrec: 1.1.2, 2016-12-22 0808
 END
     exit 0;
 }

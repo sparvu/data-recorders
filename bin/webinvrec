@@ -102,6 +102,8 @@ my $rawkrd;
 # logging option
 if ($logging) {
 
+    if ( $speedup == 1 ) { rstimer($boot); }
+
     # kronometrix.json config file
     $kdata = open_config($kfile);
 
@@ -145,6 +147,14 @@ while (1) {
 
     ### Check for end
     last if ++$loop == $loop_max;
+
+    ### Check for speedup
+    if ( $speedup > 0 ) {
+        if ( $speedup == $boot ) {
+            rstimer($defint);
+            $speedup = -1;
+        } else { $speedup++; }
+    }
 
     ### Check for speedup
     if ( $speedup > 0 ) {
@@ -379,6 +389,15 @@ sub open_file {
 }
 
 
+sub rstimer {
+
+    my ($lt) = @_;
+    my $fint = $lt;
+    setitimer( ITIMER_REAL, $fint, $lt );
+    return;
+}
+
+
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
@@ -402,7 +421,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webinvrec: 1.1.3, 2016-12-12 1121
+webinvrec: 1.1.4, 2016-12-22 0808
 END
     exit 0;
 }
