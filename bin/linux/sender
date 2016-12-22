@@ -157,7 +157,7 @@ my $http = HTTP::Tiny->new(
           keep_alive => $tcpka,
           agent => "User-Agent: $agent");
 
-# whpd lookup table
+# cert, website, service lookup table
 my %lwhpd;
 
 # main loop
