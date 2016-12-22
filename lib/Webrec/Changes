@@ -1,6 +1,0 @@
-Revision history for Perl extension Kronometrix::Webrec::Queue.
-
-0.01  Mon Sep 26 18:47:35 2016
-	- original version; created by h2xs 1.23 with options
-		-X -b5.10.0 Kronometrix::Webrec::Queue
-
