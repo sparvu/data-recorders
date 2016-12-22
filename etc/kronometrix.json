@@ -10,56 +10,56 @@
       "file"   : "sysrec.krd",
       "sample" : 60,
       "status" : "active",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "cpu",
       "file"   : "cpurec.krd",
       "sample" : 60,
       "status" : "active",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "disk",
       "file"   : "diskrec.krd",
       "sample" : 60,
       "status" : "active",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "nic",
       "file"   : "nicrec.krd",
       "sample" : 60,
       "status" : "active",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "hdw",
       "file"   : "hdwrec.krd",
       "sample" : 3600,
       "status" : "active",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "net",
       "file"   : "netrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "jvm",
       "file"   : "jvmrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "proc",
       "file"   : "procrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "xen",
@@ -178,56 +178,21 @@
       "file"   : "direc.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "cpd", "wpd", "whpd", "dpd" ]
+      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
     },
     {
       "name"   : "ntp",
       "file"   : "ntprec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "whpd", "dpd" ]
+      "domain" : [ "dpd", "whpd" ]
     },
     {
-      "name"   : "svc_dns",
-      "file"   : "svc_dnsrec.krd",
+      "name"   : "svc",
+      "file"   : "svcrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "whpd", "dpd" ]
-    },
-    {
-      "name"   : "svc_ftp",
-      "file"   : "svc_ftprec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "whpd", "dpd" ]
-    },
-    {
-      "name"   : "svc_imap",
-      "file"   : "svc_imaprec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "whpd", "dpd" ]
-    },
-    {
-      "name"   : "svc_ldap",
-      "file"   : "svc_ldaprec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "whpd", "dpd" ]
-    },
-    {
-      "name"   : "svc_pop",
-      "file"   : "svc_poprec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "whpd", "dpd" ]
-    },
-    {
-      "name"   : "svc_smtp",
-      "file"   : "svc_smtprec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "whpd", "dpd" ]
+      "domain" : [ "dpd", "whpd" ]
     },
     {
       "name"   : "iaq_g01",
