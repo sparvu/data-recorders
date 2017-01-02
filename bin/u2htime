@@ -1,0 +1,61 @@
+#!/opt/kronometrix/perl/bin/perl
+#
+#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
+#  Initial Author: Stefan Parvu
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use warnings;
+use strict;
+use DateTime;
+
+while (<>) {
+    my $line = $_;
+
+    my($ktime, $payload) = split /:/, $line, 2;
+
+    if ($ktime !~ /(\d+)-(\d\d)-(\d\d)\s+(\d\d)/) {
+         $ktime = convert($ktime);
+    }
+    print $ktime, " ", $payload;
+}
+
+
+sub convert {
+    my ($input_date) = @_; 
+    my $fmtdate;
+
+    my $dt = DateTime->from_epoch( epoch => $input_date ); 
+    my $year   = $dt->year;
+    my $month  = $dt->month; # 1-12 - you can also use '$dt->mon'
+    my $day    = $dt->day; # 1-31 - also 'day_of_month', 'mday'
+    my $dow    = $dt->day_of_week; # 1-7 (Monday is 1) - also 'dow', 'wday'
+    my $hour   = $dt->hour; # 0-23
+    my $minute = $dt->minute; # 0-59 - also 'min'
+    my $second = $dt->second; # 0-61 (leap seconds!) - also 'sec'
+    my $doy    = $dt->day_of_year; # 1-366 (leap years) - also 'doy'
+    my $doq    = $dt->day_of_quarter; # 1.. - also 'doq'
+    my $qtr    = $dt->quarter; # 1-4
+    my $ymd    = $dt->ymd; # 1974-11-30
+    $ymd    = $dt->ymd('-'); # 1974/11/30 - also 'date'
+    my $hms    = $dt->hms; # 13:30:00
+    #$hms    = $dt->hms(''); # 13|30|00 - also 'time'
+
+    $fmtdate = $ymd . ' ' . $hms;
+
+    return $fmtdate;
+}
