@@ -128,7 +128,7 @@
       "name"   : "cert",
       "file"   : "certrec.krd",
       "sample" : 60,
-      "status" : "active",
+      "status" : "inactive",
       "domain" : [ "dpd", "whpd" ]
     },
     {
