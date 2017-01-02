@@ -67,9 +67,9 @@ my $token = "NA";                # token id
 my @files;
 
 ## configuration
-my $hostid;
 my ($baselog, $curlog, $slog);
 my @dbs;
+my $hostid;
 my %platform;
 
 local $| = 1;
@@ -91,7 +91,7 @@ my $agent = "Kronometrix/1.4.2 (kdr 1.1.3 sender $osname)";
 $cdata = open_config($cfile);
 
 ## hostid
-get_hostid($cdata);
+$hostid = get_hostid($cdata);
 
 ## logs
 ( $baselog, $curlog ) = get_log($cdata);
@@ -419,7 +419,7 @@ while (1) {
                     
                             # no dsid in the lookup whpd table
                             my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
+                            my $kkey = $dsname . $lid . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey, $idl);
                                 $tblk{$kkey} = $dsid;
@@ -432,7 +432,7 @@ while (1) {
                             $dsname = $devtemp;
                             # no dsid in the lookup whpd table
                             my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
+                            my $kkey = $dsname . $lid . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey, $idl);
                                 $tblk{$kkey} = $dsid;
@@ -457,7 +457,7 @@ while (1) {
                     
                             # no dsid in the lookup whpd table
                             my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
+                            my $kkey = $dsname . $lid . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey, $idl);
                                 $tblk{$kkey} = $dsid;
@@ -470,7 +470,7 @@ while (1) {
                             $dsname = $devtemp;
                             # no dsid in the lookup whpd table
                             my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
+                            my $kkey = $dsname . $lid . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey, $idl);
                                 $tblk{$kkey} = $dsid;
@@ -586,7 +586,7 @@ while (1) {
                              
                             # no dsid in the lookup whpd table
                             my $idl = 'web' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
+                            my $kkey = $dsname . $lid . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey, $idl);
                                 $tblk{$kkey} = $dsid;
@@ -600,7 +600,7 @@ while (1) {
                             $dsname = $devtemp;
                             # no dsid in the lookup whpd table
                             my $idl = 'web' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
+                            my $kkey = $dsname . $lid . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey, $idl);
                                 $tblk{$kkey} = $dsid;
@@ -628,7 +628,7 @@ while (1) {
                         $dsname = $devtemp;
                         # no dsid in the lookup whpd table
                         my $idl = 'webinv' . $lid;
-                        my $kkey = $dsname . $lid . $sid;
+                        my $kkey = $dsname . $lid . $hostid . $sid;
                         if (! exists($tblk{$kkey})) {
                             $dsid = make_wdsid($kkey, $idl);
                             $tblk{$kkey} = $dsid;
@@ -764,7 +764,7 @@ sub reload_config {
     $cdata = open_config($cfile);
 
     ## hostid
-    get_hostid($cdata);
+    $hostid = get_hostid($cdata);
 
     ## datafile
     @dbs = get_datafile($cdata);
@@ -854,10 +854,13 @@ sub get_hostid {
     my ($data) = @_;
 
     # get hostuuid
-    $hostid = new_hostid;
+    my $h = new_hostid;
 
     # populate DSID
-    make_hdsid($data, $hostid);
+    make_hdsid($data, $h);
+
+    # return hostid
+    return $h;
 }
 
 
@@ -1152,7 +1155,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.4, 2016-12-25 1553
+sender: 1.1.5, 2017-01-02 1111
 END
     exit 0;
 }
