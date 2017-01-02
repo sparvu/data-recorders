@@ -1,0 +1,104 @@
+#!/opt/kronometrix/perl/bin/perl
+#
+#  Copyright (c) 2017 Stefan Parvu (www.kronometrix.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use Time::HiRes;
+
+### VARS
+my $cfile = 'kronometrix.json';
+
+
+### MAIN BODY
+
+# read configuration
+my $cdata = open_config($cfile);
+
+## active data messages
+my @dbs = get_datafile($cdata);
+
+print "@dbs";
+
+
+### Subroutines
+
+## configuration file
+
+# open JSON configuration file
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+
+# get datafile
+sub get_datafile {
+
+    my ($data) = @_;
+
+    my $schilds = 0;
+    my @d;
+
+    my @temp = @{ $data->{'message'} };
+
+    # load d array
+    foreach my $f (@temp) {
+        next if ($f->{'status'} ne 'active');
+        push @d, $f->{'name'};
+        $schilds++;
+    }
+
+    return @d;
+}

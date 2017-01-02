@@ -25,7 +25,7 @@ OS_NAME=`uname -s`
 KRMX_PREFIX="/opt/kronometrix"
 KRMX_ETC=${KRMX_PREFIX}/etc
 KRMX_LOG=${KRMX_PREFIX}/log
-RECORDERS="sys cpu disk nic hdw"
+RECORDERS=`${KRMX_PREFIX}/bin/actmsg`
 
 # test all startups
 test -f ${KRMX_ETC}/sysrec.start  || exit 0
