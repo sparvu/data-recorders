@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2017 Stefan Parvu (www.kronometrix.org).
 #  Initial Author: Stefan Parvu
 #
 #  This program is free software; you can redistribute it and/or
@@ -21,15 +21,25 @@
 
 use warnings;
 use strict;
+use POSIX qw(isatty);
+use Time::HiRes qw(time);
 use DateTime;
 
+if (isatty(*STDIN)) {
+    my $epoch = time;
+    my $ctime = convert($epoch);
+    print "UNIX Time: $epoch is $ctime UTC\n";
+    exit 0;
+}
+
 while (<>) {
+
     my $line = $_;
 
     my($ktime, $payload) = split /:/, $line, 2;
 
     if ($ktime !~ /(\d+)-(\d\d)-(\d\d)\s+(\d\d)/) {
-         $ktime = convert($ktime);
+        $ktime = convert($ktime);
     }
     print $ktime, " ", $payload;
 }
