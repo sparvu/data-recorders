@@ -50,25 +50,6 @@ KRMX_CURRENT=${KRMX_LOG}/current
 KRMX_DAILY=${KRMX_LOG}/daily
 
 
-### RAW DATA FILES
-SYSREC_CUR=${KRMX_CURRENT}/sysrec.krd
-CPUREC_CUR=${KRMX_CURRENT}/cpurec.krd
-DISKREC_CUR=${KRMX_CURRENT}/diskrec.krd
-DIREC_CUR=${KRMX_CURRENT}/direc.krd
-NICREC_CUR=${KRMX_CURRENT}/nicrec.krd
-NETREC_CUR=${KRMX_CURRENT}/netrec.krd
-NTPREC_CUR=${KRMX_CURRENT}/ntprec.krd
-JVMREC_CUR=${KRMX_CURRENT}/jvmrec.krd
-HDWREC_CUR=${KRMX_CURRENT}/hdwrec.krd
-PROCREC_CUR=${KRMX_CURRENT}/procrec.krd
-XENREC_CUR=${KRMX_CURRENT}/xenrec.krd
-WEBREC_CUR=${KRMX_CURRENT}/webrec.krd
-WEBINVREC_CUR=${KRMX_CURRENT}/webinvrec.krd
-CERTREC_CUR=${KRMX_CURRENT}/certrec.krd
-SVCREC_CUR=${KRMX_CURRENT}/svcrec.krd
-WSREC_CUR=${KRMX_CURRENT}/wsrec.krd
-
-
 ### RECORDER LOG
 SYSREC_LOG=${KRMX_LOG}/sysrec.log
 CPUREC_LOG=${KRMX_LOG}/cpurec.log
@@ -80,6 +61,7 @@ NICREC_LOG=${KRMX_LOG}/nicrec.log
 NTPREC_LOG=${KRMX_LOG}/ntprec.log
 JVMREC_LOG=${KRMX_LOG}/jvmrec.log
 HDWREC_LOG=${KRMX_LOG}/hdwrec.log
+HTTPREC_LOG=${KRMX_LOG}/httprec.log
 RS485REC_LOG=${KRMX_LOG}/rs485rec.log
 PROCREC_LOG=${KRMX_LOG}/procrec.log
 XENREC_LOG=${KRMX_LOG}/xenrec.log
