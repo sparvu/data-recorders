@@ -1,0 +1,93 @@
+{
+  "modbus-rtu" : [
+    {
+      "port" : "/dev/ttyUSB0",
+      "baudrate" : 19200,
+      "parity" : "none",
+      "stopbits" : 2,
+      "timeout" : 10,
+      "iaq" : [
+        {
+          "unit": 1,
+          "vendor": "tongdy",
+          "model": "g01",
+          "description": "Kronometrix IAQ Series",
+          "function": 4,
+          "data": [
+            {
+              "name": "ta",
+              "type": "uint16",
+              "register": 10,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "rh",
+              "type": "uint16",
+              "register": 11,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "td",
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "rh" ]
+            },
+            {
+              "name": "co2",
+              "type": "uint16",
+              "register": 8,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "voc",
+              "type": "uint16",
+              "register": 9,
+              "length": 1,
+              "factor": 0.1
+            }
+          ]
+        },
+        {
+          "unit": 2,
+          "vendor": "vaisala",
+          "model": "gmw90",
+          "description": "Vaisala GMW90 Series",
+          "function": 3,
+          "data": [
+            {
+              "name": "ta",
+              "type": "uint16",
+              "register": 258,
+              "length": 1,
+              "factor": 0.01
+            },
+            {
+              "name": "rh",
+              "type": "uint16",
+              "register": 257,
+              "length": 1,
+              "factor": 0.01
+            },
+            {
+              "name": "td",
+              "type": "uint16",
+              "register": 259,
+              "length": 1,
+              "factor": 0.01
+            },
+            {
+              "name": "co2",
+              "type": "uint16",
+              "register": 256,
+              "length": 1,
+              "factor": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
