@@ -1,91 +1,77 @@
 {
-  "modbus-rtu" : [
+  "http" : [
     {
-      "port" : "/dev/ttyUSB0",
-      "baudrate" : 19200,
-      "parity" : "none",
-      "stopbits" : 2,
-      "timeout" : 10,
-      "iaq" : [
+      "name" : "Apache2",
+      "description" : "Apache2 Server",
+      "proxy" : {
+        "hostname" : "",
+        "port" : 8080,
+        "username" : "",
+        "password" : ""
+      },
+      "instance" : [
         {
-          "unit": 1,
-          "vendor": "tongdy",
-          "model": "g01",
-          "description": "Kronometrix IAQ Series",
-          "function": 4,
-          "data": [
+          "id" : "1",
+          "name" : "xxxx",
+          "host" : "localhost",
+          "port" : "8080",
+          "message" : [
             {
-              "name": "ta",
-              "type": "uint16",
-              "register": 10,
-              "length": 1,
-              "factor": 0.1
+              "name": "a2",
+              "scheme" : "http",
+              "method" : "GET",
+              "path" : "/server_status",
+              "description": "Apache2 Statistics",
+              "data": [ ]
             },
             {
-              "name": "rh",
-              "type": "uint16",
-              "register": 11,
-              "length": 1,
-              "factor": 0.1
+              "name": "a2inv",
+              "path" : "/server_info",
+              "description": "Apache2 Inventiory",
+              "data": [ ]
             },
             {
-              "name": "td",
-              "type": "virtual",
-              "id": "dewpoint",
-              "args": [ "ta", "rh" ]
-            },
-            {
-              "name": "co2",
-              "type": "uint16",
-              "register": 8,
-              "length": 1,
-              "factor": 1
-            },
-            {
-              "name": "voc",
-              "type": "uint16",
-              "register": 9,
-              "length": 1,
-              "factor": 0.1
+              "name": "a2bus",
+              "path" : "/server_info",
+              "description": "Apache2 Thread Busy",
+              "data": [ ]
             }
           ]
         },
         {
-          "unit": 2,
-          "vendor": "vaisala",
-          "model": "gmw90",
-          "description": "Vaisala GMW90 Series",
-          "function": 3,
-          "data": [
+          "id" : "2",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "localhost",
+          "port" : "8081",
+          "message" : [
             {
-              "name": "ta",
-              "type": "uint16",
-              "register": 258,
-              "length": 1,
-              "factor": 0.01
-            },
-            {
-              "name": "rh",
-              "type": "uint16",
-              "register": 257,
-              "length": 1,
-              "factor": 0.01
-            },
-            {
-              "name": "td",
-              "type": "uint16",
-              "register": 259,
-              "length": 1,
-              "factor": 0.01
-            },
-            {
-              "name": "co2",
-              "type": "uint16",
-              "register": 256,
-              "length": 1,
-              "factor": 1
-            }
+              "name": "a2",
+              "path" : "/server_status",
+              "description": "Apache2 Statistics",
+              "data": [ ]
+            } 
           ]
+        }
+      ]
+    },
+    {
+      "name" : "nginx",
+      "description" : "NGINX Server",
+      "proxy" : {
+        "hostname" : "",
+        "port" : 7000,
+        "username" : "",
+        "password" : ""
+      },
+      "instance" : [
+        {
+          "id" : "",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "localhost",
+          "port" : "8001",
+          "path" : "/"
         }
       ]
     }
