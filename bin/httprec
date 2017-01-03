@@ -529,7 +529,7 @@ sub open_file {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: webrec [-hlvV] | [interval]
+USAGE: httprec [-hlvV] | [interval]
 OPTIONS:
   -h        : help information
   -l        : log raw data to krd file, no STDOUT
@@ -538,28 +538,9 @@ OPTIONS:
   interval  : maximum number of seconds between samples
 
  FIELDS:
-  #01 timestamp : seconds since Epoch, time
-  #02 request   : the HTTP request name
-  #03 ttime     : total time, entire operation lasted, seconds
-  #04 ctime     : connect time it took from the start until the TCP 
-                  connect to the remote host (or proxy) was completed, seconds
-  #05 dnstime   : namelookup time, it took from the start until the name 
-                  resolving was completed, seconds
-  #06 ptime :     protocol time, it took from the start until the file 
-                  transfer was just about to begin, seconds
-  #07 pktime    : first packet time, it took from the start until the first 
-                  byte was just about to be transferred, seconds
-  #08 size      : page size, the total amount of bytes that were downloaded
-  #09 status    : response status code, the numerical response code 
-                  that was found in the last retrieved HTTP(S) transfer
 
  NOTES
- webrec reports TTFB (time to first byte) for one or many HTTP workloads, 
- applications, as an indication of the responsiveness. TTFB measures the 
- duration from the virtual user making an HTTP request to the first byte 
- of the page being received by the browser. This time is made up of the 
- socket connection time, the time taken to send the HTTP request, and the 
- time taken to get the first byte of the page.
+
 END
     exit 0;
 }
@@ -567,7 +548,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webrec: 1.1.3, 2016-12-12 1741
+httprec: 1.0.0, 2017-01-03 1558
 END
     exit 0;
 }
