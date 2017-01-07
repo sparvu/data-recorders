@@ -8,6 +8,8 @@
 
 ```
 
+![alt tag](https://github.com/kronometrix/recording/blob/master/perl_logo.png)
+
 ## Overview
 
 A simple and efficient set of data recorders and transport utilities fo ICT, Environmental Monitoring, Meteorology and IoT industries, responsible to record top essential performance metrics, save raw data and transport it for further analysis. 
