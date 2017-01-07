@@ -7,6 +7,7 @@
 |_|\_\_|  \___/|_| |_|\___/|_| |_| |_|\___|\__|_|  |_/_/\_\
 
 ```
+![alt tag](https://raw.githubusercontent.com/sparvu/kronometrix/recording/perl_logo.png)
 
 ## Overview
 
