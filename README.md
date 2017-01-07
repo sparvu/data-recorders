@@ -8,7 +8,7 @@
 
 ```
 
-![alt tag](https://github.com/kronometrix/recording/blob/master/perl_logo.png)
+![alt tag](https://github.com/kronometrix/recording/blob/master/logo.png)
 
 ## Overview
 
