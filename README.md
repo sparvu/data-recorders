@@ -1,5 +1,5 @@
 
-![alt tag](https://github.com/kronometrix/recording/blob/master/logo.png)
+![alt tag](https://github.com/kronometrix/recording/blob/master/logo.tiff)
 
 ## Overview
 
