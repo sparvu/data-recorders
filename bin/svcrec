@@ -131,7 +131,7 @@ while (1) {
         
         my $value = $work{$key};
 
-        my ($name, $id, $desc) = split( /:/, $key );
+        my ($name, $id, $desc, $zone) = split( /:/, $key );
         my ($host, $port, $type) = split( /:/, $value );
 
         my $idn;
@@ -142,7 +142,7 @@ while (1) {
         }
 
         if ($verbose) {
-            print "name=$idn host=$host port=$port type=$type\n";
+            print "name=$idn zone=$zone host=$host port=$port type=$type\n";
         }
 
         my $t0 = time;
@@ -160,9 +160,9 @@ while (1) {
         }
 
         if ($logging) {          
-            printf $rawkrd "%.${tp}f:%s:%.2f:%s:%d\n", $t0, $idn, $pktime, $proto, $status;
+            printf $rawkrd "%.${tp}f:%s:%.2f:%s:%s:%d\n", $t0, $idn, $pktime, $zone, $proto, $status;
         } else {
-            printf "%.${tp}f:%s:%.2f:%s:%d\n", $t0, $idn, $pktime, $proto, $status;
+            printf "%.${tp}f:%s:%.2f:%s:%s:%d\n", $t0, $idn, $pktime, $zone, $proto, $status;
         }
     }
 
@@ -285,6 +285,7 @@ sub get_svc {
 
         my $name    = $f->{'name'};
         my $desc    = $f->{'description'};
+        my $icao    = $f->{'zone'};
 
         my @reqs = @{ $f->{'service'} };
 
@@ -296,12 +297,12 @@ sub get_svc {
 
             my $keyapp;
             if ($name) {
-                $keyapp = $name . "_" . $id . ":" . $id . ":" . $desc;
+                $keyapp = $name . '_' . $id . ':' . $id . ':' . $desc . ':' . $icao;
             } else { 
-                $keyapp = $name . ":" . $id . ":" . $desc;
+                $keyapp = $name . ':' . $id . ':' . $desc . ':' . $icao;
             }
                 
-            my $hvalue = $host . ":" . $port . ":" . $type;
+            my $hvalue = $host . ':' . $port . ':' . $type;
 
             $svcs{$keyapp} = $hvalue;
         }
@@ -350,7 +351,9 @@ OPTIONS:
   #01 timestamp : UNIX time, number
   #02 name: service name, string
   #03 duration: paket return time in ms, number
-  #04 status, service status: 1: active or 0: not active
+  #04 zone : ICAO zone, the name of the region or country 
+  #05 inventory : service inventory description, string
+  #06 status, service status: 1: active or 0: not active
 
  NOTES:
 END
@@ -360,7 +363,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-svcrec: 1.1.0, 2016-12-21 1038
+svcrec: 1.1.1, 2017-01-09 1726
 END
     exit 0;
 }

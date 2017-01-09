@@ -1,35 +1,30 @@
 {
   "server" : [
     {
-      "name" : "kronometrix.org",
-      "description" : "IMAPS, SMTPS kronometrix.org",
+      "name" : "",
+      "description" : "",
+      "zone" : "lrop",
       "service" : [
         {
-          "id" : "imaps",
+          "id" : "kronometrix.org.imaps",
           "host" : "kronometrix.org",
           "type" : "imaps",
           "port" : "993"
         },
         {
-          "id" : "smtps",
+          "id" : "kronometrix.org.smtps",
           "host" : "kronometrix.org",
           "type" : "smtps",
           "port" : "465"
-        }
-      ]
-    },
-    {
-      "name" : "mail.kronometrix.com",
-      "description" : "IMAP, SMTPS kronometrix.com",
-      "service" : [
+        },
         {
-          "id" : "imaps",
+          "id" : "kronometrix.com.imaps",
           "host" : "mail.kronometrix.com",
           "type" : "imaps",
           "port" : "993"
         },
         {
-          "id" : "smtps",
+          "id" : "kronometrix.com.smtps",
           "host" : "mail.kronometrix.com",
           "type" : "smtps",
           "port" : "465"

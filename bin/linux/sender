@@ -1065,12 +1065,21 @@ sub send_data {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
 
-    } elsif ( $msg_id =~ /cert|svc/ ) {
+    } elsif ( $msg_id =~ /cert/ ) {
 
         #1481544913:imaps:1506258005:279:1
         my ( $t, $n, $v1, $v2, $v3 ) = split ( /:/, $delta );
         $n = $dev_id;
         $delta = join(':', $t, $n, $v1, $v2, $v3);
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$dname:$delta");
+        $post   = "$msg_id:$sid:$dsid:$dname:$delta:$hash";
+
+    } elsif ( $msg_id =~ /svc/ ) {
+
+        #1481544913:imaps:1506258005:279:1
+        my ( $t, $n, $v1, $v2, $v3, $v4 ) = split ( /:/, $delta );
+        $n = $dev_id;
+        $delta = join(':', $t, $n, $v1, $v2, $v3, $v4);
         $hash   = sha256krd("$msg_id:$sid:$dsid:$dname:$delta");
         $post   = "$msg_id:$sid:$dsid:$dname:$delta:$hash";
 
@@ -1147,7 +1156,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.6, 2017-01-06 1151
+sender: 1.1.7, 2017-01-09 1739
 END
     exit 0;
 }
