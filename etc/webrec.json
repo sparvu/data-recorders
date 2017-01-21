@@ -4,7 +4,7 @@
       "keepalive" : 0,
       "name" : "a1.ro",
       "description" : "Main Test",
-      "zone" : "lrop",
+      "zone" : "EFHK",
       "delay" : 0.1,
       "proxy" : {
         "hostname" : "",

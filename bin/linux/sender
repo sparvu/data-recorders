@@ -1077,9 +1077,9 @@ sub send_data {
     } elsif ( $msg_id =~ /svc/ ) {
 
         #1481544913:imaps:1506258005:279:1
-        my ( $t, $n, $v1, $v2, $v3, $v4 ) = split ( /:/, $delta );
+        my ( $t, $n, $v1, $v2, $v3, $v4, $v5 ) = split ( /:/, $delta );
         $n = $dev_id;
-        $delta = join(':', $t, $n, $v1, $v2, $v3, $v4);
+        $delta = join(':', $t, $n, $v1, $v2, $v3, $v4, $v5);
         $hash   = sha256krd("$msg_id:$sid:$dsid:$dname:$delta");
         $post   = "$msg_id:$sid:$dsid:$dname:$delta:$hash";
 
