@@ -1,33 +1,27 @@
 {
   "server" : [
     {
-      "name" : "",
+      "name" : "kronometrix.org service",
       "description" : "",
-      "zone" : "lrop",
+      "zone" : "EFHK",
       "service" : [
         {
-          "id" : "kronometrix.org.imaps",
+          "id" : "imaps",
           "host" : "kronometrix.org",
           "type" : "imaps",
           "port" : "993"
         },
         {
-          "id" : "kronometrix.org.smtps",
+          "id" : "smtps",
           "host" : "kronometrix.org",
           "type" : "smtps",
           "port" : "465"
         },
         {
-          "id" : "kronometrix.com.imaps",
-          "host" : "mail.kronometrix.com",
-          "type" : "imaps",
-          "port" : "993"
-        },
-        {
-          "id" : "kronometrix.com.smtps",
-          "host" : "mail.kronometrix.com",
-          "type" : "smtps",
-          "port" : "465"
+          "id" : "http",
+          "host" : "kronometrix.org",
+          "type" : "http",
+          "port" : "80"
         }
       ]
     }

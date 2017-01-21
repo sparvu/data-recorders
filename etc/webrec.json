@@ -2,8 +2,8 @@
   "workloads" : [
     {
       "keepalive" : 0,
-      "name" : "a1.ro",
-      "description" : "Main Test",
+      "name" : "kronometrix.org",
+      "description" : "korg",
       "zone" : "EFHK",
       "delay" : 0.1,
       "proxy" : {
@@ -17,33 +17,25 @@
           "id" : "main",
           "method" : "GET",
           "scheme" : "http",
-          "host" : "a1.ro",
+          "host" : "kronometrix.org",
           "port" : 80,
           "path" : "/"
         },
         {
-          "id" : "news",
+          "id" : "contact",
           "method" : "GET",
           "scheme" : "http",
-          "host" : "a1.ro",
+          "host" : "kronometrix.org",
           "port" : 80,
-          "path" : "/news"
-        },
-        {
-          "id" : "video",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "a1.ro",
-          "port" : 80,
-          "path" : "/video"
+          "path" : "/contact.html"
         }
       ]
     },
     {
       "keepalive" : 0,
       "name" : "",
-      "description" : "Main Website",
-      "zone" : "lrop",
+      "description" : "Single Homepage Sites",
+      "zone" : "EFHK",
       "delay" : 0.1,
       "proxy" : {
         "hostname" : "",
@@ -53,162 +45,34 @@
       },
       "requests" : [
         {
-          "id" : "www.protv.ro",
+          "id" : "www.kronometrix.com",
           "method" : "GET",
           "scheme" : "http",
-          "host" : "www.protv.ro",
+          "host" : "www.kronometrix.com",
           "port" : "80",
           "path" : "/"
         },
         {
-          "id" : "stirileprotv.ro",
+          "id" : "www.amazon.com",
           "method" : "GET",
           "scheme" : "http",
-          "host" : "stirileprotv.ro",
+          "host" : "www.amazon.com",
           "port" : "80",
           "path" : "/"
         },
         {
-          "id" : "www.incont.ro",
+          "id" : "www.facebook.com",
           "method" : "GET",
           "scheme" : "http",
-          "host" : "www.incont.ro",
+          "host" : "www.facebook.com",
           "port" : "80",
           "path" : "/"
         },
         {
-          "id" : "www.foodstory.ro",
+          "id" : "www.twitter.com",
           "method" : "GET",
           "scheme" : "http",
-          "host" : "www.foodstory.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "www.mtv.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.mtv.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "www.yoda.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.yoda.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "debarbati.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "debarbati.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "procinema.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "procinema.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "www.sport.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.sport.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "www.perfecte.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.perfecte.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "www.acasatv.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.acasatv.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "www.protvplus.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.protvplus.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "www.voyo.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.voyo.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "www.procinema.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.procinema.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "romaniiautalent.protv.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "romaniiautalent.protv.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "vocearomaniei.protv.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "vocearomaniei.protv.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "masterchef.protv.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "masterchef.protv.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "lasfierbinti.protv.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "lasfierbinti.protv.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-        {
-          "id" : "lamaruta.protv.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "lamaruta.protv.ro",
-          "port" : "80",
-          "path" : "/"
-        },
-	{
-          "id" : "www.astalavista.ro",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "www.astalavista.ro",
+          "host" : "www.twitter.com",
           "port" : "80",
           "path" : "/"
         }
