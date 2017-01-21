@@ -1,7 +1,7 @@
 {
   "server" : [
     {
-      "name" : "mail.kronometrix.org",
+      "name" : "kronometrix.org cert",
       "description" : "IMAPS, SMTPS kronometrix.org",
       "certificates" : [
         {
@@ -19,7 +19,7 @@
       ]
     },
     {
-      "name" : "mail.kronometrix.com",
+      "name" : "kronometrix.com cert",
       "description" : "IMAP, SMTPS kronometrix.com",
       "certificates" : [
         {
