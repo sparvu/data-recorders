@@ -8,6 +8,21 @@ if [ -f /opt/kronometrix/etc/kronometrix.json ]; then
     cp /opt/kronometrix/etc/kronometrix.json /opt/kronometrix/backup || :
 fi
 
+# make a copy of webrec.json svcrec.json
+if [ -f /opt/kronometrix/etc/webrec.json ]; then
+    if [ ! -d /opt/kronometrix/backup ]; then
+        mkdir /opt/kronometrix/backup
+    fi
+    cp /opt/kronometrix/etc/webrec.json /opt/kronometrix/backup || :
+fi
+
+if [ -f /opt/kronometrix/etc/svcrec.json ]; then
+    if [ ! -d /opt/kronometrix/backup ]; then
+        mkdir /opt/kronometrix/backup
+    fi
+    cp /opt/kronometrix/etc/svcrec.json /opt/kronometrix/backup || :
+fi
+
 update-rc.d -f kdr_agents remove >/dev/null 2>&1 || : 
 update-rc.d -f kdr_transport remove >/dev/null 2>&1 || :
 
@@ -18,7 +33,7 @@ if [ -f /etc/init.d/kdr_transport ]; then
     rm -f /etc/init.d/kdr_transport || :
 fi
 
-# uinstall
+# uninstall
 if [ -f /etc/init.d/kdr_agents ]; then
     /etc/init.d/kdr_agents stop >/dev/null 2>&1 || :
     rm -f /etc/init.d/kdr_agents || :
