@@ -414,7 +414,7 @@ OPTIONS:
   #01 timestamp : seconds since Epoch, time
   #02 request   : the request name
   #03 siteid    : the site-id for request
-  #04 zone      : ICAO zone, the name of the region or country 
+  #04 zone      : location, can be ICAO code, geo lat/lon, address
   #05 protocol  : request protocol type 
 
 END
@@ -424,7 +424,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webinvrec: 1.1.6, 2017-01-13 1441
+webinvrec: 1.1.7, 2017-01-25 1441
 END
     exit 0;
 }

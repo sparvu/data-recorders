@@ -352,7 +352,7 @@ OPTIONS:
   #02 name      : service name, string
   #03 duration  : paket return time in ms, number
   #04 siteid    : the site-id for request
-  #05 zone      : ICAO zone, the name of the region or country 
+  #05 zone      : location, can be ICAO code, geo lat/lon, address
   #06 inventory : service inventory description, string
   #07 status    : service status 1(active) and 0(not active)
 
