@@ -1,0 +1,92 @@
+{
+  "http" : [
+    {
+      "name" : "hrportal",
+      "description" : "Apache2 Server",
+      "proxy" : {
+        "hostname" : "",
+        "port" : 8080,
+        "username" : "",
+        "password" : ""
+      },
+      "instance" : [
+        {
+          "id" : "1",
+          "name" : "apache",
+          "host" : "localhost",
+          "port" : "8080",
+          "message" : [
+            {
+              "name": "a2",
+              "scheme" : "http",
+              "method" : "GET",
+              "path" : "/server_status",
+              "description": "Apache2 Statistics",
+              "data": [ ]
+            },
+            {
+              "name": "a2inv",
+              "path" : "/server_info",
+              "description": "Apache2 Inventiory",
+              "data": [ ]
+            },
+            {
+              "name": "a2bus",
+              "path" : "/server_info",
+              "description": "Apache2 Thread Busy",
+              "data": [ ]
+            }
+          ]
+        },
+        {
+          "id" : "2",
+          "name" : "apache",
+          "host" : "localhost",
+          "port" : "8081",
+          "message" : [
+            {
+              "name": "a2",
+              "scheme" : "http",
+              "method" : "GET",
+              "path" : "/server_status",
+              "description": "Apache2 Statistics",
+              "data": [ ]
+            },
+            {
+              "name": "a2inv",
+              "path" : "/server_info",
+              "description": "Apache2 Inventiory",
+              "data": [ ]
+            },
+            {
+              "name": "a2bus",
+              "path" : "/server_info",
+              "description": "Apache2 Thread Busy",
+              "data": [ ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "nginx",
+      "description" : "NGINX Server",
+      "proxy" : {
+        "hostname" : "",
+        "port" : 7000,
+        "username" : "",
+        "password" : ""
+      },
+      "instance" : [
+        {
+          "id" : "",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "localhost",
+          "port" : "8001",
+          "path" : "/"
+        }
+      ]
+    }
+  ]
+}

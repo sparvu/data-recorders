@@ -2,8 +2,9 @@
   "workloads" : [
     {
       "keepalive" : 0,
-      "name" : "",
-      "description" : "Main Website",
+      "name" : "kronometrix.org",
+      "description" : "korg",
+      "zone" : "EFHK",
       "delay" : 0.1,
       "proxy" : {
         "hostname" : "",
@@ -17,32 +18,63 @@
           "method" : "GET",
           "scheme" : "http",
           "host" : "kronometrix.org",
-          "port" : "80",
+          "port" : 80,
           "path" : "/"
-        },
-        {
-          "id" : "about",
-          "method" : "GET",
-          "scheme" : "http",
-          "host" : "kronometrix.org",
-          "port" : "80",
-          "path" : "/about.html"
         },
         {
           "id" : "contact",
           "method" : "GET",
           "scheme" : "http",
           "host" : "kronometrix.org",
-          "port" : "80",
+          "port" : 80,
           "path" : "/contact.html"
-        },
+        }
+      ]
+    },
+    {
+      "keepalive" : 0,
+      "name" : "",
+      "description" : "Single Homepage Sites",
+      "zone" : "EFHK",
+      "delay" : 0.1,
+      "proxy" : {
+        "hostname" : "",
+        "port" : 8080,
+        "username" : "",
+        "password" : ""
+      },
+      "requests" : [
         {
-          "id" : "recording",
+          "id" : "www.kronometrix.com",
           "method" : "GET",
           "scheme" : "http",
-          "host" : "kronometrix.org",
+          "host" : "www.kronometrix.com",
           "port" : "80",
-          "path" : "/recording/design.html"
+          "path" : "/"
+        },
+        {
+          "id" : "www.amazon.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.amazon.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.facebook.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.facebook.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.twitter.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.twitter.com",
+          "port" : "80",
+          "path" : "/"
         }
       ]
     }

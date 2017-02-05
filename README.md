@@ -1,12 +1,5 @@
 
-```
- _                                         _        _      
-| | ___ __ ___  _ __   ___  _ __ ___   ___| |_ _ __(_)_  __
-| |/ / '__/ _ \| '_ \ / _ \| '_ ` _ \ / _ \ __| '__| \ \/ /
-|   <| | | (_) | | | | (_) | | | | | |  __/ |_| |  | |>  < 
-|_|\_\_|  \___/|_| |_|\___/|_| |_| |_|\___|\__|_|  |_/_/\_\
-
-```
+![alt tag](https://github.com/kronometrix/recording/blob/master/logo.png)
 
 ## Overview
 
@@ -52,7 +45,10 @@ We plan to support and record data from different types of industries. For some 
  * nicrec - per NIC statistics
  * diskrec - per DISK statistics
  * hdwrec - the hardware, software data inventory
+ * jvmrec - Java VM statistics
  * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
+ * certrec - X.509 security certificate statistics
+ * svcrec - entreprise service statistics: IMAP, SMTP, POP3, LDAP, DNS, TCP(Any)
  * direc - per directory statistics 
  * ntprec - NTP server statistics
  * procrec - per process statistics

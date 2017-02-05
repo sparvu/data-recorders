@@ -1,5 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
-#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
+#
+#  Copyright (c) 2017 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -67,9 +68,9 @@ my $token = "NA";                # token id
 my @files;
 
 ## configuration
-my $hostid;
 my ($baselog, $curlog, $slog);
 my @dbs;
+my $hostid;
 my %platform;
 
 local $| = 1;
@@ -91,7 +92,7 @@ my $agent = "Kronometrix/1.4.2 (kdr 1.1.3 sender $osname)";
 $cdata = open_config($cfile);
 
 ## hostid
-get_hostid($cdata);
+$hostid = get_hostid($cdata);
 
 ## logs
 ( $baselog, $curlog ) = get_log($cdata);
@@ -153,12 +154,11 @@ foreach (@dbs) {
 }
 
 # init HTTP transport
-my $http = HTTP::Tiny->new(
-          keep_alive => $tcpka,
-          agent => "User-Agent: $agent");
+my $http = HTTP::Tiny->new( keep_alive => $tcpka, 
+                            agent => "User-Agent: $agent");
 
 # cert, website, service lookup table
-my %lwhpd;
+my %tblk;
 
 # main loop
 while (1) {
@@ -419,26 +419,25 @@ while (1) {
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
                             # no dsid in the lookup whpd table
-                            my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                         } else {
 
                             $dsname = $devtemp;
                             # no dsid in the lookup whpd table
-                            my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            # my $idl = 'svc' . $lid;
+                            my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                             $devid = "system";
@@ -457,26 +456,26 @@ while (1) {
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
                             # no dsid in the lookup whpd table
-                            my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            #my $idl = 'svc' . $lid;
+                            my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                         } else {
 
                             $dsname = $devtemp;
                             # no dsid in the lookup whpd table
-                            my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            # my $idl = 'svc' . $lid;
+                            my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                             $devid = "system";
@@ -499,26 +498,24 @@ while (1) {
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
                             # no dsid in the lookup whpd table
-                            my $idl = 'cert' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            my $kkey = $dsname . $lid . 'cert' . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                         } else {
 
                             $dsname = $devtemp;
                             # no dsid in the lookup whpd table
-                            my $idl = 'cert' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            my $kkey = $dsname . $lid . 'cert' . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                             $devid = "system";
@@ -538,26 +535,24 @@ while (1) {
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
                             # no dsid in the lookup whpd table
-                            my $idl = 'cert' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            my $kkey = $dsname . $lid . 'cert' . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                         } else {
 
                             $dsname = $devtemp;
                             # no dsid in the lookup whpd table
-                            my $idl = 'cert' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            my $kkey = $dsname . $lid . 'cert' . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                             $devid = "system";
@@ -586,13 +581,12 @@ while (1) {
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                              
                             # no dsid in the lookup whpd table
-                            my $idl = 'web' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
                             
 
@@ -600,13 +594,12 @@ while (1) {
 
                             $dsname = $devtemp;
                             # no dsid in the lookup whpd table
-                            my $idl = 'web' . $lid;
-                            my $kkey = $dsname . $lid . $sid;
-                            if (! exists($lwhpd{$kkey})) {
-                                $dsid = make_wdsid($kkey, $idl);
-                                $lwhpd{$kkey} = $dsid;
+                            my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
                             } else {
-                                $dsid = $lwhpd{$kkey};
+                                $dsid = $tblk{$kkey};
                             }
 
                             $devid = "system";
@@ -628,13 +621,12 @@ while (1) {
 
                         $dsname = $devtemp;
                         # no dsid in the lookup whpd table
-                        my $idl = 'webinv' . $lid;
-                        my $kkey = $dsname . $lid . $sid;
-                        if (! exists($lwhpd{$kkey})) {
-                            $dsid = make_wdsid($kkey, $idl);
-                            $lwhpd{$kkey} = $dsid;
+                        my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                        if (! exists($tblk{$kkey})) {
+                            $dsid = make_wdsid($kkey);
+                            $tblk{$kkey} = $dsid;
                         } else {
-                            $dsid = $lwhpd{$kkey};
+                            $dsid = $tblk{$kkey};
                         }
 
                         $devid = "system";
@@ -648,12 +640,24 @@ while (1) {
                 }
             }
 
-            print "\n" . $_->{"input"} . " payload[" . $delta . "]"
-              if ( $verbose == 1 );
+            my $bufin = $_->{"input"};
+
+            writelog ("$bufin payload[$delta]")
+              if ( $verbose );
 
         }    # for
 
     }    # else raw data
+
+    # table lookup 
+    if ($verbose) {
+        my $tblk_keys = keys(%tblk);
+        writelog ("Table lookup DSID: $tblk_keys");
+        for my $key ( keys %tblk ) {
+            my $value = $tblk{$key};
+            writelog ("$key => $value");
+        }
+    }
 
 }    # while loop
 
@@ -753,7 +757,7 @@ sub reload_config {
     $cdata = open_config($cfile);
 
     ## hostid
-    get_hostid($cdata);
+    $hostid = get_hostid($cdata);
 
     ## datafile
     @dbs = get_datafile($cdata);
@@ -843,10 +847,13 @@ sub get_hostid {
     my ($data) = @_;
 
     # get hostuuid
-    $hostid = new_hostid;
+    my $h = new_hostid;
 
     # populate DSID
-    make_hdsid($data, $hostid);
+    make_hdsid($data, $h);
+
+    # return hostid
+    return $h;
 }
 
 
@@ -921,10 +928,9 @@ sub make_hdsid {
 # make website data source ids, dsid
 sub make_wdsid {
 
-    my ($name, $idl) = @_;
+    my ($name) = @_;
 
-    my $str = $name . $idl;
-    my $wdsid = create_uuid_as_string(UUID_V5,$str);
+    my $wdsid = create_uuid_as_string(UUID_V5,$name);
     chomp($wdsid);
 
     writelog("info: make_dsid - name=$name => $wdsid");
@@ -1059,12 +1065,21 @@ sub send_data {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
 
-    } elsif ( $msg_id =~ /cert|svc/ ) {
+    } elsif ( $msg_id =~ /cert/ ) {
 
         #1481544913:imaps:1506258005:279:1
         my ( $t, $n, $v1, $v2, $v3 ) = split ( /:/, $delta );
         $n = $dev_id;
         $delta = join(':', $t, $n, $v1, $v2, $v3);
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$dname:$delta");
+        $post   = "$msg_id:$sid:$dsid:$dname:$delta:$hash";
+
+    } elsif ( $msg_id =~ /svc/ ) {
+
+        #1481544913:imaps:1506258005:279:1
+        my ( $t, $n, $v1, $v2, $v3, $v4, $v5 ) = split ( /:/, $delta );
+        $n = $dev_id;
+        $delta = join(':', $t, $n, $v1, $v2, $v3, $v4, $v5);
         $hash   = sha256krd("$msg_id:$sid:$dsid:$dname:$delta");
         $post   = "$msg_id:$sid:$dsid:$dname:$delta:$hash";
 
@@ -1141,7 +1156,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.3, 2016-12-22 0658
+sender: 1.1.7, 2017-01-09 1739
 END
     exit 0;
 }

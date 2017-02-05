@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 #
-#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2017 Stefan Parvu (www.kronometrix.org).
 #  Initial Author: Stefan Parvu
 #
 #  This program is free software; you can redistribute it and/or
@@ -285,6 +285,7 @@ sub get_workload {
     foreach my $f (@temp) {
 
         my $name = $f->{'name'};
+        my $icao = $f->{'zone'};
 
         my @reqs = @{ $f->{'requests'} };
 
@@ -293,7 +294,7 @@ sub get_workload {
             my $id  = $req -> {'id'};
             my $scm = $req -> {'scheme'};
 
-            # print "$name:$id => $scm\n";
+            #print "$name:$id => $scm\n";
             my $keyapp;
 
             if ($name) {
@@ -301,11 +302,11 @@ sub get_workload {
                 if ( $k > 0 ) {
                     $hvalue = $hvalue . ' ' . $id . "_" . $scm;
                 } else {
-                    $hvalue = $id . "_" . $scm;
+                    $hvalue = $name . ':' . $icao . ':' . $id . "_" . $scm;
                 }
             } else {
                 $keyapp = $id;
-                $hvalue = 'system' . "_" . $scm;
+                $hvalue = $id . ':' . $icao . ':' . 'system' . "_" . $scm;
             }
             $k++;
 
@@ -412,7 +413,9 @@ OPTIONS:
  FIELDS:
   #01 timestamp : seconds since Epoch, time
   #02 request   : the request name
-  #03 protocol  : request protocol type 
+  #03 siteid    : the site-id for request
+  #04 zone      : location, can be ICAO code, geo lat/lon, address
+  #05 protocol  : request protocol type 
 
 END
     exit 0;
@@ -421,7 +424,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webinvrec: 1.1.4, 2016-12-22 0808
+webinvrec: 1.1.7, 2017-01-25 1441
 END
     exit 0;
 }

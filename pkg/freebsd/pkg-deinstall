@@ -12,6 +12,22 @@ if [ "X$2" == "XDEINSTALL" ]; then
         cp /opt/kronometrix/etc/kronometrix.json /opt/kronometrix/backup
     fi
 
+    # make a copy of webrec.json
+    if [ -f /opt/kronometrix/etc/webrec.json ]; then
+        if [ ! -d /opt/kronometrix/backup ]; then
+            mkdir /opt/kronometrix/backup
+        fi
+        cp /opt/kronometrix/etc/webrec.json /opt/kronometrix/backup
+    fi
+
+    # make a copy of svcrec.json
+    if [ -f /opt/kronometrix/etc/svcrec.json ]; then
+        if [ ! -d /opt/kronometrix/backup ]; then
+            mkdir /opt/kronometrix/backup
+        fi
+        cp /opt/kronometrix/etc/svcrec.json /opt/kronometrix/backup
+    fi
+
     chown -R krmx:krmx /opt/kronometrix/backup
 fi
 

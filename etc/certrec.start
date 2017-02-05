@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#  Copyright (c) 2016 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2017 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -24,7 +24,7 @@
 # ######### #
 
 # resolution interval in seconds
-RES=86400
+RES=3600
 
 PWD=`dirname $0`
 if [ $PWD = "." ]; then
