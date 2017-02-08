@@ -257,7 +257,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-sysrec";     }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-sysrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-sysrec"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-sysrec"; }
 
                 } elsif ($cpurec_on) {
 
@@ -268,7 +267,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-cpurec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-cpurec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-cpurec"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-cpurec"; }
 
                 } elsif ($diskrec_on) {
 
@@ -279,7 +277,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-diskrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-diskrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-diskrec"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-diskrec";}
 
                 } elsif ($direc_on) {
                     
@@ -290,7 +287,6 @@ while (1) {
                     if ($lid eq 'cpd')  { $f=1; $msgid = "$osname-direc"; }
                  elsif ($lid eq 'dpd')  { $f=1; $msgid = "dpd-$osname-direc"; }
                  elsif ($lid eq 'wpd')  { $f=1; $msgid = "wpd-$osname-direc"; }
-                 elsif ($lid eq 'whpd') { $f=1; $msgid = "whpd-$osname-direc"; }
 
                 } elsif ($nicrec_on) {
 
@@ -301,7 +297,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-nicrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-nicrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-nicrec"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-nicrec"; }
 
                 } elsif ($netrec_on) {
 
@@ -312,7 +307,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-netrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-netrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-netrec"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-netrec"; }
 
                 } elsif ($ntprec_on) {
 
@@ -321,7 +315,6 @@ while (1) {
 
                     # message id
                     if ($lid eq 'dpd' ) { $f=1; $msgid = "dpd-$osname-ntprec"; }
-                 elsif ($lid eq 'whpd') { $f=1; $msgid = "whpd-$osname-ntprec";}
 
                 } elsif ($jvmrec_on) {
 
@@ -332,7 +325,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-jvmrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-jvmrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-jvmrec"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-jvmrec"; }
 
                 } elsif ($iaq_g01rec_on) {
 
@@ -367,7 +359,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-procrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-procrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-procrec"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-procrec";}
 
                 } elsif ($zonerec_on) {
 
@@ -387,7 +378,6 @@ while (1) {
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-hdwrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-hdwrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-hdwrec"; }
-                 elsif ($lid eq 'whpd'){ $f=1; $msgid = "whpd-$osname-hdwrec"; }
 
                 } elsif ($xenrec_on) {
 
@@ -1156,7 +1146,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.7, 2017-01-09 1739
+sender: 1.1.8, 2017-02-08 1616
 END
     exit 0;
 }
