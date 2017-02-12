@@ -10,56 +10,56 @@
       "file"   : "sysrec.krd",
       "sample" : 60,
       "status" : "active",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "cpu",
       "file"   : "cpurec.krd",
       "sample" : 60,
       "status" : "active",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "disk",
       "file"   : "diskrec.krd",
       "sample" : 60,
       "status" : "active",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "nic",
       "file"   : "nicrec.krd",
       "sample" : 60,
       "status" : "active",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "hdw",
       "file"   : "hdwrec.krd",
       "sample" : 3600,
       "status" : "active",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "net",
       "file"   : "netrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "jvm",
       "file"   : "jvmrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "proc",
       "file"   : "procrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "xen",
@@ -94,35 +94,35 @@
       "file"   : "a2rec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "a2inv",
       "file"   : "a2invrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "a2bus",
       "file"   : "a2busrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "ngx",
       "file"   : "ngxrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "ngxinv",
       "file"   : "ngxinvrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "cert",
@@ -136,49 +136,49 @@
       "file"   : "pgrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "pginv",
       "file"   : "pginvrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "mdb",
       "file"   : "mdbrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "mdbinv",
       "file"   : "mdbinvrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "mysql",
       "file"   : "mysqlrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "mysqlinv",
       "file"   : "mysqlinvrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "wpd" ]
     },
     {
       "name"   : "dir",
       "file"   : "direc.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "cpd", "dpd", "wpd", "whpd" ]
+      "domain" : [ "cpd", "dpd", "wpd" ]
     },
     {
       "name"   : "ntp",
