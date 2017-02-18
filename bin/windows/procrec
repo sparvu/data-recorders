@@ -629,8 +629,10 @@ USAGE: procrec [-lhV] | [interval [count]]
        procrec -install auto
        procrec -remove
  eg. 
-  procrec.exe                 # default CLI mode, print per disk stats stdout 
-  procrec -p pid,...         # monitor a list of PIDs
+  procrec.exe                # default CLI mode, print per disk stats stdout 
+  procrec.exe -n name        # monitor a list of processes with a specific name,
+                             # where name is a Perl regex
+  procrec.exe -p pid,...     # monitor a list of processes, using process IDs
   procrec.exe -install auto  # run as a service, every 60s, default krdlog
   procrec.exe -remove        # stop and remove the service 
 
@@ -645,7 +647,7 @@ USAGE: procrec [-lhV] | [interval [count]]
    #08 totalpct   : total cpu utilization, percentage
 
  NOTES:
-   Per process data source: Win32_PerfRawData_PerfProc_Process   
+   Data source: Win32_PerfRawData_PerfProc_Process
 
 END
     return;
@@ -656,7 +658,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-procrec: 1.0.0, 2017-02-18 1252
+procrec: 1.0.0, 2017-02-18 1343
 END
     return;
 }
