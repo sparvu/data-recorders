@@ -31,29 +31,28 @@ use Time::Local;
 use Win32::Process;
 use JSON;
 
-
 # Debug Only
 #use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my $recid           = 'cpurec';
-my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
-my ($l, $v, $h, $V) = 0;
-our %Config         = (ServiceName => $recid);
+my $recid   = 'cpurec';
+my $cprefix = 'C:\\Program Files\\Kronometrix\\etc';
+my ( $l, $v, $h, $V ) = 0;
+our %Config = ( ServiceName => $recid );
 
 Getopt::Long::Configure('bundling');
-my $result = GetOptions (
-                "l|logging" => \$l,
-                "v|verbose" => \$v,
-                "h|help"    => \$h,
-                "V|version" => \$V,
-                "n|name=s" => \$Config{ServiceName}
-                );
+my $result = GetOptions(
+    "l|logging" => \$l,
+    "v|verbose" => \$v,
+    "h|help"    => \$h,
+    "V|version" => \$V,
+    "n|name=s"  => \$Config{ServiceName}
+);
 
-usage() if (defined $h || ! $result);
-revision() if (defined $V);
+usage() if ( defined $h || !$result );
+revision() if ( defined $V );
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -68,12 +67,12 @@ else {
 }
 
 ### Variables
-my $loop        = 0;                      # current loop number
-my $cf          = 'kronometrix.json';     # default json config
-my $logtime     = '0000';                 # min time check 23:59
-my $stime;                                # sleep timer
-my $last_time   = 0;                      # first counter
-local $|= 1;                              # autoflush
+my $loop    = 0;                     # current loop number
+my $cf      = 'kronometrix.json';    # default json config
+my $logtime = '0000';                # min time check 23:59
+my $stime;                           # sleep timer
+my $last_time = 0;                   # first counter
+local $| = 1;                        # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
@@ -85,7 +84,7 @@ my $curentProcess;
 
 my $pid = Win32::Process::GetCurrentProcessID();
 
-if (Win32::Process::Open($curentProcess, $pid, 0)) {
+if ( Win32::Process::Open( $curentProcess, $pid, 0 ) ) {
     $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
 }
 
@@ -103,162 +102,182 @@ my $rawlog;
 
 if ($logging) {
     $rawlog = open_file($fkrd);
-    $log = open_file($fname);
-    write_log ("info: started");
+    $log    = open_file($fname);
+    write_log("info: started");
 }
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-    or die "Cannot initialize WMI interface\n";
-
+  or die "Cannot initialize WMI interface\n";
 
 my $key = 'Name';
 
 my @cpustats = qw(
-                   PercentIdleTime       PercentProcessorTime 
-		   PercentPrivilegedTime PercentUserTime 
-		   PercentInterruptTime  PercentDPCTime TimeStamp_Sys100NS);
+  PercentIdleTime       PercentProcessorTime
+  PercentPrivilegedTime PercentUserTime
+  PercentInterruptTime  PercentDPCTime TimeStamp_Sys100NS);
 my $hash1 = {};
 
 my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-        or die "Failed to get instance object\n";
+  or die "Failed to get instance object\n";
 
-foreach my $w32 (in $list) {
+foreach my $w32 ( in $list) {
     next if $w32->{$key} eq '_Total';
-    map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
+    map { $hash1->{ $w32->{$key} }->{$_} = $w32->{$_} } @cpustats;
 }
 
-unless (defined &ContinueRun) {
-    *ContinueRun = sub { return 1 };
+unless ( defined &ContinueRun ) {
+    *ContinueRun      = sub { return 1 };
     *RunningAsService = sub { return 0 };
     Interactive();
 }
 
-if (RunningAsService()) {
+if ( RunningAsService() ) {
 
     # get service sample interval
     $interval = get_ssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
-    $log = open_file($fname);
+    $log    = open_file($fname);
 
-    write_log ("info: started");
+    write_log("info: started");
 }
-
 
 ### SUBROUTINES
 
-
 sub Startup {
 
-    while(ContinueRun()) {
+    while ( ContinueRun() ) {
 
-    k_sleep();
+        k_sleep();
 
-    #my $start = [gettimeofday];
+        #my $start = [gettimeofday];
 
-    my ($cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct);
-    my %cstat;
+        my ( $cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct );
+        my %cstat;
 
-    $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-	        or die "Failed to get instance object\n";
+        $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+          or die "Failed to get instance object\n";
 
-    my $hash = {};
+        my $hash = {};
 
-    foreach my $w32 (in $list) {
-	next if $w32->{$key} eq '_Total';
-	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
-    }
+        foreach my $w32 ( in $list) {
+            next if $w32->{$key} eq '_Total';
+            map { $hash->{ $w32->{$key} }->{$_} = $w32->{$_} } @cpustats;
+        }
 
-    #print "cpus " . keys(%$hash) . ".\n";
-    # print Dumper($hash);
+        #print "cpus " . keys(%$hash) . ".\n";
+        # print Dumper($hash);
 
-    for my $k (keys %$hash) {
+        for my $k ( keys %$hash ) {
 
-        $cpuid = $k;
+            $cpuid = $k;
 
-        $totalpct = sprintf("%.2f", (1 - get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentProcessorTime' )) * 100);
+            $totalpct = sprintf(
+                "%.2f",
+                (
+                    1 - get_value(
+                        $hash1->{"$k"}, $hash->{"$k"},
+                        'PercentProcessorTime'
+                    )
+                ) * 100
+            );
 
-	#$idlepct = sprintf("%.2f", 100-$totalpct);
+            #$idlepct = sprintf("%.2f", 100-$totalpct);
 
-        $userpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentUserTime' )* 100);
+            $userpct = sprintf( "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentUserTime' ) *
+                  100 );
 
-        $syspct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' )* 100);
+            $syspct = sprintf(
+                "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"},
+                    'PercentPrivilegedTime' ) * 100
+            );
 
-        $irqpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentInterruptTime' )* 100);
+            $irqpct = sprintf(
+                "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"},
+                    'PercentInterruptTime' ) * 100
+            );
 
-        $dpcpct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentDPCTime' )* 100);
+            $dpcpct = sprintf( "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentDPCTime' ) *
+                  100 );
 
-        $idlepct = sprintf("%.2f", get_value($hash1->{"$k"}, $hash->{"$k"}, 'PercentIdleTime' )* 100);
+            $idlepct = sprintf( "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentIdleTime' ) *
+                  100 );
 
-	$cstat{$cpuid} = "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
+            $cstat{$cpuid} =
+              "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
 
-    }
+        }
 
-    $hash1 = $hash;
+        $hash1 = $hash;
 
-    # end payload
-    my $tnow = [gettimeofday];
+        # end payload
+        my $tnow = [gettimeofday];
 
-    # cktime for rotation
-    if (RunningAsService()) {
-        cktime();
-    }
+        # cktime for rotation
+        if ( RunningAsService() ) {
+            cktime();
+        }
 
-    if ($last_time > 0) {
+        if ( $last_time > 0 ) {
 
-        putraw($$tnow[0], %cstat);
+            putraw( $$tnow[0], %cstat );
 
-        $last_time = $$tnow[0];
+            $last_time = $$tnow[0];
 
-    } else {
+        }
+        else {
 
-        putraw($$tnow[0], %cstat);
+            putraw( $$tnow[0], %cstat );
 
-        if (!RunningAsService()) {
+            if ( !RunningAsService() ) {
+
+                # check count, interval
+                last if ++$loop == $loop_max;
+            }
+
+            $last_time = $$tnow[0];
+            next;
+        }
+
+        if ( !RunningAsService() ) {
+
             # check count, interval
-	    last if ++$loop == $loop_max;
-	}
+            last if ++$loop == $loop_max;
+        }
 
-	$last_time = $$tnow[0];
-        next;
-    }
+    }    # while loop
 
-
-    if (!RunningAsService()) {
-        # check count, interval
-        last if ++$loop == $loop_max;
-    }
-
-
-    } # while loop
-
-    if (RunningAsService()) {
-        write_log ("info: stopped");
+    if ( RunningAsService() ) {
+        write_log("info: stopped");
     }
 }
-
 
 sub Interactive {
 
     Install();
 
-    if (( ! defined $h ) and (! defined $V)) {
+    if ( ( !defined $h ) and ( !defined $V ) ) {
         Startup();
     }
 }
 
-
 sub Install {
 
-    if (RunningAsService()) {
+    if ( RunningAsService() ) {
+
         # check for proper config file
-        if (! defined $cdata) {
+        if ( !defined $cdata ) {
             die "Cant install $Config{ServiceName} service, exiting...\n";
         }
 
-        if (! defined $clog ) {
+        if ( !defined $clog ) {
             die "Cant install $Config{ServiceName} service, exiting...\n";
         }
     }
@@ -269,47 +288,42 @@ sub Install {
     return;
 }
 
-
 sub Remove {
 
     $Config{ServiceName} = $recid;
     return;
 }
 
-
 # k_sleep - sleeps exact number of usec
 #
 sub k_sleep {
 
-    my $t = [gettimeofday];
-    my $next = (int($t->[0]/$interval) + 1) * $interval;
-    my $delta = tv_interval ($t, [$next, 0]);
-    usleep($delta * 1_000_000);
+    my $t     = [gettimeofday];
+    my $next  = ( int( $t->[0] / $interval ) + 1 ) * $interval;
+    my $delta = tv_interval( $t, [ $next, 0 ] );
+    usleep( $delta * 1_000_000 );
 
     return;
 }
-
 
 # get_value - get delta between samples
 #
 sub get_value {
 
-    my ($h1, $h2, $property) = @_; 
+    my ( $h1, $h2, $property ) = @_;
 
     my $delta = 0;
 
-    my $v2  = $h2->{$property};
-    my $v1  = $h1->{$property};
+    my $v2 = $h2->{$property};
+    my $v1 = $h1->{$property};
 
-    my $t2  = $h2->{'TimeStamp_Sys100NS'};
-    my $t1  = $h1->{'TimeStamp_Sys100NS'};
+    my $t2 = $h2->{'TimeStamp_Sys100NS'};
+    my $t1 = $h1->{'TimeStamp_Sys100NS'};
 
-    eval {
-        $delta = ( ($v2 - $v1) / ($t2 - $t1) );
-    };
+    eval { $delta = ( ( $v2 - $v1 ) / ( $t2 - $t1 ) ); };
 
     if ($@) {
-        chomp ($@);
+        chomp($@);
         write_log("$@");
         write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
@@ -319,33 +333,32 @@ sub get_value {
     return $delta;
 }
 
-
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ($traw, %c)  = @_;
+    my ( $traw, %c ) = @_;
 
-    if (RunningAsService()) {
+    if ( RunningAsService() ) {
 
-	for my $k (sort keys %c) {
+        for my $k ( sort keys %c ) {
             printf $rawlog "%s:%s\n", $traw, $c{$k};
-	}
+        }
 
-    } else {
-        if ( $logging ) {
+    }
+    else {
+        if ($logging) {
 
-	    for my $k (sort keys %c) {
+            for my $k ( sort keys %c ) {
                 printf $rawlog "%s:%s\n", $traw, $c{$k};
-	    }
+            }
 
-	}
+        }
 
-	for my $k (sort keys %c) {
+        for my $k ( sort keys %c ) {
             printf "%s:%s\n", $traw, $c{$k};
-	}
+        }
     }
 }
-
 
 # chklog - check log directory
 #
@@ -353,17 +366,17 @@ sub chklog {
 
     my ($dir) = @_;
 
-    if (defined $dir) {
-        if (! -d $dir) {
+    if ( defined $dir ) {
+        if ( !-d $dir ) {
             die "error: chklog - cannot find $dir directory";
         }
-    } else {
+    }
+    else {
         die "error: chklog - cannot find $dir directory";
     }
 
     return;
 }
-
 
 # open_data - open data file
 #
@@ -373,23 +386,22 @@ sub open_file {
     my ($file) = @_;
     my $fh;
 
-    if (-f $file) {
-        open $fh, "+>>", "$file" or 
-	  die "error: open_file - cannot open $file $!";
-	seek $fh, 0, 2;
-        select ((select ($fh), $| = 1)[0]);
+    if ( -f $file ) {
+        open $fh, "+>>", "$file"
+          or die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select( ( select($fh), $| = 1 )[0] );
 
-    } else {
-        open $fh, "+>", "$file" or 
-	  die "error: open_file - cannot open $file $!";
-        select ((select ($fh), $| = 1)[0]);
+    }
+    else {
+        open $fh, "+>", "$file"
+          or die "error: open_file - cannot open $file $!";
+        select( ( select($fh), $| = 1 )[0] );
 
     }
 
     return $fh;
 }
-
-
 
 # open_config - open JSON configuration file
 #
@@ -402,30 +414,32 @@ sub open_config {
         local $/;
 
         # we will parse now the file
-	if ( defined $ENV{'KRMX_PREFIX'} ) {
-	    if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
-	        open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
-	        $json_data = <$fh>;
-	        close $fh;
-	    } else {
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
                 die "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-	    }
-	} else {
-	    if ( -e "$cprefix\\$conf" ) {
-		open my $fh, "<", "$cprefix\\$conf";
-		$json_data = <$fh>;
-		close $fh;
-	    } else { 
-	        die "error: open_config - $! $conf \n"; 
-	    }
-	} 
+            }
+        }
+        else {
+            if ( -e "$cprefix\\$conf" ) {
+                open my $fh, "<", "$cprefix\\$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                die "error: open_config - $! $conf \n";
+            }
+        }
     }
-    
-    my $perl_data = JSON->new->utf8->decode($json_data); 
-    
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
     return $perl_data;
 }
-
 
 # get_Ssi - get service sample interval
 #
@@ -433,20 +447,19 @@ sub get_ssi {
     my ($data) = @_;
     my $ssi;
 
-    my $rpref = substr($recid,0,-3);
+    my $rpref = substr( $recid, 0, -3 );
 
     my @recs = @{ $data->{'message'} };
 
     foreach my $rh (@recs) {
         next if ( $rh->{'name'} ne $rpref );
-	$ssi = $rh->{'sample'};
+        $ssi = $rh->{'sample'};
     }
 
-    $ssi = 60 if (! defined $ssi);
+    $ssi = 60 if ( !defined $ssi );
 
     return $ssi;
 }
-
 
 # get_log - get log directory information
 #
@@ -465,45 +478,46 @@ sub get_log {
     return ( $bpath, $cpath, $dpath );
 }
 
-
 # write_log - write log message
 #
 sub write_log {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
-    localtime(time);
+      localtime(time);
 
     my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
-                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 
-    if (eof $log) {
+    if ( eof $log ) {
         print $log "$dt $logbuf\n";
-    } else {
+    }
+    else {
         print $log "\n$dt $logbuf";
     }
 
     return;
 }
 
-
 # cktime - check midnight time
 #
 sub cktime {
 
-    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = 
-       localtime(time);
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+      localtime(time);
 
-    my $tcheck = sprintf ("%02d%02d", $hour, $min);
+    my $tcheck = sprintf( "%02d%02d", $hour, $min );
 
     my $yesterday = get_yesterday();
 
     # print "time check: $tcheck";
 
-    if ($tcheck eq $logtime ) {
+    if ( $tcheck eq $logtime ) {
+
         # write_log ("info: cktime - start log rotation");
-        close ($rawlog);
-	my $numkrd = rotate($clog, $dlog, $yesterday);
+        close($rawlog);
+        my $numkrd = rotate( $clog, $dlog, $yesterday );
+
         # write_log ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);
     }
@@ -511,27 +525,26 @@ sub cktime {
     return;
 }
 
-
-## 
+##
 sub rmkrd {
     my ($file) = @_;
 
     if ( -e $file ) {
-        if (unlink($file) > 0) { return 0; } else { return 1; }
+        if   ( unlink($file) > 0 ) { return 0; }
+        else                       { return 1; }
     }
 
     return;
 }
 
-
 ## null the raw data
 sub null2krd {
 
-    my($blog, $clog ) = @_;
+    my ( $blog, $clog ) = @_;
 
-    opendir(DIR, $clog) or
-        die "error: null2krd - Can't open $clog: $!";
-    my @files = grep {!/^\.+$/} readdir(DIR);
+    opendir( DIR, $clog )
+      or die "error: null2krd - Can't open $clog: $!";
+    my @files = grep { !/^\.+$/ } readdir(DIR);
     close(DIR);
 
     my @krds;
@@ -541,24 +554,23 @@ sub null2krd {
     }
 
     foreach my $krdf (@krds) {
-        copy("$clog/$krdf", "$blog") or
-           die "error: null2krd cannot copy krd file: $krdf $!\n";
-         open my $fh, ">", "$clog/$krdf";
-         close $fh;
+        copy( "$clog/$krdf", "$blog" )
+          or die "error: null2krd cannot copy krd file: $krdf $!\n";
+        open my $fh, ">", "$clog/$krdf";
+        close $fh;
     }
 
     return;
 }
 
-
 ## rotate raw data
 sub rotate {
 
-    my($rawdir, $dailydir, $dstamp) = @_;
+    my ( $rawdir, $dailydir, $dstamp ) = @_;
 
-    opendir(DIR, $rawdir) or
-        die "error: rotate - Can't open $rawdir: $!";
-    my @files = grep {!/^\.+$/} readdir(DIR);
+    opendir( DIR, $rawdir )
+      or die "error: rotate - Can't open $rawdir: $!";
+    my @files = grep { !/^\.+$/ } readdir(DIR);
     close(DIR);
 
     my $dest = "$dailydir/$dstamp";
@@ -574,23 +586,24 @@ sub rotate {
     my $nkrd = $#krd_files + 1;
 
     if ($verbose) {
-        write_log ("info: rotate - copying krd data files: $nkrd");
+        write_log("info: rotate - copying krd data files: $nkrd");
     }
 
     my $cnt = 0;
+
     # check if we have anything to move to daily
     if ( $nkrd > 0 ) {
-   
+
         # make daily target dir
-        mkdir $dest if (! -d $dest);
+        mkdir $dest if ( !-d $dest );
 
         #unless(mkdir $dest) {
         #    write_log ("warning: rotate - $dstamp dir: $!");
         #}
 
         foreach my $rawfile (@krd_files) {
-            copy("$rawdir/$rawfile","$dest") or
-                write_log ("error: rotate - copying previous daily data, $!");
+            copy( "$rawdir/$rawfile", "$dest" )
+              or write_log("error: rotate - copying previous daily data, $!");
 
             # reset to zero
             open my $ftkrd, ">", "$rawdir/$rawfile";
@@ -604,7 +617,6 @@ sub rotate {
     return $cnt;
 }
 
-
 ## get yesterday
 sub get_yesterday {
 
@@ -612,14 +624,13 @@ sub get_yesterday {
     ( $yy, $mm, $dd ) = Add_Delta_Days( $yy, $mm, $dd, -1 );
 
     # ISO 8601 YYYY-MM-DD
-    my $prevdate = sprintf("%d-%02d-%02d", $yy, $mm, $dd);
+    my $prevdate = sprintf( "%d-%02d-%02d", $yy, $mm, $dd );
 
     # Debug
     # print "PREVDATE: $prevdate \n";
 
     return $prevdate;
 }
-
 
 # usage - print usage and exit.
 #
@@ -652,7 +663,6 @@ USAGE: procrec [-lhV] | [interval [count]]
 END
     return;
 }
-
 
 # revision - print revision and exit
 #
