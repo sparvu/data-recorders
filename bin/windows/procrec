@@ -172,6 +172,8 @@ sub Startup {
 
         for my $k ( keys %$hash ) {
 
+            next if $k =~ /Idle/;
+
             $cpupct = sprintf( "%.2f",
                 get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentProcessorTime' ) *
                   100 );
@@ -190,7 +192,6 @@ sub Startup {
             $k =~ s/#// if $k =~ /\#/;
 	    $procname = $k;
 
-            print "$procname $cpupct $syspct $usrpct $tc $fds\n";
             $pstat{$k} =
               "$procname:$cpupct:$syspct:$usrpct:$tc:$fds";
 
