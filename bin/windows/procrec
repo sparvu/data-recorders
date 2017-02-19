@@ -32,12 +32,12 @@ use Win32::Process;
 use JSON;
 
 # Debug Only
-#use Data::Dumper;
+use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my $recid   = 'cpurec';
+my $recid   = 'procrec';
 my $cprefix = 'C:\\Program Files\\Kronometrix\\etc';
 my ( $l, $v, $h, $V ) = 0;
 our %Config = ( ServiceName => $recid );
@@ -72,6 +72,7 @@ my $cf      = 'kronometrix.json';    # default json config
 my $logtime = '0000';                # min time check 23:59
 my $stime;                           # sleep timer
 my $last_time = 0;                   # first counter
+my $procwmi   = 'Win32_PerfRawData_PerfProc_Process';
 local $| = 1;                        # autoflush
 
 my $verbose = defined $v ? $v : 0;
@@ -112,18 +113,19 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 
 my $key = 'Name';
 
-my @cpustats = qw(
-  PercentIdleTime       PercentProcessorTime
-  PercentPrivilegedTime PercentUserTime
-  PercentInterruptTime  PercentDPCTime TimeStamp_Sys100NS);
+my @procstats = qw( 
+ThreadCount HandleCount
+PercentProcessorTime PercentPrivilegedTime 
+PercentUserTime TimeStamp_Sys100NS);
+
 my $hash1 = {};
 
-my $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+my $list = $wmi->InstancesOf($procwmi)
   or die "Failed to get instance object\n";
 
-foreach my $w32 ( in $list) {
+foreach my $w32 (in $list) {
     next if $w32->{$key} eq '_Total';
-    map { $hash1->{ $w32->{$key} }->{$_} = $w32->{$_} } @cpustats;
+    map { $hash1->{ $w32->{$key} }->{$_} = $w32->{$_} } @procstats;
 }
 
 unless ( defined &ContinueRun ) {
@@ -152,66 +154,45 @@ sub Startup {
 
         k_sleep();
 
-        #my $start = [gettimeofday];
+        my ( $procname, $cpupct, $syspct, $usrpct, $tc, $fds );
+        my %pstat;
 
-        my ( $cpuid, $userpct, $syspct, $irqpct, $dpcpct, $idlepct, $totalpct );
-        my %cstat;
-
-        $list = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+        my $list = $wmi->InstancesOf($procwmi)
           or die "Failed to get instance object\n";
 
         my $hash = {};
 
         foreach my $w32 ( in $list) {
             next if $w32->{$key} eq '_Total';
-            map { $hash->{ $w32->{$key} }->{$_} = $w32->{$_} } @cpustats;
+            map { $hash->{ $w32->{$key} }->{$_} = $w32->{$_} } @procstats;
         }
 
-        #print "cpus " . keys(%$hash) . ".\n";
-        # print Dumper($hash);
+        #print "procs " . keys(%$hash) . ".\n";
+        #print Dumper($hash);
 
         for my $k ( keys %$hash ) {
 
-            $cpuid = $k;
-
-            $totalpct = sprintf(
-                "%.2f",
-                (
-                    1 - get_value(
-                        $hash1->{"$k"}, $hash->{"$k"},
-                        'PercentProcessorTime'
-                    )
-                ) * 100
-            );
-
-            #$idlepct = sprintf("%.2f", 100-$totalpct);
-
-            $userpct = sprintf( "%.2f",
-                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentUserTime' ) *
+            $cpupct = sprintf( "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentProcessorTime' ) *
                   100 );
 
-            $syspct = sprintf(
-                "%.2f",
-                get_value( $hash1->{"$k"}, $hash->{"$k"},
-                    'PercentPrivilegedTime' ) * 100
-            );
+            $syspct = sprintf( "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' ) *
+		  100 );
 
-            $irqpct = sprintf(
-                "%.2f",
-                get_value( $hash1->{"$k"}, $hash->{"$k"},
-                    'PercentInterruptTime' ) * 100
-            );
+            $usrpct = sprintf( "%.2f",
+		get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' ) * 
+		  100 );
 
-            $dpcpct = sprintf( "%.2f",
-                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentDPCTime' ) *
-                  100 );
+            $tc  = $hash1->{"$k"}->{ThreadCount};
+            $fds = $hash1->{"$k"}->{HandleCount};
 
-            $idlepct = sprintf( "%.2f",
-                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentIdleTime' ) *
-                  100 );
+            $k =~ s/#// if $k =~ /\#/;
+	    $procname = $k;
 
-            $cstat{$cpuid} =
-              "cpu$cpuid:$userpct:$syspct:$irqpct:$dpcpct:$idlepct:$totalpct";
+            print "$procname $cpupct $syspct $usrpct $tc $fds\n";
+            $pstat{$k} =
+              "$procname:$cpupct:$syspct:$usrpct:$tc:$fds";
 
         }
 
@@ -227,14 +208,14 @@ sub Startup {
 
         if ( $last_time > 0 ) {
 
-            putraw( $$tnow[0], %cstat );
+            putraw( $$tnow[0], %pstat );
 
             $last_time = $$tnow[0];
 
         }
         else {
 
-            putraw( $$tnow[0], %cstat );
+            putraw( $$tnow[0], %pstat );
 
             if ( !RunningAsService() ) {
 
@@ -649,13 +630,12 @@ USAGE: procrec [-lhV] | [interval [count]]
 
  FIELDS:
    #01 timestamp  : seconds since Epoch, timea
-   #02 cpuid      : cpu id
-   #03 userpct    : userspace cpu utilization, percentage
+   #02 process    : process name
+   #03 cpupct     : userspace cpu utilization, percentage
    #04 syspct     : system cpu utilization, percentage
-   #05 irqpct     : irq cpu utilization, percentage
-   #06 dpcpct     : deffered procedure calls cpu, percentage 
-   #07 idlepct    : idle cpu utilization, percentage
-   #08 totalpct   : total cpu utilization, percentage
+   #05 userpct    : userspace cpu utilization, percentage
+   #06 threads    : number of threads per process, number
+   #07 fds        : number of file descriptors, number
 
  NOTES:
    Data source: Win32_PerfRawData_PerfProc_Process
@@ -668,7 +648,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-procrec: 1.0.0, 2017-02-18 1343
+procrec: 1.0.1, 2017-02-20 0142
 END
     return;
 }
