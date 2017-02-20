@@ -114,9 +114,11 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 my $key = 'Name';
 
 my @procstats = qw( 
-ThreadCount HandleCount IDProcess
+ThreadCount          HandleCount 
+IDProcess            ElapsedTime
+PrivateBytes         VirtualBytes     PageFileBytes
 PercentProcessorTime PercentPrivilegedTime 
-PercentUserTime TimeStamp_Sys100NS);
+PercentUserTime      TimeStamp_Sys100NS);
 
 my $hash1 = {};
 
@@ -154,7 +156,7 @@ sub Startup {
 
         k_sleep();
 
-        my ( $procname, $cpupct, $syspct, $usrpct, $tc, $fds );
+        my ( $procname, $cpupct, $syspct, $usrpct, $vsz, $pbt, $pfb, $tc, $fds, $elp );
         my %pstat;
 
         my $list = $wmi->InstancesOf($procwmi)
@@ -186,15 +188,18 @@ sub Startup {
 		get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' ) * 
 		  100 );
 
-            $pid = $hash1->{"$k"}->{IDProcess};
-            $tc  = $hash1->{"$k"}->{ThreadCount};
-            $fds = $hash1->{"$k"}->{HandleCount};
+            $pid  = $hash1->{"$k"}->{IDProcess};
+            $tc   = $hash1->{"$k"}->{ThreadCount};
+            $fds  = $hash1->{"$k"}->{HandleCount};
+            $vsz  = sprintf( "%.2f", $hash1->{"$k"}->{VirtualBytes} / 1048576 );
+            $pbt  = sprintf( "%.2f", $hash1->{"$k"}->{PrivateBytes} / 1048576 );
+            $pfb  = sprintf( "%.2f", $hash1->{"$k"}->{PageFileBytes} / 1048576 );
 
             $k =~ s/#// if $k =~ /\#/;
 	    $procname = $k;
 
             $pstat{$k} =
-              "$procname:$pid:$cpupct:$syspct:$usrpct:$tc:$fds";
+              "$procname:$pid:$cpupct:$syspct:$usrpct:$vsz:$pbt:$pfb:$tc:$fds";
 
         }
 
@@ -637,8 +642,11 @@ USAGE: procrec [-lhV] | [interval [count]]
    #04 cpupct     : userspace cpu utilization, percentage
    #05 syspct     : system cpu utilization, percentage
    #06 userpct    : userspace cpu utilization, percentage
-   #07 threads    : number of threads per process, number
-   #08 fds        : number of file descriptors, number
+   #07 vsz        : virtual address space size, in MB, number
+   #08 pbt        : private bytes segment, in MB, number
+   #09 pfb        : page file bytes, used in the paging file, in MB, number
+   #10 threads    : number of threads per process, number
+   #11 fds        : number of file descriptors, number
 
  NOTES:
    Data source: Win32_PerfRawData_PerfProc_Process
@@ -651,7 +659,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-procrec: 1.0.2, 2017-02-20 0142
+procrec: 1.0.3, 2017-02-20 2104
 END
     return;
 }
