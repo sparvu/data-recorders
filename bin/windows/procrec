@@ -114,7 +114,7 @@ my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
 my $key = 'Name';
 
 my @procstats = qw( 
-ThreadCount HandleCount
+ThreadCount HandleCount IDProcess
 PercentProcessorTime PercentPrivilegedTime 
 PercentUserTime TimeStamp_Sys100NS);
 
@@ -186,6 +186,7 @@ sub Startup {
 		get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' ) * 
 		  100 );
 
+            $pid = $hash1->{"$k"}->{IDProcess};
             $tc  = $hash1->{"$k"}->{ThreadCount};
             $fds = $hash1->{"$k"}->{HandleCount};
 
@@ -193,7 +194,7 @@ sub Startup {
 	    $procname = $k;
 
             $pstat{$k} =
-              "$procname:$cpupct:$syspct:$usrpct:$tc:$fds";
+              "$procname:$pid:$cpupct:$syspct:$usrpct:$tc:$fds";
 
         }
 
@@ -631,12 +632,13 @@ USAGE: procrec [-lhV] | [interval [count]]
 
  FIELDS:
    #01 timestamp  : seconds since Epoch, timea
-   #02 process    : process name
-   #03 cpupct     : userspace cpu utilization, percentage
-   #04 syspct     : system cpu utilization, percentage
-   #05 userpct    : userspace cpu utilization, percentage
-   #06 threads    : number of threads per process, number
-   #07 fds        : number of file descriptors, number
+   #02 process    : process name, string
+   #03 pid        : process id, number
+   #04 cpupct     : userspace cpu utilization, percentage
+   #05 syspct     : system cpu utilization, percentage
+   #06 userpct    : userspace cpu utilization, percentage
+   #07 threads    : number of threads per process, number
+   #08 fds        : number of file descriptors, number
 
  NOTES:
    Data source: Win32_PerfRawData_PerfProc_Process
@@ -649,7 +651,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-procrec: 1.0.1, 2017-02-20 0142
+procrec: 1.0.2, 2017-02-20 0142
 END
     return;
 }
