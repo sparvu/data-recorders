@@ -186,6 +186,8 @@ sub Startup {
 
         for my $k ( keys %$hash ) {
 
+            next if $k =~ /procrec/;
+
             next if $k =~ /Idle/;
 
             # filter by name
@@ -213,6 +215,7 @@ sub Startup {
             $pfb  = sprintf( "%.2f", $hash1->{"$k"}->{PageFileBytes} / 1048576 );
 
             $k =~ s/#// if $k =~ /\#/;
+            $k =~ s/-// if $k =~ /\-/;
 	    $procname = $k;
 
             $pstat{$k} =
@@ -676,7 +679,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-procrec: 1.0.3, 2017-02-20 2104
+procrec: 1.0.5, 2017-02-21 0001
 END
     return;
 }
