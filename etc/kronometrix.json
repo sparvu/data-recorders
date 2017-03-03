@@ -80,14 +80,14 @@
       "file"   : "webrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "epd", "wpd" ]
     },
     {
       "name"   : "webinv",
       "file"   : "webinvrec.krd",
       "sample" : 3600,
       "status" : "inactive",
-      "domain" : [ "wpd", "whpd" ]
+      "domain" : [ "epd", "wpd" ]
     },
     {
       "name"   : "a2",
@@ -129,7 +129,7 @@
       "file"   : "certrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "dpd", "whpd" ]
+      "domain" : [ "dpd", "epd" ]
     },
     {
       "name"   : "pg",
@@ -185,14 +185,14 @@
       "file"   : "ntprec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "dpd", "whpd" ]
+      "domain" : [ "dpd", "epd" ]
     },
     {
       "name"   : "svc",
       "file"   : "svcrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "dpd", "whpd" ]
+      "domain" : [ "dpd", "epd" ]
     },
     {
       "name"   : "iaq_g01",
