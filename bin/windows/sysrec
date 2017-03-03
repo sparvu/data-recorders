@@ -37,22 +37,22 @@ use JSON;
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my $recid           = 'sysrec';
-my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
-my ($l, $v, $h, $V) = 0;
-our %Config         = (ServiceName => $recid);
+my $recid   = 'sysrec';
+my $cprefix = 'C:\\Program Files\\Kronometrix\\etc';
+my ( $l, $v, $h, $V ) = 0;
+our %Config = ( ServiceName => $recid );
 
 Getopt::Long::Configure('bundling');
-my $result = GetOptions (
-                "l|logging"     => \$l,
-                "v|verbose"     => \$v,
-                "h|help"        => \$h,
-                "V|version"     => \$V,
-                "n|name=s"      => \$Config{ServiceName}
-                );
+my $result = GetOptions(
+    "l|logging" => \$l,
+    "v|verbose" => \$v,
+    "h|help"    => \$h,
+    "V|version" => \$V,
+    "n|name=s"  => \$Config{ServiceName}
+);
 
-usage() if (defined $h || ! $result);
-revision() if (defined $V);
+usage() if ( defined $h || !$result );
+revision() if ( defined $V );
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -66,17 +66,16 @@ else {
     $loop_max = 1;
 }
 
-
 ### Variables
-my $loop        = 0;                                     # current loop number
-my $cf          = 'kronometrix.json';                    # default json config
-my $logtime     = '0000';                                # min time check 23:59
-my $stime;                                               # sleep timer
-my $last_time   = 0;                                     # first counter
-my $nicwmi      = 'Win32_NetworkAdapterConfiguration';        # NIC Config
-my $tcpwmi      = 'Win32_PerfRawData_Tcpip_NetworkInterface'; # TCPIP
-my $diskwmi     = 'Win32_PerfRawData_PerfDisk_LogicalDisk';   # Disk IO
-$|= 1;                                                        # autoflush
+my $loop    = 0;                     # current loop number
+my $cf      = 'kronometrix.json';    # default json config
+my $logtime = '0000';                # min time check 23:59
+my $stime;                           # sleep timer
+my $last_time = 0;                                             # first counter
+my $nicwmi    = 'Win32_NetworkAdapterConfiguration';           # NIC Config
+my $tcpwmi    = 'Win32_PerfRawData_Tcpip_NetworkInterface';    # TCPIP
+my $diskwmi   = 'Win32_PerfRawData_PerfDisk_LogicalDisk';      # Disk IO
+$| = 1;                                                        # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
@@ -88,7 +87,7 @@ my $curentProcess;
 
 my $pid = Win32::Process::GetCurrentProcessID();
 
-if (Win32::Process::Open($curentProcess, $pid, 0)) {
+if ( Win32::Process::Open( $curentProcess, $pid, 0 ) ) {
     $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
 }
 
@@ -102,64 +101,61 @@ my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
 
 # open raw data
-my ($log, $rawlog);
+my ( $log, $rawlog );
 
 if ($logging) {
     $rawlog = open_file($fkrd);
-    $log = open_file($fname);
-    write_log ("info: started");
+    $log    = open_file($fname);
+    write_log("info: started");
 }
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-    or die "Cannot initialize WMI interface\n";
+  or die "Cannot initialize WMI interface\n";
 
 my $key = 'Name';
 
-
 ## CPU
-my @cpustats  = qw(
-                    PercentIdleTime       PercentProcessorTime
-		    PercentPrivilegedTime PercentUserTime
-		    PercentInterruptTime  PercentDPCTime
-		    TimeStamp_Sys100NS
-		  );
+my @cpustats = qw(
+  PercentIdleTime       PercentProcessorTime
+  PercentPrivilegedTime PercentUserTime
+  PercentInterruptTime  PercentDPCTime
+  TimeStamp_Sys100NS
+);
 my $hash1 = {};
 my $list1;
 
-
 ## DISK
 my @diskstats = qw(
-                    DiskReadsPerSec        DiskReadBytesPerSec
-		    PercentDiskReadTime    DiskWritesPerSec
-		    DiskWriteBytesPerSec   PercentDiskWriteTime
-		    CurrentDiskQueueLength PercentDiskTime
-		    DiskTransfersPerSec    DiskBytesPerSec
-		    Timestamp_PerfTime     Frequency_PerfTime
-		    Frequency_Sys100NS     Timestamp_Sys100NS
-		  );
+  DiskReadsPerSec        DiskReadBytesPerSec
+  PercentDiskReadTime    DiskWritesPerSec
+  DiskWriteBytesPerSec   PercentDiskWriteTime
+  CurrentDiskQueueLength PercentDiskTime
+  DiskTransfersPerSec    DiskBytesPerSec
+  Timestamp_PerfTime     Frequency_PerfTime
+  Frequency_Sys100NS     Timestamp_Sys100NS
+);
 
 my $disk_old = {};
 my $list2;
 
-
 ## NIC
 my @nicstats = qw(
-                   PacketsReceivedPerSec BytesReceivedPerSec
-                   PacketsReceivedErrors PacketsReceivedDiscarded
-		   PacketsSentPerSec     BytesSentPerSec
-		   PacketsOutboundErrors PacketsOutboundDiscarded
-		   PacketsPerSec         BytesTotalPerSec      
-		   Timestamp_PerfTime    Timestamp_Sys100NS
-		   Frequency_PerfTime    Frequency_Sys100NS    
-		 );
+  PacketsReceivedPerSec BytesReceivedPerSec
+  PacketsReceivedErrors PacketsReceivedDiscarded
+  PacketsSentPerSec     BytesSentPerSec
+  PacketsOutboundErrors PacketsOutboundDiscarded
+  PacketsPerSec         BytesTotalPerSec
+  Timestamp_PerfTime    Timestamp_Sys100NS
+  Frequency_PerfTime    Frequency_Sys100NS
+);
 
-my @filter   =   (
-                   'isatap',
-	           'Microsoft Virtual WiFi Miniport Adapter',
-	           'Teredo Tunneling Pseudo-Interface',
-	           'Reusable ISATAP Interface'
-	         );
+my @filter = (
+    'isatap',
+    'Microsoft Virtual WiFi Miniport Adapter',
+    'Teredo Tunneling Pseudo-Interface',
+    'Reusable ISATAP Interface'
+);
 
 my $nic_old = {};
 my $nic;
@@ -170,303 +166,345 @@ init_cpu();
 init_disk();
 init_nic();
 
-unless (defined &ContinueRun) {
-    *ContinueRun = sub { return 1 };
+unless ( defined &ContinueRun ) {
+    *ContinueRun      = sub { return 1 };
     *RunningAsService = sub { return 0 };
     Interactive();
 }
 
-if (RunningAsService()) {
+if ( RunningAsService() ) {
+
     # get service sample interval
     $interval = get_ssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
-    $log = open_file($fname);
+    $log    = open_file($fname);
 
-    write_log ("info: started");
+    write_log("info: started");
 }
-
 
 ### SUBROUTINES
 
-
 sub Startup {
 
-    while(ContinueRun()) {
+    while ( ContinueRun() ) {
 
-    k_sleep();
+        k_sleep();
 
-    #my $start = [gettimeofday];
+        #my $start = [gettimeofday];
 
-    ## cpu utilization
-    ##
-    #my $s1 = [gettimeofday];
+        ## cpu utilization
+        ##
+        #my $s1 = [gettimeofday];
 
-    my ($cpupct, $userpct, $idlepct, $syspct, $irqpct);
+        my ( $cpupct, $userpct, $idlepct, $syspct, $irqpct );
 
-    $list1 = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-         or die "Failed to get instance object\n";
+        $list1 = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
+          or die "Failed to get instance object\n";
 
-    my $hash = {};
+        my $hash = {};
 
-    foreach my $w32 (in $list1) {
-        next if $w32->{$key} ne '_Total';
-	map{$hash->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
-    }
+        foreach my $w32 ( in $list1) {
+            next if $w32->{$key} ne '_Total';
+            map { $hash->{ $w32->{$key} }->{$_} = $w32->{$_} } @cpustats;
+        }
 
-    $cpupct = sprintf("%.2f", ( 1 - get_value( $hash1->{'_Total'},
-                                               $hash->{'_Total'},
-		                               'PercentProcessorTime' )) * 100);
+        $cpupct = sprintf(
+            "%.2f",
+            (
+                1 - get_value(
+                    $hash1->{'_Total'}, $hash->{'_Total'},
+                    'PercentProcessorTime'
+                )
+            ) * 100
+        );
 
-    $userpct = sprintf("%.2f", get_value( $hash1->{'_Total'},
-                                          $hash->{'_Total'},
-					  'PercentUserTime' ) * 100);
+        $userpct = sprintf(
+            "%.2f",
+            get_value( $hash1->{'_Total'}, $hash->{'_Total'},
+                'PercentUserTime' ) * 100
+        );
 
-    $syspct = sprintf("%.2f", get_value( $hash1->{'_Total'}, 
-                                         $hash->{'_Total'}, 
-					 'PercentPrivilegedTime' ) * 100);
+        $syspct = sprintf(
+            "%.2f",
+            get_value(
+                $hash1->{'_Total'}, $hash->{'_Total'},
+                'PercentPrivilegedTime'
+            ) * 100
+        );
 
-    $irqpct = sprintf("%.2f", get_value( $hash1->{'_Total'}, 
-                                         $hash->{'_Total'}, 
-					 'PercentInterruptTime' ) * 100);
+        $irqpct = sprintf(
+            "%.2f",
+            get_value(
+                $hash1->{'_Total'}, $hash->{'_Total'},
+                'PercentInterruptTime'
+            ) * 100
+        );
 
-    $idlepct = sprintf("%.2f", get_value( $hash1->{'_Total'}, 
-                                          $hash->{'_Total'}, 
-					  'PercentIdleTime' ) * 100);
+        $idlepct = sprintf(
+            "%.2f",
+            get_value( $hash1->{'_Total'}, $hash->{'_Total'},
+                'PercentIdleTime' ) * 100
+        );
 
-    my $sumpct  = 0;
-    my $headpct = 0;
+        my $sumpct  = 0;
+        my $headpct = 0;
 
-    #my $e1 = [gettimeofday];
-    #my $delta1  = tv_interval ($s1, $e1);
-    #print " CPU Win32_PerfRawData_PerfOS_Processor: $delta1 sec\n";
+        #my $e1 = [gettimeofday];
+        #my $delta1  = tv_interval ($s1, $e1);
+        #print " CPU Win32_PerfRawData_PerfOS_Processor: $delta1 sec\n";
 
-    ## runqsz, plistsz
-    #my $s2 = [gettimeofday];
+        ## runqsz, plistsz
+        #my $s2 = [gettimeofday];
 
-    my $wsys = $wmi->InstancesOf("Win32_PerfRawData_PerfOS_System")
-        or die "Cannot get Win32 PerfOS_System\n";
+        my $wsys = $wmi->InstancesOf("Win32_PerfRawData_PerfOS_System")
+          or die "Cannot get Win32 PerfOS_System\n";
 
-    my ($runqsz, $proc, $lwp) = (0);
-    foreach my $obj (in $wsys) {
-	$runqsz = $obj->{ProcessorQueueLength};
-	$proc = $obj->{Processes};
-	$lwp = $obj->{Threads};
-    }
+        my ( $runqsz, $proc, $lwp ) = (0);
+        foreach my $obj ( in $wsys) {
+            $runqsz = $obj->{ProcessorQueueLength};
+            $proc   = $obj->{Processes};
+            $lwp    = $obj->{Threads};
+        }
 
-    #my $e2 = [gettimeofday];
-    #my $delta2  = tv_interval ($s2, $e2);
-    #print " CPU Win32_PerfRawData_PerfOS_System: $delta2 sec\n";
+        #my $e2 = [gettimeofday];
+        #my $delta2  = tv_interval ($s2, $e2);
+        #print " CPU Win32_PerfRawData_PerfOS_System: $delta2 sec\n";
 
+        # memory statistics
+        # 9 metrics
+        #my $s3 = [gettimeofday];
 
+        my $wos = $wmi->InstancesOf("Win32_OperatingSystem")
+          or die "Cannot get Win32 OperatingSystem\n";
 
-    # memory statistics
-    # 9 metrics
-    #my $s3 = [gettimeofday];
+        my ( $memtotal, $memfree, $swaptotal, $swapfree );
 
-    my $wos = $wmi->InstancesOf("Win32_OperatingSystem")
-        or die "Cannot get Win32 OperatingSystem\n";
+        foreach my $obj ( in $wos) {
+            $memtotal  = $obj->{TotalVisibleMemorySize};
+            $memfree   = $obj->{FreePhysicalMemory};
+            $swaptotal = $obj->{SizeStoredInPagingFiles};
+            $swapfree  = $obj->{FreeSpaceInPagingFiles};
+        }
 
-    my ($memtotal, $memfree, $swaptotal, $swapfree);
+        my $memused     = $memtotal - $memfree;
+        my $memusedpct  = sprintf( "%.2f", ( $memused / $memtotal ) * 100 );
+        my $realfreepct = sprintf( "%.2f", ( $memfree / $memtotal ) * 100 );
+        my $swapused    = $swaptotal - $swapfree;
+        my $swapusedpct =
+          sprintf( "%.2f", ( $swaptotal - $swapfree ) / $swaptotal * 100 );
 
-    foreach my $obj (in $wos) {
-        $memtotal  = $obj->{TotalVisibleMemorySize};
-        $memfree = $obj->{FreePhysicalMemory};
-        $swaptotal = $obj->{SizeStoredInPagingFiles};
-        $swapfree = $obj->{FreeSpaceInPagingFiles};
-    }
+        #my $e3 = [gettimeofday];
+        #my $delta3  = tv_interval ($s3, $e3);
+        #print " Mem Win32_OperatingSystem: $delta3 sec\n";
 
-    my $memused     = $memtotal - $memfree;
-    my $memusedpct  = sprintf ("%.2f", ( $memused / $memtotal ) * 100 );
-    my $realfreepct = sprintf ("%.2f", ( $memfree / $memtotal ) * 100 );
-    my $swapused    = $swaptotal - $swapfree;
-    my $swapusedpct = sprintf("%.2f", 
-                                ($swaptotal - $swapfree) / $swaptotal * 100); 
-  
-    #my $e3 = [gettimeofday];
-    #my $delta3  = tv_interval ($s3, $e3);
-    #print " Mem Win32_OperatingSystem: $delta3 sec\n";
+        # Disk IO statistics
+        # 10 metrics
+        #my $s4 = [gettimeofday];
+        my (
+            $reads,    $rkbytes, $rbusypct, $writes, $wkbytes,
+            $wbusypct, $busypct, $cql,      $iops,   $krw
+        );
 
+        $reads = $rkbytes = $rbusypct = $writes = $wkbytes = $wbusypct =
+          $busypct = $cql = $iops = $krw = 0;
 
+        $list2 = $wmi->InstancesOf($diskwmi)
+          or die "Cannot get Win32 PerfDisks\n";
 
+        my $disk = {};
 
-    # Disk IO statistics
-    # 10 metrics
-    #my $s4 = [gettimeofday];
-    my ($reads,  $rkbytes, $rbusypct, $writes, $wkbytes, $wbusypct,
-	$busypct,$cql, $iops, $krw );
+        foreach my $v ( in $list2) {
+            next if $v->{$key} ne '_Total';
+            map { $disk->{ $v->{$key} }->{$_} = $v->{$_} } @diskstats;
+        }
 
-    $reads = $rkbytes = $rbusypct = $writes = $wkbytes = $wbusypct = $busypct = $cql = $iops = $krw = 0;
+        #PERF_COUNTER_COUNTER
+        $reads = sprintf(
+            "%.2f",
+            get_diff(
+                $disk_old->{'_Total'}, $disk->{'_Total'}, 'DiskReadsPerSec'
+            )
+        );
 
-    $list2 = $wmi->InstancesOf($diskwmi)
-	    or die "Cannot get Win32 PerfDisks\n";
+        #PERF_COUNTER_BULK_COUNT
+        $rkbytes = sprintf(
+            "%.2f",
+            get_diff(
+                $disk_old->{'_Total'}, $disk->{'_Total'},
+                'DiskReadBytesPerSec'
+            ) / 1024
+        );
 
-    my $disk = {};
+        # PERF_PRECISION_100NS_TIMER
+        $rbusypct = sprintf(
+            "%.2f",
+            get_pct(
+                $disk_old->{'_Total'}, $disk->{'_Total'},
+                'PercentDiskReadTime'
+            )
+        );
 
-    foreach my $v (in $list2) {
-        next if $v->{$key} ne '_Total';
-        map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
-    }
+        #PERF_COUNTER_COUNTER
+        $writes = sprintf(
+            "%.2f",
+            get_diff(
+                $disk_old->{'_Total'}, $disk->{'_Total'},
+                'DiskWritesPerSec'
+            )
+        );
 
-    #PERF_COUNTER_COUNTER
-    $reads = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
-                                      $disk->{'_Total'},
-                                      'DiskReadsPerSec') );
+        #PERF_COUNTER_BULK_COUNT
+        $wkbytes = sprintf(
+            "%.2f",
+            get_diff(
+                $disk_old->{'_Total'}, $disk->{'_Total'},
+                'DiskWriteBytesPerSec'
+            ) / 1024
+        );
 
-    #PERF_COUNTER_BULK_COUNT
-    $rkbytes = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
-                                        $disk->{'_Total'},
-                                        'DiskReadBytesPerSec') / 1024 );
+        # PERF_PRECISION_100NS_TIMER
+        $wbusypct = sprintf(
+            "%.2f",
+            get_pct(
+                $disk_old->{'_Total'}, $disk->{'_Total'},
+                'PercentDiskWriteTime'
+            )
+        );
 
-    # PERF_PRECISION_100NS_TIMER
-    $rbusypct = sprintf("%.2f", get_pct( $disk_old->{'_Total'}, 
-                                         $disk->{'_Total'},
-	                                 'PercentDiskReadTime') );
+        # PERF_COUNTER_RAWCOUNT
+        $cql = sprintf( "%.2f", $disk->{'_Total'}->{'CurrentDiskQueueLength'} );
 
-    #PERF_COUNTER_COUNTER
-    $writes = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
-                                       $disk->{'_Total'},
-                                       'DiskWritesPerSec') );
+        # PERF_PRECISION_100NS_TIMER
+        $busypct = sprintf(
+            "%.2f",
+            get_pct(
+                $disk_old->{'_Total'}, $disk->{'_Total'}, 'PercentDiskTime'
+            )
+        );
 
-    #PERF_COUNTER_BULK_COUNT
-    $wkbytes = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
-                                        $disk->{'_Total'},
-                                        'DiskWriteBytesPerSec') / 1024 );
+        #PERF_COUNTER_COUNTER
+        $iops = sprintf(
+            "%.2f",
+            get_diff(
+                $disk_old->{'_Total'}, $disk->{'_Total'},
+                'DiskTransfersPerSec'
+            )
+        );
 
-    # PERF_PRECISION_100NS_TIMER
-    $wbusypct = sprintf("%.2f", get_pct( $disk_old->{'_Total'}, 
-                                         $disk->{'_Total'},
-                                         'PercentDiskWriteTime') );
+        #PERF_COUNTER_BULK_COUNT
+        $krw = sprintf(
+            "%.2f",
+            get_diff( $disk_old->{'_Total'}, $disk->{'_Total'},
+                'DiskBytesPerSec' ) / 1024
+        );
 
-    # PERF_COUNTER_RAWCOUNT
-    $cql = sprintf("%.2f", $disk->{'_Total'}->{'CurrentDiskQueueLength'});
+        # NIC IO statistics
+        # metrics
 
+        $nic = {};
 
-    # PERF_PRECISION_100NS_TIMER
-    $busypct = sprintf("%.2f", get_pct( $disk_old->{'_Total'}, 
-                                        $disk->{'_Total'},
-			                'PercentDiskTime') );
+        my (
+            $rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop, $txpkt,
+            $txkbytes, $txpkterr, $txpktdrop, $rxtxpkt,   $rxtxkbytes
+        ) = get_nicstat();
 
-    #PERF_COUNTER_COUNTER
-    $iops = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
-                                     $disk->{'_Total'},
-                                     'DiskTransfersPerSec') );
+        # save to old
+        $hash1    = $hash;
+        $disk_old = $disk;
+        $nic_old  = $nic;
 
-    #PERF_COUNTER_BULK_COUNT
-    $krw = sprintf("%.2f", get_diff( $disk_old->{'_Total'}, 
-                                    $disk->{'_Total'},
-                                    'DiskBytesPerSec') / 1024 );
+        # end payload
+        my $tnow = [gettimeofday];
 
+        # end payload
+        #my $elapsed = tv_interval ($start, $tnow);
+        #my $stime = 1;
+        #if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
 
-    # NIC IO statistics
-    # metrics
+        # cktime for rotation
+        if ( RunningAsService() ) {
+            cktime();
+        }
 
-    $nic = {};
+        if ( $last_time > 0 ) {
 
-    my ($rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop,
-        $txpkt,    $txkbytes, $txpkterr,  $txpktdrop,
-	$rxtxpkt,  $rxtxkbytes ) = get_nicstat();
+            putraw(
+                $$tnow[0],    $cpupct,    $sumpct,   $headpct,
+                $userpct,     $syspct,    $idlepct,  $irqpct,
+                $runqsz,      $proc,      $lwp,      $memusedpct,
+                $memused,     $memfree,   $memtotal, $realfreepct,
+                $swapusedpct, $swapused,  $swapfree, $swaptotal,
+                $reads,       $rkbytes,   $rbusypct, $writes,
+                $wkbytes,     $wbusypct,  $cql,      $busypct,
+                $iops,        $krw,       $rxpkt,    $rxkbytes,
+                $rxpkterr,    $rxpktdrop, $txpkt,    $txkbytes,
+                $txpkterr,    $txpktdrop, $rxtxpkt,  $rxtxkbytes
+            );
 
+            $last_time = $$tnow[0];
 
-    # save to old
-    $hash1 = $hash;
-    $disk_old = $disk;
-    $nic_old = $nic;
+        }
+        else {
 
-    # end payload
-    my $tnow = [gettimeofday];
+            putraw(
+                $$tnow[0],    $cpupct,    $sumpct,   $headpct,
+                $userpct,     $syspct,    $idlepct,  $irqpct,
+                $runqsz,      $proc,      $lwp,      $memusedpct,
+                $memused,     $memfree,   $memtotal, $realfreepct,
+                $swapusedpct, $swapused,  $swapfree, $swaptotal,
+                $reads,       $rkbytes,   $rbusypct, $writes,
+                $wkbytes,     $wbusypct,  $cql,      $busypct,
+                $iops,        $krw,       $rxpkt,    $rxkbytes,
+                $rxpkterr,    $rxpktdrop, $txpkt,    $txkbytes,
+                $txpkterr,    $txpktdrop, $rxtxpkt,  $rxtxkbytes
+            );
 
-    # end payload
-    #my $elapsed = tv_interval ($start, $tnow);
-    #my $stime = 1;
-    #if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
+            if ( !RunningAsService() ) {
 
-    # cktime for rotation
-    if (RunningAsService()) {
-        cktime();
-    }
+                # check count, interval
+                last if ++$loop == $loop_max;
+            }
 
-    if ($last_time > 0) {
+            $last_time = $$tnow[0];
+            next;
 
-        putraw($$tnow[0],
-	   $cpupct,  $sumpct, $headpct, $userpct, $syspct,
-	   $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
-	   $memusedpct,  $memused,     $memfree,  $memtotal, 
-	   $realfreepct, $swapusedpct, $swapused, $swapfree, 
-	   $swaptotal, 
-	   $reads,       $rkbytes,     $rbusypct,
-	   $writes,      $wkbytes,     $wbusypct,
-	   $cql,         $busypct,
-	   $iops,        $krw,
-	   $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
-	   $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
-           $rxtxpkt, $rxtxkbytes
-	   );
+        }
 
-	$last_time=$$tnow[0];
+        if ( !RunningAsService() ) {
 
-    } else {
-
-        putraw($$tnow[0],
-	       $cpupct,  $sumpct, $headpct, $userpct, $syspct,
-	       $idlepct, $irqpct, $runqsz,  $proc,    $lwp, 
-	       $memusedpct,  $memused,     $memfree,  $memtotal, 
-	       $realfreepct, $swapusedpct, $swapused, $swapfree, 
-	       $swaptotal, 
-	       $reads,       $rkbytes,     $rbusypct,
-	       $writes,      $wkbytes,     $wbusypct,
-	       $cql,         $busypct,
-	       $iops,        $krw,
-	       $rxpkt,   $rxkbytes,   $rxpkterr, $rxpktdrop,
-	       $txpkt,   $txkbytes,   $txpkterr, $txpktdrop,
-               $rxtxpkt, $rxtxkbytes
-	       );
-
-        if (!RunningAsService()) {
             # check count, interval
             last if ++$loop == $loop_max;
         }
 
-	$last_time=$$tnow[0];
-	next;
+    }    # while loop
 
-    }
-
-    if (!RunningAsService()) {
-        # check count, interval
-        last if ++$loop == $loop_max;
-    }
-
-
-    } # while loop
-
-    if (RunningAsService()) {
-        write_log ("info: stopped");
+    if ( RunningAsService() ) {
+        write_log("info: stopped");
     }
 }
-
 
 sub Interactive {
 
     Install();
 
-    if (( ! defined $h ) and (! defined $V)) {
+    if ( ( !defined $h ) and ( !defined $V ) ) {
         Startup();
     }
 }
 
-
 sub Install {
 
-    if (RunningAsService()) {
+    if ( RunningAsService() ) {
+
         # check for proper config file
-        if (! defined $cdata) { 
-            die "Cant install $Config{ServiceName} service, exiting...\n"; 
+        if ( !defined $cdata ) {
+            die "Cant install $Config{ServiceName} service, exiting...\n";
         }
 
-        if (! defined $clog ) {
-            die "Cant install $Config{ServiceName} service, exiting...\n"; 
+        if ( !defined $clog ) {
+            die "Cant install $Config{ServiceName} service, exiting...\n";
         }
     }
 
@@ -476,107 +514,98 @@ sub Install {
     return;
 }
 
-
 sub Remove {
 
     $Config{ServiceName} = $recid;
     return;
 }
 
-
 # CPU Initialization
 #
 sub init_cpu {
 
     $list1 = $wmi->InstancesOf('Win32_PerfRawData_PerfOS_Processor')
-        or die "Failed to get instance object\n";
+      or die "Failed to get instance object\n";
 
-    foreach my $w32 (in $list1) {
+    foreach my $w32 ( in $list1) {
         next if $w32->{$key} ne '_Total';
-        map{$hash1->{$w32->{$key}}->{$_}  = $w32->{$_} }@cpustats;
+        map { $hash1->{ $w32->{$key} }->{$_} = $w32->{$_} } @cpustats;
     }
 
 }
-
 
 # Disk IO Initialization
 #
 sub init_disk {
 
     $list2 = $wmi->InstancesOf($diskwmi)
-          or die "Failed to get $diskwmi instance object\n";
+      or die "Failed to get $diskwmi instance object\n";
 
-    foreach my $v2 (in $list2) {
+    foreach my $v2 ( in $list2) {
         next if $v2->{$key} ne '_Total';
-	map{$disk_old->{$v2->{$key}}->{$_}  = $v2->{$_} }@diskstats;
+        map { $disk_old->{ $v2->{$key} }->{$_} = $v2->{$_} } @diskstats;
     }
 }
-
 
 # NIC initialization
 #
 sub init_nic {
 
     $list3 = $wmi->InstancesOf($tcpwmi)
-          or die "Failed to get instance object\n";
+      or die "Failed to get instance object\n";
 
-    foreach my $v3 (in $list3) {
-        if (!grep { $v3->{$key} =~ /$_/i } @filter) {
-            map{$nic_old->{$v3->{$key}}->{$_} = $v3->{$_} }@nicstats;
-	}
+    foreach my $v3 ( in $list3) {
+        if ( !grep { $v3->{$key} =~ /$_/i } @filter ) {
+            map { $nic_old->{ $v3->{$key} }->{$_} = $v3->{$_} } @nicstats;
+        }
     }
 }
-
 
 # k_sleep - sleeps exact number of usec
 #
 sub k_sleep {
-    my $t = [gettimeofday];
-    my $next = (int($t->[0]/$interval) + 1 ) * $interval;
-    my $delta = tv_interval ($t, [$next, 0]);
-    usleep($delta * 1_000_000);
+    my $t     = [gettimeofday];
+    my $next  = ( int( $t->[0] / $interval ) + 1 ) * $interval;
+    my $delta = tv_interval( $t, [ $next, 0 ] );
+    usleep( $delta * 1_000_000 );
 
     return;
 }
-
 
 # get_value - get delta between samples
 #
 sub get_value {
 
-    my ($h1, $h2, $property) = @_; 
+    my ( $h1, $h2, $property ) = @_;
 
     my $delta = 0;
 
-    my $v2  = $h2->{$property};
-    my $v1  = $h1->{$property};
+    my $v2 = $h2->{$property};
+    my $v1 = $h1->{$property};
 
-    my $t2  = $h2->{'TimeStamp_Sys100NS'};
-    my $t1  = $h1->{'TimeStamp_Sys100NS'};
+    my $t2 = $h2->{'TimeStamp_Sys100NS'};
+    my $t1 = $h1->{'TimeStamp_Sys100NS'};
 
-    eval {
-        $delta = ( ($v2 - $v1) / ($t2 - $t1) );
-    };
+    eval { $delta = ( ( $v2 - $v1 ) / ( $t2 - $t1 ) ); };
 
-    if ($@) { 
-        chomp ($@);
+    if ($@) {
+        chomp($@);
         write_log("$@");
         write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
 
     $delta = 1 if $delta > 1;
-    
+
     return $delta;
 }
-
 
 # get_diff - get delta between samples as a difference
 #
 sub get_diff {
 
-    my $h1 = shift;
-    my $h2 = shift;
-    my $p = shift;
+    my $h1    = shift;
+    my $h2    = shift;
+    my $p     = shift;
     my $delta = 0;
     my $tf    = 0;
 
@@ -601,9 +630,9 @@ sub get_diff {
 
     if ($@) {
 
-        chomp ($@);
+        chomp($@);
         write_log("$@");
-	write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
+        write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
 
     $r = 0 if $r < 0;
@@ -611,7 +640,6 @@ sub get_diff {
     # result
     return $r;
 }
-
 
 # get_pct - get delta between samples as a percentage
 #
@@ -632,27 +660,24 @@ sub get_pct {
 
     my $r;
 
-    eval {
-        $r = $d / $td;
-    };
+    eval { $r = $d / $td; };
 
     if ($@) {
-        chomp ($@);
+        chomp($@);
         write_log("$@");
-	write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
+        write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
 
     return $r;
 }
 
-
 # get_avg - get the average time it takes to complete an IO
 #
 sub get_avg {
 
-    my $h1 = shift;
-    my $h2 = shift;
-    my $p  = shift;
+    my $h1    = shift;
+    my $h2    = shift;
+    my $p     = shift;
     my $delta = 0;
     my $tf    = 0;
 
@@ -672,14 +697,14 @@ sub get_avg {
     my $r;
 
     eval {
-       $tf = $td / $f2;
-        $r = $tf / $delta;
+        $tf = $td / $f2;
+        $r  = $tf / $delta;
     };
 
     if ($@) {
-        chomp ($@);
+        chomp($@);
         write_log("$@");
-	write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
+        write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
     }
 
     $r = 0 if $r < 0;
@@ -688,78 +713,79 @@ sub get_avg {
     return $r;
 }
 
-
 ## get_nicstat - returns nic statistics
 ##
 sub get_nicstat {
 
-    my ($rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop,
-        $txpkt,    $txkbytes, $txpkterr,  $txpktdrop,
-	$rxtxpkt,  $rxtxkbytes );
+    my (
+        $rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop, $txpkt,
+        $txkbytes, $txpkterr, $txpktdrop, $rxtxpkt,   $rxtxkbytes
+    );
 
-    $list3 = $wmi->InstancesOf($tcpwmi) or 
-        die "Failed to get $tcpwmi instance object\n";
+    $list3 = $wmi->InstancesOf($tcpwmi)
+      or die "Failed to get $tcpwmi instance object\n";
 
     # map nic stats
-    foreach my $v (in $list3) {
-    
-        if (!grep { $v->{$key} =~ /$_/i } @filter) {
+    foreach my $v ( in $list3) {
 
-            map{$nic->{$v->{$key}}->{$_} = $v->{$_} }@nicstats;
-	}
+        if ( !grep { $v->{$key} =~ /$_/i } @filter ) {
+
+            map { $nic->{ $v->{$key} }->{$_} = $v->{$_} } @nicstats;
+        }
     }
 
     my $nic_count = 0;
 
-    for my $k (keys %$nic) {
+    for my $k ( keys %$nic ) {
 
-	# PERF_COUNTER_COUNTER
-        $rxpkt += sprintf("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 
-		                          'PacketsReceivedPerSec' ) );
+        # PERF_COUNTER_COUNTER
+        $rxpkt += sprintf( "%.2f",
+            get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 'PacketsReceivedPerSec' )
+        );
 
-	# PERF_COUNTER_COUNTER
-        $rxkbytes += sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
-	                                       'BytesReceivedPerSec') / 1024 );
+        # PERF_COUNTER_COUNTER
+        $rxkbytes += sprintf( "%.2f",
+            get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 'BytesReceivedPerSec' ) /
+              1024 );
 
-        # PERF_COUNTER_RAWCOUNT 
-        $rxpkterr += sprintf ("%d", $nic->{"$k"}->{'PacketsReceivedErrors'} );
+        # PERF_COUNTER_RAWCOUNT
+        $rxpkterr += sprintf( "%d", $nic->{"$k"}->{'PacketsReceivedErrors'} );
 
-        # PERF_COUNTER_RAWCOUNT 
-        $rxpktdrop += sprintf ("%d", 
-	                      $nic->{"$k"}->{'PacketsReceivedDiscarded'} );
+        # PERF_COUNTER_RAWCOUNT
+        $rxpktdrop +=
+          sprintf( "%d", $nic->{"$k"}->{'PacketsReceivedDiscarded'} );
 
-	# PERF_COUNTER_COUNTER
-        $txpkt += sprintf("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 
-			                  'PacketsSentPerSec' ) );
+        # PERF_COUNTER_COUNTER
+        $txpkt += sprintf( "%.2f",
+            get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 'PacketsSentPerSec' ) );
 
-	# PERF_COUNTER_COUNTER
-        $txkbytes += sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
-	                                       'BytesSentPerSec') / 1024 );
+        # PERF_COUNTER_COUNTER
+        $txkbytes += sprintf( "%.2f",
+            get_diff( $nic_old->{"$k"}, $nic->{"$k"}, 'BytesSentPerSec' ) /
+              1024 );
 
-        # PERF_COUNTER_RAWCOUNT 
-        $txpkterr += sprintf ("%d", $nic->{"$k"}->{'PacketsOutboundErrors'} );
+        # PERF_COUNTER_RAWCOUNT
+        $txpkterr += sprintf( "%d", $nic->{"$k"}->{'PacketsOutboundErrors'} );
 
-        # PERF_COUNTER_RAWCOUNT 
-        $txpktdrop += sprintf ("%d", 
-	                      $nic->{"$k"}->{'PacketsOutboundDiscarded'} );
+        # PERF_COUNTER_RAWCOUNT
+        $txpktdrop +=
+          sprintf( "%d", $nic->{"$k"}->{'PacketsOutboundDiscarded'} );
 
-			
-        # PERF_COUNTER_RAWCOUNT 
+        # PERF_COUNTER_RAWCOUNT
         #$ql += sprintf ("%.2f", $nic->{"$k"}->{'OutputQueueLength'} );
-       
 
-	# PERF_COUNTER_COUNTER
+        # PERF_COUNTER_COUNTER
         # $rxtxpkt   = $rxpkt + $txpkt;
         #$rxtxpkt += sprintf ("%.2f", get_diff( $nic_old->{"$k"}, $nic->{"$k"},
-	#                                      'PacketsPerSec') );
+        #                                      'PacketsPerSec') );
 
-	# PERF_COUNTER_BULK_COUNT
+        # PERF_COUNTER_BULK_COUNT
         # $rxtxkbytes= $rxkbytes + $txkbytes;
-        #$rxtxkbytes += sprintf ("%.2f", get_diff( $nic_old->{"$k"}, 
-	#                                         $nic->{"$k"},
+        #$rxtxkbytes += sprintf ("%.2f", get_diff( $nic_old->{"$k"},
+        #                                         $nic->{"$k"},
         #                                         'BytesTotalPerSec') / 1024 );
 
-	$nic_count++;
+        $nic_count++;
 
     }
 
@@ -776,91 +802,80 @@ sub get_nicstat {
     $rxtxpkt    = $rxpkt + $txpkt;
     $rxtxkbytes = $rxkbytes + $txkbytes;
 
-    return ($rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop,
-            $txpkt,    $txkbytes, $txpkterr,  $txpktdrop,
-	    $rxtxpkt,  $rxtxkbytes ); 
+    return (
+        $rxpkt,    $rxkbytes, $rxpkterr,  $rxpktdrop, $txpkt,
+        $txkbytes, $txpkterr, $txpktdrop, $rxtxpkt,   $rxtxkbytes
+    );
 }
-
 
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ($traw, 
-        $cpu,   $sum, $head, 
-	$user,  $sys, $idle, 
-	$irq,   $rq,  $prc,  $thr, 
-	$mupct, $mu,  $mf,   $mt,  $mfpct,
-	$supct, $su,  $suf,  $sut,
-        $r,     $rk,  $rb,
-	$w,     $wk,  $wb,
-	$q,     $b,
-	$i,     $k,
-	$rx,    $rxk, $rxe,  $rxd,
-	$tx,    $txk, $txe,  $txd,
-	$rxtx,  $rxtxk
-	) = @_;
+    my (
+        $traw,  $cpu, $sum, $head,  $user, $sys, $idle, $irq,
+        $rq,    $prc, $thr, $mupct, $mu,   $mf,  $mt,   $mfpct,
+        $supct, $su,  $suf, $sut,   $r,    $rk,  $rb,   $w,
+        $wk,    $wb,  $q,   $b,     $i,    $k,   $rx,   $rxk,
+        $rxe,   $rxd, $tx,  $txk,   $txe,  $txd, $rxtx, $rxtxk
+    ) = @_;
 
-    if (RunningAsService()) {
+    if ( RunningAsService() ) {
 
         printf $rawlog
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
-        $traw, 
-        $cpu,   $sum, $head, 
-	$user,  $sys, $idle, 
-	$irq,   $rq,  $prc,  $thr, 
-	$mupct, $mu,  $mf,   $mt,  $mfpct,
-	$supct, $su,  $suf,  $sut,
-        $r,     $rk,  $rb,
-	$w,     $wk,  $wb,
-	$q,     $b,
-	$i,     $k,
-	$rx,    $rxk, $rxe,  $rxd,
-	$tx,    $txk, $txe,  $txd,
-	$rxtx,  $rxtxk;
+"%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
+          $traw,
+          $cpu,   $sum, $head,
+          $user,  $sys, $idle,
+          $irq,   $rq,  $prc, $thr,
+          $mupct, $mu,  $mf, $mt, $mfpct,
+          $supct, $su,  $suf, $sut,
+          $r,     $rk,  $rb,
+          $w,     $wk,  $wb,
+          $q,     $b,   $i,   $k,
+          $rx,    $rxk, $rxe, $rxd,
+          $tx,    $txk, $txe, $txd,
+          $rxtx,  $rxtxk;
 
-    } else {
+    }
+    else {
 
-        if ( $logging ) {
+        if ($logging) {
 
-            printf $rawlog 
-            "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
-                $traw, 
-                $cpu,   $sum, $head, 
-        	$user,  $sys, $idle, 
-        	$irq,   $rq,  $prc,  $thr, 
-        	$mupct, $mu,  $mf,   $mt,  $mfpct,
-        	$supct, $su,  $suf,  $sut,
-                $r,     $rk,  $rb,
-	        $w,     $wk,  $wb,
-	        $q,     $b,
-	        $i,     $k,
-	        $rx,    $rxk, $rxe,  $rxd,
-        	$tx,    $txk, $txe,  $txd,
-        	$rxtx,  $rxtxk;
-	}
-
+            printf $rawlog
+"%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
+              $traw,
+              $cpu,   $sum, $head,
+              $user,  $sys, $idle,
+              $irq,   $rq,  $prc, $thr,
+              $mupct, $mu,  $mf, $mt, $mfpct,
+              $supct, $su,  $suf, $sut,
+              $r,     $rk,  $rb,
+              $w,     $wk,  $wb,
+              $q,     $b,   $i,   $k,
+              $rx,    $rxk, $rxe, $rxd,
+              $tx,    $txk, $txe, $txd,
+              $rxtx,  $rxtxk;
+        }
 
         printf
-        "%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
-        $traw, 
-        $cpu,   $sum, $head, 
-	$user,  $sys, $idle, 
-	$irq,   $rq,  $prc,  $thr, 
-	$mupct, $mu,  $mf,   $mt,  $mfpct,
-	$supct, $su,  $suf,  $sut,
-        $r,     $rk,  $rb,
-	$w,     $wk,  $wb,
-	$q,     $b,
-	$i,     $k,
-	$rx,    $rxk, $rxe,  $rxd,
-	$tx,    $txk, $txe,  $txd,
-	$rxtx,  $rxtxk;
+"%s:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%.2f:%d:%d:%d:%.2f:%.2f:%d:%d:%d:%d:%.2f:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%.2f\n",
+          $traw,
+          $cpu,   $sum, $head,
+          $user,  $sys, $idle,
+          $irq,   $rq,  $prc, $thr,
+          $mupct, $mu,  $mf, $mt, $mfpct,
+          $supct, $su,  $suf, $sut,
+          $r,     $rk,  $rb,
+          $w,     $wk,  $wb,
+          $q,     $b,   $i,   $k,
+          $rx,    $rxk, $rxe, $rxd,
+          $tx,    $txk, $txe, $txd,
+          $rxtx,  $rxtxk;
 
     }
 
     return;
 }
-
 
 # chklog - check log directory
 #
@@ -868,17 +883,17 @@ sub chklog {
 
     my ($dir) = @_;
 
-    if (defined $dir) {
-        if (! -d $dir) {
+    if ( defined $dir ) {
+        if ( !-d $dir ) {
             die "error: chklog - cannot find $dir directory";
         }
-    } else {
+    }
+    else {
         die "error: chklog - cannot find $dir directory";
     }
 
     return;
 }
-
 
 # open_data - open data file
 #
@@ -888,23 +903,22 @@ sub open_file {
     my ($file) = @_;
     my $fh;
 
-    if (-f $file) {
-        open $fh, "+>>", "$file" or 
-	  die "error: open_file - cannot open $file $!";
-	seek $fh, 0, 2;
-        select ((select ($fh), $| = 1)[0]);
+    if ( -f $file ) {
+        open $fh, "+>>", "$file"
+          or die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select( ( select($fh), $| = 1 )[0] );
 
-    } else {
-        open $fh, "+>", "$file" or 
-	  die "error: open_file - cannot open $file $!";
-        select ((select ($fh), $| = 1)[0]);
+    }
+    else {
+        open $fh, "+>", "$file"
+          or die "error: open_file - cannot open $file $!";
+        select( ( select($fh), $| = 1 )[0] );
 
     }
 
     return $fh;
 }
-
-
 
 # open_config - open JSON configuration file
 #
@@ -917,30 +931,32 @@ sub open_config {
         local $/;
 
         # we will parse now the file
-	if ( defined $ENV{'KRMX_PREFIX'} ) {
-	    if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
-	        open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
-	        $json_data = <$fh>;
-	        close $fh;
-	    } else {
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
                 die "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-	    }
-	} else {
-	    if ( -e "$cprefix\\$conf" ) {
-		open my $fh, "<", "$cprefix\\$conf";
-		$json_data = <$fh>;
-		close $fh;
-	    } else { 
-	        die "error: open_config - $! $conf \n"; 
-	    }
-	} 
+            }
+        }
+        else {
+            if ( -e "$cprefix\\$conf" ) {
+                open my $fh, "<", "$cprefix\\$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                die "error: open_config - $! $conf \n";
+            }
+        }
     }
-    
-    my $perl_data = JSON->new->utf8->decode($json_data); 
-    
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
     return $perl_data;
 }
-
 
 # get_ssi - get service sample interval
 #
@@ -948,23 +964,21 @@ sub get_ssi {
     my ($data) = @_;
     my $ssi;
 
-    my $rpref = substr($recid,0,-3);
+    my $rpref = substr( $recid, 0, -3 );
 
     my @recs = @{ $data->{'message'} };
 
     foreach my $rh (@recs) {
-        
+
         next if ( $rh->{'name'} ne $rpref );
-	$ssi = $rh->{'sample'};
+        $ssi = $rh->{'sample'};
 
     }
 
-    $ssi = 60 if (! defined $ssi); 
+    $ssi = 60 if ( !defined $ssi );
 
     return $ssi;
 }
-
-
 
 # get_log - get log directory information
 #
@@ -983,43 +997,42 @@ sub get_log {
     return ( $bpath, $cpath, $dpath );
 }
 
-
 # get_uptime - return system uptime
 #
 sub get_uptime {
 
-    my ($lb, $ct) = @_;
+    my ( $lb, $ct ) = @_;
 
     # extract lastboot time
-    my $lyr   = substr ($lb, 0, 4);
-    my $lmon  = substr ($lb, 4, 2);
-    my $lday  = substr ($lb, 6, 2);
-    my $lhrs  = substr ($lb, 8, 2);
-    my $lmin  = substr ($lb, 10, 2);
-    my $lsec  = substr ($lb, 12, 2);
+    my $lyr  = substr( $lb, 0,  4 );
+    my $lmon = substr( $lb, 4,  2 );
+    my $lday = substr( $lb, 6,  2 );
+    my $lhrs = substr( $lb, 8,  2 );
+    my $lmin = substr( $lb, 10, 2 );
+    my $lsec = substr( $lb, 12, 2 );
 
-    my $cyr   = substr ($ct, 0, 4);
-    my $cmon  = substr ($ct, 4, 2);
-    my $cday  = substr ($ct, 6, 2);
-    my $chrs  = substr ($ct, 8, 2);
-    my $cmin  = substr ($ct, 10, 2);
-    my $csec  = substr ($ct, 12, 2);
+    my $cyr  = substr( $ct, 0,  4 );
+    my $cmon = substr( $ct, 4,  2 );
+    my $cday = substr( $ct, 6,  2 );
+    my $chrs = substr( $ct, 8,  2 );
+    my $cmin = substr( $ct, 10, 2 );
+    my $csec = substr( $ct, 12, 2 );
 
     #print "Last timeboot: $lyr $lmon $lday $lhrs $lmin $lsec\n";
     #print "Current DateTime: $cyr $cmon $cday $chrs $cmin $csec\n";
 
-    my $bootTime = timelocal($lsec, $lmin, $lhrs, $lday, $lmon - 1, $lyr);
-    my $currentTime = timelocal($csec, $cmin, $chrs, $cday, $cmon - 1, $cyr);
+    my $bootTime    = timelocal( $lsec, $lmin, $lhrs, $lday, $lmon - 1, $lyr );
+    my $currentTime = timelocal( $csec, $cmin, $chrs, $cday, $cmon - 1, $cyr );
 
     my $delta = $currentTime - $bootTime;
-    my ($secs, $mins, $hrs, $days);
-    $secs    =  $delta % 60;
-    $delta   = ($delta - $secs) / 60;
-    $mins    =  $delta % 60;
-    $delta   = ($delta - $mins) / 60;
-    $hrs     =  $delta % 24;
-    $delta   = ($delta - $hrs)   / 24;
-    $days    =  $delta;
+    my ( $secs, $mins, $hrs, $days );
+    $secs  = $delta % 60;
+    $delta = ( $delta - $secs ) / 60;
+    $mins  = $delta % 60;
+    $delta = ( $delta - $mins ) / 60;
+    $hrs   = $delta % 24;
+    $delta = ( $delta - $hrs ) / 24;
+    $days  = $delta;
 
     my $u = "$days" . "d " . "$hrs" . "h " . "$mins" . "m " . "$secs" . "s";
 
@@ -1027,45 +1040,46 @@ sub get_uptime {
     return $u;
 }
 
-
 # write_log - write log message
 #
 sub write_log {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
-    localtime(time);
+      localtime(time);
 
     my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
-                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 
-    if (eof $log) {
+    if ( eof $log ) {
         print $log "$dt $logbuf\n";
-    } else {
+    }
+    else {
         print $log "\n$dt $logbuf";
     }
 
     return;
 }
 
-
 # cktime - check midnight time
 #
 sub cktime {
 
-    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = 
-       localtime(time);
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+      localtime(time);
 
-    my $tcheck = sprintf ("%02d%02d", $hour, $min);
+    my $tcheck = sprintf( "%02d%02d", $hour, $min );
 
     my $yesterday = get_yesterday();
 
     # print "time check: $tcheck";
 
-    if ($tcheck eq $logtime ) {
+    if ( $tcheck eq $logtime ) {
+
         # write_log ("info: cktime - start log rotation");
         close $rawlog;
-	my $numkrd = rotate($clog, $dlog, $yesterday);
+        my $numkrd = rotate( $clog, $dlog, $yesterday );
+
         # write_log ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);
     }
@@ -1073,27 +1087,26 @@ sub cktime {
     return;
 }
 
-
-## 
+##
 sub rmkrd {
     my ($file) = @_;
 
     if ( -e $file ) {
-        if (unlink($file) > 0) { return 0; } else { return 1; }
+        if   ( unlink($file) > 0 ) { return 0; }
+        else                       { return 1; }
     }
 
     return;
 }
 
-
 ## null the raw data
 sub null2krd {
 
-    my($blog, $clog ) = @_;
+    my ( $blog, $clog ) = @_;
 
-    opendir(DIR, $clog) or
-        die "error: null2krd - Can't open $clog: $!";
-    my @files = grep {!/^\.+$/} readdir(DIR);
+    opendir( DIR, $clog )
+      or die "error: null2krd - Can't open $clog: $!";
+    my @files = grep { !/^\.+$/ } readdir(DIR);
     close(DIR);
 
     my @krds;
@@ -1103,24 +1116,23 @@ sub null2krd {
     }
 
     foreach my $krdf (@krds) {
-        copy("$clog/$krdf", "$blog") or
-           die "error: null2krd cannot copy krd file: $krdf $!\n";
-         open my $fh, ">", "$clog/$krdf";
-         close $fh;
+        copy( "$clog/$krdf", "$blog" )
+          or die "error: null2krd cannot copy krd file: $krdf $!\n";
+        open my $fh, ">", "$clog/$krdf";
+        close $fh;
     }
 
     return;
 }
 
-
 ## rotate raw data
 sub rotate {
 
-    my($rawdir, $dailydir, $dstamp) = @_;
+    my ( $rawdir, $dailydir, $dstamp ) = @_;
 
-    opendir(DIR, $rawdir) or
-        die "error: rotate - Can't open $rawdir: $!";
-    my @files = grep {!/^\.+$/} readdir(DIR);
+    opendir( DIR, $rawdir )
+      or die "error: rotate - Can't open $rawdir: $!";
+    my @files = grep { !/^\.+$/ } readdir(DIR);
     close(DIR);
 
     my $dest = "$dailydir/$dstamp";
@@ -1136,26 +1148,28 @@ sub rotate {
     my $nkrd = $#krd_files + 1;
 
     if ($verbose) {
-        write_log ("info: rotate - copying krd data files: $nkrd");
+        write_log("info: rotate - copying krd data files: $nkrd");
     }
 
     my $cnt = 0;
+
     # check if we have anything to move to daily
     if ( $nkrd > 0 ) {
-   
+
         # make daily target dir
-	mkdir $dest if (! -d $dest); 
+        mkdir $dest if ( !-d $dest );
+
         #unless(mkdir $dest) {
         #    write_log ("warning: rotate - $dstamp dir: $!");
         #}
 
         foreach my $rawfile (@krd_files) {
-            copy("$rawdir/$rawfile","$dest") or
-                write_log ("error: rotate - copying previous daily data, $!");
+            copy( "$rawdir/$rawfile", "$dest" )
+              or write_log("error: rotate - copying previous daily data, $!");
 
             # reset to zero
-	    open my $ftkrd, ">", "$rawdir/$rawfile";
-	    close $ftkrd;
+            open my $ftkrd, ">", "$rawdir/$rawfile";
+            close $ftkrd;
 
             $cnt++;
         }
@@ -1165,7 +1179,6 @@ sub rotate {
     return $cnt;
 }
 
-
 ## get yesterday
 sub get_yesterday {
 
@@ -1173,7 +1186,7 @@ sub get_yesterday {
     ( $yy, $mm, $dd ) = Add_Delta_Days( $yy, $mm, $dd, -1 );
 
     # ISO 8601 YYYY-MM-DD
-    my $prevdate = sprintf("%d-%02d-%02d", $yy, $mm, $dd);
+    my $prevdate = sprintf( "%d-%02d-%02d", $yy, $mm, $dd );
 
     # Debug
     # print "PREVDATE: $prevdate \n";
@@ -1181,13 +1194,12 @@ sub get_yesterday {
     return $prevdate;
 }
 
-
 # usage - print usage and exit.
 #
 sub usage {
 
-#    $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
-#    $Config{Description} = "Kronometrix $recid Service";
+    #    $Config{DisplayName} = "Kronometrix $Config{ServiceName} Service";
+    #    $Config{Description} = "Kronometrix $recid Service";
 
     print STDERR <<END;
 USAGE: sysrec [-lhvV] | [interval [count]]
@@ -1259,7 +1271,6 @@ USAGE: sysrec [-lhvV] | [interval [count]]
 END
     return;
 }
-
 
 # revision - print revision and exit
 #

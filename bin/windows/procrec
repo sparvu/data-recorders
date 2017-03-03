@@ -21,37 +21,36 @@ package PerlSvc;
 
 use strict;
 use warnings;
-use JSON;
-use File::Copy;
-use File::stat;
-use Tie::IxHash;
-use File::Spec;
 use Getopt::Long;
-use File::Find;
-no warnings 'File::Find';
-use Filesys::DiskUsage qw(du);
-use Time::HiRes qw(time gettimeofday usleep tv_interval);
 use Date::Calc qw(:all);
+use File::Copy;
+use Time::HiRes qw(time gettimeofday usleep tv_interval);
+use Win32::OLE ('in');
+use Sys::Hostname;
 use Time::Local;
 use Win32::Process;
+use JSON;
 
 # Debug Only
-#use Data::Dumper;
+use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my $recid   = 'direc';
+my $recid   = 'procrec';
 my $cprefix = 'C:\\Program Files\\Kronometrix\\etc';
-my ( $l, $v, $h, $V ) = 0;
+my ( $l, $v, $h, $V, $N ) = 0;
 our %Config = ( ServiceName => $recid );
 
 Getopt::Long::Configure('bundling');
 my $result = GetOptions(
-    "v|verbose" => \$v,
-    "h|help"    => \$h,
-    "V|version" => \$V,
-    "n|name=s"  => \$Config{ServiceName}
+    "l|logging"        => \$l,
+    "v|verbose"        => \$v,
+    "h|help"           => \$h,
+    "V|version"        => \$V,
+    "n|name=s"         => \$Config{ServiceName},
+    "N|processname=s"  => \$N
+
 );
 
 usage() if ( defined $h || !$result );
@@ -70,22 +69,26 @@ else {
 }
 
 ### Variables
-my $loop  = 0;               # current loop number
-my $cfile = 'direc.json';    # configuration file
-my $cdata;                   # configuration data
-my $kfile = 'kronometrix.json';    # configuration file
-my $rawfile;                       # krd raw data file
-my $kdata;                         # configuration data
-my ( $baselog, $curlog, $dirlog, $log );    # logs
-my $logtime = '0000';                       # min time check 23:59
-my $stime;                                  # sleep timer
-my $last_time = 0;                          # first counter
-my $files;
-my $dirs;
-local $| = 1;                               # autoflush
+my $name_sem  = 0;
+my $pname     = '';
+my $loop      = 0;                     # current loop number
+my $cf        = 'kronometrix.json';    # default json config
+my $logtime   = '0000';                # min time check 23:59
+my $stime;                           # sleep timer
+my $last_time = 0;                   # first counter
+my $procwmi   = 'Win32_PerfRawData_PerfProc_Process';
+local $| = 1;                        # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
+
+
+# check for processname flag
+if ( defined $N ) {
+    $name_sem = 1;
+    $pname  = $N;
+}
+
 
 ### MAIN BODY
 
@@ -98,26 +101,45 @@ if ( Win32::Process::Open( $curentProcess, $pid, 0 ) ) {
     $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
 }
 
-# read k configuration
-$kdata = open_config($kfile);
-my ( $blog, $clog, $dlog ) = get_log($kdata);
+# read configuration
+my $cdata = open_config($cf);
+
+my ( $blog, $clog, $dlog ) = get_log($cdata);
+
 my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
 
-# read configuration
-$cdata = open_config($cfile);
-
-# directories
-tie my %work, "Tie::IxHash";
-%work = get_dir($cdata);
-
 # log, rawlog files
+my $log;
 my $rawlog;
 
 if ($logging) {
     $rawlog = open_file($fkrd);
     $log    = open_file($fname);
     write_log("info: started");
+}
+
+# get stats
+my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
+  or die "Cannot initialize WMI interface\n";
+
+my $key = 'Name';
+
+my @procstats = qw( 
+ThreadCount          HandleCount 
+IDProcess            ElapsedTime
+PrivateBytes         VirtualBytes     PageFileBytes
+PercentProcessorTime PercentPrivilegedTime 
+PercentUserTime      TimeStamp_Sys100NS);
+
+my $hash1 = {};
+
+my $list = $wmi->InstancesOf($procwmi)
+  or die "Failed to get instance object\n";
+
+foreach my $w32 (in $list) {
+    next if $w32->{$key} eq '_Total';
+    map { $hash1->{ $w32->{$key} }->{$_} = $w32->{$_} } @procstats;
 }
 
 unless ( defined &ContinueRun ) {
@@ -129,7 +151,7 @@ unless ( defined &ContinueRun ) {
 if ( RunningAsService() ) {
 
     # get service sample interval
-    $interval = get_ssi($kdata);
+    $interval = get_ssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
@@ -146,49 +168,62 @@ sub Startup {
 
         k_sleep();
 
-        my %dirs;
+        my ( $procname, $cpupct, $syspct, $usrpct, $vsz, $pbt, $pfb, $tc, $fds, $elp );
+        my %pstat;
 
-        for my $key ( keys %work ) {
+        my $list = $wmi->InstancesOf($procwmi)
+          or die "Failed to get instance object\n";
 
-            $dirs  = 0;
-            $files = 0;
+        my $hash = {};
 
-            my $value = $work{$key};
-            my $desc  = $value;
-            next if ( !-d $key );
+        foreach my $w32 ( in $list) {
+            next if $w32->{$key} eq '_Total';
+            map { $hash->{ $w32->{$key} }->{$_} = $w32->{$_} } @procstats;
+        }
 
-            my $mod_time = stat($key)->mtime;
-            my $chg_time = stat($key)->ctime;
+        #print "procs " . keys(%$hash) . ".\n";
+        #print Dumper($hash);
 
-            # SAVE STDERR
-            #open *OLDSTDERR, '>&STDERR';
-            get_fds($key);
+        for my $k ( keys %$hash ) {
 
-            # RESTORe STDERR
-            #open *STDERR, '>&OLDSTDERR' or
-            #   die "Cannot restore STDERR: $!\n";
-            #close OLDSTDERR;
+            next if $k =~ /procrec/;
 
-            my $size;
-            my %sizes = du( { 'make-hash' => 1 }, $key );
-            foreach my $entry ( sort { $sizes{$a} <=> $sizes{$b} } keys %sizes )
-            {
-                $size = sprintf( "%.f", $sizes{$entry} );
-            }
+            next if $k =~ /Idle/;
 
-            $key =~ s/\s//g;
-            $key =~ s/:\\/_/g;
-            $key =~ s/\\/_/g;
+            # filter by name
+	    if ( $name_sem == 1 ) {
+	        next if $k !~ /$pname/;
+	    }
 
-            my $msize = sprintf( "%.2f", $size / ( 1024 * 1024 ) );
+            $cpupct = sprintf( "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentProcessorTime' ) *
+                  100 );
 
-            $dirs{$key} = "$key:$files:$dirs:$chg_time:$mod_time:$msize";
+            $syspct = sprintf( "%.2f",
+                get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' ) *
+		  100 );
 
-            # print dir statistics
-            # printf "%s:%s:%d:%d:%d:%d:%.f\n",
-            #  time, $key, $files, $dirs, $chg_time, $mod_time, $size;
+            $usrpct = sprintf( "%.2f",
+		get_value( $hash1->{"$k"}, $hash->{"$k"}, 'PercentPrivilegedTime' ) * 
+		  100 );
+
+            $pid  = $hash1->{"$k"}->{IDProcess};
+            $tc   = $hash1->{"$k"}->{ThreadCount};
+            $fds  = $hash1->{"$k"}->{HandleCount};
+            $vsz  = sprintf( "%.2f", $hash1->{"$k"}->{VirtualBytes} / 1048576 );
+            $pbt  = sprintf( "%.2f", $hash1->{"$k"}->{PrivateBytes} / 1048576 );
+            $pfb  = sprintf( "%.2f", $hash1->{"$k"}->{PageFileBytes} / 1048576 );
+
+            $k =~ s/#// if $k =~ /\#/;
+            $k =~ s/-// if $k =~ /\-/;
+	    $procname = $k;
+
+            $pstat{$k} =
+              "$procname:$pid:$cpupct:$syspct:$usrpct:$vsz:$pbt:$pfb:$tc:$fds";
 
         }
+
+        $hash1 = $hash;
 
         # end payload
         my $tnow = [gettimeofday];
@@ -200,14 +235,14 @@ sub Startup {
 
         if ( $last_time > 0 ) {
 
-            putraw( $$tnow[0], %dirs );
+            putraw( $$tnow[0], %pstat );
 
             $last_time = $$tnow[0];
 
         }
         else {
 
-            putraw( $$tnow[0], %dirs );
+            putraw( $$tnow[0], %pstat );
 
             if ( !RunningAsService() ) {
 
@@ -246,7 +281,7 @@ sub Install {
     if ( RunningAsService() ) {
 
         # check for proper config file
-        if ( !defined $kdata ) {
+        if ( !defined $cdata ) {
             die "Cant install $Config{ServiceName} service, exiting...\n";
         }
 
@@ -279,29 +314,56 @@ sub k_sleep {
     return;
 }
 
+# get_value - get delta between samples
+#
+sub get_value {
+
+    my ( $h1, $h2, $property ) = @_;
+
+    my $delta = 0;
+
+    my $v2 = $h2->{$property};
+    my $v1 = $h1->{$property};
+
+    my $t2 = $h2->{'TimeStamp_Sys100NS'};
+    my $t1 = $h1->{'TimeStamp_Sys100NS'};
+
+    eval { $delta = ( ( $v2 - $v1 ) / ( $t2 - $t1 ) ); };
+
+    if ($@) {
+        chomp($@);
+        write_log("$@");
+        write_log("v2=$v2 v1=$v1 t2=$t2 t1=$t1");
+    }
+
+    $delta = 1 if $delta > 1;
+
+    return $delta;
+}
+
 # print_raw - print krd raw data
 #
 sub putraw {
-    my ( $traw, %d ) = @_;
+    my ( $traw, %c ) = @_;
 
     if ( RunningAsService() ) {
 
-        for my $k ( sort keys %d ) {
-            printf $rawlog "%s:%s\n", $traw, $d{$k};
+        for my $k ( sort keys %c ) {
+            printf $rawlog "%s:%s\n", $traw, $c{$k};
         }
 
     }
     else {
         if ($logging) {
 
-            for my $k ( sort keys %d ) {
-                printf $rawlog "%s:%s\n", $traw, $d{$k};
+            for my $k ( sort keys %c ) {
+                printf $rawlog "%s:%s\n", $traw, $c{$k};
             }
 
         }
 
-        for my $k ( sort keys %d ) {
-            printf "%s:%s\n", $traw, $d{$k};
+        for my $k ( sort keys %c ) {
+            printf "%s:%s\n", $traw, $c{$k};
         }
     }
 }
@@ -387,7 +449,7 @@ sub open_config {
     return $perl_data;
 }
 
-# get_ssi - get service sample interval
+# get_Ssi - get service sample interval
 #
 sub get_ssi {
     my ($data) = @_;
@@ -578,86 +640,46 @@ sub get_yesterday {
     return $prevdate;
 }
 
-# get directory definition
-sub get_dir {
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: procrec [-lhV] | [interval [count]]
+       procrec -install auto
+       procrec -remove
+ eg. 
+  procrec.exe                # default CLI mode, print per disk stats stdout 
+  procrec.exe -N name        # monitor a list of processes with a specific name,
+                             # where name is a Perl regex
+  procrec.exe -P pid,...     # monitor a list of processes, using process IDs
+  procrec.exe -install auto  # run as a service, every 60s, default krdlog
+  procrec.exe -remove        # stop and remove the service 
 
-    my ($data) = @_;
-    tie my %dirs, "Tie::IxHash";
+ FIELDS:
+   #01 timestamp  : seconds since Epoch, timea
+   #02 process    : process name, string
+   #03 pid        : process id, number
+   #04 cpupct     : userspace cpu utilization, percentage
+   #05 syspct     : system cpu utilization, percentage
+   #06 userpct    : userspace cpu utilization, percentage
+   #07 vsz        : virtual address space size, in MB, number
+   #08 pbt        : private bytes segment, in MB, number
+   #09 pfb        : page file bytes, used in the paging file, in MB, number
+   #10 threads    : number of threads per process, number
+   #11 fds        : number of file descriptors, number
 
-    my @temp;
-    eval { @temp = @{ $data->{'directory'} }; };
-    if ($@) { die "Error: syntax error direc.json, check directory"; }
+ NOTES:
+   Data source: Win32_PerfRawData_PerfProc_Process
 
-    foreach my $f (@temp) {
-        my $dir  = $f->{'name'};
-        my $desc = $f->{'description'};
-
-        my $keyapp = $dir;
-        my $hvalue = $desc;
-
-        $dirs{$keyapp} = $hvalue;
-    }
-
-    return %dirs;
-}
-
-sub get_fds {
-
-    my ($dir) = @_;
-    local $^W;
-
-    open STDERR, '>', File::Spec->devnull() or die "Cannot open STDERR: $!\n";
-    find(
-        sub {
-         # $_ contains the name of the current file
-         # $File::Find::name contains the full path of the current file relative
-         #  to the directory given to the find() function
-         # $File::Find::dir contains the name of the current directory
-         # print "Processing: $_ \n";
-
-            if (-d) {    # if file is a directory
-                $dirs++;
-            }
-            elsif (-f) {
-                $files++;
-            }
-            else { return; }
-        },
-        $dir
-    );
-
+END
     return;
 }
 
-# usage - print usage and exit.
-sub usage {
-    print STDERR <<END;
-USAGE: direc [-hvV] | [interval]
-OPTIONS:
-  -h        : help information
-  -v        : verbose information
-  -V        : release version
-  interval  : maximum number of seconds between samples
-
- FIELDS:
-  #01 timestamp : seconds since Epoch, time
-  #02 name : directory name, string
-  #03 number of files, number
-  #04 number of sub directories, number
-  #05 time of last status change, seconds
-  #06 time of last modification, seconds
-  #07 capacity in MBytes
- 
- NOTES:
-  The recorder uses direc.json configuration file
-END
-    exit 0;
-}
-
 # revision - print revision and exit
+#
 sub revision {
     print STDERR <<END;
-direc: 1.1.2, 2016-10-26 1400
+procrec: 1.0.5, 2017-02-21 0001
 END
-    exit 0;
+    return;
 }

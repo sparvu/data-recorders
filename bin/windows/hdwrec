@@ -24,7 +24,7 @@ use warnings;
 use Getopt::Long;
 use Date::Calc qw(:all);
 use File::Copy;
-use Time::HiRes qw(time gettimeofday sleep tv_interval); 
+use Time::HiRes qw(time gettimeofday sleep tv_interval);
 use Win32::OLE ('in');
 use Sys::Hostname;
 use Time::Local;
@@ -32,29 +32,28 @@ use Win32;
 use Win32::Process;
 use JSON;
 
-
 # Debug Only
 # use Data::Dumper;
 
 ### Command line arguments
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
 
-my $recid           = 'hdwrec';
-my $cprefix         = 'C:\\Program Files\\Kronometrix\\etc';
-my ($l, $v, $h, $V) = 0;
-our %Config         = (ServiceName => $recid);
+my $recid   = 'hdwrec';
+my $cprefix = 'C:\\Program Files\\Kronometrix\\etc';
+my ( $l, $v, $h, $V ) = 0;
+our %Config = ( ServiceName => $recid );
 
 Getopt::Long::Configure('bundling');
-my $result = GetOptions (
-                "l|logging" => \$l,
-                "v|verbose" => \$v,
-                "h|help"    => \$h,
-                "V|version" => \$V,
-                "n|name=s" => \$Config{ServiceName}
-                );
+my $result = GetOptions(
+    "l|logging" => \$l,
+    "v|verbose" => \$v,
+    "h|help"    => \$h,
+    "V|version" => \$V,
+    "n|name=s"  => \$Config{ServiceName}
+);
 
-usage() if (defined $h || ! $result);
-revision() if (defined $V);
+usage() if ( defined $h || !$result );
+revision() if ( defined $V );
 
 # process [[interval [count]]
 my ( $interval, $loop_max );
@@ -69,20 +68,21 @@ else {
 }
 
 ### Variables
-my $loop        = 0;                      # current loop number
-my $cf          = 'kronometrix.json';     # default json config
-my $logtime     = '00';                   # min time check 23:59
-my $hv          = 'NA';                   # hypervisor
-my $ht          = 'NA';                   # hyper-threading
-my $stime;                                # sleep timer
+my $loop    = 0;                     # current loop number
+my $cf      = 'kronometrix.json';    # default json config
+my $logtime = '00';                  # min time check 23:59
+my $hv      = 'NA';                  # hypervisor
+my $ht      = 'NA';                  # hyper-threading
+my $stime;                           # sleep timer
+
 # physical,virtual ids
-my $pdev        = 'PCI|USB|VMBUS';
-my $vdev        = 'ROOT|SW|\{';
-my $vid         = 'Microsoft|VMWare|VirtualBox';
-my $last_time   = 0;                      # first counter
-my $key         = 'Name';
-my $diskwmi     = 'Win32_PerfRawData_PerfDisk_LogicalDisk';
-$|= 1;                                    # autoflush
+my $pdev      = 'PCI|USB|VMBUS';
+my $vdev      = 'ROOT|SW|\{';
+my $vid       = 'Microsoft|VMWare|VirtualBox';
+my $last_time = 0;                                          # first counter
+my $key       = 'Name';
+my $diskwmi   = 'Win32_PerfRawData_PerfDisk_LogicalDisk';
+$| = 1;                                                     # autoflush
 
 my $verbose = defined $v ? $v : 0;
 my $logging = defined $l ? $l : 0;
@@ -93,7 +93,7 @@ my $curentProcess;
 
 my $pid = Win32::Process::GetCurrentProcessID();
 
-if (Win32::Process::Open($curentProcess, $pid, 0)) {
+if ( Win32::Process::Open( $curentProcess, $pid, 0 ) ) {
     $curentProcess->SetPriorityClass(HIGH_PRIORITY_CLASS);
 }
 
@@ -109,345 +109,332 @@ my $fname = $blog . "\\" . $recid . ".log";
 my $fkrd  = $clog . "\\" . $recid . ".krd";
 
 # open raw data
-my ($log, $rawlog);
+my ( $log, $rawlog );
 
 if ($logging) {
     $rawlog = open_file($fkrd);
-    $log = open_file($fname);
-    write_log ("info: started");
+    $log    = open_file($fname);
+    write_log("info: started");
 }
 
 # get stats
 my $wmi = Win32::OLE->GetObject("winmgmts://./root/cimv2")
-    or die "Cannot initialize WMI interface\n";
-
+  or die "Cannot initialize WMI interface\n";
 
 ## disk
 my @diskstats = qw(
-                    DiskReadsPerSec        DiskReadBytesPerSec
-		    Timestamp_PerfTime     Frequency_PerfTime 
-		    Frequency_Sys100NS     Timestamp_Sys100NS
-		   );
+  DiskReadsPerSec        DiskReadBytesPerSec
+  Timestamp_PerfTime     Frequency_PerfTime
+  Frequency_Sys100NS     Timestamp_Sys100NS
+);
 
-my @filter   =   ( 'Harddisk',
-                   '_Total'
-                 );
+my @filter = ( 'Harddisk', '_Total' );
 
 my $disk_old = {};
 my $list;
 
-my $boot     = 60;
-my $speedup  = 1;
+my $boot    = 60;
+my $speedup = 1;
 my $defint;
 
 # pre-init all default
 init_disk();
 
-
-unless (defined &ContinueRun) {
-    *ContinueRun = sub { return 1 };
+unless ( defined &ContinueRun ) {
+    *ContinueRun      = sub { return 1 };
     *RunningAsService = sub { return 0 };
     Interactive();
 }
 
-if (RunningAsService()) {
+if ( RunningAsService() ) {
 
     # get service sample interval
     $interval = get_ssi($cdata);
     $loop_max = 2**32;
 
     $rawlog = open_file($fkrd);
-    $log = open_file($fname);
-   
-    $defint  = $interval;
+    $log    = open_file($fname);
 
-    if ($speedup == 1) { $interval=$boot; }
+    $defint = $interval;
 
-    write_log ("info: started");
+    if ( $speedup == 1 ) { $interval = $boot; }
+
+    write_log("info: started");
 }
-
 
 ### SUBROUTINES
 
-
 sub Startup {
 
-    while(ContinueRun()) {
+    while ( ContinueRun() ) {
 
-    my $start = [gettimeofday];
+        my $start = [gettimeofday];
 
-    # hostname# hostname
-    my $host = lc(hostname);
-    $host =~ s/\..*$// if $host =~ /\./;
+        # hostname# hostname
+        my $host = lc(hostname);
+        $host =~ s/\..*$// if $host =~ /\./;
 
-    my $wproc = $wmi->InstancesOf("Win32_Processor");
-    my ($hdw, $ncores);
-    foreach my $obj (in $wproc) {
-        $hdw     = $obj->{AddressWidth};
-        $ncores  = $obj->{NumberOfCores};
-    }
-
-    if   ($hdw == 64) { $hdw = "x86_64"; }
-    else              { $hdw = "x86";    }
-
-
-    # os, relos, kernel build
-    my $os = lc Win32::GetOSName();
-    my ($s, $maj, $min, $build, $id) = Win32::GetOSVersion();
-    my $relos = $maj . "." . $min;
-    my $kernel = $build;
-
-    # pcpu, vcpu
-    my $wcs = $wmi->InstancesOf("Win32_ComputerSystem");
-    my ($pcpu, $vcpu, $hv_mfct, $hv_model, $hv_flag);
-    foreach my $obj (in $wcs) {
-        $pcpu     = $obj->{NumberOfProcessors};
-        $vcpu     = $obj->{NumberOfLogicalProcessors};
-        $hv_mfct  = $obj->{Manufacturer};
-        $hv_model = $obj->{Model};
-    }
-
-    $hv = printhv($hv_mfct, $hv_model);
-
-
-    # hyper-threading
-    if    ( $ncores < $vcpu ) { $ht = 1;    }
-    elsif ( $ncores > $vcpu ) { $ht = 0;    }
-    else                      { $ht = 'NA'; }
-
-    # memtotal, swaptotal
-    my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
-    my ($memtotal, $swaptotal, $freemem, $lastboot, $currtime);
-    my ($osver, $osname);
-    foreach my $obj (in $wos) {
-        $osver     = $obj->{Version};
-        $osname    = $obj->{Caption};
-        $memtotal  = $obj->{TotalVisibleMemorySize};
-        $swaptotal = $obj->{SizeStoredInPagingFiles};
-        $freemem   = $obj->{FreePhysicalMemory};
-	$lastboot  = $obj->{LastBootUptime};
-	$currtime  = $obj->{LocalDateTime};
-    }
-
-
-    my $uptime = get_uptime ($lastboot, $currtime);
-
-    # get no of physical disks
-    # Win32_DiskDrive Class
-    my $wd = $wmi->InstancesOf("Win32_DiskDrive");
-    my $ndisk = 0;
-    foreach my $disk (in $wd) {
-        $ndisk++;
-    }
-
-
-    # get total GB of all volumes
-    my $lsize = 0;
-    my $disk = {};
-
-    $list = $wmi->InstancesOf($diskwmi)
-            or die "Failed to get $diskwmi instance object\n";
-
-    foreach my $v (in $list) {
-
-        next if $v->{$key} =~ m/\\/;
-        if (! grep { $v->{$key} =~ /$_/i } @filter ) {
-            map{$disk->{$v->{$key}}->{$_}  = $v->{$_} }@diskstats;
-	}
-    }
-
-
-    my $dspace=0;
-    for my $k (keys %$disk) {
-
-        my $dn = $k;
-        $dn =~ s/\://; $dn =~s/\s+//;
-	my $diskname = "disk" . $dn;
-
-
-        # Inventory data
-	my $wdinv =
-	$wmi->ExecQuery("SELECT Size from Win32_LogicalDisk where Name='$k'");
-	foreach my $obj (in $wdinv) {
-	    $lsize = sprintf ( "%.2f", $obj->{Size} / 1073741824 );
-	}
-
-	$dspace += $lsize;
-    }
-
-    $disk_old = $disk;
-
-
-    # get no of NICs
-    my $nicq = "SELECT * from Win32_NetworkAdapter";
-
-    my $wn = $wmi->ExecQuery($nicq);
-
-    my $nnic = 0;
-    my $pnic = 0;
-    my $vnic = 0;
-
-    my $ips  = 'NA';
-
-    foreach my $nic (in $wn) {
-
-        my $vendor = $nic->{Manufacturer};
-        my $pnp    = $nic->{PNPDeviceID};
-        my $desc   = $nic->{Description};
-        my $id     = $nic->{Index};
-
-        if (defined $vendor and defined $pnp) {
-
-            # fetch IP settings
-            if    ( $vendor =~ /$vid/i and $pnp !~ /$pdev/i ) { $vnic++; }
-            elsif ( $vendor !~ /$vid/i and $pnp =~ /$vdev/i ) { $vnic++; }
-            else  { $pnic++; }
-        } else {
-            #print "Warning: $id, $desc missing vendor and pnp information \n"
-            $vendor = 'NA';
-            $pnp    = 'NA';
+        my $wproc = $wmi->InstancesOf("Win32_Processor");
+        my ( $hdw, $ncores );
+        foreach my $obj ( in $wproc) {
+            $hdw    = $obj->{AddressWidth};
+            $ncores = $obj->{NumberOfCores};
         }
 
-        #print "$id, $desc, $vendor, $pnp\n";
-    }
+        if   ( $hdw == 64 ) { $hdw = "x86_64"; }
+        else                { $hdw = "x86"; }
 
+        # os, relos, kernel build
+        my $os = lc Win32::GetOSName();
+        my ( $s, $maj, $min, $build, $id ) = Win32::GetOSVersion();
+        my $relos  = $maj . "." . $min;
+        my $kernel = $build;
 
-    # drop Virtual NICs
-    $nnic = $pnic;
+        # pcpu, vcpu
+        my $wcs = $wmi->InstancesOf("Win32_ComputerSystem");
+        my ( $pcpu, $vcpu, $hv_mfct, $hv_model, $hv_flag );
+        foreach my $obj ( in $wcs) {
+            $pcpu     = $obj->{NumberOfProcessors};
+            $vcpu     = $obj->{NumberOfLogicalProcessors};
+            $hv_mfct  = $obj->{Manufacturer};
+            $hv_model = $obj->{Model};
+        }
 
-    my $kk=0;
+        $hv = printhv( $hv_mfct, $hv_model );
 
-    my $niconf = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
-    foreach my $no (in $niconf) {
-	next unless $no->{IPEnabled};
+        # hyper-threading
+        if    ( $ncores < $vcpu ) { $ht = 1; }
+        elsif ( $ncores > $vcpu ) { $ht = 0; }
+        else                      { $ht = 'NA'; }
 
-        my $name = lc $no->{'ServiceName'};
+        # memtotal, swaptotal
+        my $wos = $wmi->InstancesOf("Win32_OperatingSystem");
+        my ( $memtotal, $swaptotal, $freemem, $lastboot, $currtime );
+        my ( $osver, $osname );
+        foreach my $obj ( in $wos) {
+            $osver     = $obj->{Version};
+            $osname    = $obj->{Caption};
+            $memtotal  = $obj->{TotalVisibleMemorySize};
+            $swaptotal = $obj->{SizeStoredInPagingFiles};
+            $freemem   = $obj->{FreePhysicalMemory};
+            $lastboot  = $obj->{LastBootUptime};
+            $currtime  = $obj->{LocalDateTime};
+        }
 
-        my $ipaddrs = $no->{'IPAddress'};
+        my $uptime = get_uptime( $lastboot, $currtime );
 
-        if (defined $ipaddrs) {
-	    foreach my $ip (@$ipaddrs) {
+        # get no of physical disks
+        # Win32_DiskDrive Class
+        my $wd    = $wmi->InstancesOf("Win32_DiskDrive");
+        my $ndisk = 0;
+        foreach my $disk ( in $wd) {
+            $ndisk++;
+        }
 
-	        if ( $ip  =~ /:/ ) {
-		    $ip =~  s/:/./g;
-		}
+        # get total GB of all volumes
+        my $lsize = 0;
+        my $disk  = {};
 
-                if ( $kk > 0 ) {
-	            $ips = $ips . ' ' . $name . '_' . $ip;
-		} else {
-		    $ips = $name . '_' . $ip;
-		}
-		$kk++;
-	    }
-	}
-    }
+        $list = $wmi->InstancesOf($diskwmi)
+          or die "Failed to get $diskwmi instance object\n";
 
-    # os, relos, kernel correction win2012, win10
-    my @winver = split /\./, $osver;
-    my $r = $winver[0] . "." . $winver[1];
-    my $k = $winver[2];
-    if ( $r ne $relos ) {
-        $relos = $r; 
-        my ($newos) = $osname =~ m {(\d+(\.\d+)?)}x;
-        if ( $k ne $kernel ) { $kernel = $k; }
-	if ( $newos ne $os ) { $os = "win" . $newos; }
-    }
+        foreach my $v ( in $list) {
 
+            next if $v->{$key} =~ m/\\/;
+            if ( !grep { $v->{$key} =~ /$_/i } @filter ) {
+                map { $disk->{ $v->{$key} }->{$_} = $v->{$_} } @diskstats;
+            }
+        }
 
-    # get kdr release version
-    my $kdrrel = get_version();
+        my $dspace = 0;
+        for my $k ( keys %$disk ) {
 
-    # end payload
-    my $tnow = [gettimeofday];
+            my $dn = $k;
+            $dn =~ s/\://;
+            $dn =~ s/\s+//;
+            my $diskname = "disk" . $dn;
 
-    my $elapsed = tv_interval ($start, $tnow);
+            # Inventory data
+            my $wdinv =
+              $wmi->ExecQuery(
+                "SELECT Size from Win32_LogicalDisk where Name='$k'");
+            foreach my $obj ( in $wdinv) {
+                $lsize = sprintf( "%.2f", $obj->{Size} / 1073741824 );
+            }
 
-    my $stime = 1;
-    if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
+            $dspace += $lsize;
+        }
 
+        $disk_old = $disk;
 
+        # get no of NICs
+        my $nicq = "SELECT * from Win32_NetworkAdapter";
 
-    # cktime for rotation
-    if (RunningAsService()) {
-        cktime();
-    }
+        my $wn = $wmi->ExecQuery($nicq);
 
-    if ($last_time > 0) {
+        my $nnic = 0;
+        my $pnic = 0;
+        my $vnic = 0;
 
-        putraw($$tnow[0], $host,     $hdw,    $hv,
-	       $os,       $relos,    $kernel,
-	       $pcpu,     $ncores,   $vcpu,
-	       $ht,       $memtotal, $swaptotal,
-	       $ndisk,    $dspace,   $nnic,     
-	       $uptime,   $ips,      $kdrrel);
+        my $ips = 'NA';
 
-        $last_time = $$tnow[0];
-	sleep($stime);
+        foreach my $nic ( in $wn) {
 
+            my $vendor = $nic->{Manufacturer};
+            my $pnp    = $nic->{PNPDeviceID};
+            my $desc   = $nic->{Description};
+            my $id     = $nic->{Index};
 
-    } else {
+            if ( defined $vendor and defined $pnp ) {
 
-        putraw($$tnow[0], $host,     $hdw,    $hv,
-	       $os,       $relos,    $kernel, 
-	       $pcpu,     $ncores,   $vcpu, 
-	       $ht,       $memtotal, $swaptotal, 
-	       $ndisk,    $dspace,   $nnic,     
-	       $uptime,   $ips,      $kdrrel);
+                # fetch IP settings
+                if    ( $vendor =~ /$vid/i and $pnp !~ /$pdev/i ) { $vnic++; }
+                elsif ( $vendor !~ /$vid/i and $pnp =~ /$vdev/i ) { $vnic++; }
+                else                                              { $pnic++; }
+            }
+            else {
+              #print "Warning: $id, $desc missing vendor and pnp information \n"
+                $vendor = 'NA';
+                $pnp    = 'NA';
+            }
 
+            #print "$id, $desc, $vendor, $pnp\n";
+        }
 
-        if (!RunningAsService()) {
+        # drop Virtual NICs
+        $nnic = $pnic;
+
+        my $kk = 0;
+
+        my $niconf = $wmi->InstancesOf("Win32_NetworkAdapterConfiguration");
+        foreach my $no ( in $niconf) {
+            next unless $no->{IPEnabled};
+
+            my $name = lc $no->{'ServiceName'};
+
+            my $ipaddrs = $no->{'IPAddress'};
+
+            if ( defined $ipaddrs ) {
+                foreach my $ip (@$ipaddrs) {
+
+                    if ( $ip =~ /:/ ) {
+                        $ip =~ s/:/./g;
+                    }
+
+                    if ( $kk > 0 ) {
+                        $ips = $ips . ' ' . $name . '_' . $ip;
+                    }
+                    else {
+                        $ips = $name . '_' . $ip;
+                    }
+                    $kk++;
+                }
+            }
+        }
+
+        # os, relos, kernel correction win2012, win10
+        my @winver = split /\./, $osver;
+        my $r      = $winver[0] . "." . $winver[1];
+        my $k      = $winver[2];
+        if ( $r ne $relos ) {
+            $relos = $r;
+            my ($newos) = $osname =~ m {(\d+(\.\d+)?)}x;
+            if ( $k ne $kernel ) { $kernel = $k; }
+            if ( $newos ne $os ) { $os     = "win" . $newos; }
+        }
+
+        # get kdr release version
+        my $kdrrel = get_version();
+
+        # end payload
+        my $tnow = [gettimeofday];
+
+        my $elapsed = tv_interval( $start, $tnow );
+
+        my $stime = 1;
+        if ( $elapsed < $interval ) { $stime = $interval - $elapsed; }
+
+        # cktime for rotation
+        if ( RunningAsService() ) {
+            cktime();
+        }
+
+        if ( $last_time > 0 ) {
+
+            putraw(
+                $$tnow[0], $host,     $hdw,       $hv,     $os,
+                $relos,    $kernel,   $pcpu,      $ncores, $vcpu,
+                $ht,       $memtotal, $swaptotal, $ndisk,  $dspace,
+                $nnic,     $uptime,   $ips,       $kdrrel
+            );
+
+            $last_time = $$tnow[0];
+            sleep($stime);
+
+        }
+        else {
+
+            putraw(
+                $$tnow[0], $host,     $hdw,       $hv,     $os,
+                $relos,    $kernel,   $pcpu,      $ncores, $vcpu,
+                $ht,       $memtotal, $swaptotal, $ndisk,  $dspace,
+                $nnic,     $uptime,   $ips,       $kdrrel
+            );
+
+            if ( !RunningAsService() ) {
+
+                # check count, interval
+                last if ++$loop == $loop_max;
+            }
+
+            $last_time = $$tnow[0];
+            sleep($stime);
+
+            next;
+        }
+
+        if ( !RunningAsService() ) {
+
             # check count, interval
             last if ++$loop == $loop_max;
         }
 
-        $last_time = $$tnow[0];
-	sleep($stime);
+        if ( RunningAsService() ) {
+            if ( $speedup > 0 ) {
+                if ( $speedup == $boot ) {
+                    $interval = $defint;
+                    $speedup  = -1;
+                }
+                else { $speedup++; }
+            }
+        }
 
-        next;
-    }
+    }    # while loop
 
-
-    if (!RunningAsService()) {
-        # check count, interval
-        last if ++$loop == $loop_max;
-    }
-
-    if (RunningAsService()) {
-    if ( $speedup > 0 ) {
-        if ( $speedup == $boot ) {
-	    $interval=$defint;
-	    $speedup = -1;
-	} else { $speedup++; }
-    } }
-
-
-    } # while loop
-    
-    if (RunningAsService()) {
-        write_log ("info: stopped");
+    if ( RunningAsService() ) {
+        write_log("info: stopped");
     }
 }
-
 
 sub Interactive {
 
     Install();
 
-    if (( ! defined $h ) and (! defined $V)) {
+    if ( ( !defined $h ) and ( !defined $V ) ) {
         Startup();
     }
 }
 
-
 sub Install {
 
-    if (RunningAsService()) {
+    if ( RunningAsService() ) {
+
         # check for proper config file
-        if (! defined $cdata) {
+        if ( !defined $cdata ) {
             die "Cant install $Config{ServiceName} service, exiting...\n";
         }
 
-        if (! defined $clog ) {
+        if ( !defined $clog ) {
             die "Cant install $Config{ServiceName} service, exiting...\n";
         }
     }
@@ -458,22 +445,20 @@ sub Install {
     return;
 }
 
-
 sub Remove {
 
     $Config{ServiceName} = $recid;
     return;
 }
 
-
 # k_sleep - sleeps exact number of usec
 #
 sub k_sleep {
 
-    my $t = [gettimeofday];
-    my $next = (int($t->[0]/$interval) + 1) * $interval;
-    my $delta = tv_interval ($t, [$next, 0]);
-    usleep($delta * 1_000_000);
+    my $t     = [gettimeofday];
+    my $next  = ( int( $t->[0] / $interval ) + 1 ) * $interval;
+    my $delta = tv_interval( $t, [ $next, 0 ] );
+    usleep( $delta * 1_000_000 );
 
     return;
 }
@@ -483,53 +468,50 @@ sub get_version {
     my $fver = 'C:\\Program Files\\Kronometrix\\VERSION';
     my $rel  = 'NA';
 
-    if (-f $fver) {
+    if ( -f $fver ) {
         open my $fh, "<", $fver
-	   or die "error: cannot find VERSION file: $!\n";
-	while (<$fh>) {
-	    chomp;
-	    $rel = $_;
-	}
-	close $fh;
+          or die "error: cannot find VERSION file: $!\n";
+        while (<$fh>) {
+            chomp;
+            $rel = $_;
+        }
+        close $fh;
     }
 
     return $rel;
 }
 
-
 sub init_disk {
 
     $list = $wmi->InstancesOf($diskwmi)
-          or die "Failed to get $diskwmi instance object\n";
+      or die "Failed to get $diskwmi instance object\n";
 
-    foreach my $v (in $list) {
+    foreach my $v ( in $list) {
 
         next if $v->{$key} =~ m/\\/;
 
-        if (! grep { $v->{$key} =~ /$_/i } @filter ) {
+        if ( !grep { $v->{$key} =~ /$_/i } @filter ) {
 
-	    map{$disk_old->{$v->{$key}}->{$_} = $v->{$_} }@diskstats;
-	}
+            map { $disk_old->{ $v->{$key} }->{$_} = $v->{$_} } @diskstats;
+        }
     }
 }
 
-
-# printhv - print hypervisor 
+# printhv - print hypervisor
 #
 sub printhv {
 
-    my ($vendor, $model) = @_;
+    my ( $vendor, $model ) = @_;
     my $hypervisor;
 
-    if    ( $vendor =~ /Xen/i )       { $hypervisor = 'xen';    }
-    elsif ( $vendor =~ /QEMU/i )      { $hypervisor = 'kvm';    }
-    elsif ( $vendor =~ /VMware/i )    { $hypervisor = 'esx';    }
+    if    ( $vendor =~ /Xen/i )       { $hypervisor = 'xen'; }
+    elsif ( $vendor =~ /QEMU/i )      { $hypervisor = 'kvm'; }
+    elsif ( $vendor =~ /VMware/i )    { $hypervisor = 'esx'; }
     elsif ( $vendor =~ /Microsoft/i ) { $hypervisor = 'hyperv'; }
-    else                              { $hypervisor = 'NA';     }
+    else                              { $hypervisor = 'NA'; }
 
     return $hypervisor;
 }
-
 
 # chklog - check log directory
 #
@@ -537,17 +519,17 @@ sub chklog {
 
     my ($dir) = @_;
 
-    if (defined $dir) {
-        if (! -d $dir) {
+    if ( defined $dir ) {
+        if ( !-d $dir ) {
             die "error: chklog - cannot find $dir directory";
         }
-    } else {
+    }
+    else {
         die "error: chklog - cannot find $dir directory";
     }
 
     return;
 }
-
 
 # open_data - open data file
 #
@@ -557,23 +539,22 @@ sub open_file {
     my ($file) = @_;
     my $fh;
 
-    if (-f $file) {
-        open $fh, "+>>", "$file" or 
-	  die "error: open_file - cannot open $file $!";
-	seek $fh, 0, 2;
-        select ((select ($fh), $| = 1)[0]);
+    if ( -f $file ) {
+        open $fh, "+>>", "$file"
+          or die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select( ( select($fh), $| = 1 )[0] );
 
-    } else {
-        open $fh, "+>", "$file" or 
-	  die "error: open_file - cannot open $file $!";
-        select ((select ($fh), $| = 1)[0]);
+    }
+    else {
+        open $fh, "+>", "$file"
+          or die "error: open_file - cannot open $file $!";
+        select( ( select($fh), $| = 1 )[0] );
 
     }
 
     return $fh;
 }
-
-
 
 # open_config - open JSON configuration file
 #
@@ -586,30 +567,32 @@ sub open_config {
         local $/;
 
         # we will parse now the file
-	if ( defined $ENV{'KRMX_PREFIX'} ) {
-	    if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
-	        open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
-	        $json_data = <$fh>;
-	        close $fh;
-	    } else {
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
                 die "error: open_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
-	    }
-	} else {
-	    if ( -e "$cprefix\\$conf" ) {
-		open my $fh, "<", "$cprefix\\$conf";
-		$json_data = <$fh>;
-		close $fh;
-	    } else { 
-	        die "error: open_config - $! $conf \n"; 
-	    }
-	} 
+            }
+        }
+        else {
+            if ( -e "$cprefix\\$conf" ) {
+                open my $fh, "<", "$cprefix\\$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                die "error: open_config - $! $conf \n";
+            }
+        }
     }
-    
-    my $perl_data = JSON->new->utf8->decode($json_data); 
-    
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
     return $perl_data;
 }
-
 
 # get_ssi - get service sample interval
 #
@@ -617,20 +600,19 @@ sub get_ssi {
     my ($data) = @_;
     my $ssi;
 
-    my $rpref = substr($recid,0,-3);
+    my $rpref = substr( $recid, 0, -3 );
 
     my @recs = @{ $data->{'message'} };
 
     foreach my $rh (@recs) {
         next if ( $rh->{'name'} ne $rpref );
-	$ssi = $rh->{'sample'};
+        $ssi = $rh->{'sample'};
     }
 
-    $ssi = 60 if (! defined $ssi);
+    $ssi = 60 if ( !defined $ssi );
 
     return $ssi;
 }
-
 
 # get_log - get log directory information
 #
@@ -649,43 +631,42 @@ sub get_log {
     return ( $bpath, $cpath, $dpath );
 }
 
-
 # get_uptime - return system uptime
 #
 sub get_uptime {
 
-    my ($lb, $ct) = @_;
+    my ( $lb, $ct ) = @_;
 
     # extract lastboot time
-    my $lyr   = substr ($lb, 0, 4);
-    my $lmon  = substr ($lb, 4, 2);
-    my $lday  = substr ($lb, 6, 2);
-    my $lhrs  = substr ($lb, 8, 2);
-    my $lmin  = substr ($lb, 10, 2);
-    my $lsec  = substr ($lb, 12, 2);
+    my $lyr  = substr( $lb, 0,  4 );
+    my $lmon = substr( $lb, 4,  2 );
+    my $lday = substr( $lb, 6,  2 );
+    my $lhrs = substr( $lb, 8,  2 );
+    my $lmin = substr( $lb, 10, 2 );
+    my $lsec = substr( $lb, 12, 2 );
 
-    my $cyr   = substr ($ct, 0, 4);
-    my $cmon  = substr ($ct, 4, 2);
-    my $cday  = substr ($ct, 6, 2);
-    my $chrs  = substr ($ct, 8, 2);
-    my $cmin  = substr ($ct, 10, 2);
-    my $csec  = substr ($ct, 12, 2);
+    my $cyr  = substr( $ct, 0,  4 );
+    my $cmon = substr( $ct, 4,  2 );
+    my $cday = substr( $ct, 6,  2 );
+    my $chrs = substr( $ct, 8,  2 );
+    my $cmin = substr( $ct, 10, 2 );
+    my $csec = substr( $ct, 12, 2 );
 
     #print "Last timeboot: $lyr $lmon $lday $lhrs $lmin $lsec\n";
     #print "Current DateTime: $cyr $cmon $cday $chrs $cmin $csec\n";
 
-    my $bootTime = timelocal($lsec, $lmin, $lhrs, $lday, $lmon - 1, $lyr);
-    my $currentTime = timelocal($csec, $cmin, $chrs, $cday, $cmon - 1, $cyr);
+    my $bootTime    = timelocal( $lsec, $lmin, $lhrs, $lday, $lmon - 1, $lyr );
+    my $currentTime = timelocal( $csec, $cmin, $chrs, $cday, $cmon - 1, $cyr );
 
     my $delta = $currentTime - $bootTime;
-    my ($secs, $mins, $hrs, $days);
-    $secs    =  $delta % 60;
-    $delta   = ($delta - $secs) / 60;
-    $mins    =  $delta % 60;
-    $delta   = ($delta - $mins) / 60;
-    $hrs     =  $delta % 24;
-    $delta   = ($delta - $hrs)   / 24;
-    $days    =  $delta;
+    my ( $secs, $mins, $hrs, $days );
+    $secs  = $delta % 60;
+    $delta = ( $delta - $secs ) / 60;
+    $mins  = $delta % 60;
+    $delta = ( $delta - $mins ) / 60;
+    $hrs   = $delta % 24;
+    $delta = ( $delta - $hrs ) / 24;
+    $days  = $delta;
 
     my $u = "$days" . "d " . "$hrs" . "h " . "$mins" . "m " . "$secs" . "s";
 
@@ -693,44 +674,46 @@ sub get_uptime {
     return $u;
 }
 
-
 # write_log - write log message
 #
 sub write_log {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
-    localtime(time);
+      localtime(time);
 
     my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
-                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 
-    if (eof $log) {
+    if ( eof $log ) {
         print $log "$dt $logbuf\n";
-    } else {
+    }
+    else {
         print $log "\n$dt $logbuf";
     }
 
     return;
 }
 
-
 # cktime - check midnight time
 #
 sub cktime {
 
-    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = 
-       localtime(time);
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+      localtime(time);
 
-    my $tcheck = sprintf ("%02d", $hour);
+    my $tcheck = sprintf( "%02d", $hour );
 
     my $yesterday = get_yesterday();
+
     # print "time check: $tcheck";
 
-    if ($tcheck eq $logtime ) {
+    if ( $tcheck eq $logtime ) {
+
         # write_log ("info: cktime - start log rotation");
-        close ($rawlog);
-	my $numkrd = rotate($clog, $dlog, $yesterday);
+        close($rawlog);
+        my $numkrd = rotate( $clog, $dlog, $yesterday );
+
         # write_log ("info: cktime - end log rotation, files rotated: $numkrd");
         $rawlog = open_file($fkrd);
     }
@@ -738,27 +721,26 @@ sub cktime {
     return;
 }
 
-
-## 
+##
 sub rmkrd {
     my ($file) = @_;
 
     if ( -e $file ) {
-        if (unlink($file) > 0) { return 0; } else { return 1; }
+        if   ( unlink($file) > 0 ) { return 0; }
+        else                       { return 1; }
     }
 
     return;
 }
 
-
 ## null the raw data
 sub null2krd {
 
-    my($blog, $clog ) = @_;
+    my ( $blog, $clog ) = @_;
 
-    opendir(DIR, $clog) or
-        die "error: null2krd - Can't open $clog: $!";
-    my @files = grep {!/^\.+$/} readdir(DIR);
+    opendir( DIR, $clog )
+      or die "error: null2krd - Can't open $clog: $!";
+    my @files = grep { !/^\.+$/ } readdir(DIR);
     close(DIR);
 
     my @krds;
@@ -768,24 +750,23 @@ sub null2krd {
     }
 
     foreach my $krdf (@krds) {
-        copy("$clog/$krdf", "$blog") or
-           die "error: null2krd cannot copy krd file: $krdf $!\n";
-         open my $fh, ">", "$clog/$krdf";
-         close $fh;
+        copy( "$clog/$krdf", "$blog" )
+          or die "error: null2krd cannot copy krd file: $krdf $!\n";
+        open my $fh, ">", "$clog/$krdf";
+        close $fh;
     }
 
     return;
 }
 
-
 ## rotate raw data
 sub rotate {
 
-    my($rawdir, $dailydir, $dstamp) = @_;
+    my ( $rawdir, $dailydir, $dstamp ) = @_;
 
-    opendir(DIR, $rawdir) or
-        die "error: rotate - Can't open $rawdir: $!";
-    my @files = grep {!/^\.+$/} readdir(DIR);
+    opendir( DIR, $rawdir )
+      or die "error: rotate - Can't open $rawdir: $!";
+    my @files = grep { !/^\.+$/ } readdir(DIR);
     close(DIR);
 
     my $dest = "$dailydir/$dstamp";
@@ -801,24 +782,25 @@ sub rotate {
     my $nkrd = $#krd_files + 1;
 
     if ($verbose) {
-        write_log ("info: rotate - copying krd data files: $nkrd");
+        write_log("info: rotate - copying krd data files: $nkrd");
     }
 
     my $cnt = 0;
+
     # check if we have anything to move to daily
     if ( $nkrd > 0 ) {
-   
+
         # make daily target dir
-	mkdir $dest if (! -d $dest);
+        mkdir $dest if ( !-d $dest );
 
         #unless(mkdir $dest) {
-	#    write_log ("warning: rotate - $dstamp dir: $!");
+        #    write_log ("warning: rotate - $dstamp dir: $!");
         #}
 
         foreach my $rawfile (@krd_files) {
-            copy("$rawdir/$rawfile","$dest") or
-                write_log ("error: rotate - copying previous daily data, $!");
-	
+            copy( "$rawdir/$rawfile", "$dest" )
+              or write_log("error: rotate - copying previous daily data, $!");
+
             # reset to zero
             open my $ftkrd, ">", "$rawdir/$rawfile";
             close $ftkrd;
@@ -831,7 +813,6 @@ sub rotate {
     return $cnt;
 }
 
-
 ## get yesterday
 sub get_yesterday {
 
@@ -839,7 +820,7 @@ sub get_yesterday {
     ( $yy, $mm, $dd ) = Add_Delta_Days( $yy, $mm, $dd, -1 );
 
     # ISO 8601 YYYY-MM-DD
-    my $prevdate = sprintf("%d-%02d-%02d", $yy, $mm, $dd);
+    my $prevdate = sprintf( "%d-%02d-%02d", $yy, $mm, $dd );
 
     # Debug
     # print "PREVDATE: $prevdate \n";
@@ -847,54 +828,50 @@ sub get_yesterday {
     return $prevdate;
 }
 
-
 sub putraw {
 
-    my ($traw , 
-        $host,      $hdw,       $hv, 
-	$os,        $relos,     $kernel, 
-	$pcpu,      $ncores,    $vcpu,   $ht,
-	$memtotal,  $swaptotal, $ndisk,  $ds, 
-        $nnic,      $uptime,    $ips,    $rel ) = @_;
+    my (
+        $traw,  $host,     $hdw,       $hv,     $os,
+        $relos, $kernel,   $pcpu,      $ncores, $vcpu,
+        $ht,    $memtotal, $swaptotal, $ndisk,  $ds,
+        $nnic,  $uptime,   $ips,       $rel
+    ) = @_;
 
-    if (RunningAsService()) {
+    if ( RunningAsService() ) {
 
-        printf $rawlog 
-            "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
-            $traw ,
-            $host,      $hdw,       $hv,
-	    $os,        $relos,     $kernel,
-	    $pcpu,      $ncores,    $vcpu,   $ht,
-	    $memtotal,  $swaptotal, $ndisk,  $ds, $nnic, $uptime, $ips, $rel;
+        printf $rawlog
+          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+          $traw,
+          $host,     $hdw,       $hv,
+          $os,       $relos,     $kernel,
+          $pcpu,     $ncores,    $vcpu, $ht,
+          $memtotal, $swaptotal, $ndisk, $ds, $nnic, $uptime, $ips, $rel;
 
+    }
+    else {
 
-    } else {
-    
-        if ( $logging ) {
+        if ($logging) {
 
             printf $rawlog
               "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
-              $traw , 
-              $host,      $hdw,       $hv,
-	      $os,        $relos,     $kernel,
-	      $pcpu,      $ncores,    $vcpu,   $ht,
-	      $memtotal,  $swaptotal, $ndisk,  $ds, $nnic, $uptime, $ips, $rel;
-	}
-
+              $traw,
+              $host,     $hdw,       $hv,
+              $os,       $relos,     $kernel,
+              $pcpu,     $ncores,    $vcpu, $ht,
+              $memtotal, $swaptotal, $ndisk, $ds, $nnic, $uptime, $ips, $rel;
+        }
 
         printf
           "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
-          $traw , 
-          $host,      $hdw,       $hv,
-	  $os,        $relos,     $kernel,
-	  $pcpu,      $ncores,    $vcpu,   $ht,
-	  $memtotal,  $swaptotal, $ndisk,  $ds, $nnic, $uptime, $ips, $rel;
+          $traw,
+          $host,     $hdw,       $hv,
+          $os,       $relos,     $kernel,
+          $pcpu,     $ncores,    $vcpu, $ht,
+          $memtotal, $swaptotal, $ndisk, $ds, $nnic, $uptime, $ips, $rel;
     }
 
     return;
 }
-
-
 
 # usage - print usage and exit
 #
@@ -933,7 +910,6 @@ USAGE: hdwrec [-lhV] | [interval [count]]
 END
     return;
 }
-
 
 # revision - print revision and exit
 #
