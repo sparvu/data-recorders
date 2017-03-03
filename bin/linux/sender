@@ -398,7 +398,7 @@ while (1) {
 
                 } elsif ($svcrec_on) {
 
-                    if ($lid eq 'whpd') {
+                    if ($lid eq 'epd') {
                     
                         $f=1;
                     
@@ -408,7 +408,7 @@ while (1) {
                 
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
@@ -420,7 +420,7 @@ while (1) {
                         } else {
 
                             $dsname = $devtemp;
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             # my $idl = 'svc' . $lid;
                             my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
@@ -433,7 +433,7 @@ while (1) {
                             $devid = "system";
                         }
 
-                        $msgid = "whpd-svc";
+                        $msgid = "epd-svc";
                     }
                  elsif ($lid eq 'dpd') { 
 
@@ -445,7 +445,7 @@ while (1) {
                 
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             #my $idl = 'svc' . $lid;
                             my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
@@ -458,7 +458,7 @@ while (1) {
                         } else {
 
                             $dsname = $devtemp;
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             # my $idl = 'svc' . $lid;
                             my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
@@ -477,7 +477,7 @@ while (1) {
 
                 } elsif ($certrec_on) {
 
-                    if ($lid eq 'whpd') {
+                    if ($lid eq 'epd') {
                     
                         $f=1;
                     
@@ -487,7 +487,7 @@ while (1) {
                 
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
@@ -499,7 +499,7 @@ while (1) {
                         } else {
 
                             $dsname = $devtemp;
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
@@ -511,7 +511,7 @@ while (1) {
                             $devid = "system";
                         }
 
-                        $msgid = "whpd-cert";
+                        $msgid = "epd-cert";
                     }
 
                  elsif ($lid eq 'dpd') { 
@@ -524,7 +524,7 @@ while (1) {
                 
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
@@ -536,7 +536,7 @@ while (1) {
                         } else {
 
                             $dsname = $devtemp;
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
@@ -560,7 +560,7 @@ while (1) {
                         $devid = get_devid(1, $delta);
                         $msgid = "wpd-$osname-ttfb";
 
-                    } elsif ($lid eq 'whpd'){
+                    } elsif ($lid eq 'epd'){
 
                         $f=1;
 
@@ -570,7 +570,7 @@ while (1) {
 
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                              
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
@@ -583,7 +583,7 @@ while (1) {
                         } else {
 
                             $dsname = $devtemp;
-                            # no dsid in the lookup whpd table
+                            # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
@@ -595,7 +595,7 @@ while (1) {
                             $devid = "system";
                         }
 
-                        $msgid = "whpd-ttfb"; 
+                        $msgid = "epd-ttfb";
                     }
 
                 } elsif ($webinvrec_on) {
@@ -604,13 +604,13 @@ while (1) {
                     # $devid = get_devid(1, $delta);
 
                     # message id
-                    if ($lid eq 'whpd') {
+                    if ($lid eq 'epd') {
 
                         $f=1;
                         my $devtemp = get_devid(1, $delta);
 
                         $dsname = $devtemp;
-                        # no dsid in the lookup whpd table
+                        # no dsid in the lookup epd table
                         my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
                         if (! exists($tblk{$kkey})) {
                             $dsid = make_wdsid($kkey);
@@ -620,7 +620,7 @@ while (1) {
                         }
 
                         $devid = "system";
-                        $msgid = "whpd-inv";
+                        $msgid = "epd-inv";
                     }
                 }
 
@@ -851,7 +851,7 @@ sub get_hostid {
 sub make_hdsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd', 'whpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'epd', 'iaqd', 'wcd', 'wpd' );
 
     # sid - subscription id
     # dsid - data source id
@@ -968,7 +968,7 @@ sub get_platform {
     my ($data) = @_;
     my %kplt;
 
-    my @lmo = ('amd', 'cpd', 'dpd', 'iaqd', 'wcd', 'wpd', 'whpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'epd', 'iaqd', 'wcd', 'wpd');
 
     my @temp = @{ $data->{'transport'}->{'platform'} };
 
@@ -1004,6 +1004,8 @@ sub get_platform {
                          and defined($ka) ) {
                         my $keyapp = $mo . ":" . $sid . ":" . "$tid" . ":" . $dsid;
                         $kplt{$keyapp} = "$proto:$host:$port:$ka";
+
+                        print $keyapp; print $kplt{$keyapp};
                     }
                 }
             }
@@ -1046,7 +1048,7 @@ sub send_data {
     my ($hash, $post);
 
     # WHPD-TTFB                              - WPD DOMAIN
-    if ( $msg_id =~ /whpd-ttfb/ ) {
+    if ( $msg_id =~ /epd-ttfb/ ) {
 
         #1481544913:www.fi:0.243:0.202:0.163:0.202:0.080:1719:200
         my ( $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7 ) = split ( /:/, $delta );
