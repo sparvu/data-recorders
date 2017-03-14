@@ -63,17 +63,17 @@
         {
           "id" : "www.facebook.com",
           "method" : "GET",
-          "scheme" : "http",
+          "scheme" : "https",
           "host" : "www.facebook.com",
-          "port" : "80",
+          "port" : "443",
           "path" : "/"
         },
         {
           "id" : "www.twitter.com",
           "method" : "GET",
-          "scheme" : "http",
+          "scheme" : "https",
           "host" : "www.twitter.com",
-          "port" : "80",
+          "port" : "443",
           "path" : "/"
         }
       ]
