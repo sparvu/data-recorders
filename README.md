@@ -30,7 +30,7 @@ It is important to understand that we process data based on a unique data source
 
 
 ### Industries
-We plan to support and record data from different types of industries. For some we have already developed data recorderds, like IT, Meteorology and we need help to enhance it. For some, we plan using data loggers to enahnce and speed-up the recording process. For each case, raw data will be presented as messages, based on [LMO](https://github.com/kronometrix/lmo). 
+We plan to support and record data from different types of industries. For some we have already developed data recorderds, like IT, Meteorology and we need help to enhance it. For some, we plan using data loggers to enahnce and speed-up the recording process. For each case, raw data will be presented as messages, based on [LMO](https://github.com/sparvu/lmo). 
 
  * Environmental Monitoring
  * Information and Communications Technology (ICT)
