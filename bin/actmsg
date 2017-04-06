@@ -86,9 +86,9 @@ sub open_config {
 # get datafile
 sub get_datafile {
 
-    my ($data) = @_;
-
-    my $schilds = 0;
+    my ($data)     = @_;
+    my $rs485_sem  = 0;
+    my $schilds    = 0;
     my @d;
 
     my @temp = @{ $data->{'message'} };
@@ -96,7 +96,13 @@ sub get_datafile {
     # load d array
     foreach my $f (@temp) {
         next if ($f->{'status'} ne 'active');
-        push @d, $f->{'name'};
+        if ($f->{'name'} =~ /iaq/) {
+            next if ($rs485_sem == 1);
+            push @d, 'rs485';
+            $rs485_sem=1;
+        } else {
+            push @d, $f->{'name'};
+        }
         $schilds++;
     }
 
