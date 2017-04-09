@@ -12,7 +12,7 @@ README Kronometrix Data Recording
     CloudLinux 5, 6 x86_64, i386
     Debian GNU/Linux 7 (wheezy) x86_64, i386
     Ubuntu Server Edition 10.04+ x86_64, i386
-    Raspbian GNU/Linux 7 (wheezy) armv6
+    Raspbian GNU/Linux 7,8 armv6,armv7
 
   Note: Kernel 2.6+ (x86_64 i386), 3.12 (armv6)
 
