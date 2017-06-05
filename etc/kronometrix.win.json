@@ -36,7 +36,7 @@
     {
       "name"   : "hdw",
       "file"   : "hdwrec.krd",
-      "sample" : 3600,
+      "sample" : 1800,
       "status" : "active",
       "domain" : [ "cpd", "dpd", "wpd" ]
     },
