@@ -256,13 +256,13 @@ while (1) {
 
         my $rawkrd = open_file($rawfile);
 
-        printf $rawkrd "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
+        printf $rawkrd "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
             time, $cpupct, $sumpct, $headpct,
             $user, $nice, $sys, $intr, $idle,
-            $vm[0], $vm[1], $vm[2], $vm[3], $vm[4],
-            $vm[5], $vm[6], $vm[7], $vm[8], $vm[9], $vm[10],
-            $vm[11], $vm[12], $vm[13], $vm[14], $vm[15],
-            $vm[16], $vm[17], $vm[18], $vm[19], $vm[20],
+            $vm[0], $vm[1], $vm[2], $vm[3], $vm[4], $vm[5], 
+            $vm[6], $vm[7], $vm[8], $vm[9], $vm[10], $vm[11], 
+            $vm[12], $vm[13], $vm[14], $vm[15], $vm[16], 
+            $vm[17], $vm[18], $vm[19], $vm[20], $vm[21],
             $ds[0], $ds[1], $ds[2], $ds[3], 
             $ds[4], $ds[5], $ds[6], 
             $ds[7], $ds[8], 
@@ -274,14 +274,13 @@ while (1) {
         close ($rawkrd);
 
     } else {
-
-        printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
+        printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
             time, $cpupct, $sumpct, $headpct,
             $user, $nice, $sys, $intr, $idle,
             $vm[0], $vm[1], $vm[2], $vm[3], $vm[4],
             $vm[5], $vm[6], $vm[7], $vm[8], $vm[9], $vm[10],
             $vm[11], $vm[12], $vm[13], $vm[14], $vm[15],
-            $vm[16], $vm[17], $vm[18], $vm[19], $vm[20],
+            $vm[16], $vm[17], $vm[18], $vm[19], $vm[20], $vm[21],
             $ds[0], $ds[1], $ds[2], $ds[3],
             $ds[4], $ds[5], $ds[6],
             $ds[7], $ds[8],
@@ -509,7 +508,8 @@ sub get_vmstat {
 
     # sleeps
     my $sp = $vmtotal->{sleeping};
-
+    my $procs = $pw + $dw + $bl + $sp;
+    
     # vm stats
 
     # total memory
@@ -533,10 +533,10 @@ sub get_vmstat {
     my $memrealfreepct = sprintf("%.2f", ($memrealfree / ( $memall / 1024 ) ) * 100 );
 
     my @stats;
-    push(@stats, $rq, $bl, $pw, $dw, $sp, 
-         $memusedpct, $memused, $memavailpct, $memavail, 
-         $memtotal, $memactive, $meminactive, $memwired, $memcache, 
-         $memfree, $memrealfree, $memrealfreepct, 
+    push(@stats, $rq, $bl, $pw, $dw, $sp, $procs,
+         $memusedpct, $memused, $memavailpct, $memavail,
+         $memtotal, $memactive, $meminactive, $memwired, $memcache,
+         $memfree, $memrealfree, $memrealfreepct,
          $swapin, $swappin, $swapout, $swappout);
 
     # print "@stats";
@@ -706,7 +706,7 @@ USAGE: sysrec [-hV] | [interval [count]]
    #04 headpct    : headroom cpu available, all cpus, number
    #05 userpct    : cpu utilization, user space in percent, number
    #06 nicepct    : cpu utilization, user space with nice priority, number
-   #07 syspct      : cpu utilization, system space, number
+   #07 syspct     : cpu utilization, system space, number
    #08 irqpct     : cpu percentage servicing interrupts, number
    #09 idlepct    : cpu utilization, idle state, number
    #10 runqsz     : run queue length, tasks waiting for run time, number
@@ -714,61 +714,62 @@ USAGE: sysrec [-hV] | [interval [count]]
    #12 pagewait   : processes blocked for paging, number
    #13 diskwait   : processes blocked for disk io, number
    #14 sleeping   : processes sleeping, number
+   #15 plistsz    : total number of processes in the system, number
 
   MEM
-   #15 memusedpct : size of used memory in percent, number
-   #16 memused    : size of used memory in kilobytes, number
-   #17 memavailpct: size of available memory in kilobytes, number
-   #18 memavail   : size of available memory in kilobytes, number
-   #19 memtotal   : size of memory in kilobytes, number
-   #20 active     : size of active memory pages in kilobytes, number
-   #21 inactive   : size of inactive memory pages in kilobytes, number
-   #22 wired      : size of wired memory pages in kilobytes, number
-   #23 cache      : size of memory pages on cache queue in kilobytes, number
-   #24 free       : size of free memory pages in kilobytes, number
-   #25 realfree   : size of real free memory in kilobytes, number
+   #16 memusedpct : size of used memory in percent, number
+   #17 memused    : size of used memory in kilobytes, number
+   #18 memavailpct: size of available memory in kilobytes, number
+   #19 memavail   : size of available memory in kilobytes, number
+   #20 memtotal   : size of memory in kilobytes, number
+   #21 active     : size of active memory pages in kilobytes, number
+   #22 inactive   : size of inactive memory pages in kilobytes, number
+   #23 wired      : size of wired memory pages in kilobytes, number
+   #24 cache      : size of memory pages on cache queue in kilobytes, number
+   #25 free       : size of free memory pages in kilobytes, number
+   #26 realfree   : size of real free memory in kilobytes, number
                      (inactive + cache + free)
-   #26 realfreepct: size of real free memory in percent of total memory, number
-   #27 swapin     : swap pager pageins, rate
-   #28 swappgsin  : swap pager pages paged in, rate 
-   #29 swapout    : swap pager pageouts, rate
-   #30 swappgsout : swap pager pages paged out, rate
+   #27 realfreepct: size of real free memory in percent of total memory, number
+   #28 swapin     : swap pager pageins, rate
+   #29 swappgsin  : swap pager pages paged in, rate 
+   #30 swapout    : swap pager pageouts, rate
+   #31 swappgsout : swap pager pages paged out, rate
 
   DISK
-   #31 reads      : read requests per second, rate
-   #32 rkbytes    : read KB per second,rate
-   #33 writes     : write requests per second, rate
-   #34 wkbytes    : write KB per second, rate
+   #32 reads      : read requests per second, rate
+   #33 rkbytes    : read KB per second,rate
+   #34 writes     : write requests per second, rate
+   #35 wkbytes    : write KB per second, rate
 
    # throughput
-   #35 queue      : the number of not yet completed transactions, rate
-   #36 service    : service time per transaction in miliseconds, number 
-   #37 diskutil   : the percentage of time the device had one or more 
+   #36 queue      : the number of not yet completed transactions, rate
+   #37 service    : service time per transaction in miliseconds, number 
+   #38 diskutil   : the percentage of time the device had one or more 
                      transactions outstanding, number
-   #38 iops       : disk read+write requests per second, rate
-   #39 rwkbytes   : read+write KB per second, rate
+   #39 iops       : disk read+write requests per second, rate
+   #40 rwkbytes   : read+write KB per second, rate
    
   NIC
    # rx received, inbound
-   #40 rxpkt      : rx packets per second, rate
-   #41 rxkbytes   : rx KB per second, rate
-   #42 rxerr      : rx packets containing errors, rate
-   #43 rxdrop     : rx drop packets per second, rate
+   #41 rxpkt      : rx packets per second, rate
+   #42 rxkbytes   : rx KB per second, rate
+   #43 rxerr      : rx packets containing errors, rate
+   #44 rxdrop     : rx drop packets per second, rate
 
    # tx transmitted, outbound
-   #44 txpkt      : transmitted packets per second, rate
-   #45 txkbytes   : transmitted KB per second, rate 
-   #46 txerr      : number of errors while transmitting pkt per second, rate
-   #47 cols       : number of collisions, rate
-   #48 drop       : number of dropped packets per second, rate
+   #45 txpkt      : transmitted packets per second, rate
+   #46 txkbytes   : transmitted KB per second, rate 
+   #47 txerr      : number of errors while transmitting pkt per second, rate
+   #48 cols       : number of collisions, rate
+   #49 drop       : number of dropped packets per second, rate
    
    # throughput
-   #49 rxtxpkt    : rx+tx packets per second, rate
-   #50 rxtxkbytes : rx+tx KB per second, rate
+   #50 rxtxpkt    : rx+tx packets per second, rate
+   #51 rxtxkbytes : rx+tx KB per second, rate
 
-   #51 avg1       : LA of the last minute, number
-   #52 avg5       : LA of the last 5 minutes, number
-   #53 avg15      : LA of the last 15 minutes, number
+   #52 avg1       : LA of the last minute, number
+   #53 avg5       : LA of the last 5 minutes, number
+   #54 avg15      : LA of the last 15 minutes, number
 
 END
     exit 0;
@@ -778,7 +779,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sysrec: 1.1.3, 2016-12-13 0003
+sysrec: 1.1.4, 2017-06-25 1104
 END
     exit 0;
 }
