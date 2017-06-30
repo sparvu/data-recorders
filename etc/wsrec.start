@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/wsrec -p -l $RES 2>> ${WSREC_LOG} &
+${KRMX_BIN}/wsrec -g -p -l $RES 2>> ${WSREC_LOG} &
 echo "$!" > ${KRMX_LOG}/wsrec.pid
