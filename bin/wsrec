@@ -235,12 +235,16 @@ while (1) {
     ($daily_rain_rate += $_) for @daily_rain;
 
     # wind direction: degrees
-    my $wdf;
+    my $wdf = 'NA';
 
     if ($deg) {
-        $wdf = $wind_dirs_degs[$wind_dir];
+        if($wind_dirs_degs[$wind_dir]) {
+            $wdf = $wind_dirs_degs[$wind_dir];
+        }
     } else { 
-        $wdf = $wind_dirs[$wind_dir];
+        if($wind_dirs[$wind_dir]) {
+            $wdf = $wind_dirs[$wind_dir];
+        }
     }
    	
     if ($csv == 1) {
@@ -297,7 +301,7 @@ while (1) {
         my $now_time = strftime "%H:%M", localtime;
         print (FH "stationDate=$now_date\n");
         print (FH "stationTime=$now_time\n");
-        print (FH "windDir=$wind_dirs_degs[$wind_dir]\n");
+        print (FH "windDir=$wdf\n");
         print (FH "wind10Avg=$wind_speed\n");
         print (FH "windSpeed=$gust_speed\n");
         print (FH "outsideHumidity=$outdoor_humidity\n");
@@ -579,7 +583,7 @@ END
 ##
 sub revision {
        print STDERR <<END;
-wsrec: 1.1.5, 2017-04-08 1400
+wsrec: 1.1.6, 2017-06-30 1022
 END
        exit 1;
 }
