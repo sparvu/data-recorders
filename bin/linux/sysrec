@@ -23,7 +23,7 @@ use warnings;
 use JSON;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
-use Sys::Statistics::Linux;
+use Linux::Info;
 use POSIX qw(pause);
 
 ###  Process command line args
@@ -62,10 +62,10 @@ local $| = 1;
 
 ### MAIN BODY
 
-# Set a timer for S::S::L object
+# Set a timer for L::I object
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
-my $lxs = Sys::Statistics::Linux->new(
+my $lxs = Linux::Info->new(
     cpustats  => 1,
     memstats  => 1,
     diskstats => 1,
@@ -563,7 +563,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.1.3, 2016-12-12 1735
+sysrec: 1.1.4, 2017-07-06 1527
 END
     exit 0;
 }
