@@ -24,9 +24,9 @@ use JSON;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use Sys::Statistics::Linux;
+use Linux::Info::SysInfo;
 use Linux::Distribution qw(distribution_name distribution_version);
 use POSIX qw(pause ceil);
-use Sys::Hostname;
 use IO::Interface::Simple;
 use Sys::Filesystem ();
 use Filesys::Df;
@@ -81,9 +81,9 @@ local $| = 1;
 # Set a timer for S::S::L object
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
+my $nlxs  = Linux::Info::SysInfo->new;
 my $lxs = Sys::Statistics::Linux->new(
     diskstats  => 1,
-    sysinfo  => 1,
     procstats  => 1
 );
 my $dl = Linux::Distribution->new;
@@ -132,7 +132,6 @@ while (1) {
 
     # get stats
     my $stat = $lxs->get;
-    my $si  = $stat->sysinfo;
     my $ps  = $stat->procstats;
 
     my $rawkrd;
@@ -141,7 +140,7 @@ while (1) {
     }
 
     # hostname
-    my $host = hostname;
+    my $host = $nlxs->get_hostname;
     $host =~ s/\..*$// if $host =~ /\./;
 
     # hypervisor type
@@ -158,12 +157,21 @@ while (1) {
         
     }
 
-    # ncores
-    my $ncores = $si->{tcpucount};
+    my $arch = $nlxs->get_arch;
+    my $rels = $nlxs->get_release;
+
+    # CPU Information
+    my $pcpucount = $nlxs->get_pcpucount;
+    my $tcpucount = $nlxs->get_tcpucount;
+    my $ncores    = $tcpucount;
+    my $model     = $nlxs->get_model;
 
     # hyper-threading
     my $ht = 'NA';
 
+    #uptime
+    my $uptime = $nlxs->get_uptime;
+    
     # disks might become available, check disks every sample
     my $num_disk = 0;
     my $lsize = 0;
@@ -300,15 +308,15 @@ while (1) {
 
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
-    foreach my $i (split /, /, $si->{interfaces} ) {
+    foreach my $i (split /, /, $nlxs->get_interfaces ) {
         # print "Interface: $i\n";
 
         # skip here some interfaces
         $num_nic++ if $i !~ /lo/ and $i !~ /vif/;
     }
 
-    my $memtotal = $si->{memtotal};
-    my $swaptotal = $si->{swaptotal};
+    my $memtotal  = $nlxs->get_mem;
+    my $swaptotal = $nlxs->get_swap;
     $memtotal =~ s/\s+[kK]B$//;
     $swaptotal =~ s/\s+[kK]B$//;
 
@@ -332,21 +340,20 @@ while (1) {
 
     if ($logging) {
         # print metrics
-        printf $rawkrd "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%.2f:%d:%s:%s:%s\n",
-          time, $host, $si->{arch}, $hypervisor, $os, $relos,
-          $si->{release},
-          $si->{pcpucount}, $ncores, $si->{tcpucount}, $ht,
+        printf $rawkrd "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%.2f:%d:%s:%s:%s\n",
+          time, $host, $arch, $model, $hypervisor, $os, $relos,
+          $rels, $pcpucount, $ncores, $tcpucount, $ht,
           $memtotal, $swaptotal, 
-          $num_disk, $lsize, $num_nic, $si->{uptime}, $ifs, $kdrrel;
+          $num_disk, $lsize, $num_nic, $uptime, $ifs, $kdrrel;
 
     } else {
         # print metrics
-        printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%.2f:%d:%s:%s:%s\n",
-          time, $host, $si->{arch}, $hypervisor, $os, $relos,
-          $si->{release},
-          $si->{pcpucount}, $ncores, $si->{tcpucount}, $ht,
+        printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%.2f:%d:%s:%s:%s\n",
+          time, $host, $arch, $model, $hypervisor, $os, $relos,
+          $rels,
+          $pcpucount, $ncores, $tcpucount, $ht,
           $memtotal, $swaptotal, 
-          $num_disk, $lsize, $num_nic, $si->{uptime}, $ifs, $kdrrel;
+          $num_disk, $lsize, $num_nic, $uptime, $ifs, $kdrrel;
     }
 
     if ($logging) {
@@ -643,22 +650,23 @@ USAGE: hdwrec [-hlV] | [interval [count]]
   #01 timestamp  : seconds since Epoch, time (default 60s)
   #02 hostname   : hostname
   #03 hdw        : machine hardware name
-  #04 hypervisor : name of the hypervisor, string
-  #05 os         : name of the operating system, string
-  #06 relos      : release number of operating system, string
-  #07 kernel     : kernel version and release number
-  #08 pcpu       : number of physical installed CPUs, number
-  #09 cores      : number of physical CPU cores , number
-  #10 vcpu       : number of virtual CPUs, number
-  #11 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
-  #12 memtotal   : total physical memory installed, number
-  #13 swaptotal  : total physical swap installed, number
-  #14 disks      : total number of disks, number
-  #15 diskspace  : total GB across all disks, number
-  #16 nics       : total number of NICs, number
-  #17 uptime     : how long the system has been running, number
-  #18 ips        : IP interface settings, string
-  #19 version    : data recorders release number, string 
+  #04 model      : CPU model name
+  #05 hypervisor : name of the hypervisor, string
+  #06 os         : name of the operating system, string
+  #07 relos      : release number of operating system, string
+  #08 kernel     : kernel version and release number
+  #09 pcpu       : number of physical installed CPUs, number
+  #10 cores      : number of physical CPU cores , number
+  #11 vcpu       : number of virtual CPUs, number
+  #12 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
+  #13 memtotal   : total physical memory installed, number
+  #14 swaptotal  : total physical swap installed, number
+  #15 disks      : total number of disks, number
+  #16 diskspace  : total GB across all disks, number
+  #17 nics       : total number of NICs, number
+  #18 uptime     : how long the system has been running, number
+  #19 ips        : IP interface settings, string
+  #20 version    : data recorders release number, string 
 END
     exit 0;
 }
@@ -668,7 +676,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.3, 2016-12-12 1736
+hdwrec: 1.1.4, 2017-07-06 1202
 END
     exit 0;
 }
