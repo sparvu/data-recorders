@@ -61,8 +61,9 @@ my $tp       = 0;                    # time precision
 my $kfile    = 'kronometrix.json';   # configuration file
 my $rawfile;                         # krd raw data file
 my $kdata;                           # configuration data
+my $hypervisor = "NA";
 my ($baselog, $curlog, $hlog, $log); # log files
-my $dmesg    = "/sbin/dmesg";
+my $dboot    = "/var/run/dmesg.boot";
 local $| = 1;
 
 
@@ -81,6 +82,7 @@ my $bboot    = BSD::Sysctl->new( 'kern.boottime' );
 my $bguest   = BSD::Sysctl->new( 'kern.vm_guest' );
 my $bkernel  = BSD::Sysctl->new( 'kern.ident' );
 my $bvcpu    = BSD::Sysctl->new( 'hw.ncpu' );
+my $bmodel   = BSD::Sysctl->new( 'hw.model' );
 my $bphysmem = BSD::Sysctl->new( 'hw.physmem' );
 my $bswapmem = BSD::Sysctl->new( 'vm.swap_total' );
 ### 0.1sec sleep using a timer
@@ -131,13 +133,13 @@ while (1) {
 
     ## initial values
     my $swapmem    = "NA";
-    my $hypervisor = "NA";
     my $pcpu = 1;
     my $ncores = 1;
     my $ht = "NA";
 
     ## get stats
     my $arch    = $bhdw->get();
+    my $model   = $bmodel->get();
     my $os      = lc $bos->get();
     my $relos   = $brelos->get();
     my $disk    = $bdisk->get();
@@ -163,12 +165,6 @@ while (1) {
     # hostname# hostname
     my $host = hostname;
     $host =~ s/\..*$// if $host =~ /\./;
-
-    # hypervisor type
-    $hypervisor = $guest if $guest;
-    if ($hypervisor eq "none" ) {
-        $hypervisor = "NA";
-    }
 
     # pcpu
     my @pcpu_stats = get_dmesg();
@@ -240,16 +236,16 @@ while (1) {
     if ($logging) {
 
         printf $rawkrd
-        "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n", 
-        time, $host, $arch, $hypervisor, $os, $relos,
+        "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n", 
+        time, $host, $arch, $model, $hypervisor, $os, $relos,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
         $num_disk, $lsize, $num_nic, $uptime, $ifs, $kdrrel;
 
     } else {
 
         printf
-        "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
-        time, $host, $arch, $hypervisor, $os, $relos,
+        "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+        time, $host, $arch, $model, $hypervisor, $os, $relos,
         $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem,
         $num_disk, $lsize, $num_nic, $uptime, $ifs, $kdrrel;
     }
@@ -474,13 +470,33 @@ sub get_param {
     return @cpu_info;
 }
 
+sub get_hypervisor {
+    my ($input) = @_;
+    my $hp;
+ 
+    while (<$input>) {
+        chomp;
+        next if $_ !~ /Hypervisor\: Origin \= /;
+        $_ =~ s/Hypervisor\: Origin \= //;
+        $hp = $_;
+    }
+    $hp =~ s/"//g;
 
+    if ($hp eq "KVMKVMKVM" ) { 
+        $hp = 'kvm';
+    }
+
+    return $hp;
+}
+ 
 sub get_dmesg {
 
     my @cpu_stats;
 
-    open my $fh, "-|", "$dmesg", "-a"
-      or die "cannot execute '$dmesg -a' - $!";
+    open my $fh, "<", "$dboot"
+      or die "cannot open dmesg boot file - $!";
+
+    $hypervisor = get_hypervisor($fh);
 
     @cpu_stats = get_param($fh);
 
@@ -513,22 +529,23 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #01 timestamp  : seconds since Epoch, time
   #02 hostname   : hostname, string
   #03 hdw        : machine hardware name, string
-  #04 hypervisor : name of the hypervisor, string
-  #05 os         : name of the operating system, string
-  #06 relos      : release number of operating system, string
-  #07 kernel     : kernel version and release number, string
-  #08 pcpu       : number of physical installed CPUs, number
-  #09 cores      : number of physical CPU cores , number
-  #10 vcpu       : number of virtual CPUs, number
-  #11 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
-  #12 memtotal   : total physical memory installed, number
-  #13 swaptotal  : total physical swap installed, number
-  #14 disks      : total number of disks, number
-  #15 diskspace  : total GB across all disks, number
-  #16 nics       : total number of NICs, number
-  #17 uptime     : how long the system has been running, number
-  #18 ips        : IP interface settings, string
-  #19 version    : data recorders release number, string 
+  #04 model      : machine hardware model, string
+  #05 hypervisor : name of the hypervisor, string
+  #06 os         : name of the operating system, string
+  #07 relos      : release number of operating system, string
+  #08 kernel     : kernel version and release number, string
+  #09 pcpu       : number of physical installed CPUs, number
+  #10 cores      : number of physical CPU cores , number
+  #11 vcpu       : number of virtual CPUs, number
+  #12 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
+  #13 memtotal   : total physical memory installed, number
+  #14 swaptotal  : total physical swap installed, number
+  #15 disks      : total number of disks, number
+  #16 diskspace  : total GB across all disks, number
+  #17 nics       : total number of NICs, number
+  #18 uptime     : how long the system has been running, number
+  #19 ips        : IP interface settings, string
+  #20 version    : data recorders release number, string 
 END
     exit 0;
 }
@@ -537,7 +554,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.3, 2016-12-13 0005
+hdwrec: 1.1.4, 2017-07-06 0746
 END
     exit 0;
 }
