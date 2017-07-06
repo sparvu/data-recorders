@@ -23,15 +23,15 @@ use warnings;
 use JSON;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
-use Sys::Statistics::Linux;
+use Linux::Info;
 use Linux::Info::SysInfo;
-use Linux::Distribution qw(distribution_name distribution_version);
 use POSIX qw(pause ceil);
 use IO::Interface::Simple;
 use Sys::Filesystem ();
 use Filesys::Df;
 use File::stat;
 use File::Stat::Bits;
+use Linux::Distribution qw(distribution_name distribution_version);
 
 # Debug Only
 #use Data::Dumper;
@@ -81,12 +81,8 @@ local $| = 1;
 # Set a timer for S::S::L object
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
-my $nlxs  = Linux::Info::SysInfo->new;
-my $lxs = Sys::Statistics::Linux->new(
-    diskstats  => 1,
-    procstats  => 1
-);
-my $dl = Linux::Distribution->new;
+my $dlxs   = Linux::Info->new ( diskstats  => 1 );
+my $ds     = Linux::Distribution->new;
 ### 0.1sec sleep using a timer
 pause;
 
@@ -131,14 +127,14 @@ if ($logging) {
 while (1) {
 
     # get stats
-    my $stat = $lxs->get;
-    my $ps  = $stat->procstats;
+    my $stat = $dlxs->get;
 
     my $rawkrd;
     if ($logging) {
         $rawkrd = open_file($rawfile);
     }
 
+    my $nlxs  = Linux::Info::SysInfo->new;
     # hostname
     my $host = $nlxs->get_hostname;
     $host =~ s/\..*$// if $host =~ /\./;
@@ -170,6 +166,7 @@ while (1) {
     my $ht = 'NA';
 
     #uptime
+    my $uplxs = 
     my $uptime = $nlxs->get_uptime;
     
     # disks might become available, check disks every sample
@@ -245,12 +242,12 @@ while (1) {
     my ($os, $relos) = "NA";
 
     # get os, relos
-    if(my $distro = $dl->distribution_name()) {
+    if(my $distro = $ds->distribution_name()) {
         $os = lc $distro;
 
-        if (defined($dl->distribution_version()) && 
-           ($dl->distribution_version()) ne "" ) {
-            $relos = $dl->distribution_version();
+        if (defined($ds->distribution_version()) && 
+           ($ds->distribution_version()) ne "" ) {
+            $relos = $ds->distribution_version();
         } else {
             $relos = "NA";
             if ($distro eq "redhat") {
