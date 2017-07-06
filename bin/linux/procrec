@@ -132,12 +132,12 @@ if ( defined &POSIX::_SC_PAGESIZE ) {
     ### Perl knows POSIX::_SC_PAGESIZE
     use POSIX qw(sysconf);
     $pgsize = sysconf(&POSIX::_SC_PAGESIZE);
-    $Sys::Statistics::Linux::Processes::PAGES_TO_BYTES = $pgsize;
+    $Linux::Info::Processes::PAGES_TO_BYTES = $pgsize;
 }
 else {
     ### No POSIX::_SC_PAGESIZE information
     $pgsize = `/usr/bin/getconf PAGESIZE`;
-    $Sys::Statistics::Linux::Processes::PAGES_TO_BYTES = $pgsize;
+    $Linux::Info::Processes::PAGES_TO_BYTES = $pgsize;
 }
 
 if ( $interval =~ /\./ ) {
