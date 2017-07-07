@@ -156,7 +156,8 @@ while (1) {
         $rawkrd = open_file($rawfile);
     }
 
-    $model =~ s/[^\S]{3,}//g;
+    #$model =~ s/[^\S]{2,}//g;
+    $model =~ s/(\s+)/ /g;
     chop($arch);
     chop($os);
     chop($relos);
