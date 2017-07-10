@@ -90,8 +90,8 @@
       "domain" : [ "epd", "wpd" ]
     },
     {
-      "name"   : "a2",
-      "file"   : "a2rec.krd",
+      "name"   : "a2stat",
+      "file"   : "a2statrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "wpd" ]
@@ -111,8 +111,8 @@
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "ngx",
-      "file"   : "ngxrec.krd",
+      "name"   : "ngxstat",
+      "file"   : "ngxstatrec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "wpd" ]
