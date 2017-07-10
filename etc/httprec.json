@@ -17,7 +17,7 @@
           "port" : "8080",
           "message" : [
             {
-              "name": "a2",
+              "name": "a2stat",
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server_status",
@@ -45,7 +45,7 @@
           "port" : "8081",
           "message" : [
             {
-              "name": "a2",
+              "name": "a2stat",
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server_status",
@@ -69,7 +69,7 @@
       ]
     },
     {
-      "name" : "nginx",
+      "name" : "sales",
       "description" : "NGINX Server",
       "proxy" : {
         "hostname" : "",
@@ -79,12 +79,26 @@
       },
       "instance" : [
         {
-          "id" : "",
-          "method" : "GET",
-          "scheme" : "http",
+          "id" : "1",
+          "name" : "nginx",
           "host" : "localhost",
-          "port" : "8001",
-          "path" : "/"
+          "port" : "8888",
+          "message" : [
+            {
+              "name": "ngxstat",
+              "scheme" : "http",
+              "method" : "GET",
+              "path" : "/",
+              "description": "NGINX Statistics",
+              "data": [ ]
+            },
+            {
+              "name": "ngxinv",
+              "path" : "/",
+              "description": "NGINX Inventiory",
+              "data": [ ]
+            }
+          ]
         }
       ]
     }
