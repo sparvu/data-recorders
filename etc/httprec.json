@@ -26,12 +26,16 @@
             },
             {
               "name": "a2inv",
+              "scheme" : "http",
+              "method" : "GET",
               "path" : "/server_info",
               "description": "Apache2 Inventiory",
               "data": [ ]
             },
             {
               "name": "a2bus",
+              "scheme" : "http",
+              "method" : "GET",
               "path" : "/server_info",
               "description": "Apache2 Thread Busy",
               "data": [ ]
@@ -54,12 +58,16 @@
             },
             {
               "name": "a2inv",
+              "scheme" : "http",
+              "method" : "GET",
               "path" : "/server_info",
               "description": "Apache2 Inventiory",
               "data": [ ]
             },
             {
               "name": "a2bus",
+              "scheme" : "http",
+              "method" : "GET",
               "path" : "/server_info",
               "description": "Apache2 Thread Busy",
               "data": [ ]
@@ -94,6 +102,8 @@
             },
             {
               "name": "ngxinv",
+              "scheme" : "http",
+              "method" : "GET",
               "path" : "/",
               "description": "NGINX Inventiory",
               "data": [ ]
