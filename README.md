@@ -1,4 +1,4 @@
-<img src="https://github.com/kronometrix/recording/blob/master/k-logo.png" align="left" height="40" width="275" />
+<img src="https://github.com/kronometrix/recording/blob/master/k-logo.png" align="left" height="35" width="275" />
 <br/><br/>
 
 ## Overview
