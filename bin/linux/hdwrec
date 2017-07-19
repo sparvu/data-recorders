@@ -316,6 +316,8 @@ while (1) {
     my $swaptotal = $nlxs->get_swap;
     $memtotal =~ s/\s+[kK]B$//;
     $swaptotal =~ s/\s+[kK]B$//;
+    $memtotal = sprintf ("%.2f", $memtotal / 1024);
+    $swaptotal = sprintf ("%.2f", $swaptotal / 1024);
 
     # get kdr release version
     my $kdrrel = get_version();
@@ -656,8 +658,8 @@ USAGE: hdwrec [-hlV] | [interval [count]]
   #10 cores      : number of physical CPU cores , number
   #11 vcpu       : number of virtual CPUs, number
   #12 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
-  #13 memtotal   : total physical memory installed, number
-  #14 swaptotal  : total physical swap installed, number
+  #13 memtotal   : total physical memory installed in MB, number
+  #14 swaptotal  : total physical swap installed in MB, number
   #15 disks      : total number of disks, number
   #16 diskspace  : total GB across all disks, number
   #17 nics       : total number of NICs, number
@@ -673,7 +675,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.4, 2017-07-06 1202
+hdwrec: 1.1.5, 2017-07-19 1513
 END
     exit 0;
 }
