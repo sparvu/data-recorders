@@ -380,7 +380,6 @@ while (1) {
                     # message id
                     if ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-a2bus"; }
 
-
                 } elsif ($procrec_on) {
 
                     # device id
@@ -1178,7 +1177,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.10, 2017-07-10 1249
+sender: 1.1.11, 2017-07-19 1521
 END
     exit 0;
 }
