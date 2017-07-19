@@ -148,8 +148,8 @@ while (1) {
     my $guest   = $bguest->get();
     my $kernel  = $bkernel->get();
     my $vcpu    = $bvcpu->get();
-    my $pmem    = sprintf ("%.2f", $bphysmem->get() / 1024);
-    my $smem    = sprintf ("%.2f", $bswapmem->get() / 1024);
+    my $pmem    = sprintf ("%.2f", $bphysmem->get() / 1048576);
+    my $smem    = sprintf ("%.2f", $bswapmem->get() / 1048576);
 
     my $rawkrd;
     if ($logging) {
@@ -540,8 +540,8 @@ USAGE: hdwrec [-hV] | [interval [count]]
   #10 cores      : number of physical CPU cores , number
   #11 vcpu       : number of virtual CPUs, number
   #12 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
-  #13 memtotal   : total physical memory installed, number
-  #14 swaptotal  : total physical swap installed, number
+  #13 memtotal   : total physical memory installed in MB, number
+  #14 swaptotal  : total physical swap installed in MB, number
   #15 disks      : total number of disks, number
   #16 diskspace  : total GB across all disks, number
   #17 nics       : total number of NICs, number
@@ -556,7 +556,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.4, 2017-07-06 0746
+hdwrec: 1.1.5, 2017-07-19 1508
 END
     exit 0;
 }
