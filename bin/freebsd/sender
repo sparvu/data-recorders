@@ -206,6 +206,9 @@ while (1) {
             my $webinvrec_on      = 0;
             my $direc_on          = 0;
             my $ntprec_on         = 0;
+            my $a2statrec_on      = 0;
+            my $a2invrec_on       = 0;
+            my $a2busrec_on       = 0;
             my $iaq_g01rec_on     = 0;
             my $iaq_gmw90rec_on   = 0;
             my $iaq_msd1618rec_on = 0;
@@ -228,6 +231,9 @@ while (1) {
         elsif ( $_->{"input"} =~ /webinvrec/      ) { $webinvrec_on  = 1; }
         elsif ( $_->{"input"} =~ /direc/          ) { $direc_on   = 1;    }
         elsif ( $_->{"input"} =~ /ntrpec/         ) { $ntprec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /a2statrec/      ) { $a2statrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /a2invrec/       ) { $a2invrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /a2busrec/       ) { $a2busrec_on  = 1; }
         elsif ( $_->{"input"} =~ /iaq_g01rec/     ) { $iaq_g01rec_on  = 1; }
         elsif ( $_->{"input"} =~ /iaq_gmw90rec/   ) { $iaq_gmw90rec_on  = 1; }
         elsif ( $_->{"input"} =~ /iaq_msd1618rec/ ) { $iaq_msd1618rec_on  = 1; }
@@ -351,6 +357,29 @@ while (1) {
                 
                     # message id
                     if ($lid eq 'iaqd') { $f=1; $msgid = "iaq_msd1618"; }
+                } elsif ($a2statrec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-a2stat"; }
+
+                } elsif ($a2invrec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-a2inv"; }
+
+                } elsif ($a2busrec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-a2bus"; }
 
                 } elsif ($procrec_on) {
 
@@ -1016,7 +1045,7 @@ sub send_data {
     # TTFB                                   - WPD DOMAIN
     # IAQ_G01, IAQ_GMW90, IAQ_MSD            - IAQD DOMAIN
     # CPUREC, DISKREC, NICREC, DIREC, NTPREC - CPD DOMAIN
-    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|iaq_g01|iaq_gmw90|iaq_msd1618|wpd-.*-ttfb/ ) {
+    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|iaq_g01|iaq_gmw90|iaq_msd1618|a2*|wpd-.*-ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
 
@@ -1138,7 +1167,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.14, 2017-03-09 0957
+sender: 1.1.15, 2017-07-19 1520
 END
     exit 0;
 }
