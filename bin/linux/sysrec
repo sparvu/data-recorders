@@ -318,6 +318,8 @@ while (1) {
 
     }
 
+    $lxs->init;
+
     ### Check for end
     last if ++$loop == $loop_max;
 
@@ -563,7 +565,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.1.4, 2017-07-06 1527
+sysrec: 1.1.4, 2017-07-31 1416
 END
     exit 0;
 }

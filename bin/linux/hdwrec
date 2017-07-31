@@ -302,7 +302,6 @@ while (1) {
         }
     }
 
-
     # fetch NICS, reset here if NIC is removed/added
     my $num_nic = 0;
     foreach my $i (split /, /, $nlxs->get_interfaces ) {
@@ -358,6 +357,8 @@ while (1) {
     if ($logging) {
         close ($rawkrd);
     }
+
+    $dlxs->init;
 
     ### Check for end
     last if ++$loop == $loop_max;

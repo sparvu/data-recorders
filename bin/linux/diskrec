@@ -126,6 +126,8 @@ if ($logging) {
 
 while ( 1 ) {
 
+    $lxs->init;
+
     my $stat    = $lxs->get;
 
     # get FS
@@ -224,8 +226,7 @@ while ( 1 ) {
 
             my ($mj, $mi);
 
-            my $st = stat($filesystem) or
-                warn "Can't stat $filesystem: $!";
+            my $st = stat($filesystem) or next;
 
             if (S_ISDIR($st->mode)) {
                 ($mj, $mi) = dev_split( $st->dev );
@@ -529,7 +530,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.4, 2017-07-06 1520
+diskrec: 1.1.6, 2017-07-31 1415
 END
     exit 0;
 }

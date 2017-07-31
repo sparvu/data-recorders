@@ -145,6 +145,8 @@ while (1) {
         close ($rawkrd);
     }
 
+    $lxs->init;
+
     ### Check for end
     last if ++$loop == $loop_max;
 
@@ -289,7 +291,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-cpurec: 1.1.4, 2017-07-06 1518
+cpurec: 1.1.5, 2017-07-31 1610
 END
     exit 0;
 }
