@@ -14,7 +14,7 @@ Time series let us understand what has happened in past and look in the future, 
 ## Data Message
 All collected metrics over time make a data message. There can be many types of data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data from a meteorological station, or water cubic meters per hour from an water pump. All these coming from one or many data sources. Each data source, must be unique and tagged as such. A data source, ds will have an unique UUID.
 
-All these metrics, observations are ultimately the data message. To describe such messages we built a library of monitoring objects documented here: [library of monitoring objects](https://github.com/kronometrix/lmo)
+All these metrics, observations are ultimately the data message. To describe such messages we built a library of monitoring objects documented here: [library of monitoring objects](https://github.com/sparvu/lmo)
 
 
 ## Data Source
@@ -26,7 +26,7 @@ A data source can have attached different types of sensors attached to, or the d
  
  * A dedicated weather station: a standalone weather station, capable of being on a TCP/IP network which can send or or many data messages without an additional computer system. In this case we have a single data source.
  
-It is important to understand that we process data based on a unique data source. A data source can have one or many types of data messages, all messages being described and defined under LMO.
+It is important to understand that we process data based on a unique data source. A data source can have one or many types of data messages, all messages being described and defined under [LMO](https://github.com/sparvu/lmo).
 
 
 ### Industries
@@ -55,12 +55,12 @@ We plan to support and record data from different types of industries. For some 
  * webrec - Web response time analyzer
 
 
-#### Environmental Monitoring
+#### Environmental Monitoring, IoT
 
  * rs485rec - RS485 MODBUS RTU recorder. Currently supporting Vaisala GMW90, Tongdy G01, Tongdy MSD IAQ  
 
 
 #### General Meteorology
 
- * wsrec - Weather data recorder. Curretnly supporting WH1080, WH1081, WH1090, WH20xx
+ * wsrec - Weather data recorder. Currently supporting> WH1080, WH1081, WH1090, WH20xx family of devices
   
