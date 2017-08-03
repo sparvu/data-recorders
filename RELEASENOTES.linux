@@ -18,6 +18,13 @@ Bug Management System
 
 Releases
 
+  1.2.12 03-08-2017 Release
+    STALL fixes
+    webrec async performance fixes
+    svcrec async performance fixes
+    hdwrec inventory message update
+    update perl 5.24.2
+
   1.1.2 30-10-2016 Release
     wsrec does not have a release version #117
     direc errors opening certain directories #116
