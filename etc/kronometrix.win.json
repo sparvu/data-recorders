@@ -85,7 +85,7 @@
     {
       "name"   : "webinv",
       "file"   : "webinvrec.krd",
-      "sample" : 3600,
+      "sample" : 1800,
       "status" : "inactive",
       "domain" : [ "epd", "wpd" ]
     },

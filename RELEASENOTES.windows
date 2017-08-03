@@ -13,6 +13,12 @@ Bug Management System
 
 Releases
 
+  1.2.10 03-08-2017 Release
+    STALL fixes
+    hdwrec inventory improvements
+    update perl 5.22.3
+
+
   1.1.2 30-10-2016 Release
     direc errors opening certain directories #116
     kronometrix.json active messages support #112
