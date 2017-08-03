@@ -1,0 +1,66 @@
+{
+  "workloads" : [
+    {
+      "keepalive" : 0,
+      "name" : "",
+      "description" : "Main Website",
+      "delay" : 0.1,
+      "proxy" : {
+        "hostname" : "proxy.domain",
+        "port" : 8080,
+        "username" : "",
+        "password" : ""
+      },
+      "requests" : [
+        {
+          "id" : "main",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "about",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/about.html"
+        },
+         {
+          "id" : "test",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "7mavida.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "test2",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "7mavida.com",
+          "port" : "80",
+          "path" : "/about"
+        },
+{
+          "id" : "contact",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/contact.html"
+        },
+        {
+          "id" : "recording",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/recording/design.html"
+        }
+      ]
+    }
+  ]
+}

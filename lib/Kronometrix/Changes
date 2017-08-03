@@ -1,0 +1,33 @@
+Revision history for Perl extension Kronometrix.
+
+0.17 2017-07-02
+    - Removed the -s switch in async mode both in webrec and in
+      svcrec.
+0.16 2017-06-14
+    - Changed sleep function to Time::HiRes in Webrec::Queue
+      so that the -s switch works as intended. Fixed the default
+      to 0.1 seconds. 
+
+0.15 2017-06-07
+    - Moved svcrec2 to svcrec and svcrec to svcrec.orig
+    - Added switch -s to webrec and svcrec
+    
+0.14 2017-06-05
+    - Added routine to log warnings in Kronometrix.pm
+    - Modified Kronometrix::Svcrec to preserve ordering in async mode.
+
+0.13 2017-05-31
+    - Closed Net::Ping connections and moved the Net::Ping object
+      to a lexical variable. Changed from sprintf to printf in the
+      reporting routine to remove one function call. Running time
+      is now closer to that of the original svcrec.
+
+0.12 2017-05-28
+    - Moved the creation of the Net::Ping object to the
+      inside of the main cycle in order to make the running
+      time comparable to the original svcrec.
+
+0.01  Tue May 23 22:52:34 2017
+	- original version; created by h2xs 1.23 with options
+		-X Kronometrix
+

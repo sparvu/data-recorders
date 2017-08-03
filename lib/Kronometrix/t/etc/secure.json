@@ -1,0 +1,26 @@
+{
+  "workloads" : [
+    {
+      "keepalive" : 0,
+      "name" : "",
+      "description" : "Tests for a secure website",
+      "delay" : 5,
+      "proxy" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "password" : ""
+      },
+      "requests" : [
+        {
+          "id" : "secure",
+          "method" : "GET",
+          "scheme" : "https",
+          "host" : "google.com",
+          "port" : "443",
+          "path" : "/"
+        }
+      ]
+    }
+  ]
+}

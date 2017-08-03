@@ -1,0 +1,331 @@
+{
+  "workloads" : [
+    {
+      "keepalive" : 0,
+      "name" : "",
+      "description" : "Main Website",
+      "delay" : 0.2,
+      "proxy" : {
+        "hostname" : "",
+        "port"     : "",
+        "username" : "",
+        "password" : ""
+      },
+      "requests" : [
+        {
+          "id" : "kronometrix.org",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "kronometrix.org",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "reaktor.com",
+          "method" : "GET",
+          "scheme" : "https",
+          "host" : "reaktor.com",
+          "port" : "443",
+          "path" : "/"
+        },
+        {
+          "id" : "www.upcloud.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.upcloud.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.cygate.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.cygate.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.inmics.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.inmics.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "elisa.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "elisa.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "sonera.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "sonera.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "dna.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "dna.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "tele.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "tele.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "saunalahti.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "saunalahti.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.eficode.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.eficode.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.in4mo.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.in4mo.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.a-katsastus.fi",
+          "method" : "GET",
+          "scheme" : "https",
+          "host" : "www.a-katsastus.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.tieto.com",
+          "method" : "GET",
+          "scheme" : "https",
+          "host" : "www.tieto.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.sanoma.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.sanoma.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.datacenter.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.datacenter.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.ficolo.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.ficolo.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.hostingpalvelu.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.hostingpalvelu.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.otaverkko.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.otaverkko.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.cybercom.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.cybercom.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.proact.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.proact.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.javerdel.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.javerdel.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.capnova.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.capnova.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.planeetta.net",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.planeetta.net",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.planeetta.net",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.planeetta.net",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.neutech.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.neutech.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.ouludc.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.ouludc.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.ouludc.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.ouludc.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.verkkokauppa.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.verkkokauppa.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.helsinkidc.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.helsinkidc.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.mediam.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.mediam.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.posti.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.posti.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.posti.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.posti.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "capgemini.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "capgemini.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.cargotec.com",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.cargotec.com",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.aalto.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.aalto.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.netplaza.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "www.netplaza.fi",
+          "port" : "80",
+          "path" : "/"
+        },
+        {
+          "id" : "www.setera.fi",
+          "method" : "GET",
+          "scheme" : "https",
+          "host" : "www.setera.fi",
+          "port" : "443",
+          "path" : "/"
+        },
+        {
+          "id" : "veikkaus.fi",
+          "method" : "GET",
+          "scheme" : "http",
+          "host" : "veikkaus.fi",
+          "port" : "80",
+          "path" : "/"
+        }
+      ]
+    }
+  ]
+}
+
