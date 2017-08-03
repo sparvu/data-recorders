@@ -86,7 +86,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "Kronometrix/1.4.2 (kdr 1.1.3 sender $osname)";
+my $agent = "kdr/1.2.12 sender $osname";
 
 # read configuration
 $cdata = open_config($cfile);
