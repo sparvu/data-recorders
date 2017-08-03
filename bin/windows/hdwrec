@@ -175,10 +175,11 @@ sub Startup {
         $host =~ s/\..*$// if $host =~ /\./;
 
         my $wproc = $wmi->InstancesOf("Win32_Processor");
-        my ( $hdw, $ncores );
+        my ( $hdw, $ncores, $model );
         foreach my $obj ( in $wproc) {
             $hdw    = $obj->{AddressWidth};
             $ncores = $obj->{NumberOfCores};
+            $model  = $obj->{Name};
         }
 
         if   ( $hdw == 64 ) { $hdw = "x86_64"; }
@@ -199,6 +200,8 @@ sub Startup {
             $hv_mfct  = $obj->{Manufacturer};
             $hv_model = $obj->{Model};
         }
+
+        $model =~ s/(\s+)/ /g;
 
         $hv = printhv( $hv_mfct, $hv_model );
 
@@ -362,8 +365,8 @@ sub Startup {
         if ( $last_time > 0 ) {
 
             putraw(
-                $$tnow[0], $host,     $hdw,       $hv,     $os,
-                $relos,    $kernel,   $pcpu,      $ncores, $vcpu,
+                $$tnow[0], $host,     $hdw,       $model,  $hv,
+                $os,       $relos,    $kernel,    $pcpu,   $ncores, $vcpu,
                 $ht,       $memtotal, $swaptotal, $ndisk,  $dspace,
                 $nnic,     $uptime,   $ips,       $kdrrel
             );
@@ -375,8 +378,8 @@ sub Startup {
         else {
 
             putraw(
-                $$tnow[0], $host,     $hdw,       $hv,     $os,
-                $relos,    $kernel,   $pcpu,      $ncores, $vcpu,
+                $$tnow[0], $host,     $hdw,       $model,  $hv,
+                $os,       $relos,    $kernel,    $pcpu,   $ncores, $vcpu,
                 $ht,       $memtotal, $swaptotal, $ndisk,  $dspace,
                 $nnic,     $uptime,   $ips,       $kdrrel
             );
@@ -831,8 +834,8 @@ sub get_yesterday {
 sub putraw {
 
     my (
-        $traw,  $host,     $hdw,       $hv,     $os,
-        $relos, $kernel,   $pcpu,      $ncores, $vcpu,
+        $traw,  $host,     $hdw,       $model,  $hv,
+        $os,    $relos,    $kernel,    $pcpu,   $ncores, $vcpu,
         $ht,    $memtotal, $swaptotal, $ndisk,  $ds,
         $nnic,  $uptime,   $ips,       $rel
     ) = @_;
@@ -840,12 +843,12 @@ sub putraw {
     if ( RunningAsService() ) {
 
         printf $rawlog
-          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+          "%s:%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
           $traw,
-          $host,     $hdw,       $hv,
+          $host,     $hdw,       $model,   $hv,
           $os,       $relos,     $kernel,
-          $pcpu,     $ncores,    $vcpu, $ht,
-          $memtotal, $swaptotal, $ndisk, $ds, $nnic, $uptime, $ips, $rel;
+          $pcpu,     $ncores,    $vcpu,    $ht,
+          $memtotal, $swaptotal, $ndisk,   $ds, $nnic, $uptime, $ips, $rel;
 
     }
     else {
@@ -853,21 +856,21 @@ sub putraw {
         if ($logging) {
 
             printf $rawlog
-              "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+              "%s:%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
               $traw,
-              $host,     $hdw,       $hv,
+              $host,     $hdw,       $model,  $hv,
               $os,       $relos,     $kernel,
-              $pcpu,     $ncores,    $vcpu, $ht,
-              $memtotal, $swaptotal, $ndisk, $ds, $nnic, $uptime, $ips, $rel;
+              $pcpu,     $ncores,    $vcpu,   $ht,
+              $memtotal, $swaptotal, $ndisk,  $ds, $nnic, $uptime, $ips, $rel;
         }
 
         printf
-          "%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+          "%s:%s:%s:%s:%s:%s:%s:%s:%d:%d:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
           $traw,
-          $host,     $hdw,       $hv,
+          $host,     $hdw,       $model,  $hv,
           $os,       $relos,     $kernel,
-          $pcpu,     $ncores,    $vcpu, $ht,
-          $memtotal, $swaptotal, $ndisk, $ds, $nnic, $uptime, $ips, $rel;
+          $pcpu,     $ncores,    $vcpu,   $ht,
+          $memtotal, $swaptotal, $ndisk,  $ds, $nnic, $uptime, $ips, $rel;
     }
 
     return;
@@ -891,22 +894,23 @@ USAGE: hdwrec [-lhV] | [interval [count]]
   #01 timestamp  : seconds since Epoch, time
   #02 hostname   : hostname
   #03 hdw        : machine hardware name
-  #04 hypervisor : name of the hypervisor, string
-  #05 os         : name of the operating system, string
-  #06 relos      : release number of operating system, string
-  #07 kernel     : kernel version and release number
-  #08 pcpu       : number of physical installed CPUs, number
-  #09 cores      : number of physical CPU cores, number
-  #10 vcpu       : number of virtual CPUs, number
-  #11 ht         : hyper-threading 0(OFF)/1(ON)/NA, string
-  #12 memtotal   : total physical memory installed, number
-  #13 swaptotal  : total physical swap installed, number
-  #14 disks      : total number of physical disks, number
-  #15 diskspace  : total GB across all disks, number 
-  #16 nics       : total number of physical NICs, number
-  #17 uptime     : system uptime, string 
-  #18 ips        : IP interface settings, string
-  #19 version    : data recorders release number, string
+  #04 model      : CPU model name
+  #05 hypervisor : name of the hypervisor, string
+  #06 os         : name of the operating system, string
+  #07 relos      : release number of operating system, string
+  #08 kernel     : kernel version and release number
+  #09 pcpu       : number of physical installed CPUs, number
+  #10 cores      : number of physical CPU cores, number
+  #11 vcpu       : number of virtual CPUs, number
+  #12 ht         : hyper-threading 0(OFF)/1(ON)/NA, string
+  #13 memtotal   : total physical memory installed in MB, number
+  #14 swaptotal  : total physical swap installed in MB, number
+  #15 disks      : total number of physical disks, number
+  #16 diskspace  : total GB across all disks, number 
+  #17 nics       : total number of physical NICs, number
+  #18 uptime     : system uptime, string 
+  #19 ips        : IP interface settings, string
+  #20 version    : data recorders release number, string
 END
     return;
 }
@@ -915,7 +919,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.2, 2016-10-21 1034
+hdwrec: 1.1.3, 2017-08-03 1346
 END
     return;
 }
