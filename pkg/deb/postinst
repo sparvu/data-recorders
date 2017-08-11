@@ -39,14 +39,20 @@ if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
     cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
 fi
 
-if [ -f /opt/kronometrix/backup/webrec.json ]; then
-    cp /opt/kronometrix/backup/webrec.json /opt/kronometrix/etc || :
+
+/opt/kronometrix/bin/actmsg | grep web >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    if [ -f /opt/kronometrix/backup/webrec.json ]; then
+        cp /opt/kronometrix/backup/webrec.json /opt/kronometrix/etc || :
+    fi
 fi
 
-if [ -f /opt/kronometrix/backup/svcrec.json ]; then
-    cp /opt/kronometrix/backup/svcrec.json /opt/kronometrix/etc || :
+/opt/kronometrix/bin/actmsg | grep svc >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    if [ -f /opt/kronometrix/backup/svcrec.json ]; then
+        cp /opt/kronometrix/backup/svcrec.json /opt/kronometrix/etc || :
+    fi
 fi
-
 
 # start transport
 /etc/init.d/kdr_transport start >/dev/null 2>&1 || :
