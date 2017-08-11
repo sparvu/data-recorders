@@ -160,8 +160,11 @@ while (1) {
     my $pcpucount = $nlxs->get_pcpucount;
     my $tcpucount = $nlxs->get_tcpucount;
     my $ncores    = $tcpucount;
-    my $model     = $nlxs->get_model;
 
+    # CPU model
+    my $model     = $nlxs->get_model;
+    $model =~ s/(\s+)/ /g;
+ 
     # hyper-threading
     my $ht = 'NA';
 
@@ -676,7 +679,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.5, 2017-07-19 1513
+hdwrec: 1.1.6, 2017-08-11 1052
 END
     exit 0;
 }
