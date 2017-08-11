@@ -158,6 +158,15 @@ if [ $1 -eq 1 ]; then
     if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
         cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
     fi
+
+    if [ -f /opt/kronometrix/backup/webrec.json ]; then
+        cp /opt/kronometrix/backup/webrec.json /opt/kronometrix/etc || :
+    fi
+
+    if [ -f /opt/kronometrix/backup/svcrec.json ]; then
+        cp /opt/kronometrix/backup/svcrec.json /opt/kronometrix/etc || :
+    fi
+
     /etc/init.d/kdr_transport start >/dev/null 2>&1 || :
 elif [ $1 -eq 2 ]; then
     # upgrade
