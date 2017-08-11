@@ -214,20 +214,25 @@ if [ $1 -eq 0 ]; then
         cp /opt/kronometrix/etc/kronometrix.json /opt/kronometrix/backup || :
     fi
 
-    # make a copy of webrec.json
-    if [ -f /opt/kronometrix/etc/webrec.json ]; then
-        if [ ! -d /opt/kronometrix/backup ]; then
-            mkdir /opt/kronometrix/backup
+    # make a copy of webrec.json if webrec is active
+    /opt/kronometrix/bin/actmsg | grep web >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        if [ -f /opt/kronometrix/etc/webrec.json ]; then
+            if [ ! -d /opt/kronometrix/backup ]; then
+                mkdir /opt/kronometrix/backup
+            fi
+            cp /opt/kronometrix/etc/webrec.json /opt/kronometrix/backup || :
         fi
-        cp /opt/kronometrix/etc/webrec.json /opt/kronometrix/backup || :
     fi
 
-    # make a copy of svcrec.json
-    if [ -f /opt/kronometrix/etc/svcrec.json ]; then
-        if [ ! -d /opt/kronometrix/backup ]; then
-            mkdir /opt/kronometrix/backup
+    # make a copy of svcrec.json if svcrec is active
+    /opt/kronometrix/bin/actmsg | grep web >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        if [ -f /opt/kronometrix/etc/svcrec.json ]; then
+            if [ ! -d /opt/kronometrix/backup ]; then
+                mkdir /opt/kronometrix/backup
+            fi
+            cp /opt/kronometrix/etc/svcrec.json /opt/kronometrix/backup || :
         fi
-        cp /opt/kronometrix/etc/svcrec.json /opt/kronometrix/backup || :
     fi
-
 fi
