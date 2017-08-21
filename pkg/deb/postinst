@@ -39,7 +39,6 @@ if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
     cp /opt/kronometrix/backup/kronometrix.json /opt/kronometrix/etc || :
 fi
 
-
 /opt/kronometrix/bin/actmsg | grep web >/dev/null 2>&1
 if [ $? -eq 0 ]; then
     if [ -f /opt/kronometrix/backup/webrec.json ]; then

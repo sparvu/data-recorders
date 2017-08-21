@@ -20,7 +20,7 @@
               "name": "a2stat",
               "scheme" : "http",
               "method" : "GET",
-              "path" : "/server_status",
+              "path" : "/server-status",
               "description": "Apache2 Statistics",
               "data": [ ]
             },
@@ -28,15 +28,15 @@
               "name": "a2inv",
               "scheme" : "http",
               "method" : "GET",
-              "path" : "/server_info",
-              "description": "Apache2 Inventiory",
+              "path" : "/server-info",
+              "description": "Apache2 Inventory",
               "data": [ ]
             },
             {
               "name": "a2bus",
               "scheme" : "http",
               "method" : "GET",
-              "path" : "/server_info",
+              "path" : "/server-status",
               "description": "Apache2 Thread Busy",
               "data": [ ]
             }
@@ -52,7 +52,7 @@
               "name": "a2stat",
               "scheme" : "http",
               "method" : "GET",
-              "path" : "/server_status",
+              "path" : "/server-status",
               "description": "Apache2 Statistics",
               "data": [ ]
             },
@@ -60,15 +60,15 @@
               "name": "a2inv",
               "scheme" : "http",
               "method" : "GET",
-              "path" : "/server_info",
-              "description": "Apache2 Inventiory",
+              "path" : "/server-info",
+              "description": "Apache2 Inventory",
               "data": [ ]
             },
             {
               "name": "a2bus",
               "scheme" : "http",
               "method" : "GET",
-              "path" : "/server_info",
+              "path" : "/server-status",
               "description": "Apache2 Thread Busy",
               "data": [ ]
             }
