@@ -2,7 +2,7 @@
   "http" : [
     {
       "name" : "hrportal",
-      "description" : "Apache2 Server",
+      "description" : "apache2 http server",
       "proxy" : {
         "hostname" : "",
         "port" : 8080,
@@ -21,7 +21,7 @@
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server-status",
-              "description": "Apache2 Statistics",
+              "description": "apache2 statistics",
               "data": [ ]
             },
             {
@@ -29,7 +29,7 @@
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server-info",
-              "description": "Apache2 Inventory",
+              "description": "apache2 inventory",
               "data": [ ]
             },
             {
@@ -37,7 +37,7 @@
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server-status",
-              "description": "Apache2 Thread Busy",
+              "description": "apache2 busy thread",
               "data": [ ]
             }
           ]
@@ -53,7 +53,7 @@
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server-status",
-              "description": "Apache2 Statistics",
+              "description": "apache2 statistics",
               "data": [ ]
             },
             {
@@ -61,7 +61,7 @@
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server-info",
-              "description": "Apache2 Inventory",
+              "description": "apache2 inventory",
               "data": [ ]
             },
             {
@@ -69,7 +69,7 @@
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server-status",
-              "description": "Apache2 Thread Busy",
+              "description": "apache2 busy thread",
               "data": [ ]
             }
           ]
@@ -78,7 +78,7 @@
     },
     {
       "name" : "sales",
-      "description" : "NGINX Server",
+      "description" : "nginx http server",
       "proxy" : {
         "hostname" : "",
         "port" : 7000,
@@ -97,7 +97,7 @@
               "scheme" : "http",
               "method" : "GET",
               "path" : "/",
-              "description": "NGINX Statistics",
+              "description": "nginx statistics",
               "data": [ ]
             },
             {
@@ -105,7 +105,7 @@
               "scheme" : "http",
               "method" : "GET",
               "path" : "/",
-              "description": "NGINX Inventiory",
+              "description": "nginx inventory",
               "data": [ ]
             }
           ]
