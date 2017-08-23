@@ -1,42 +1,35 @@
 <img src="https://github.com/kronometrix/recording/blob/master/k-logo.png" align="left" height="35" width="275" />
 <br/><br/>
 
-## Overview
+## Description
 
 A simple and efficient set of data recorders and transport utilities for ICT, Environmental Monitoring, Meteorology and IoT industries, responsible to record top essential performance metrics, save raw data and transport it for further analysis. 
 
-## Time Series
+### Time Series
 All recorded observations we call them raw data. Raw data is produced by a monitoring agent, part of a data source.  This set of data is not modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format.
 
 Time series let us understand what has happened in past and look in the future, using various statistical models. In addition , having access to these historical time series will help us to build a simple capacity planning model.
 
 
-## Data Message
-All collected metrics over time make a data message. There can be many types of data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data from a meteorological station, or water cubic meters per hour from an water pump. All these coming from one or many data sources. Each data source, must be unique and tagged as such. A data source, ds will have an unique UUID.
-
-All these metrics, observations are ultimately the data message. To describe such messages we built a library of monitoring objects documented here: [library of monitoring objects](https://github.com/sparvu/lmo)
+### Data Message
+All collected metrics over time make a data message. There can be many types of data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data from a meteorological station, or water cubic meters per hour from an water pump. A data message belongs to a data source. All these metrics, observations are ultimately the data message. To describe such messages we built a library of monitoring objects documented here: [library of monitoring objects](https://github.com/sparvu/lmo)
 
 
-## Data Source
-A data source can have attached different types of sensors attached to, or the data source can be the sensor itself. It depends. Some examples:
+### Data Source
+A data source, is described as any system connected to a public or private network with a valid IPv4 or IPv6 address like, a server, a data logger, a graphic workstation, an iPad or an IoT sensor capable to send data. there can be many types of data sources, each with a number of data messages:
 
- * A computer system: can have one or many data messages regarding computer performance: cpu utilization, disk IO, network IO, etc. In this case we can have one data source, the performance metrics of the system itself.
+ * a computer system, with one or many data messages: overall cpu utilization, disk IO, network IO, or per device metrics 
  
- * A computer system + other utilities: we can connect to a computer system a weather station, or any other type of monitoring system. In this case we have more than one data source, one data source for computer performance metrics and another data source for weather data.
+ * a HTTP server, describing performance metrics, like throughput and utilization along with its inventory data
  
- * A dedicated weather station: a standalone weather station, capable of being on a TCP/IP network which can send or or many data messages without an additional computer system. In this case we have a single data source.
+ * an website, keeping track of the performance response time and availability
  
-It is important to understand that we process data based on a unique data source. A data source can have one or many types of data messages, all messages being described and defined under [LMO](https://github.com/sparvu/lmo).
+ * an automatic weather station, capable to send data over a TCP/IP network without an additional computer system attached
+ 
+ * an intelligent IoT sensor
+ 
 
-
-### Industries
-We plan to support and record data from different types of industries. For some we have already developed data recorderds, like IT, Meteorology and we need help to enhance it. For some, we plan using data loggers to enahnce and speed-up the recording process. For each case, raw data will be presented as messages, based on [LMO](https://github.com/sparvu/lmo). 
-
- * Environmental Monitoring
- * Information and Communications Technology (ICT)
- * Meteorology
- * Internet of Things 
-
+### Supported Industries
 
 #### Information and Communications Technology
 
