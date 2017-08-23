@@ -91,4 +91,4 @@ A data source, is described as any system connected to a public or private netwo
     Execute kdr-stable-windows-x64.exe
 ```
 
-For a simple provisioning we recommend you to open your free account to kronometrix.io/register and create your data subscriptions which include automatic data provisoning.  
+For a simple provisioning we recommend you to open your free account to http://kronometrix.io/register and create your data subscriptions which include automatic data provisoning.  
