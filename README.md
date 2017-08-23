@@ -58,8 +58,9 @@ A data source, is described as any system connected to a public or private netwo
  * wsrec - Weather data recorder. Currently supporting> WH1080, WH1081, WH1090, WH20xx family of devices
   
 
-## Installation
+## Get started
 
+You can install Kronometrix data recording on several operating systems, 32 and 64bit manually or to easy the installation and deployment we recommend you to open your free account under http://kronometrix.io/register and create your data subscriptions which offers automatic data provisoning guidance. 
 
 ### Linux/UNIX
 
@@ -87,4 +88,7 @@ A data source, is described as any system connected to a public or private netwo
   * Execute kdr-stable-windows-x64.exe
 
 
-To easy the installation and deployment of the data recording module we recommend you to open your free account under http://kronometrix.io/register and create your data subscriptions which offers automatic data provisoning guidance.  
+## Support
+
+If you need help regarding Kronometrix data recording, we are offering commercial support. Please contact us at: +358 50 483 9978 or email us at: sales at kronometrix . com. Thank you
+  
