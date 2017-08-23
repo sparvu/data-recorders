@@ -49,7 +49,7 @@
           "method" : "GET",
           "scheme" : "http",
           "host" : "www.kronometrix.com",
-          "port" : "80",
+          "port" : 80,
           "path" : "/"
         },
         {
@@ -57,7 +57,7 @@
           "method" : "GET",
           "scheme" : "http",
           "host" : "www.amazon.com",
-          "port" : "80",
+          "port" : 80,
           "path" : "/"
         },
         {
@@ -65,7 +65,7 @@
           "method" : "GET",
           "scheme" : "https",
           "host" : "www.facebook.com",
-          "port" : "443",
+          "port" : 443,
           "path" : "/"
         },
         {
@@ -73,7 +73,7 @@
           "method" : "GET",
           "scheme" : "https",
           "host" : "www.twitter.com",
-          "port" : "443",
+          "port" : 443,
           "path" : "/"
         }
       ]
