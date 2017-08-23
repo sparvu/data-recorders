@@ -57,3 +57,16 @@ A data source, is described as any system connected to a public or private netwo
 
  * wsrec - Weather data recorder. Currently supporting> WH1080, WH1081, WH1090, WH20xx family of devices
   
+
+## Installation
+
+
+### Linux
+
+```
+  RPM package
+
+    # rpm -ihv kdr-1.0.16-centos5.11-x86_64.rpm 
+       Preparing...     ########################################### [100%]
+          1:kdr         ########################################### [100%]
+```
