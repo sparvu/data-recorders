@@ -66,16 +66,29 @@ A data source, is described as any system connected to a public or private netwo
 ```
   RPM package
   
-    # rpm -ihv kdr-1.0.16-centos5.11-x86_64.rpm 
+    # wget http://www.kronometrix.org/pkgs/linux/kdr-stable-rhel-x64.rpm
+    # rpm -ihv kdr-stable-rhel-x64.rpm 
 ```
 ```
   DEB package
 
-    # dpkg -i kdr-1.0.16-debian7.8-amd64.deb 
+    # wget http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x64.deb
+    # dpkg -i kdr-stable-debian-x64.deb
 ```
 ```
   PKG package
 
-    # pkg install kdr-1.0.16-freebsd10.1-amd64.txz 
+    # wget http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x64.txz
+    # pkg install kdr-stable-freebsd-x64.txz
  ```
  
+### Windows
+
+```
+  Exe package
+  
+    Download http://www.kronometrix.org/pkgs/win/kdr-stable-windows-x64.exe
+    Execute kdr-stable-windows-x64.exe
+```
+
+For a simple provisioning we recommend you to open your free account to kronometrix.io/register and create your data subscriptions which include automatic data provisoning.  
