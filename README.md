@@ -90,5 +90,5 @@ You can install Kronometrix data recording on several operating systems, 32 and 
 
 ## Support
 
-If you need help regarding Kronometrix data recording, we are offering commercial support. Please contact us at: +358 50 483 9978 or email us at: sales at kronometrix . com. Thank you
+If you need help regarding Kronometrix data recording, we are offering commercial support. Please contact us +358 50 483 9978 or email us at: sales@kronometrix.com
   
