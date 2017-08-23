@@ -63,32 +63,28 @@ A data source, is described as any system connected to a public or private netwo
 
 ### Linux/UNIX
 
-```
-  RPM package
+#### RPM based systems
+
+  * Download package http://www.kronometrix.org/pkgs/linux/kdr-stable-rhel-x64.rpm
+  * Install package ```# rpm -ihv kdr-stable-rhel-x64.rpm``` 
   
-    # wget http://www.kronometrix.org/pkgs/linux/kdr-stable-rhel-x64.rpm
-    # rpm -ihv kdr-stable-rhel-x64.rpm 
-```
-```
-  DEB package
+#### DEB based systems
 
-    # wget http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x64.deb
-    # dpkg -i kdr-stable-debian-x64.deb
-```
-```
-  PKG package
+  * Download package http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x64.deb
+  * Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
 
-    # wget http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x64.txz
-    # pkg install kdr-stable-freebsd-x64.txz
- ```
+#### FreeBSD systems
+
+  * Download package http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x64.txz
+  * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
+
  
 ### Windows
 
-```
-  Exe package
-  
-    Download http://www.kronometrix.org/pkgs/win/kdr-stable-windows-x64.exe
-    Execute kdr-stable-windows-x64.exe
-```
+#### Windows 2008, 2012, 2016 systems
 
-To easy the installation and deployment of the data recording module we recommend you to open your free account under http://kronometrix.io/register and create your data subscriptions which include automatic data provisoning.  
+  * Download package http://www.kronometrix.org/pkgs/win/kdr-stable-windows-x64.exe
+  * Execute kdr-stable-windows-x64.exe
+
+
+To easy the installation and deployment of the data recording module we recommend you to open your free account under http://kronometrix.io/register and create your data subscriptions which offers automatic data provisoning guidance.  
