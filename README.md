@@ -61,12 +61,21 @@ A data source, is described as any system connected to a public or private netwo
 ## Installation
 
 
-### Linux
+### Linux/UNIX
 
 ```
   RPM package
-
+  
     # rpm -ihv kdr-1.0.16-centos5.11-x86_64.rpm 
-       Preparing...     ########################################### [100%]
-          1:kdr         ########################################### [100%]
 ```
+```
+  DEB package
+
+    # dpkg -i kdr-1.0.16-debian7.8-amd64.deb 
+```
+```
+  PKG package
+
+    # pkg install kdr-1.0.16-freebsd10.1-amd64.txz 
+ ```
+ 
