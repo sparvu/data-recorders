@@ -11,10 +11,10 @@
       },
       "instance" : [
         {
-          "id" : "1",
+          "id" : 1,
           "name" : "apache",
           "host" : "localhost",
-          "port" : "8080",
+          "port" : 8080,
           "message" : [
             {
               "name": "a2stat",
@@ -43,10 +43,10 @@
           ]
         },
         {
-          "id" : "2",
+          "id" : 2,
           "name" : "apache",
           "host" : "localhost",
-          "port" : "8081",
+          "port" : 8081,
           "message" : [
             {
               "name": "a2stat",
@@ -90,7 +90,7 @@
           "id" : "1",
           "name" : "nginx",
           "host" : "localhost",
-          "port" : "8888",
+          "port" : 8888,
           "message" : [
             {
               "name": "ngxstat",
