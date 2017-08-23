@@ -8,13 +8,13 @@
           "id" : "imaps",
           "type" : "ssl",
           "host" : "kronometrix.org",
-          "port" : "993"
+          "port" : 993
         },
         {
           "id" : "smtps",
           "type" : "ssl",
           "host" : "kronometrix.org",
-          "port" : "465"
+          "port" : 465
         }
       ]
     },
@@ -26,13 +26,13 @@
           "id" : "imaps",
           "type" : "ssl",
           "host" : "mail.kronometrix.com",
-          "port" : "993"
+          "port" : 993
         },
         {
           "id" : "smtps",
           "type" : "ssl",
           "host" : "mail.kronometrix.com",
-          "port" : "465"
+          "port" : 465
         }
       ]
     }
