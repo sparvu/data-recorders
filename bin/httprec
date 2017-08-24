@@ -28,7 +28,8 @@ use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Tie::IxHash;
 use HTTP::Response;
-#use WWW::Curl::Easy;
+use HTTP::Tiny;
+use Data::Dumper qw(Dumper);
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -95,6 +96,7 @@ if ( $interval =~ /\./ ) {
 
 # osname
 my $osname = "$^O";
+my $agent = "kdr/1.2.16 httprec $osname";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -106,7 +108,6 @@ tie my %work, "Tie::IxHash";
 # http init section
 # cookie, agent name
 
-
 my $rawkrd;
 # logging option
 if ($logging) {
@@ -116,8 +117,7 @@ if ($logging) {
 
     ## logs
     ( $baselog, $curlog ) = get_log($kdata);
-    #$rawfile = $curlog . '/' . 'webrec' . '.krd';
-    $wlog = $baselog . "/webrec.log";
+    $wlog = $baselog . "/httprec.log";
     $log = open_file($wlog);
 
     # save STDERR to log file
@@ -128,14 +128,25 @@ if ($logging) {
 
 # get it as verbose
 if($verbose) {
+
+    my ($okssl, $whyssl) = HTTP::Tiny->can_ssl;
+
     if ($logging) {
-        write_log ("Total http server instances: " . keys(%work));
+
+          if ($okssl) { write_log ("SSL check: ok"); }              
+        else { write_log ("SSL check: no, $whyssl"); }
+
+        # write_log ("Total HTTP server instances: " . keys(%work));
         for my $key (keys %work) {
             my $value = $work{$key};
             write_log ("$key => $value");
         }
     } else {
-        print "Total http server instances: " . keys(%work) . ".\n";
+
+          if ($okssl) { print "SSL check: ok\n" } 
+        else { print "SSL check: no, $whyssl\n"; }
+
+        # print "Total HTTP server instances: " . keys(%work) . ".\n";
         for my $key (keys %work) {
             my $value = $work{$key};
             print "$key => $value\n";
@@ -143,6 +154,9 @@ if($verbose) {
     }
 }
 
+# init HTTP transport
+my $http = HTTP::Tiny->new( keep_alive => $tcpka, 
+                            agent => "User-Agent: $agent");
 
 # main loop
 while (1) {
@@ -160,9 +174,127 @@ while (1) {
     for my $key (keys %work) {
 
         my $value = $work{$key};
+        # configuration
+        #
+        #  "id" : 1,
+        #  "name" : "apache",
+        #  "host" : "localhost",
+        #  "port" : 80,
+        #  "message" : [
+        #    {
+        #      "name": "a2stat",
+        #      "scheme" : "http",
+        #      "method" : "GET",
+        #      "path" : "/server-status",
+        #      "description": "apache2 statistics",
+        #      "data": [ ]
+        #    }
+        #
+        # Example
+        # a2test:1:apache:a2stat => http:GET:localhost:80:/server-status
+        #
+        my ($cname, $iname, $iid, $imsg) = split( /:/, $key );
+        my ($ischeme, $imethod, $ihost, $iport, $ipath) = split( /:/, $value );
+        my $url = $ischeme . "://" . $ihost . ":" . $iport . $ipath;
 
-        my ($hname, $hiid, $hiname) = split( /:/, $key );
-        my ($hihost, $hiport) = split( /:/, $value );
+        if ( $verbose ) {
+            if ($logging) {
+                write_log("processing URL: $url...");
+            } else { 
+                print "processing URL: $url... ";
+            }
+        }
+
+        my $response = $http->request($imethod, $url);
+
+        my $status = $response->{status};
+
+        if ($response->{success} ) {
+            if ( $verbose ) {
+                if ($logging) {
+                    write_log("success");
+                } else {
+                    print "success\n";
+                }
+            }
+                
+            # get the content and parse
+            #while (my ($name, $v) = each %{$response->{headers}}) {
+            #    for my $value (ref $v eq 'ARRAY' ? @$v : $v) {
+            #        print "$name: $value";
+            #    }
+            #}
+            #if (length $response->{content}) {
+                #print 'Length: ', length $response->{content};
+	        #print Dumper $response;
+            #}
+            print $response->{content};
+ 
+            #use HTML::Strip;
+
+            #my $hs = HTML::Strip->new();
+            #my $clean_text = $hs->parse( $response->{content} );
+            #$hs->eof;
+
+            #print $clean_text; 
+
+            my $body = $response->{content};
+
+            $body=~ m/<dt>([^\s]+) requests\/sec - ([^\s]+) (k*B)\/second - ([^\s]+) ([k,M]*B)\/request<\/dt>/;
+
+            my $request_stats="requests_per_second=$1,$3_per_second=$2,$5_per_request=$4";
+            print "$request_stats\n";
+
+            my $reqsec   = $1; 
+            my $kbytesec = $2;
+            my $kbytereq = $4;
+ 
+            # requests per second
+            if ($reqsec =~ /^\./ ) { $reqsec = '0' . $reqsec; }
+
+            # kbytesec KBytes per second
+            my $bytes_unit = $3;
+            if ( $bytes_unit =~ /^B/ ) { $kbytesec /= 1024; }
+
+            # kbytereq KBytes per request
+            my $req_unit = $5;
+               if ( $req_unit =~ /^B/ ) { $kbytereq = sprintf ("%.2f", $kbytereq /= 1024); }
+            elsif ( $req_unit =~ /^M/ ) { $kbytereq = sprintf ("%.2f", $kbytereq *= 1024); }
+           
+            # busy and idle workers
+            $body=~ m/<dt>([^\s]+) requests currently being processed, ([^\s]+) idle workers<\/dt>/;
+            my $busyworker = $1;
+            my $idleworker = $2;
+
+            # cpu usage
+            $body=~ m/<dt>CPU Usage: u([^\s]+) s([^\s]+) cu.* cs.* - ([^\s]+%) CPU load<\/dt>/;
+            my $cpustat="user_cpu=$1,system_cpu=$2,cpu_load=$3";
+            my $cpupct=$3;
+            $cpupct =~ s/\%//;
+            if ($cpupct =~ /^\./ ) { $cpupct = sprintf ("%.2f", $cpupct .= '0'); }
+
+            # traffic
+            $body=~ m/<dt>Total accesses: ([^\s]+) - Total Traffic: ([^\s]+) <\/dt>/;
+            print $2;
+
+            # uptime
+            $body=~ m/Server uptime: ([^<]+)<\/dt>/;
+            my $uptime=$1;
+ 
+            print "$reqsec:$kbytesec:$kbytereq:$busyworker:$idleworker:$cpupct:$uptime\n";
+            #$body=~ m/<dt>CPU Usage: u([^\s]+) s([^\s]+) cu.* cs.* - ([^\s]+%) CPU load<\/dt>/;
+            #my $cpu_stats="user_cpu=$1,system_cpu=$2,cpu_load=$3";
+            #print "$request_stats\n";
+
+        } else {
+            if ( $verbose == 1 ) {
+                if ($logging) {
+                    write_log("failed");
+                } else {
+                    print "failed\n";
+                }
+            }
+        }
 
         #process_request ($http, $work, $name, $id, $hname, $url, $p);
         #sleep $d;
@@ -449,7 +581,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-httprec: 1.0.1, 2017-07-12 1303
+httprec: 1.0.3, 2017-08-24 1433
 END
     exit 0;
 }
