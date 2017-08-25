@@ -75,7 +75,6 @@ local $| = 1;
 # Set a timer for WWW::Curl::Easy object
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
-#my $http = WWW::Curl::Easy->new;
 
 ### 0.1sec sleep using a timer
 pause;
@@ -161,16 +160,6 @@ my $http = HTTP::Tiny->new( keep_alive => $tcpka,
 # main loop
 while (1) {
 
-    #if ($logging) {
-    #    $rawkrd = open_file($rawfile);
-    #}
-
-    #my $head = tempfile();
-    #$http->setopt(CURLOPT_WRITEHEADER, $head);
-
-    #my $body = tempfile();
-    #$http->setopt(CURLOPT_FILE, $body);
-
     for my $key (keys %work) {
 
         my $value = $work{$key};
@@ -193,9 +182,21 @@ while (1) {
         # Example
         # a2test:1:apache:a2stat => http:GET:localhost:80:/server-status
         #
-        my ($cname, $iname, $iid, $imsg) = split( /:/, $key );
-        my ($ischeme, $imethod, $ihost, $iport, $ipath) = split( /:/, $value );
+        my ($cname, $iid, $iname, $imsg) = split( /:/, $key );
+        my ($ischeme, $imethod, $ihost, $iport, $ipath, $info, $trace) = split( /:/, $value );
         my $url = $ischeme . "://" . $ihost . ":" . $iport . $ipath;
+
+        my $tname;
+
+        if ($cname) { 
+            if ($iname) { 
+                $tname= $cname . '.' . $iname . '.' . $iid;
+            } else {
+                $tname= $cname . '.' . $iid;
+            }
+        } else { 
+            $tname= $imsg . '.' . $iid;
+        }
 
         if ( $verbose ) {
             if ($logging) {
@@ -206,7 +207,6 @@ while (1) {
         }
 
         my $response = $http->request($imethod, $url);
-
         my $status = $response->{status};
 
         if ($response->{success} ) {
@@ -217,74 +217,6 @@ while (1) {
                     print "success\n";
                 }
             }
-                
-            # get the content and parse
-            #while (my ($name, $v) = each %{$response->{headers}}) {
-            #    for my $value (ref $v eq 'ARRAY' ? @$v : $v) {
-            #        print "$name: $value";
-            #    }
-            #}
-            #if (length $response->{content}) {
-                #print 'Length: ', length $response->{content};
-	        #print Dumper $response;
-            #}
-            print $response->{content};
- 
-            #use HTML::Strip;
-
-            #my $hs = HTML::Strip->new();
-            #my $clean_text = $hs->parse( $response->{content} );
-            #$hs->eof;
-
-            #print $clean_text; 
-
-            my $body = $response->{content};
-
-            $body=~ m/<dt>([^\s]+) requests\/sec - ([^\s]+) (k*B)\/second - ([^\s]+) ([k,M]*B)\/request<\/dt>/;
-
-            my $request_stats="requests_per_second=$1,$3_per_second=$2,$5_per_request=$4";
-            print "$request_stats\n";
-
-            my $reqsec   = $1; 
-            my $kbytesec = $2;
-            my $kbytereq = $4;
- 
-            # requests per second
-            if ($reqsec =~ /^\./ ) { $reqsec = '0' . $reqsec; }
-
-            # kbytesec KBytes per second
-            my $bytes_unit = $3;
-            if ( $bytes_unit =~ /^B/ ) { $kbytesec /= 1024; }
-
-            # kbytereq KBytes per request
-            my $req_unit = $5;
-               if ( $req_unit =~ /^B/ ) { $kbytereq = sprintf ("%.2f", $kbytereq /= 1024); }
-            elsif ( $req_unit =~ /^M/ ) { $kbytereq = sprintf ("%.2f", $kbytereq *= 1024); }
-           
-            # busy and idle workers
-            $body=~ m/<dt>([^\s]+) requests currently being processed, ([^\s]+) idle workers<\/dt>/;
-            my $busyworker = $1;
-            my $idleworker = $2;
-
-            # cpu usage
-            $body=~ m/<dt>CPU Usage: u([^\s]+) s([^\s]+) cu.* cs.* - ([^\s]+%) CPU load<\/dt>/;
-            my $cpustat="user_cpu=$1,system_cpu=$2,cpu_load=$3";
-            my $cpupct=$3;
-            $cpupct =~ s/\%//;
-            if ($cpupct =~ /^\./ ) { $cpupct = sprintf ("%.2f", $cpupct .= '0'); }
-
-            # traffic
-            $body=~ m/<dt>Total accesses: ([^\s]+) - Total Traffic: ([^\s]+) <\/dt>/;
-            print $2;
-
-            # uptime
-            $body=~ m/Server uptime: ([^<]+)<\/dt>/;
-            my $uptime=$1;
- 
-            print "$reqsec:$kbytesec:$kbytereq:$busyworker:$idleworker:$cpupct:$uptime\n";
-            #$body=~ m/<dt>CPU Usage: u([^\s]+) s([^\s]+) cu.* cs.* - ([^\s]+%) CPU load<\/dt>/;
-            #my $cpu_stats="user_cpu=$1,system_cpu=$2,cpu_load=$3";
-            #print "$request_stats\n";
 
         } else {
             if ( $verbose == 1 ) {
@@ -296,7 +228,11 @@ while (1) {
             }
         }
 
-        #process_request ($http, $work, $name, $id, $hname, $url, $p);
+        if ( $imsg eq 'a2stat' ) { 
+            a2stat ($tname, $response->{content}, $status); 
+            a2inv  ($tname, $response->{content});
+        }
+
         #sleep $d;
     }
 
@@ -446,11 +382,13 @@ sub get_httpsvc {
                 my $ims    = $mesg -> {'scheme'};
                 my $imm    = $mesg -> {'method'};
                 my $imp    = $mesg -> {'path'};
+                my $state   = $mesg -> {'state'};
 
-                print "$name:$iid:$iname:$imname => $ims:$imm:$ihost:$iport:$imp\n";
+                if ( $state ne 'trace' ) { $state = 'NA'; }
+
+                # print "$name:$iid:$iname:$imname => $ims:$imm:$ihost:$iport:$imp\n";
                 my $keyapp = $name . ":" . $iid . ":" . $iname . ":" . $imname;
-                my $hvalue = $ims . ":" . $imm . ":" . $ihost . ":" . $iport . ":" . $imp;
-
+                my $hvalue = $ims . ":" . $imm . ":" . $ihost . ":" . $iport . ":" . $imp . ":" . $state;
                 $httpsvc{$keyapp} = $hvalue;
             }
         }
@@ -459,19 +397,147 @@ sub get_httpsvc {
     return %httpsvc;
 }
 
+sub a2stat {
 
-sub process_request {
+    my ($name, $body, $status) = @_;
 
-    my ($http, $w, $n, $id, $s, $h, $u, $post) = @_;
+    my $reqsec     = 'NA';
+    my $kbytesec   = 'NA';
+    my $kbytereq   = 'NA';
+    my $busyworker = 'NA';
+    my $idleworker = 'NA';
+    my $traffic    = 'NA';
+    my $cpupct     = 'NA';
+    my $uptime     = 'NA';
 
-    # rebuild the entire request url
-    my $url = $s . "://" . $h . $u;
-  
-    #print "scheme: $s\n";
-    #print "hostname: $h\n";
-    #print "url: $u\n";
-    #print "$url \n\n";
+    $body=~ m/<dt>([^\s]+) requests\/sec - ([^\s]+) (k*B)\/second - ([^\s]+) ([k,M]*B)\/request<\/dt>/;
 
+    my $reqs_unit = $1;
+    my $bytes_unit = $3;
+    my $req_unit = $5;
+    $kbytesec = $2;
+    $kbytereq = $4;
+
+    # requests per second
+    if ($reqs_unit =~ /^\./ ) { $reqsec = '0' . $reqs_unit; }
+
+    # kbytesec (KBytes per second)
+    if ( $bytes_unit =~ /^B/ ) {
+        $kbytesec = sprintf("%.2f", $kbytesec /= 1024);
+    }
+
+    # kbytereq (KBytes per request)
+    if ( $req_unit =~ /^B/ ) {
+        $kbytereq = sprintf ("%.2f",$kbytereq /= 1024);
+    } elsif ( $req_unit =~ /^M/ ) {
+        $kbytereq = sprintf ("%.2f",$kbytereq *= 1024);
+    }
+
+    # busy and idle workers
+    $body=~ m/<dt>([^\s]+) requests currently being processed, ([^\s]+) idle workers<\/dt>/;
+    $busyworker = $1;
+    $idleworker = $2;
+
+    # cpu usage
+    $body=~ m/<dt>CPU Usage: u([^\s]+) s([^\s]+) cu.* cs.* - ([^\s]+%) CPU load<\/dt>/;
+    $cpupct=$3;
+    $cpupct =~ s/\%//;
+    if ($cpupct =~ /^\./ ) {
+        $cpupct = sprintf ("%.2f", $cpupct .= '0');
+    }
+
+    # traffic
+    $body=~ m/Total Traffic: ([^<]+)<\/dt>/;
+    $traffic = $1;
+
+    # uptime
+    $uptime = 'NA';
+    $body=~ m/Server uptime: ([^<]+)<\/dt>/;
+    $uptime=$1;
+    $uptime =~ s/^\s+//;
+
+    # message raw data file
+    $rawfile = 'a2statrec';
+
+    if ($logging) {
+        # set krd raw file
+        $rawfile = $curlog . "/" . $rawfile . ".krd";
+
+        write_log ("rawfile=$rawfile") if ($verbose);
+
+        my $rawkrd = open_file($rawfile);
+
+        printf $rawkrd "%.${tp}f:%s:%.2f:%.2f:%.2f:%d:%d:%s:%.2f:%s:%s\n", 
+               time, $name, 
+               $reqsec, $kbytesec, $kbytereq,
+               $busyworker,$idleworker,
+               $traffic, $cpupct, $uptime, $status;
+
+        close ($rawkrd);
+
+    } else {
+
+        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%d:%d:%s:%.2f:%s:%s\n",
+               time, $name,
+               $reqsec, $kbytesec, $kbytereq,           
+               $busyworker,$idleworker,                 
+               $traffic, $cpupct, $uptime, $status;
+
+    }
+
+    return;
+}
+
+
+sub a2inv {
+
+    my ($name, $body) = @_;
+
+    my $http_name     = 'NA';
+    my $http_built    = 'NA';
+    my $http_type     = 'NA';
+
+    my $msg = 'a2inv';
+
+    # fetch metrics
+ 
+    # name
+    $body=~ m/Server Version: ([^<]+)<\/dt>/;
+    $http_name = $1;
+
+    # built
+    $body=~ m/Server Built: ([^<]+)<\/dt>/;
+    $http_built = $1;
+    $http_built =~ s/\://g;
+    chomp($http_built);
+
+    # type
+    $body=~ m/Server MPM: ([^<]+)<\/dt>/;
+    $http_type = $1;
+
+    # message raw data file
+    $rawfile = $msg . 'rec';
+
+    if ($logging) {
+        # set krd raw file
+        $rawfile = $curlog . "/" . $rawfile . ".krd";
+
+        write_log ("rawfile=$rawfile") if ($verbose);
+
+        my $rawkrd = open_file($rawfile);
+
+        printf $rawkrd "%.${tp}f:%s:%s:%s:%s\n",
+               time, $name, $http_name, $http_built, $http_type;
+
+        close ($rawkrd);
+
+    } else {
+
+        printf "%.${tp}f:%s:%s:%s:%s\n",
+               time, $name, $http_name, $http_built, $http_type;
+    }
+
+    return;
 }
 
 
@@ -572,7 +638,18 @@ OPTIONS:
 
  FIELDS:
 
- NOTES
+ A2STAT MESSAGE (APACHE)
+  #01 timestamp  : seconds since Epoch, time
+  #02 name       : HTTP server instance id, name 
+  #03 reqsec     : requests per second, number
+  #04 kbytesec   : KB per second, number
+  #05 kbytereq   : KB per request, number
+  #06 busyworker : busy workers, number
+  #07 idleworker : idle workers, number
+  #08 traffic    : total traffic (KB|MB|GB), number
+  #09 cpupct     : CPU utilization, number
+  #10 uptime     : uptime, number
+  #11 status     : status code, number
 
 END
     exit 0;
@@ -581,7 +658,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-httprec: 1.0.3, 2017-08-24 1433
+httprec: 1.0.4, 2017-08-25 1332
 END
     exit 0;
 }

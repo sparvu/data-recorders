@@ -1,11 +1,11 @@
 {
   "http" : [
     {
-      "name" : "hrportal",
+      "name" : "a2test",
       "description" : "apache2 http server",
       "proxy" : {
         "hostname" : "",
-        "port" : 8080,
+        "port" : 80,
         "username" : "",
         "password" : ""
       },
@@ -14,98 +14,15 @@
           "id" : 1,
           "name" : "apache",
           "host" : "localhost",
-          "port" : 8080,
+          "port" : 80,
           "message" : [
             {
               "name": "a2stat",
               "scheme" : "http",
               "method" : "GET",
               "path" : "/server-status",
+              "state" : "trace",
               "description": "apache2 statistics",
-              "data": [ ]
-            },
-            {
-              "name": "a2inv",
-              "scheme" : "http",
-              "method" : "GET",
-              "path" : "/server-info",
-              "description": "apache2 inventory",
-              "data": [ ]
-            },
-            {
-              "name": "a2bus",
-              "scheme" : "http",
-              "method" : "GET",
-              "path" : "/server-status",
-              "description": "apache2 busy thread",
-              "data": [ ]
-            }
-          ]
-        },
-        {
-          "id" : 2,
-          "name" : "apache",
-          "host" : "localhost",
-          "port" : 8081,
-          "message" : [
-            {
-              "name": "a2stat",
-              "scheme" : "http",
-              "method" : "GET",
-              "path" : "/server-status",
-              "description": "apache2 statistics",
-              "data": [ ]
-            },
-            {
-              "name": "a2inv",
-              "scheme" : "http",
-              "method" : "GET",
-              "path" : "/server-info",
-              "description": "apache2 inventory",
-              "data": [ ]
-            },
-            {
-              "name": "a2bus",
-              "scheme" : "http",
-              "method" : "GET",
-              "path" : "/server-status",
-              "description": "apache2 busy thread",
-              "data": [ ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name" : "sales",
-      "description" : "nginx http server",
-      "proxy" : {
-        "hostname" : "",
-        "port" : 7000,
-        "username" : "",
-        "password" : ""
-      },
-      "instance" : [
-        {
-          "id" : "1",
-          "name" : "nginx",
-          "host" : "localhost",
-          "port" : 8888,
-          "message" : [
-            {
-              "name": "ngxstat",
-              "scheme" : "http",
-              "method" : "GET",
-              "path" : "/",
-              "description": "nginx statistics",
-              "data": [ ]
-            },
-            {
-              "name": "ngxinv",
-              "scheme" : "http",
-              "method" : "GET",
-              "path" : "/",
-              "description": "nginx inventory",
               "data": [ ]
             }
           ]

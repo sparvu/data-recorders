@@ -34,5 +34,5 @@ else
     . ${PWD}bin/setenv
 fi
 
-${KRMX_BIN}/http -l $RES 2>> ${HTTPREC_LOG} &
+${KRMX_BIN}/httprec -l $RES 2>> ${HTTPREC_LOG} &
 echo "$!" > ${KRMX_LOG}/httprec.pid
