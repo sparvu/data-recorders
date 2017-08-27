@@ -14,14 +14,14 @@
           "id" : 1,
           "name" : "apache",
           "host" : "localhost",
-          "port" : 80,
+          "port" : 443,
           "message" : [
             {
               "name": "a2stat",
-              "scheme" : "http",
+              "scheme" : "https",
               "method" : "GET",
               "path" : "/server-status",
-              "state" : "trace",
+              "trace" : "on",
               "description": "apache2 statistics",
               "data": [ ]
             }
