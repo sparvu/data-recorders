@@ -27,9 +27,8 @@ use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Tie::IxHash;
-use HTTP::Response;
 use HTTP::Tiny;
-use Data::Dumper qw(Dumper);
+#use Data::Dumper qw(Dumper);
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -183,7 +182,7 @@ while (1) {
         # a2test:1:apache:a2stat => http:GET:localhost:80:/server-status
         #
         my ($cname, $iid, $iname, $imsg) = split( /:/, $key );
-        my ($ischeme, $imethod, $ihost, $iport, $ipath, $info, $trace) = split( /:/, $value );
+        my ($ischeme, $imethod, $ihost, $iport, $ipath, $trace) = split( /:/, $value );
         my $url = $ischeme . "://" . $ihost . ":" . $iport . $ipath;
 
         my $tname;
@@ -230,15 +229,11 @@ while (1) {
 
         if ( $imsg eq 'a2stat' ) { 
             a2stat ($tname, $response->{content}, $status); 
-            a2inv  ($tname, $response->{content});
+            a2inv  ($tname, $response->{content}, $iport);
+            if ($trace) { a2trace($tname, $response->{content}); }
         }
 
-        #sleep $d;
     }
-
-    #if ($logging) {
-    #    close ($rawkrd);
-    #}
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -382,13 +377,13 @@ sub get_httpsvc {
                 my $ims    = $mesg -> {'scheme'};
                 my $imm    = $mesg -> {'method'};
                 my $imp    = $mesg -> {'path'};
-                my $state   = $mesg -> {'state'};
+                my $trace  = $mesg -> {'trace'};
 
-                if ( $state ne 'trace' ) { $state = 'NA'; }
+                if ( $trace ne 'on' ) { $trace = 'NA'; }
 
                 # print "$name:$iid:$iname:$imname => $ims:$imm:$ihost:$iport:$imp\n";
                 my $keyapp = $name . ":" . $iid . ":" . $iname . ":" . $imname;
-                my $hvalue = $ims . ":" . $imm . ":" . $ihost . ":" . $iport . ":" . $imp . ":" . $state;
+                my $hvalue = $ims . ":" . $imm . ":" . $ihost . ":" . $iport . ":" . $imp . ":" . $trace;
                 $httpsvc{$keyapp} = $hvalue;
             }
         }
@@ -401,46 +396,49 @@ sub a2stat {
 
     my ($name, $body, $status) = @_;
 
-    my $reqsec     = 'NA';
-    my $kbytesec   = 'NA';
-    my $kbytereq   = 'NA';
-    my $busyworker = 'NA';
-    my $idleworker = 'NA';
-    my $traffic    = 'NA';
-    my $cpupct     = 'NA';
-    my $uptime     = 'NA';
+    my $reqsec        = 'NA';
+    my $kbytesec      = 'NA';
+    my $kbytereq      = 'NA';
+    my $busyworker    = 'NA';
+    my $idleworker    = 'NA';
+    my $traffic       = 'NA';
+    my $cpupct        = 'NA';
+    my $uptime        = 'NA';
+    my $reqs_unit     = 'NA';
+    my $kbyte_unit    = 'NA';
+    my $kbytereq_unit = 'NA';
 
     $body=~ m/<dt>([^\s]+) requests\/sec - ([^\s]+) (k*B)\/second - ([^\s]+) ([k,M]*B)\/request<\/dt>/;
 
-    my $reqs_unit = $1;
-    my $bytes_unit = $3;
-    my $req_unit = $5;
-    $kbytesec = $2;
-    $kbytereq = $4;
+    $reqs_unit = $1      if (defined $1);
+    $kbyte_unit = $3     if (defined $3);
+    $kbytereq_unit = $5  if (defined $5);
+    $kbytesec = $2       if (defined $2);
+    $kbytereq = $4       if (defined $4);
 
     # requests per second
     if ($reqs_unit =~ /^\./ ) { $reqsec = '0' . $reqs_unit; }
 
     # kbytesec (KBytes per second)
-    if ( $bytes_unit =~ /^B/ ) {
+    if ( $kbyte_unit =~ /^B/ ) {
         $kbytesec = sprintf("%.2f", $kbytesec /= 1024);
     }
 
     # kbytereq (KBytes per request)
-    if ( $req_unit =~ /^B/ ) {
+    if ( $kbytereq_unit =~ /^B/ ) {
         $kbytereq = sprintf ("%.2f",$kbytereq /= 1024);
-    } elsif ( $req_unit =~ /^M/ ) {
+    } elsif ( $kbytereq_unit =~ /^M/ ) {
         $kbytereq = sprintf ("%.2f",$kbytereq *= 1024);
     }
 
     # busy and idle workers
     $body=~ m/<dt>([^\s]+) requests currently being processed, ([^\s]+) idle workers<\/dt>/;
-    $busyworker = $1;
-    $idleworker = $2;
+    $busyworker = $1 if (defined $1);
+    $idleworker = $2 if (defined $2);
 
     # cpu usage
     $body=~ m/<dt>CPU Usage: u([^\s]+) s([^\s]+) cu.* cs.* - ([^\s]+%) CPU load<\/dt>/;
-    $cpupct=$3;
+    $cpupct=$3 if (defined $3);
     $cpupct =~ s/\%//;
     if ($cpupct =~ /^\./ ) {
         $cpupct = sprintf ("%.2f", $cpupct .= '0');
@@ -448,12 +446,12 @@ sub a2stat {
 
     # traffic
     $body=~ m/Total Traffic: ([^<]+)<\/dt>/;
-    $traffic = $1;
+    $traffic = $1 if (defined $1);
 
     # uptime
     $uptime = 'NA';
     $body=~ m/Server uptime: ([^<]+)<\/dt>/;
-    $uptime=$1;
+    $uptime=$1 if (defined $1);
     $uptime =~ s/^\s+//;
 
     # message raw data file
@@ -467,7 +465,7 @@ sub a2stat {
 
         my $rawkrd = open_file($rawfile);
 
-        printf $rawkrd "%.${tp}f:%s:%.2f:%.2f:%.2f:%d:%d:%s:%.2f:%s:%s\n", 
+        printf $rawkrd "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s\n", 
                time, $name, 
                $reqsec, $kbytesec, $kbytereq,
                $busyworker,$idleworker,
@@ -477,7 +475,7 @@ sub a2stat {
 
     } else {
 
-        printf "%.${tp}f:%s:%.2f:%.2f:%.2f:%d:%d:%s:%.2f:%s:%s\n",
+        printf "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s\n",
                time, $name,
                $reqsec, $kbytesec, $kbytereq,           
                $busyworker,$idleworker,                 
@@ -491,7 +489,7 @@ sub a2stat {
 
 sub a2inv {
 
-    my ($name, $body) = @_;
+    my ($name, $body, $port) = @_;
 
     my $http_name     = 'NA';
     my $http_built    = 'NA';
@@ -503,17 +501,17 @@ sub a2inv {
  
     # name
     $body=~ m/Server Version: ([^<]+)<\/dt>/;
-    $http_name = $1;
+    $http_name = $1 if(defined $1);
 
     # built
     $body=~ m/Server Built: ([^<]+)<\/dt>/;
-    $http_built = $1;
+    $http_built = $1 if (defined $1);
     $http_built =~ s/\://g;
     chomp($http_built);
 
     # type
     $body=~ m/Server MPM: ([^<]+)<\/dt>/;
-    $http_type = $1;
+    $http_type = $1 if (defined $1);
 
     # message raw data file
     $rawfile = $msg . 'rec';
@@ -526,15 +524,74 @@ sub a2inv {
 
         my $rawkrd = open_file($rawfile);
 
-        printf $rawkrd "%.${tp}f:%s:%s:%s:%s\n",
-               time, $name, $http_name, $http_built, $http_type;
+        printf $rawkrd "%.${tp}f:%s:%s:%d:%s:%s\n",
+               time, $name, $http_name, $port, $http_built, $http_type;
 
         close ($rawkrd);
 
     } else {
 
-        printf "%.${tp}f:%s:%s:%s:%s\n",
-               time, $name, $http_name, $http_built, $http_type;
+        printf "%.${tp}f:%s:%s:%d:%s:%s\n",
+               time, $name, $http_name, $port, $http_built, $http_type;
+    }
+
+    return;
+}
+
+
+sub a2trace {
+
+    my ($name, $body) = @_;
+
+    my $http_name     = 'NA';
+    my $http_built    = 'NA';
+    my $http_type     = 'NA';
+
+    my $msg = 'a2bus';
+
+    # fetch metrics
+
+    # name
+    # $body=~ m/Server Version: ([^<]+)<\/dt>/;
+    # $http_name = $1 if(defined $1);
+
+    #print $body;
+
+    use HTML::TableExtract;
+    my $te = HTML::TableExtract->new( headers => [qw(Srv PID Acc CPU VHost Request)] );
+
+    $te->parse($body);
+ 
+    # Examine all matching tables
+    foreach my $ts ($te->tables) {
+        print "Table (", join(',', $ts->coords), "):\n";
+        foreach my $row ($ts->rows) {
+            print join(',', @$row), "\n";
+        }
+    }
+
+    #print "@values";
+
+    # message raw data file
+    $rawfile = $msg . 'rec';
+
+    if ($logging) {
+        # set krd raw file
+        $rawfile = $curlog . "/" . $rawfile . ".krd";
+
+        write_log ("rawfile=$rawfile") if ($verbose);
+
+        my $rawkrd = open_file($rawfile);
+
+        #printf $rawkrd "%.${tp}f:%s:%s:%d:%s:%s\n",
+        #       time, $name, $http_name, $port, $http_built, $http_type;
+
+        close ($rawkrd);
+
+    } else {
+
+        #printf "%.${tp}f:%s:%s:%d:%s:%s\n",
+        #       time, $name, $http_name, $port, $http_built, $http_type;
     }
 
     return;
@@ -651,6 +708,14 @@ OPTIONS:
   #10 uptime     : uptime, number
   #11 status     : status code, number
 
+ A2INVENTORY MESSAGE (APACHE)
+  #01 timestamp  : seconds since Epoch, time
+  #02 name       : HTTP server instance id, name 
+  #03 id         : HTTP server name, name
+  #04 port       : HTTP port number, number
+  #04 built      : built information, string
+  #05 type       : type of the A2 instance, string
+
 END
     exit 0;
 }
@@ -658,7 +723,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-httprec: 1.0.4, 2017-08-25 1332
+httprec: 1.0.5, 2017-08-27 1052
 END
     exit 0;
 }
