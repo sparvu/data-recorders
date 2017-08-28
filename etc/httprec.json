@@ -26,6 +26,23 @@
               "data": [ ]
             }
           ]
+        },
+        {
+          "id" : 2,
+          "name" : "apache",
+          "host" : "localhost",
+          "port" : 80,
+          "message" : [
+            {
+              "name": "a2stat",
+              "scheme" : "https",
+              "method" : "GET",
+              "path" : "/server-status",
+              "trace" : "off",
+              "description": "apache2 statistics",
+              "data": [ ]
+            }
+          ]
         }
       ]
     }

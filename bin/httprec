@@ -162,6 +162,7 @@ while (1) {
     for my $key (keys %work) {
 
         my $value = $work{$key};
+
         # configuration
         #
         #  "id" : 1,
@@ -230,7 +231,7 @@ while (1) {
         if ( $imsg eq 'a2stat' ) { 
             a2stat ($tname, $response->{content}, $status); 
             a2inv  ($tname, $response->{content}, $iport);
-            if ($trace) { a2trace($tname, $response->{content}); }
+            if ($trace eq 'on') { a2trace($tname, $response->{content}); }
         }
 
     }
@@ -499,9 +500,12 @@ sub a2inv {
 
     # fetch metrics
  
-    # name
+    # http name
     $body=~ m/Server Version: ([^<]+)<\/dt>/;
-    $http_name = $1 if(defined $1);
+    if (defined $1) {
+        $1 =~ m/^(.*\)).*$/;;
+        $http_name = $1;
+    }
 
     # built
     $body=~ m/Server Built: ([^<]+)<\/dt>/;
@@ -538,7 +542,8 @@ sub a2inv {
     return;
 }
 
-
+# Apache2 Trace - Extracts the execute  
+#
 sub a2trace {
 
     my ($name, $body) = @_;
@@ -547,31 +552,27 @@ sub a2trace {
     my $http_built    = 'NA';
     my $http_type     = 'NA';
 
-    my $msg = 'a2bus';
+    my $msg  = 'a2bus';
+    my @busy = 'NA';
 
     # fetch metrics
 
-    # name
-    # $body=~ m/Server Version: ([^<]+)<\/dt>/;
-    # $http_name = $1 if(defined $1);
+    if ($body) {
+        use HTML::TableExtract;
+        my $te = 
+            HTML::TableExtract->new( headers => [qw(Srv PID Acc CPU VHost Request)] );
 
-    #print $body;
-
-    use HTML::TableExtract;
-    my $te = HTML::TableExtract->new( headers => [qw(Srv PID Acc CPU VHost Request)] );
-
-    $te->parse($body);
+        $te->parse($body);
  
-    # Examine all matching tables
-    foreach my $ts ($te->tables) {
-        print "Table (", join(',', $ts->coords), "):\n";
-        foreach my $row ($ts->rows) {
-            print join(',', @$row), "\n";
+        # Examine all matching tables
+        foreach my $ts ($te->tables) {
+            #print "Table (", join(',', $ts->coords), "):\n";
+            foreach my $row ($ts->rows) {
+                #print join(',', @$row), "\n";
+                push @busy, join(',', @$row);
+            }
         }
     }
-
-    #print "@values";
-
     # message raw data file
     $rawfile = $msg . 'rec';
 
@@ -581,17 +582,15 @@ sub a2trace {
 
         write_log ("rawfile=$rawfile") if ($verbose);
 
-        my $rawkrd = open_file($rawfile);
+        my $rawkrd = instant_file($rawfile);
 
-        #printf $rawkrd "%.${tp}f:%s:%s:%d:%s:%s\n",
-        #       time, $name, $http_name, $port, $http_built, $http_type;
+        printf $rawkrd "%.${tp}f:%s\n", time, "@busy";
 
         close ($rawkrd);
 
     } else {
 
-        #printf "%.${tp}f:%s:%s:%d:%s:%s\n",
-        #       time, $name, $http_name, $port, $http_built, $http_type;
+        printf "%.${tp}f:%s\n", time, "@busy";
     }
 
     return;
@@ -655,6 +654,30 @@ sub write_log {
     }
 
     return;
+}
+
+
+# instant_data - open instant data file
+#
+sub instant_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>", "$file" or
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
 }
 
 
@@ -723,7 +746,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-httprec: 1.0.5, 2017-08-27 1052
+httprec: 1.0.6, 2017-08-28 0941
 END
     exit 0;
 }
