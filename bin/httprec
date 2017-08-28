@@ -371,6 +371,7 @@ sub get_httpsvc {
             my $iport = $inst -> {'port'};
 
             my @msg  = @{ $inst->{'message'} };
+            my $trace = 'NA';
         
             foreach my $mesg (@msg) {
 
@@ -378,7 +379,7 @@ sub get_httpsvc {
                 my $ims    = $mesg -> {'scheme'};
                 my $imm    = $mesg -> {'method'};
                 my $imp    = $mesg -> {'path'};
-                my $trace  = $mesg -> {'trace'};
+                $trace  = $mesg -> {'trace'} if ($mesg -> {'trace'});
 
                 if ( $trace ne 'on' ) { $trace = 'NA'; }
 
@@ -746,7 +747,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-httprec: 1.0.6, 2017-08-28 0941
+httprec: 1.1.0, 2017-08-28 1006
 END
     exit 0;
 }

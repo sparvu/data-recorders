@@ -45,6 +45,42 @@
           ]
         }
       ]
+    },
+    {
+      "name" : "sales",
+      "description" : "nginx http server",
+      "proxy" : {
+        "hostname" : "",
+        "port" : 7000,
+        "username" : "",
+        "password" : ""
+      },
+      "instance" : [
+        {
+          "id" : "1",
+          "name" : "nginx",
+          "host" : "localhost",
+          "port" : 8888,
+          "message" : [
+            {
+              "name": "ngxstat",
+              "scheme" : "http",
+              "method" : "GET",
+              "path" : "/",
+              "description": "nginx statistics",
+              "data": [ ]
+            },
+            {
+              "name": "ngxinv",
+              "scheme" : "http",
+              "method" : "GET",
+              "path" : "/",
+              "description": "nginx inventory",
+              "data": [ ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }
