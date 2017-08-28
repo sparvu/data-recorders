@@ -11,6 +11,9 @@ Bug Management System
 
 Releases
 
+  1.2.14 11-08-2017 Release
+    pkg does not restore svc and web configs #156 
+
   1.1.2 30-10-2016 Release
     wsrec does not have a release version #117
     direc errors opening certain directories #116

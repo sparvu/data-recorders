@@ -92,7 +92,7 @@ my $agent = "kdr/1.2.12 sender $osname";
 $cdata = open_config($cfile);
 
 # get OS host UUID
-get_hostid($cdata);
+$hostid = get_hostid($cdata);
 
 # logs
 ( $baselog, $curlog ) = get_log($cdata);
@@ -777,7 +777,7 @@ sub reload_config {
     $cdata = open_config($cfile);
 
     ## hostid
-    get_hostid($cdata);
+    $hostid = get_hostid($cdata);
 
     ## datafile
     @dbs = get_datafile($cdata);
@@ -936,10 +936,9 @@ sub make_hdsid {
 # make website data source ids, dsid
 sub make_wdsid {
 
-    my ($name, $idl) = @_;
+    my ($name) = @_;
 
-    my $str = $name . $idl;
-    my $wdsid = create_uuid_as_string(UUID_V5,$str);
+    my $wdsid = create_uuid_as_string(UUID_V5,$name);
     chomp($wdsid);
 
     writelog("info: make_dsid - name=$name => $wdsid");
@@ -1167,7 +1166,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.1.15, 2017-07-19 1520
+sender: 1.2.1, 2017-08-28 1355
 END
     exit 0;
 }
