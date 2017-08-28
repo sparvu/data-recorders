@@ -162,7 +162,6 @@ while (1) {
     for my $key (keys %work) {
 
         my $value = $work{$key};
-
         # configuration
         #
         #  "id" : 1,
@@ -372,7 +371,7 @@ sub get_httpsvc {
 
             my @msg  = @{ $inst->{'message'} };
             my $trace = 'NA';
-        
+ 
             foreach my $mesg (@msg) {
 
                 my $imname = $mesg -> {'name'};
@@ -553,7 +552,7 @@ sub a2trace {
     my $http_built    = 'NA';
     my $http_type     = 'NA';
 
-    my $msg  = 'a2bus';
+    my $msg = 'a2bus';
     my @busy = 'NA';
 
     # fetch metrics
@@ -570,7 +569,7 @@ sub a2trace {
             #print "Table (", join(',', $ts->coords), "):\n";
             foreach my $row ($ts->rows) {
                 #print join(',', @$row), "\n";
-                push @busy, join(',', @$row);
+                push @busy, join(',', @$row), "<br>";
             }
         }
     }
@@ -747,7 +746,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-httprec: 1.1.0, 2017-08-28 1006
+httprec: 1.1.1, 2017-08-28 1414
 END
     exit 0;
 }
