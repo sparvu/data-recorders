@@ -71,7 +71,7 @@ local $| = 1;
 
 ### MAIN BODY #
 
-# Set a timer for WWW::Curl::Easy object
+# Set a timer
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
 
