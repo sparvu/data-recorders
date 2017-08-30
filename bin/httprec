@@ -227,6 +227,10 @@ while (1) {
             }
         }
 
+        #my @srverrs = (500, 501, 502, 503, 504, 505, 529, 599);
+        #my @cerrs = (400, 401, 403, 404, 405, 406, 408, 410, 415, 419, 429);
+        #my $status = 529;
+
         if ( $imsg eq 'a2stat' ) { 
             a2stat ($tname, $response->{content}, $status); 
             a2inv  ($tname, $response->{content}, $iport);
@@ -548,31 +552,37 @@ sub a2trace {
 
     my ($name, $body) = @_;
 
-    my $http_name     = 'NA';
-    my $http_built    = 'NA';
-    my $http_type     = 'NA';
-
     my $msg = 'a2bus';
-    my @busy = 'NA';
+    my @busy = '';
 
     # fetch metrics
 
     if ($body) {
+
+        my $headers =['Srv','PID','Acc','M','CPU','SS','Req','Conn','Child','Slot','Client','VHost','Request'];
+
         use HTML::TableExtract;
-        my $te = 
-            HTML::TableExtract->new( headers => [qw(Srv PID Acc CPU VHost Request)] );
+        my $te = HTML::TableExtract->new( headers => $headers );
 
         $te->parse($body);
- 
+
         # Examine all matching tables
         foreach my $ts ($te->tables) {
-            #print "Table (", join(',', $ts->coords), "):\n";
             foreach my $row ($ts->rows) {
-                #print join(',', @$row), "\n";
-                push @busy, join(',', @$row), "<br>";
+                my @r = @$row;
+                my $line;
+                foreach my $column (0..12) {
+                    chomp $r[$column];
+                    $r[$column] = 'localhost' if ($r[$column] =~ m/::1/);
+                    $r[$column] =~ s/:/ /g;
+                    $line .= $r[$column] . "|";
+                }
+                $line .= '<br>';
+                push @busy, $line;
             }
         }
     }
+
     # message raw data file
     $rawfile = $msg . 'rec';
 
@@ -582,15 +592,27 @@ sub a2trace {
 
         write_log ("rawfile=$rawfile") if ($verbose);
 
-        my $rawkrd = instant_file($rawfile);
+        my $rawkrd = open_file($rawfile);
 
-        printf $rawkrd "%.${tp}f:%s\n", time, "@busy";
+        my $format = "%s:";
+        $format .= "%s" x @busy;
+        $format .= "\n";
 
-        close ($rawkrd);
+        printf $rawkrd $format, $name, @busy;
+
+        #printf $rawkrd "%.${tp}f:%s:%s\n", time, $name, "@busy";
+
+        close $rawkrd;
 
     } else {
 
-        printf "%.${tp}f:%s\n", time, "@busy";
+        my $format = "%s:";
+        $format .= "%s" x @busy;
+        $format .= "\n";
+
+        printf $format, $name, @busy;
+
+        #printf "%.${tp}f:%s:%s\n", time, $name, "@busy";
     }
 
     return;
@@ -654,30 +676,6 @@ sub write_log {
     }
 
     return;
-}
-
-
-# instant_data - open instant data file
-#
-sub instant_file {
-
-    my ($file) = @_;
-    my $fh;
-
-    if (-f $file) {
-        open $fh, "+>", "$file" or
-          die "error: open_file - cannot open $file $!";
-        seek $fh, 0, 2;
-        select ((select ($fh), $| = 1)[0]);
-
-    } else {
-        open $fh, "+>", "$file" or
-          die "error: open_file - cannot open $file $!";
-        select ((select ($fh), $| = 1)[0]);
-
-    }
-
-    return $fh;
 }
 
 
@@ -746,7 +744,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-httprec: 1.1.1, 2017-08-28 1414
+httprec: 1.1.2, 2017-08-29 1439
 END
     exit 0;
 }
