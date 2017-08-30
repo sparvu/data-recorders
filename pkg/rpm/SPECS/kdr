@@ -173,6 +173,13 @@ if [ $1 -eq 1 ]; then
         fi
     fi
 
+    /opt/kronometrix/bin/actmsg | grep http >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        if [ -f /opt/kronometrix/backup/httprec.json ]; then
+            cp /opt/kronometrix/backup/httprec.json /opt/kronometrix/etc || :
+        fi
+    fi
+
     /etc/init.d/kdr_transport start >/dev/null 2>&1 || :
 elif [ $1 -eq 2 ]; then
     # upgrade
@@ -239,6 +246,17 @@ if [ $1 -eq 0 ]; then
                 mkdir /opt/kronometrix/backup
             fi
             cp /opt/kronometrix/etc/svcrec.json /opt/kronometrix/backup || :
+        fi
+    fi
+
+    # make a copy of httprec.json if httprec is active
+    /opt/kronometrix/bin/actmsg | grep http >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        if [ -f /opt/kronometrix/etc/httprec.json ]; then
+            if [ ! -d /opt/kronometrix/backup ]; then
+                mkdir /opt/kronometrix/backup
+            fi
+            cp /opt/kronometrix/etc/httprec.json /opt/kronometrix/backup || :
         fi
     fi
 fi
