@@ -18,6 +18,10 @@ Bug Management System
 
 Releases
 
+  1.2.16 30-08-2017 Release
+    httprec improvements
+    deb, rpm do not restore svc and web configs #155
+
   1.2.14 11-08-2017 Release
     hdwrec linux format #154
     deb, rpm do not restore svc and web configs #155 

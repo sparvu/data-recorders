@@ -29,6 +29,16 @@ if [ $? -eq 0 ]; then
     fi
 fi
 
+/opt/kronometrix/bin/actmsg | grep http >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    if [ -f /opt/kronometrix/etc/httprec.json ]; then
+        if [ ! -d /opt/kronometrix/backup ]; then
+            mkdir /opt/kronometrix/backup
+        fi
+        cp /opt/kronometrix/etc/httprec.json /opt/kronometrix/backup || :
+    fi
+fi
+
 update-rc.d -f kdr_agents remove >/dev/null 2>&1 || : 
 update-rc.d -f kdr_transport remove >/dev/null 2>&1 || :
 
