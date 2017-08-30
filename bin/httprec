@@ -415,14 +415,14 @@ sub a2stat {
 
     $body=~ m/<dt>([^\s]+) requests\/sec - ([^\s]+) (k*B)\/second - ([^\s]+) ([k,M]*B)\/request<\/dt>/;
 
-    $reqs_unit = $1      if (defined $1);
+    $reqsec = $1         if (defined $1);
     $kbyte_unit = $3     if (defined $3);
     $kbytereq_unit = $5  if (defined $5);
     $kbytesec = $2       if (defined $2);
     $kbytereq = $4       if (defined $4);
 
     # requests per second
-    if ($reqs_unit =~ /^\./ ) { $reqsec = '0' . $reqs_unit; }
+    if ($reqsec =~ /^\./ ) { $reqsec .= '0'; }
 
     # kbytesec (KBytes per second)
     if ( $kbyte_unit =~ /^B/ ) {
@@ -572,7 +572,7 @@ sub a2trace {
                 my @r = @$row;
                 my $line;
                 foreach my $column (0..12) {
-                    chomp $r[$column];
+                    if (defined $r[$column]) {chomp $r[$column]};
                     $r[$column] = 'localhost' if ($r[$column] =~ m/::1/);
                     $r[$column] =~ s/:/ /g;
                     $line .= $r[$column] . "|";
@@ -744,7 +744,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-httprec: 1.1.2, 2017-08-29 1439
+httprec: 1.1.3, 2017-08-30 1725
 END
     exit 0;
 }
