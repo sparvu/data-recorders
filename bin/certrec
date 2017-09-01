@@ -400,7 +400,7 @@ OPTIONS:
   #02 name: certificate name, string
   #03 duration: time until expiration defined as UNIX time, string
   #04 days: number of days until expiration, string
-  #05 status, cetificate status: 1: valid or 0: invalid
+  #05 status, cetificate status: 1: valid or 0: invalid, number
 
  NOTES:
   certificate name is a generic name refering to a hostname, port where

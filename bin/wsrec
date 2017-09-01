@@ -565,7 +565,7 @@ USAGE: wsrec [-dgp] | [interval [count]]
    #07 OTwc       : outdoor wind chill temperature, Celsius, number
    #08 Wind       : wind speed m/s, rate
    #09 Wgust      : wind gust m/s, rate
-   #10 Wdir       : wind direction
+   #10 Wdir       : wind direction, number or string
    #11 R1h        : rain 1 hours, number
    #12 R24h       : rain 24 hours, number
    #13 TR         : total rain, number

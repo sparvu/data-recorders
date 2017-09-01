@@ -574,20 +574,20 @@ OPTIONS:
  INDOOR AIR QUALITY
   * iaq_g01 - Tongdy G01 IAQ
     #01 timestamp : seconds since Epoch, time
-    #02 devid     : the device id
-    #03 ta        : air termperature, in C
-    #04 rh        : relative humidity, in %
-    #05 td        : dew point, in C
-    #06 co2       : CO2 level, in ppm
-    #07 voc       : volatile organic compound, in ppm
+    #02 devid     : the device id, string
+    #03 ta        : air termperature, in C, number
+    #04 rh        : relative humidity, in %, number
+    #05 td        : dew point, in C, number
+    #06 co2       : CO2 level, in ppm, number
+    #07 voc       : volatile organic compound, in ppm, number
 
   * iaq_gmw90 - Vaisala GMW90 IAQ
     #01 timestamp : seconds since Epoch, time
-    #02 devid     : the device id
-    #03 ta        : air termperature, in C
-    #04 rh        : relative humidity, in %
-    #05 td        : dew point, in C
-    #06 co2       : CO2 level, in ppm
+    #02 devid     : the device id, string
+    #03 ta        : air termperature, in C, number
+    #04 rh        : relative humidity, in %, number
+    #05 td        : dew point, in C, number
+    #06 co2       : CO2 level, in ppm, number
 
  NOTES
  rs485rec is a multi-message data recorder, capable to handle multiple 
