@@ -86,7 +86,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "kdr/1.2.12 sender $osname";
+my $agent = "kdr/1.2.20 sender $osname";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -376,7 +376,7 @@ while (1) {
                 } elsif ($a2busrec_on) {
 
                     # device id
-                    $devid = get_devid(1, $delta);
+                    $devid = get_devid(0, $delta);
 
                     # message id
                     if ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-a2bus"; }
@@ -658,14 +658,15 @@ while (1) {
                 }
 
                 if($f) {
+                    if ($msgid =~ /a2bus/) {
+                        send_databulk ($http, $hname, $sid, $tid, $dsid, $msgid,
+                                       $devid, $proto, $port, $dsname, $delta);
+                    } else {
                     send_data ($http, $hname, $sid, $tid, $dsid, $msgid,
                                $devid, $proto, $port, $dsname, $delta);
+                    }
                 }
             }
-
-            print "\n" . $_->{"input"} . " payload[" . $delta . "]"
-              if ( $verbose == 1 );
-
         } # for
 
     }    # else raw data
@@ -999,6 +1000,61 @@ sub get_platform {
 }
 
 
+# send_databulk - sending log files to Kronometrix
+#
+sub send_databulk {
+
+    my (
+        $curl,  $dest,   $sid,   $token, $dsid,
+        $msg_id, $dev_id, $proto, $port,  $dname, $delta
+    ) = @_;
+
+    my $response;
+
+    ## http://server:port/api/private/send_data_bulk
+    my $url = "$proto://" . $dest . ":" . $port . "/api/private/send_data_bulk";
+
+    my ($hash, $post);
+
+    if ( $msg_id =~ /a2bus/ ) {
+        $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
+        $post   = "$delta";
+    }
+
+    # we remake the content
+    $post        =~ s/\<br\>/\n/g;
+    my @values   = split(':', $post);
+    my $nodetime = gmtime();
+    $post        = "UTC Time: " . $nodetime . "\n" . $values[1];
+
+    writelog("info: send_databulk content: URL=$url HEADERS(token=$token msg=$msg_id SID=$sid DSID=$dsid DEVID=$dev_id) CONTENT=$post to be delivered")
+        if ( $verbose == 1 );
+
+    $response = $http->request('POST', $url, {
+        content => $post,
+        headers => { 'token' => "$token",
+                     'message-id' => "$msg_id",
+                     'subscription-id' => "$sid",
+                     'datasource-id' => "$dsid",
+                     'device-id' => "$dev_id",
+                     'content-type' => 'text/plain'},});
+
+    my $status = $response->{status};
+
+    if ( $verbose == 1 ) {
+
+        if ($response->{success} ) {
+            writelog("info: send_databulk - $msg_id data delivered");
+        } else {
+            writelog(
+            "error: send_databulk - cant send $msg_id krd data, transport error, CODE: $status");
+        }
+    }
+
+    return;
+}
+
+
 sub send_data {
 
 
@@ -1166,7 +1222,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.2.1, 2017-08-28 1355
+sender: 1.2.1, 2017-09-01 1222
 END
     exit 0;
 }

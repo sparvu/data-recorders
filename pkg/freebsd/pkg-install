@@ -58,6 +58,17 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
         fi
     fi
 
+    # make a copy of httprec.json
+    /opt/kronometrix/bin/actmsg | grep http >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        if [ -f /opt/kronometrix/etc/httprec.json ]; then
+            if [ ! -d /opt/kronometrix/backup ]; then
+                mkdir /opt/kronometrix/backup
+            fi
+            cp /opt/kronometrix/etc/httprec.json /opt/kronometrix/backup
+        fi
+    fi
+
     chown -R krmx:krmx /opt/kronometrix
 
     # install kronometrix service
