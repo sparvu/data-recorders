@@ -412,10 +412,10 @@ OPTIONS:
 
  FIELDS:
   #01 timestamp : seconds since Epoch, time
-  #02 request   : the request name
-  #03 siteid    : the site-id for request
-  #04 zone      : location, can be ICAO code, geo lat/lon, address
-  #05 protocol  : request protocol type 
+  #02 request   : the request name, string
+  #03 siteid    : the site-id for request, string
+  #04 zone      : location, can be ICAO code, geo lat/lon, address, string
+  #05 protocol  : request protocol type, string
 
 END
     exit 0;
