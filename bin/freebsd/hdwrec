@@ -139,7 +139,12 @@ while (1) {
 
     ## get stats
     my $arch    = $bhdw->get();
-    my $model   = $bmodel->get();
+
+    my $model   = 'NA';
+    if ($bmodel) {
+        $model   = $bmodel->get();
+    } else { $model = $arch; }
+
     my $os      = lc $bos->get();
     my $relos   = $brelos->get();
     my $disk    = $bdisk->get();
@@ -474,7 +479,7 @@ sub get_param {
 
 sub get_hypervisor {
     my ($input) = @_;
-    my $hp;
+    my $hp='NA';
  
     while (<$input>) {
         chomp;
@@ -556,7 +561,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.5, 2017-07-19 1508
+hdwrec: 1.1.6, 2017-09-08 1149
 END
     exit 0;
 }
