@@ -20,8 +20,17 @@
 
 ### Platform and OS
 OS_NAME=`uname -s | tr '[A-Z]' '[a-z]'`
-PT_NAME=`uname -m | tr '[A-Z]' '[a-z]'`
+MH_NAME=`uname -m | tr '[A-Z]' '[a-z]'`
+PL_NAME=`uname -p | tr '[A-Z]' '[a-z]'`
 HOSTNAME=`uname -n | sed 's/\..*//'`
+
+if [ "$PL_NAME" = "unknown" ]; then
+    PT_NAME=${MH_NAME}
+elif [ "$MH_NAME" = "arm" ]; then
+    PT_NAME=${PL_NAME}
+else
+    PT_NAME=${PL_NAME}
+fi
 
 ### USER ID
 case "$OS_NAME" in
