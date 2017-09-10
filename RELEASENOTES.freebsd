@@ -11,6 +11,11 @@ Bug Management System
 
 Releases
 
+  1.2.22 15-09-2017 Release
+    FreeBSD 11 ARMv6 support
+    WH1080 fixes for null connections
+    rs485rec improvements for FreeBSD 11 ARMv6
+
   1.2.16
     FreeBSD transport errors #159
 
