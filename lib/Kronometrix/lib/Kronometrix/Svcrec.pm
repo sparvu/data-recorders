@@ -108,9 +108,21 @@ sub process_sync {
         my $p = Net::Ping->new('tcp');
         $p->hires;
         $p->port_number($service->{port});
-        my ($status, $duration, $ip) =
-            $p->ping($service->{host}, $self->{timeout});
-        $p->close;
+        my ($status, $duration, $ip);
+        eval {
+            ($status, $duration, $ip) =
+                $p->ping($service->{host}, $self->{timeout});
+            $p->close;
+        };
+
+        if ($@) {
+            $self->write_log("Error: Failed sending ping to host "
+                . $service->{host}
+                . " port " . $service->{post}
+                . " : $@"
+            );
+            next;
+        }
 
         my %saved = (
             service => $service,
@@ -150,7 +162,17 @@ sub process_async {
 
             $p->hires;
             $p->port_number($port);
-            $p->ping($host, $self->{timeout});
+
+            eval {
+                $p->ping($host, $self->{timeout});
+            };
+            if ($@) {
+                $self->write_log("Error: Failed sending ping to host "
+                    . " $host port $port: $@"
+                );
+                next;
+            }
+            
             $pinged{"$host:$port"} = {
                 service => $service,
                 index   => $self->{index},

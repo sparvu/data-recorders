@@ -1,5 +1,9 @@
 Revision history for Perl extension Kronometrix.
 
+0.18 2017-09-11
+    - Fixed bug in Kronometrix.pm that affected the construction
+      of log file names by using File::Basename's fileparse function.
+    - Added exception handling while pinging in Kronometrix::Svcrec.
 0.17 2017-07-02
     - Removed the -s switch in async mode both in webrec and in
       svcrec.

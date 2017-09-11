@@ -49,7 +49,7 @@ my $num_concurrent_reqs = exists $opts{g} ? $opts{g} : 25;
 $num_concurrent_reqs    = 1 unless exists $opts{a};
 
 # logging option
-Kronometrix->log_to_file($kfile, 'svcrec') if $opts{l};
+Kronometrix->log_to_file($kfile, $0) if $opts{l};
 
 # process [interval [count]]
 my ( $interval, $loop_max );
