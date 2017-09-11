@@ -30,7 +30,7 @@ use POSIX qw(sysconf pause strftime);
 use Time::HiRes qw(setitimer ITIMER_REAL);
 
 # Debug
-use Data::Dumper;
+# use Data::Dumper;
 
 # Fine Offset WH1080
 my $VENDOR = 0x1941;
