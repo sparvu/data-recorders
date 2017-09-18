@@ -22,7 +22,7 @@ foreach my $file ('t/log/current/webrec.krd', 't/log/webrec.log') {
     note "File $file still exists!" if -e $file;
 }
 
-system('script/webrec', '-l');
+system 'perl', 'script/webrec', '-l';
 
 ok -e "t/log/current/webrec.krd",
     'Results file webrec.krd was created';

@@ -1,10 +1,11 @@
 package Kronometrix;
 
+use File::Basename;
 use JSON;
 use strict;
 use warnings;
 
-our $VERSION = 0.17;
+our $VERSION = 0.18;
 
 # Open JSON configuration file
 sub open_config {
@@ -45,7 +46,10 @@ sub open_config {
 
 
 sub log_to_file {
-    my ($proto, $kfile, $program) = @_;
+    my ($proto, $kfile, $prog_name) = @_;
+
+    # Get rid of path
+    my $program = fileparse($prog_name);
 
     # kronometrix.json config file
     my $kdata = $proto->open_config($kfile);
