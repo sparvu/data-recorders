@@ -18,6 +18,10 @@ Bug Management System
 
 Releases
 
+  1.2.22 20-09-2017 Release
+    WH1080 fixes for null connections
+    update libcurl 7.55.1
+
   1.2.16 30-08-2017 Release
     httprec improvements
     deb, rpm do not restore http configs

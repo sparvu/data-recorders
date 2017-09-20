@@ -572,10 +572,12 @@ sub a2trace {
                 my @r = @$row;
                 my $line;
                 foreach my $column (0..12) {
-                    if (defined $r[$column]) {chomp $r[$column]};
-                    $r[$column] = 'localhost' if ($r[$column] =~ m/::1/);
-                    $r[$column] =~ s/:/ /g;
-                    $line .= $r[$column] . "|";
+                    if (defined $r[$column]) {
+                        chomp $r[$column]};
+                        $r[$column] = 'localhost' if ($r[$column] =~ m/::1/);
+                        $r[$column] =~ s/:/ /g;
+                        $line .= $r[$column] . "|";
+                    }
                 }
                 $line .= '<br>';
                 push @busy, $line;
