@@ -5,19 +5,21 @@ use Kronometrix::Webrec::Queue;
 use POSIX qw(pause);
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use Getopt::Std;
+use File::Basename;
 use strict;
 use warnings;
 use feature ':5.20';
 
-our $VERSION = '1.2.6';
-our $LASTREV = '2017-07-02';
+our $VERSION = '1.2.7';
+our $LASTREV = '2017-09-20';
 
 ### Configuration variables
 
 my $cfile   = 'webrec.json';           # webloads configuration file
 my $kfile   = 'kronometrix.json';      # general configuration file
+my $recname = basename($0);
 my $osname  = "$^O";
-my $agent   = "Kronometrix/1.4.2 (kdr 1.1.3 webrec $osname)";
+my $agent   = "kdr/1.2.26 webrec $osname";
 my $timeout = 30;
 
 ### Process command line args
@@ -170,5 +172,5 @@ END
 
 # Revision - print revision and exit
 sub VERSION_MESSAGE {
-    print STDERR "$^0: $VERSION, $LASTREV\n";
+    print STDERR "$recname: $VERSION, $LASTREV\n";
 }
