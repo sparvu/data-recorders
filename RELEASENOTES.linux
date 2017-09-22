@@ -18,7 +18,8 @@ Bug Management System
 
 Releases
 
-  1.2.22 20-09-2017 Release
+  1.2.24 22-09-2017 Release
+    svcrec, webrec improvements
     WH1080 fixes for null connections
     update libcurl 7.55.1
 
