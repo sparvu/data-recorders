@@ -90,7 +90,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "kdr/1.2.24 sender $osname";
+my $agent = "kdr/1.2.26 sender $osname";
 
 # read configuration
 $cdata = open_config($cfile);
