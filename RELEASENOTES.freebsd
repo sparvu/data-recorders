@@ -18,6 +18,7 @@ Releases
     WH1080 fixes for null connections
     rs485rec improvements for FreeBSD 11 ARMv6
     libcurl 7.55.1 update
+    update perl 5.24.3
 
   1.2.16
     FreeBSD transport errors #159
