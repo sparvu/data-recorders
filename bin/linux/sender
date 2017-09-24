@@ -36,12 +36,15 @@ use HTTP::Response;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
-getopts('t:hvV') or usage();
+getopts('t:fhvV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
 # verbose flag
 my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+# force hostuuid
+my $force_uuid = defined $main::opt_f ? $main::opt_f : 0;
 
 # timeout
 my $timeout = defined $main::opt_t ? $main::opt_t : 25;
@@ -58,6 +61,7 @@ else {
 }
 
 ###  Variables
+$main::opt_f = 0;                # force option
 $main::opt_h = 0;                # help option
 $main::opt_V = 0;                # revision option
 my $cfile = 'kronometrix.json';  # configuration file
@@ -439,7 +443,14 @@ while (1) {
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                     
                             # no dsid in the lookup epd table
-                            my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'svc' . $sid;
+                            }
+ 
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
                                 $tblk{$kkey} = $dsid;
@@ -452,7 +463,14 @@ while (1) {
                             $dsname = $devtemp;
                             # no dsid in the lookup epd table
                             # my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'svc' . $sid;
+                            }
+ 
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
                                 $tblk{$kkey} = $dsid;
@@ -477,7 +495,14 @@ while (1) {
                     
                             # no dsid in the lookup epd table
                             #my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'svc' . $sid;
+                            }
+ 
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
                                 $tblk{$kkey} = $dsid;
@@ -490,7 +515,14 @@ while (1) {
                             $dsname = $devtemp;
                             # no dsid in the lookup epd table
                             # my $idl = 'svc' . $lid;
-                            my $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'svc' . $sid;
+                            }
+ 
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
                                 $tblk{$kkey} = $dsid;
@@ -601,7 +633,14 @@ while (1) {
                             ($dsname, $devid ) = split ( /_/, $devtemp );
                              
                             # no dsid in the lookup epd table
-                            my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'web' . $sid;
+                            }
+
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
                                 $tblk{$kkey} = $dsid;
@@ -614,7 +653,14 @@ while (1) {
 
                             $dsname = $devtemp;
                             # no dsid in the lookup epd table
-                            my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'web' . $sid;
+                            }
+ 
                             if (! exists($tblk{$kkey})) {
                                 $dsid = make_wdsid($kkey);
                                 $tblk{$kkey} = $dsid;
@@ -641,7 +687,14 @@ while (1) {
 
                         $dsname = $devtemp;
                         # no dsid in the lookup epd table
-                        my $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                        my $kkey;
+
+                        if ($force_uuid) {
+                            $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                        } else {
+                            $kkey = $dsname . $lid . 'web' . $sid;
+                        }
+
                         if (! exists($tblk{$kkey})) {
                             $dsid = make_wdsid($kkey);
                             $tblk{$kkey} = $dsid;
@@ -1215,10 +1268,11 @@ sub sha256krd {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: sender [-t secs] [-hvV] | [interval]
+USAGE: sender [-t secs] [-fhvV] | [interval]
 OPTIONS:
-  -t        : timeout in seconds
+  -f        : force host uuid for epd, dpd subscriptions
   -h        : help information
+  -t        : timeout in seconds
   -v        : verbose information
   -V        : release version
   interval  : maximum number of seconds between samples, default 60, will 
@@ -1233,7 +1287,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.2.1, 2017-08-30 0539
+sender: 1.2.3, 2017-09-24 1014
 END
     exit 0;
 }
