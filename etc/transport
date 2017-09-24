@@ -18,6 +18,12 @@
 #
 #  (http://www.gnu.org/copyleft/gpl.html)
 
+# Force dsid for epd, dpd data subscriptions
+#   1 - enabled, 0 - disabled
+FORCE=0
+#
+# DO NOT MODIFY BELOW THIS LINE
+#
 RETVAL=0
 OS_NAME=`uname -s`
 KRMX_PREFIX="/opt/kronometrix"
@@ -44,7 +50,11 @@ start() {
     if [ -f ${KRMX_LOG}/${TRANSPORT}.pid ]; then
         kill -0 `cat ${KRMX_LOG}/${TRANSPORT}.pid` >/dev/null 2>&1
         if [ $? -ne 0 ]; then
-            ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
+            if [ $FORCE -eq 1 ]; then
+                ${KRMX_BIN}/${TRANSPORT} -f -t5 10 >/dev/null 2>&1
+            else
+                ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
+            fi
             RETVAL=$?
         else
             RETVAL=1
@@ -52,7 +62,11 @@ start() {
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     else
         # no pid files
-        ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
+        if [ $FORCE -eq 1 ]; then
+            ${KRMX_BIN}/${TRANSPORT} -f -t5 10 >/dev/null 2>&1
+        else
+            ${KRMX_BIN}/${TRANSPORT} -t5 10 >/dev/null 2>&1
+        fi
         RETVAL=$?
         [ $RETVAL -eq 0 ] && echo "ok" || echo "failed"
     fi
