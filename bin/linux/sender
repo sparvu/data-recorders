@@ -1268,10 +1268,11 @@ sub sha256krd {
 # usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: sender [-t secs] [-hvV] | [interval]
+USAGE: sender [-t secs] [-fhvV] | [interval]
 OPTIONS:
-  -t        : timeout in seconds
+  -f        : force host uuid for epd, dpd subscriptions
   -h        : help information
+  -t        : timeout in seconds
   -v        : verbose information
   -V        : release version
   interval  : maximum number of seconds between samples, default 60, will 
@@ -1286,7 +1287,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.2.1, 2017-08-30 0539
+sender: 1.2.3, 2017-09-24 1014
 END
     exit 0;
 }
