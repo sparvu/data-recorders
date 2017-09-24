@@ -13,11 +13,14 @@ Bug Management System
 
 Releases
 
+  1.2.26 25-09-2017 Release
+    transport force mode epd, dpd
+    svcrec, webrec improvements
+
   1.2.12 04-08-2017 Release
     STALL fixes
     hdwrec inventory improvements
     update perl 5.22.3
-
 
   1.1.2 30-10-2016 Release
     direc errors opening certain directories #116

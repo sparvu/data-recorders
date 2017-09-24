@@ -18,7 +18,8 @@ Bug Management System
 
 Releases
 
-  1.2.24 22-09-2017 Release
+  1.2.26 25-09-2017 Release
+    transport force mode epd, dpd
     svcrec, webrec improvements
     WH1080 fixes for null connections
     update libcurl 7.55.1

@@ -105,7 +105,7 @@ my $dname = basename($0);
 # osname
 my $osname = "$^O";
 $osname    = "win" if $osname eq "MSWin32";
-my $agent = "kdr/1.2.12 sender $osname";
+my $agent = "kdr/1.2.26 sender $osname";
 
 # cert, website, service lookup table
 my %tblk;

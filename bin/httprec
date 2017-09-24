@@ -94,7 +94,7 @@ if ( $interval =~ /\./ ) {
 
 # osname
 my $osname = "$^O";
-my $agent = "kdr/1.2.16 httprec $osname";
+my $agent = "kdr/1.2.26 httprec $osname";
 
 # read configuration
 $cdata = open_config($cfile);
