@@ -12,6 +12,7 @@ Bug Management System
 Releases
 
   1.2.26 27-09-2017 Release
+    DigitalOcean NIC name #162
     transport force mode epd, dpd
     svcrec, webrec improvements
     FreeBSD 11 ARMv6 support
