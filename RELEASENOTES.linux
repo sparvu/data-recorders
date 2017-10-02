@@ -18,6 +18,9 @@ Bug Management System
 
 Releases
 
+  1.2.28 03-10-2017 Release
+    CloudLinux CageFS and diskrec #163
+
   1.2.26 27-09-2017 Release
     transport force mode epd, dpd
     svcrec, webrec improvements
