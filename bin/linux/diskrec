@@ -432,7 +432,8 @@ sub get_fs {
              ($fs->format($_) eq 'mqueue') or
              ($fs->format($_) eq 'tracefs') or
              ($fs->format($_) eq 'pstore') or
-             ($fs->format($_) eq 'selinuxfs') ) { 
+             ($fs->format($_) eq 'selinuxfs') or
+             ($fs->mount_point($_) =~ /cagefs-skeleton/ ) ) {
             next;
         }
 
@@ -530,7 +531,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.7, 2017-08-01 0016
+diskrec: 1.1.8, 2017-10-03 2318
 END
     exit 0;
 }

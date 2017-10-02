@@ -306,13 +306,13 @@ while (1) {
     }
 
     # fetch NICS, reset here if NIC is removed/added
-    my $num_nic = 0;
-    foreach my $i (split /, /, $nlxs->get_interfaces ) {
+    #my $num_nic = 0;
+    #foreach my $i (split /, /, $nlxs->get_interfaces ) {
         # print "Interface: $i\n";
 
         # skip here some interfaces
-        $num_nic++ if $i !~ /lo/ and $i !~ /vif/;
-    }
+    #    $num_nic++ if $i !~ /lo/ and $i !~ /vif/;
+    #}
 
     my $memtotal  = $nlxs->get_mem;
     my $swaptotal = $nlxs->get_swap;
@@ -338,6 +338,9 @@ while (1) {
         }
         $k++;
     }
+
+    # NIC count
+    my $num_nic = $k;
 
     if ($logging) {
         # print metrics
@@ -577,7 +580,8 @@ sub get_fs {
              ($fs->format($_) eq 'mqueue') or
              ($fs->format($_) eq 'tracefs') or
              ($fs->format($_) eq 'pstore') or
-             ($fs->format($_) eq 'selinuxfs') ) { 
+             ($fs->format($_) eq 'selinuxfs') or
+             ($fs->mount_point($_) =~ /cagefs-skeleton/ ) ) { 
             next;
         }
 
@@ -679,7 +683,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.6, 2017-08-11 1052
+hdwrec: 1.1.7, 2017-10-02 2357
 END
     exit 0;
 }
