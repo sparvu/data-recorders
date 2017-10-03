@@ -92,6 +92,11 @@ sub get_datafile {
     my $schilds    = 0;
     my @d;
 
+    if (! defined $data->{'message'}) {
+        print "Error: no valid message, check kronometrix.json\n";
+        exit 1;
+    }
+
     my @temp = @{ $data->{'message'} };
 
     # load d array
