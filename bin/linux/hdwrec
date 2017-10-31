@@ -218,8 +218,7 @@ while (1) {
 
             my ($mj, $mi);
 
-            my $st = stat($filesystem) or
-                die "Can't stat $filesystem: $!";
+            my $st = stat($filesystem) or next;
 
             if (S_ISDIR($st->mode)) {
                 ($mj, $mi) = dev_split( $st->dev );
@@ -683,7 +682,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.7, 2017-10-02 2357
+hdwrec: 1.1.8, 2017-10-31 1256
 END
     exit 0;
 }
