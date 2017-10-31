@@ -169,7 +169,7 @@ while ( 1 ) {
 
         next if ( exists $sp{$d} );
 
-        #print "Disk: $d\n";
+        # print "Disk: $d\n";
 
         my $print_time = time();
 
@@ -433,6 +433,8 @@ sub get_fs {
              ($fs->format($_) eq 'tracefs') or
              ($fs->format($_) eq 'pstore') or
              ($fs->format($_) eq 'selinuxfs') or
+             ($fs->mount_point($_) =~ /media\/floppy/ ) or
+             ($fs->mount_point($_) =~ /dev\/\.static/ ) or
              ($fs->mount_point($_) =~ /cagefs-skeleton/ ) ) {
             next;
         }
@@ -531,7 +533,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.8, 2017-10-03 2318
+diskrec: 1.1.9, 2017-10-31 1311
 END
     exit 0;
 }
