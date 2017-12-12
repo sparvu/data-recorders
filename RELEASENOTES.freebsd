@@ -13,6 +13,7 @@ Releases
 
   1.3.4 29-11-2017 Release
     AWS EC2 awsrec recorder
+    Database dbrec recorder: Redis
     OpenSSL 1.1.0g
     CPAN update
 
