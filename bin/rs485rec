@@ -26,7 +26,6 @@ use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Tie::IxHash;
-use Device::Modbus::RTU::Client;
 #use Data::Dumper;
 
 ###  Process command line args
@@ -66,6 +65,7 @@ my $baudrate;                       # serial baudrate config
 my $timeout;                        # serial timeout config
 my $parity;                         # serial line parity config
 my $stopbits;                       # serial stopbits config
+my $databits;                       # serial databits config
 my ($cdata, $kdata);                # configuration data
 my ( $baselog, $curlog, $rlog);
 
@@ -99,6 +99,8 @@ if ( $interval =~ /\./ ) {
 $cdata = open_config($cfile);
 
 my $log;
+my $MODBUS_RTU   = 0;
+my $MODBUS_ASCII = 0;
 
 # workloads
 tie my %devices, "Tie::IxHash";
@@ -143,21 +145,71 @@ if($verbose) {
 while (1) {
 
     my $client;
+
+    # get it as verbose
+    if($verbose) {
+        if ($logging) {
+            print $log "Client type: RTU: $MODBUS_RTU, ASCII: $MODBUS_ASCII\n";
+        } else {
+            print "Client type: RTU: $MODBUS_RTU, ASCII: $MODBUS_ASCII\n";
+        }
+    }
+
     eval {
-        $client = Device::Modbus::RTU::Client->new(
-            port     => $port,
-            baudrate => $baudrate,
-            timeout  => $timeout,
-            parity   => $parity,
-            stopbits => $stopbits
-         );
+        
+        if ($MODBUS_RTU) {
+
+            use Device::Modbus::RTU::Client;
+
+            if (defined $databits) {
+                $client = 
+                  Device::Modbus::RTU::Client->new( port     => $port,
+                                                    baudrate => $baudrate,
+                                                    timeout  => $timeout,
+                                                    parity   => $parity,
+                                                    databits => $databits,
+                                                    stopbits => $stopbits
+                                                  );
+            } else {
+                $client = 
+                  Device::Modbus::RTU::Client->new( port     => $port,
+                                                    baudrate => $baudrate,
+                                                    timeout  => $timeout,
+                                                    parity   => $parity,
+                                                    stopbits => $stopbits
+                                                  );
+            }
+ 
+        } elsif ($MODBUS_ASCII) {
+
+            use Device::Modbus::ASCII::Client;
+
+            if (defined $databits) {
+                $client =
+                  Device::Modbus::ASCII::Client->new( port     => $port,
+                                                      baudrate => $baudrate,
+                                                      timeout  => $timeout,
+                                                      parity   => $parity,
+                                                      databits => $databits,
+                                                      stopbits => $stopbits
+                                                    );
+            } else {
+                $client =
+                  Device::Modbus::ASCII::Client->new( port     => $port,
+                                                      baudrate => $baudrate,
+                                                      timeout  => $timeout,
+                                                      parity   => $parity,
+                                                      stopbits => $stopbits
+                                                    );
+            }
+        }
     };
 
     if ($@) {
         if ($logging) {
-            write_log ("error: cannot initialize RTU client port $port, check rs485rec.json");
+            write_log ("error: cannot initialize MODBUS Client port $port, check rs485rec.json");
         } else {
-            print "error: cannot initialize RTU client port $port, check rs485rec.json\n";
+            print "error: cannot initialize MODBUS Client port $port, check rs485rec.json\n";
         }
     } else {
 
@@ -167,7 +219,7 @@ while (1) {
             my ($rawfile, $dev_name, $modbus_id, $modbus_func, $desc) = split( /:/, $key );
             my @values = split( /:/, $value );
             eval {
-                modbus_rtu($client, $rawfile, $dev_name, $modbus_id, $modbus_func, @values);
+                exec_modbus($client, $rawfile, $dev_name, $modbus_id, $modbus_func, @values);
             };
 
             if ($@) {
@@ -257,74 +309,94 @@ sub get_devices {
     my ($data) = @_;
     tie my %devs, "Tie::IxHash";
 
-    my @temp = @{ $data->{'modbus-rtu'} };
+    my @proto = ('modbus-ascii', 'modbus-rtu');
 
-    for my $f (@temp) {
-        my ($sid, $tid, $dsid);
+    for my $protocol (@proto) {
 
-        $port      = $f->{'port'};
-        $baudrate  = $f->{'baudrate'};
-        $timeout   = $f->{'timeout'};
-        $parity    = $f->{'parity'};
-        $stopbits  = $f->{'stopbits'};
+        # skip protocols if not defined
+        next if (! defined $data->{$protocol});
 
-        my @reqs = @{ $f->{'iaq'} };
+        $MODBUS_RTU = 1 if ($protocol eq 'modbus-rtu');
+        $MODBUS_ASCII = 1 if ($protocol eq 'modbus-ascii');
 
-        for my $dev (@reqs) {
-            my $unit    = $dev -> {'unit'};
-            my $vendor  = $dev -> {'vendor'};
-            my $model   = $dev -> {'model'};
-            my $mf      = $dev -> {'function'};
+        my @temp = @{ $data->{$protocol} };
 
-            my @registers = @{ $dev->{'data'} };
+        for my $f (@temp) {
+            my ($sid, $tid, $dsid);
 
-            my $k=0;
-            my $params;
-            for my $dt (@registers) {
-                my ($dname, $dtype);
-                my $dreg; my $dlen; my $dfct;
+            $port      = $f->{'port'};
+            $baudrate  = $f->{'baudrate'};
+            $timeout   = $f->{'timeout'};
+            $parity    = $f->{'parity'};
+            if (defined $f->{'databits'}) {
+                $databits = $f->{'databits'};
+            }
+            $stopbits  = $f->{'stopbits'};
 
-                if ( $dt -> {'type'} eq 'uint16' or
-                     $dt -> {'type'} eq 'floatinv'  ) {
+            my @lmoids = ('iaq', 'aq');
 
-                    $dname = $dt -> {'name'};
-                    $dtype = $dt -> {'type'};
+            for my $lmoid (@lmoids) {
+                next if (! defined $f->{$lmoid});
+                my @reqs = @{ $f->{$lmoid} };
 
-                    $dreg = $dt -> {'register'};
-                    $dlen = $dt -> {'length'};
-                    $dfct = $dt -> {'factor'};
+                for my $dev (@reqs) {
+                    my $unit    = $dev -> {'unit'};
+                    my $vendor  = $dev -> {'vendor'};
+                    my $model   = $dev -> {'model'};
+                    my $mf      = $dev -> {'function'};
+
+                    my @registers = @{ $dev->{'data'} };
+
+                    my $k=0;
+                    my $params;
+                    for my $dt (@registers) {
+                        my ($dname, $dtype);
+                        my $dreg; my $dlen; my $dfct;
+
+                        if ( $dt -> {'type'} eq 'uint16' or
+                             $dt -> {'type'} eq 'floatinv'  ) {
+
+                            $dname = $dt -> {'name'};
+                            $dtype = $dt -> {'type'};
+
+                            $dreg = $dt -> {'register'};
+                            $dlen = $dt -> {'length'};
+                            $dfct = $dt -> {'factor'};
              
-                    $dname .=  '_' . $dtype . '_' . $dreg . '_' . $dlen . '_' . $dfct;
+                            $dname .=  '_' . $dtype . '_' . $dreg . '_' . $dlen . '_' . $dfct;
 
-                } elsif ( $dt -> {'type'} eq 'virtual' ) {
+                        } elsif ( $dt -> {'type'} eq 'virtual' ) {
 
-                    $dname = $dt -> {'name'};
-                    $dtype = $dt -> {'type'};
-                    my $did = $dt -> {'id'};
-                    my @args = @{ $dt->{'args'} };
-                    $dname .=  '_' . $dtype . '_' . $did . '_'  . join("_", @args);
+                            $dname = $dt -> {'name'};
+                            $dtype = $dt -> {'type'};
+                            my $did = $dt -> {'id'};
+                            my @args = @{ $dt->{'args'} };
+                            $dname .=  '_' . $dtype . '_' . $did . '_'  . join("_", @args);
 
-                } elsif ( $dt -> {'type'} eq 'NA' ) {
+                        } elsif ( $dt -> {'type'} eq 'NA' ) {
 
-                    $dname = $dt -> {'name'};
-                    $dtype = $dt -> {'type'};
-                    $dname .=  '_' . $dtype;
+                            $dname = $dt -> {'name'};
+                            $dtype = $dt -> {'type'};
+                            $dname .=  '_' . $dtype;
  
-                } else { next; }
-
-                if ($k > 0) {
-                    $params .= ':' . $dname;
-                } else {
-                    $params .= $dname;
+                        } else { next; }
+    
+                        if ($k > 0) {
+                            $params .= ':' . $dname;
+                        } else {
+                            $params .= $dname;
+                        }
+    
+                        $k++;
+                    }
+                    my $rfile = $lmoid . '_' . $model . 'rec';
+                    my $devname = $model . '_' . $unit;
+                    my $keyapp = $rfile . ':' . $devname . ':'  . $unit . ':' . $mf . ':' . $vendor;
+                    my $hvalue = $params;
+                    $devs{$keyapp} = $hvalue;
                 }
 
-                $k++;
-            }
-            my $rfile = 'iaq' . '_' . $model . 'rec';
-            my $devname = $model . '_' . $unit;
-            my $keyapp = $rfile . ':' . $devname . ':'  . $unit . ':' . $mf . ':' . $vendor;
-            my $hvalue = $params;
-            $devs{$keyapp} = $hvalue;
+            } # iaq, aq
         }
     }
 
@@ -393,9 +465,9 @@ sub getval {
 }
 
 
-# MODBUS RTU Client communication
+# MODBUS Client communication
 #
-sub modbus_rtu {
+sub exec_modbus {
 
     my ( $rtu, $rawfile, $name, $modbus_id, $modbus_f, @vals ) = @_;
 
@@ -569,36 +641,68 @@ OPTIONS:
   -V        : release version
   interval  : maximum number of seconds between samples
 
- MESSAGES
+ DATA MESSAGES
 
- INDOOR AIR QUALITY
-  * iaq_g01 - Tongdy G01 IAQ
-    #01 timestamp : seconds since Epoch, time
-    #02 devid     : the device id, string
-    #03 ta        : air termperature, in C, number
-    #04 rh        : relative humidity, in %, number
-    #05 td        : dew point, in C, number
-    #06 co2       : CO2 level, in ppm, number
-    #07 voc       : volatile organic compound, in ppm, number
+ *** OUTDOOR AIR QUALITY ***
 
-  * iaq_gmw90 - Vaisala GMW90 IAQ
-    #01 timestamp : seconds since Epoch, time
-    #02 devid     : the device id, string
-    #03 ta        : air termperature, in C, number
-    #04 rh        : relative humidity, in %, number
-    #05 td        : dew point, in C, number
-    #06 co2       : CO2 level, in ppm, number
+   Vaisala AQT400 AQ (aqd_aqt400)
+    #01 Timestamp : Seconds since Epoch, time
+    #02 Devid     : The device id, string
+    #03 NO2       : Nitrite ion level, in ppb, number
+    #04 SO2       : Sulphur dioxide level, in ppb, number
+    #05 CO        : Carbon monoxide level, in ppb, number
+    #06 EMPTY     : Future usage
+    #07 H2S       : Hydrogen Sulfide lvel, in ppb, number
+    #08 O3        : Ozone level, in ppb, number
+    #09 NO        : Nitrogen oxide level, in ppb, number
+    #10 VOC       : Volatile organic compound level, in ppb, number
+    #11 PM25      : PM2.5 level, in mcg/m3, number
+    #12 PM10      : PM10 level, in mcg/m3, number
+    #13 Ta        : Air termperature, in C, number
+    #14 Rh        : Relative humidity, in %, number
+    #15 P         : Air pressure, in mbar, number
+
+ *** INDOOR AIR QUALITY ***
+
+   Tongdy MSD-1816 IAQ (iaq_g01)
+    #01 Timestamp : Seconds since Epoch, time
+    #02 Devid     : The device id, string
+    #03 Ta        : Air termperature, in C, number
+    #04 Rh        : Relative humidity, in %, number
+    #05 Td        : Dew point, in C, number
+    #06 CO2       : CO2 level, in ppm, number
+    #07 TVOC      : Total volatile organic compound, in mg/m3, number
+    #08 PM25      : Particulate matter 2.5 micrometers, in mcg/m3, number
+    #09 PM10      : Particulate matter 10 micrometers, in mcg/m3, number
+
+   Tongdy G01 IAQ (iaq_g01)
+    #01 Timestamp : Seconds since Epoch, time
+    #02 Devid     : The device id, string
+    #03 Ta        : Air termperature, in C, number
+    #04 Rh        : Relative humidity, in %, number
+    #05 Td        : Dew point, in C, number
+    #06 CO2       : CO2 level, in ppm, number
+    #07 VOC       : Volatile organic compound, in ppm, number
+
+   Vaisala GMW90 IAQ (iaq_gmw90)
+    #01 Timestamp : Seconds since Epoch, time
+    #02 Devid     : The device id, string
+    #03 Ta        : Air termperature, in C, number
+    #04 Rh        : Relative humidity, in %, number
+    #05 Td        : Dew point, in C, number
+    #06 CO2       : CO2 level, in ppm, number
 
  NOTES
  rs485rec is a multi-message data recorder, capable to handle multiple 
  devices on RS485 wire, using different protocols, like: MODBUS RTU, 
- MODBUS TCP, MODBUS ASCII. Currently, rs485rec does support MODBUS RTU.
+ MODBUS TCP or MODBUS ASCII.
 
  The recorder uses rs485rec.json configuration file, where all data messages
  are defined. 
 
  UNITS
   ppm    - parts per million
+  mg/m3  - milligram per cubic meter
   mcg/m3 - microgram per cubic meter
 END
     exit 0;
@@ -607,7 +711,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.1.3, 2016-12-12 1740
+rs485rec: 1.2.1, 2017-12-18 0251
 END
     exit 0;
 }
