@@ -11,7 +11,7 @@
         {
           "unit": 1,
           "vendor": "vaisala",
-          "model": "aqt400",
+          "model": "aqt420",
           "description": "Vaisala AQT Series",
           "function": 3,
           "data": [

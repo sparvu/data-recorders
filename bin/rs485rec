@@ -645,17 +645,17 @@ OPTIONS:
 
  *** OUTDOOR AIR QUALITY ***
 
-   Vaisala AQT400 AQ (aqd_aqt400)
+   Vaisala AQT420 AQ (aq_aqt420)
     #01 Timestamp : Seconds since Epoch, time
     #02 Devid     : The device id, string
-    #03 NO2       : Nitrite ion level, in ppb, number
-    #04 SO2       : Sulphur dioxide level, in ppb, number
-    #05 CO        : Carbon monoxide level, in ppb, number
+    #03 NO2       : Nitrite ion level, in ppm, number
+    #04 SO2       : Sulphur dioxide level, in ppm, number
+    #05 CO        : Carbon monoxide level, in ppm, number
     #06 EMPTY     : Future usage
-    #07 H2S       : Hydrogen Sulfide lvel, in ppb, number
-    #08 O3        : Ozone level, in ppb, number
-    #09 NO        : Nitrogen oxide level, in ppb, number
-    #10 VOC       : Volatile organic compound level, in ppb, number
+    #07 H2S       : Hydrogen Sulfide level, in ppm, number
+    #08 O3        : Ozone level, in ppm, number
+    #09 NO        : Nitrogen oxide level, in ppm, number
+    #10 VOC       : Volatile organic compound level, in ppm, number
     #11 PM25      : PM2.5 level, in mcg/m3, number
     #12 PM10      : PM10 level, in mcg/m3, number
     #13 Ta        : Air termperature, in C, number
@@ -711,7 +711,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.2.1, 2017-12-18 0251
+rs485rec: 1.2.2, 2017-12-18 1143
 END
     exit 0;
 }

@@ -195,8 +195,8 @@
       "domain" : [ "dpd", "epd" ]
     },
     {
-      "name"   : "aq_aqt400",
-      "file"   : "aq_aqt400rec.krd",
+      "name"   : "aq_aqt420",
+      "file"   : "aq_aqt420rec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "aqd" ]
