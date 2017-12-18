@@ -656,15 +656,15 @@ OPTIONS:
     #08 O3        : Ozone level, in ppm, number
     #09 NO        : Nitrogen oxide level, in ppm, number
     #10 VOC       : Volatile organic compound level, in ppm, number
-    #11 PM25      : PM2.5 level, in mcg/m3, number
-    #12 PM10      : PM10 level, in mcg/m3, number
+    #11 PM25      : PM2.5 level, in ug/m3, number
+    #12 PM10      : PM10 level, in ug/m3, number
     #13 Ta        : Air termperature, in C, number
     #14 Rh        : Relative humidity, in %, number
     #15 P         : Air pressure, in mbar, number
 
  *** INDOOR AIR QUALITY ***
 
-   Tongdy MSD-1816 IAQ (iaq_g01)
+   Tongdy MSD-1618 IAQ (iaq_msd1618)
     #01 Timestamp : Seconds since Epoch, time
     #02 Devid     : The device id, string
     #03 Ta        : Air termperature, in C, number
@@ -672,8 +672,8 @@ OPTIONS:
     #05 Td        : Dew point, in C, number
     #06 CO2       : CO2 level, in ppm, number
     #07 TVOC      : Total volatile organic compound, in mg/m3, number
-    #08 PM25      : Particulate matter 2.5 micrometers, in mcg/m3, number
-    #09 PM10      : Particulate matter 10 micrometers, in mcg/m3, number
+    #08 PM25      : Particulate matter 2.5 micrometers, in ug/m3, number
+    #09 PM10      : Particulate matter 10 micrometers, in ug/m3, number
 
    Tongdy G01 IAQ (iaq_g01)
     #01 Timestamp : Seconds since Epoch, time
@@ -703,7 +703,7 @@ OPTIONS:
  UNITS
   ppm    - parts per million
   mg/m3  - milligram per cubic meter
-  mcg/m3 - microgram per cubic meter
+  ug/m3 - microgram per cubic meter
 END
     exit 0;
 }
