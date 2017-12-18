@@ -1,10 +1,122 @@
 {
+  "modbus-ascii" : [
+    {
+      "port" : "/dev/cuaU0",
+      "baudrate" : 9600,
+      "parity" : "even",
+      "stopbits" : 1,
+      "databits" : 7,
+      "timeout" : 10,
+      "aq" : [
+        {
+          "unit": 1,
+          "vendor": "vaisala",
+          "model": "aqt400",
+          "description": "Vaisala AQT Series",
+          "function": 3,
+          "data": [
+            {
+              "name": "no2",
+              "type": "uint16",
+              "register": 0,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "so2",
+              "type": "uint16",
+              "register": 1,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "co",
+              "type": "uint16",
+              "register": 2,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "extra",
+              "type": "uint16",
+              "register": 3,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "h2s",
+              "type": "uint16",
+              "register": 4,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "o3",
+              "type": "uint16",
+              "register": 5,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "no",
+              "type": "uint16",
+              "register": 6,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "voc",
+              "type": "uint16",
+              "register": 7,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "pm25",
+              "type": "uint16",
+              "register": 8,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "pm10",
+              "type": "uint16",
+              "register": 9,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "ta",
+              "type": "uint16",
+              "register": 10,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "rh",
+              "type": "uint16",
+              "register": 11,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "p",
+              "type": "uint16",
+              "register": 12,
+              "length": 1,
+              "factor": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "modbus-rtu" : [
     {
-      "port" : "/dev/ttyUSB0",
+      "port" : "/dev/cuaU0",
       "baudrate" : 19200,
       "parity" : "none",
-      "stopbits" : 2,
+      "stopbits" : 1,
       "timeout" : 10,
       "iaq" : [
         {

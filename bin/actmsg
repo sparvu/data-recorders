@@ -104,7 +104,7 @@ sub get_datafile {
 
         next if ($f->{'status'} ne 'active');
 
-        if ($f->{'name'} =~ /iaq/) {
+        if ($f->{'name'} =~ /aq|iaq/) {
             next if ($rs485_sem == 1);
             push @d, 'rs485';
             $rs485_sem=1; 
