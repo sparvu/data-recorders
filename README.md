@@ -60,7 +60,7 @@ A data source, is described as any system connected to a public or private netwo
 
 You can manually install Kronometrix data recording on several operating systems, or you can open your free account,  http://kronometrix.io/register to automatically provision and visualize your data. 
 
-## Linux/UNIX
+## Linux
 
 ### RPM based systems
 
@@ -79,6 +79,8 @@ You can manually install Kronometrix data recording on several operating systems
     
 * Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
 
+## UNIX
+
 ### FreeBSD systems
 
   * Download packages
@@ -88,7 +90,6 @@ You can manually install Kronometrix data recording on several operating systems
     
   * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
 
- 
 ## Windows
 
 ### Windows 2008, 2012, 2016 systems
