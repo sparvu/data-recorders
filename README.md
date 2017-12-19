@@ -85,7 +85,7 @@ You can manually install Kronometrix data recording on several operating systems
 
   * Download packages
     * Intel/AMD 64bit: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x64.txz
-    * Intel/AMD 64bit: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x86.txz
+    * Intel/AMD 32bit: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x86.txz
     * ARM 32bit: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-arm.txz
     
   * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
