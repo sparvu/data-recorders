@@ -3,30 +3,28 @@
 
 # Description
 
-A simple and efficient set of data recorders and transport utilities for ICT, Environmental Monitoring, Meteorology and IoT industries, responsible to record top essential performance metrics, save raw data and transport it for further analysis. 
+A simple and efficient set of data recorders and transport utilities for ICT, Environmental Monitoring, Meteorology and IoT , designed to record top essential performance metrics, save raw data and send it for further analysis. 
 
-## Time Series
-All recorded observations we call them raw data. Raw data is produced by a monitoring agent, part of a data source.  This set of data is not modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format.
+## Raw Data
+All recorded observations are stored as raw data. Raw data is produced by a monitoring agent, a system or a sensor, data which is oroginal and has not been modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format, like CSV format.
 
 Time series let us understand what has happened in past and look in the future, using various statistical models. In addition , having access to these historical time series will help us to build a simple capacity planning model.
 
 
 ## Data Message
-All collected metrics over time make a data message. There can be many types of data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data from a meteorological station, or water cubic meters per hour from an water pump. A data message belongs to a data source. All these metrics, observations are ultimately the data message. To describe such messages we built a library of monitoring objects documented here: [library of monitoring objects](https://github.com/sparvu/lmo)
+All collected metrics over time are combined as a data message. There can be many types of data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data from a meteorological station, or water cubic meters per hour from an water pump. A data message is in direct relation to a data source. To describe one or many data messages, we have built a library of monitoring objects, (LMO) documented here: [library of monitoring objects](https://github.com/sparvu/lmo)
 
 
 ## Data Source
-A data source, is described as any system connected to a public or private network with a valid IPv4 or IPv6 address like, a server, a data logger, a graphic workstation, an iPad or an IoT sensor capable to send data. there can be many types of data sources, each with a number of data messages:
+A data source, is described as any system connected to a public or private network with a valid IPv4 or IPv6 address like, a server, a data logger, a graphic workstation, an iPad or an IoT sensor capable to send and receive data. There can be many types of data sources, each having one or many of data messages:
 
- * a computer system, with one or many data messages: overall cpu utilization, disk IO, network IO, or per device metrics 
+ * Computer system: overall cpu utilization, disk IO, network IO, or per device metrics (Linux, FreeBSD)
  
- * a HTTP server, describing performance metrics, like throughput and utilization along with its inventory data
+ * HTTP server: throughput and utilization along with its inventory data (Nginx, Apache)
  
- * an website, keeping track of the performance response time and availability
+ * Enterprise service: response time performance and its availability (SMTPS, IMAP, HTTP, LDAP)
  
- * an automatic weather station, capable to send data over a TCP/IP network without an additional computer system attached
- 
- * an intelligent IoT sensor
+ * Automatic weather station: air temperature and pressure, humidity, wind speed and direction 
  
 
 ## Supported Industries
@@ -50,12 +48,12 @@ A data source, is described as any system connected to a public or private netwo
 
 ### Environmental Monitoring, IoT
 
- * rs485rec - RS485 MODBUS RTU recorder. Currently supporting Vaisala GMW90, Tongdy G01, Tongdy MSD IAQ  
-
+ * rs485rec - RS485 MODBUS ASCII, MODBUS RTU, MODBUS TCP recorder
+ 
 
 ### General Meteorology
 
- * wsrec - Weather data recorder. Currently supporting> WH1080, WH1081, WH1090, WH20xx family of devices
+ * wsrec - Weather data recorder. Currently supporting: WH1080, WH1081, WH1090, WH20xx family of devices
   
 
 # Get started
@@ -66,17 +64,28 @@ You can manually install Kronometrix data recording on several operating systems
 
 ### RPM based systems
 
-  * Download package http://www.kronometrix.org/pkgs/linux/kdr-stable-rhel-x64.rpm
+  * Download packages 
+    * Intel/AMD 64bit: http://www.kronometrix.org/pkgs/linux/kdr-stable-rhel-x64.rpm
+    * Intel/AMD 32bit: http://www.kronometrix.org/pkgs/linux/kdr-stable-rhel-x86.rpm
+        
   * Install package ```# rpm -ihv kdr-stable-rhel-x64.rpm``` 
   
 ### DEB based systems
 
-  * Download package http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x64.deb
-  * Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
+  * Download packages
+    * Intel/AMD 64bit: http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x64.deb
+    * Intel/AMD 32bit: http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x86.deb
+    * ARM 32bit: http://www.kronometrix.org/pkgs/linux/kdr-stable-raspbian-arm.deb
+    
+* Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
 
 ### FreeBSD systems
 
-  * Download package http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x64.txz
+  * Download packages
+    * Intel/AMD 64bit: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x64.txz
+    * Intel/AMD 64bit: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x86.txz
+    * ARM 32bit: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-arm.txz
+    
   * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
 
  
@@ -84,8 +93,10 @@ You can manually install Kronometrix data recording on several operating systems
 
 ### Windows 2008, 2012, 2016 systems
 
-  * Download package http://www.kronometrix.org/pkgs/win/kdr-stable-windows-x64.exe
-  * Execute kdr-stable-windows-x64.exe
+  * Download package
+    * Intel/AMD 64bit: http://www.kronometrix.org/pkgs/win/kdr-stable-windows-x64.exe
+
+* Execute kdr-stable-windows-x64.exe
 
 
 # Support
