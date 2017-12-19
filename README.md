@@ -1,5 +1,5 @@
 <img src="https://github.com/kronometrix/recording/blob/master/k-logo.png" align="left" height="35" width="275" />
-<br/><br/>
+<br/>
 
 # Description
 
