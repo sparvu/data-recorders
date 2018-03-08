@@ -1,21 +1,21 @@
 #!/bin/sh
 #
 ### BEGIN INIT INFO
-# Provides:          kdr_agents
+# Provides:          kdr_rec
 # Required-Start:    $local_fs $network
 # Required-Stop:     $local_fs
 # Default-Start:     2 3 5
 # Default-Stop:      0 1 6
-# Short-Description: kdr agents
-# Description:       kronometrix data recording agents
+# Short-Description: kdr module
+# Description:       kronometrix data recording module
 ### END INIT INFO
 #
 # chkconfig: 2345 96 10
-# description: kronometrix data recording agents
+# description: kronometrix data recording
 #
-# /etc/init.d/kdr_agents
+# /etc/init.d/kdr_rec
 #
-#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2018 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -38,7 +38,7 @@ RETVAL=0
 OS_NAME=`uname -s`
 
 BASEDIR="/opt/kronometrix/etc"
-KRMX_SVC="${BASEDIR}/agents"
+KRMX_SVC="${BASEDIR}/rec"
 KRMX_USER="krmx"
 
 # basedir test
