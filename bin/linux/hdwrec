@@ -140,18 +140,7 @@ while (1) {
     $host =~ s/\..*$// if $host =~ /\./;
 
     # hypervisor type
-    my $hypervisor = "NA";
-
-    if (-e "/sys/hypervisor/type") {
-        open my $hv, "<", "/sys/hypervisor/type"
-            or die "error: cannot find hypervisor type file: $!\n";
-        while (<$hv>) {
-                chomp;
-                $hypervisor = $_;
-            }
-            close $hv;
-        
-    }
+    my $hypervisor = get_hypervisor();
 
     my $arch = $nlxs->get_arch;
     my $rels = $nlxs->get_release;
@@ -525,6 +514,34 @@ sub get_lsb {
 }
 
 
+sub get_hypervisor {
+
+    my $hvisor         = "NA";
+    my $systemd_hvisor = "/usr/bin/systemd-detect-virt";
+
+    if (-e "/sys/hypervisor/type") {
+        open my $hv, "<", "/sys/hypervisor/type"
+            or die "error: cannot find hypervisor type file: $!\n";
+        while (<$hv>) {
+                chomp;
+                $hvisor = $_;
+            }
+            close $hv;
+    } elsif ( -e $systemd_hvisor ) {
+
+        open my $fh, "-|", "$systemd_hvisor";
+        while ( <$fh> ) {
+            chomp;
+            $hvisor = $_;
+        }
+        close $fh;
+
+    } else { $hvisor = 'NA'; }
+
+    return $hvisor;
+}
+
+
 sub get_disks {
 
     my @d;
@@ -684,7 +701,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.9, 2017-10-31 1545
+hdwrec: 1.2.0, 2018-03-09 1607
 END
     exit 0;
 }
