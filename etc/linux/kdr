@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 ### BEGIN INIT INFO
-# Provides:          kdr_rec
+# Provides:          kdr
 # Required-Start:    $local_fs $network
 # Required-Stop:     $local_fs
 # Default-Start:     2 3 5
@@ -13,7 +13,7 @@
 # chkconfig: 2345 96 10
 # description: kronometrix data recording
 #
-# /etc/init.d/kdr_rec
+# /etc/init.d/kdr
 #
 #  Copyright (c) 2018 Stefan Parvu (www.kronometrix.org).
 #

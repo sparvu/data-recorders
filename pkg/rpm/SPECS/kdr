@@ -83,8 +83,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %pre
 if [ $1 -eq 1 ]; then
     # initial installation
-    if [ -f /etc/init.d/kdr_agents ]; then
-        /etc/init.d/kdr_agents stop >/dev/null 2>&1 || :
+    if [ -f /etc/init.d/kdr ]; then
+        /etc/init.d/kdr stop >/dev/null 2>&1 || :
     fi
 
     if [ -f /etc/init.d/kdr_transport ]; then
@@ -104,8 +104,8 @@ if [ $1 -eq 1 ]; then
     fi
 elif [ $1 -eq 2 ]; then
     # upgrade
-    if [ -f /etc/init.d/kdr_agents ]; then
-        /etc/init.d/kdr_agents stop >/dev/null 2>&1 || :
+    if [ -f /etc/init.d/kdr ]; then
+        /etc/init.d/kdr stop >/dev/null 2>&1 || :
     fi
 
     # check for old installs
@@ -130,16 +130,16 @@ fi
 if [ $1 -eq 1 ]; then
     # initial installation, after tasks
     chown -R krmx:krmx /opt/kronometrix || :
-    if [ ! -L /etc/init.d/kdr_agents ]; then
-        ln -s /opt/kronometrix/etc/rc/kdr_agents /etc/init.d/kdr_agents || :
+    if [ ! -L /etc/init.d/kdr ]; then
+        ln -s /opt/kronometrix/etc/rc/kdr /etc/init.d/kdr || :
     fi
 
     if [ ! -L /etc/init.d/kdr_transport ]; then
         ln -s /opt/kronometrix/etc/rc/kdr_transport /etc/init.d/kdr_transport || :
     fi
-    chkconfig --add kdr_agents >/dev/null 2>&1 || :
+    chkconfig --add kdr >/dev/null 2>&1 || :
     chkconfig --add kdr_transport >/dev/null 2>&1 || :
-    /etc/init.d/kdr_agents start >/dev/null 2>&1 || :
+    /etc/init.d/kdr start >/dev/null 2>&1 || :
     chown -R krmx:krmx /opt/kronometrix/log || :
 
     # cronjobs
@@ -184,7 +184,7 @@ if [ $1 -eq 1 ]; then
 elif [ $1 -eq 2 ]; then
     # upgrade
     chown -R krmx:krmx /opt/kronometrix || :
-    /etc/init.d/kdr_agents start >/dev/null 2>&1 || :
+    /etc/init.d/kdr start >/dev/null 2>&1 || :
     /etc/init.d/kdr_transport start >/dev/null 2>&1 || :
     chown -R krmx:krmx /opt/kronometrix || :
 fi
@@ -192,9 +192,9 @@ fi
 # before removal
 %preun
 if [ $1 -eq 0 ]; then
-    chkconfig kdr_agents off  >/dev/null 2>&1 || :
+    chkconfig kdr off  >/dev/null 2>&1 || :
     chkconfig kdr_transport off  >/dev/null 2>&1 || :
-    chkconfig --del kdr_agents  >/dev/null 2>&1 || : 
+    chkconfig --del kdr  >/dev/null 2>&1 || : 
     chkconfig --del kdr_transport  >/dev/null 2>&1 || :
 
     # check for old installs
@@ -206,9 +206,9 @@ if [ $1 -eq 0 ]; then
     fi
 
     # uinstall
-    if [ -f /etc/init.d/kdr_agents ]; then
-        /etc/init.d/kdr_agents stop >/dev/null 2>&1 || :
-        rm -f /etc/init.d/kdr_agents || :
+    if [ -f /etc/init.d/kdr ]; then
+        /etc/init.d/kdr stop >/dev/null 2>&1 || :
+        rm -f /etc/init.d/kdr || :
     fi
 
     if [ -f /etc/init.d/kdr_transport ]; then
