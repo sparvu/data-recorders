@@ -3,14 +3,14 @@ Kronometrix Data Recording
 
 Platforms
   We support the following Linux based operating systems:
-    CentOS 5,6,7 (Final) x86_64, i386
+    CentOS 6,7 (Final) x86_64, i386
     Foobar Linux 6.x, 7.x x86_64, i386
-    CloudLinux 5,6 x86_64, i386
+    CloudLinux 6 x86_64, i386
     Debian 7,8,9 x86_64, i386
     Ubuntu Server Edition 6,7 x86_64, i386
     Raspbian GNU/Linux 7,8 armv6,armv7
 
-  Note: Kernel 2.6+ (x86_64 i386), 3.12 (armv6)
+  Note: Kernel 2.6.32 (x86_64 i386), 3.12 (armv6)
 
 Bug Management System
   https://github.com/kronometrix/recording/issues
@@ -18,10 +18,11 @@ Bug Management System
 
 Releases
 
-  1.3.4 29-11-2017 Release
+  1.3.4 09-03-2018 Release
     AWS EC2 awsrec recorder
     diskrec support for Debian 4,5 systems
     hdwrec support for Debian 4,5 systems
+    hdwrec hypervisor improvements
     OpenSSL 1.1.0g
     CPAN update
 
