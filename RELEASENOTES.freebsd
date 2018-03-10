@@ -77,9 +77,9 @@ Releases
 
   1.0.13 06-06-2015 Release
     kronometrix_transport verbose during its operation #38 
-    support for agent start inteval #37
-    agents shutdown #34
-    agents master script should report status #33
+    support for start inteval #37
+    recorders shutdown #34
+    recorders master script should report status #33
     update openssl-1.0.2a
     update curl-7.42.1
 
@@ -89,7 +89,7 @@ Releases
     update openssl-1.0.2a
 
   1.0.11 22-03-2015 Release
-    agents, transport startup message #24
+    recorders, transport startup message #24
     hdwrec os field lower-case everywhere #27
     pkg removal does not clean rc.conf #26
     rc startup scripts on freebsd should better support rc.conf #25
