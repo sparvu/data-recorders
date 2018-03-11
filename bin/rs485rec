@@ -354,6 +354,7 @@ sub get_devices {
                         my $dreg; my $dlen; my $dfct;
 
                         if ( $dt -> {'type'} eq 'uint16' or
+                             $dt -> {'type'} eq 'int16' or
                              $dt -> {'type'} eq 'floatinv'  ) {
 
                             $dname = $dt -> {'name'};
@@ -427,12 +428,15 @@ sub getval {
 
                 $rvalue = sprintf ("%.2f", $resp->{message}->{values}->[0] * $factor);
 
+            } elsif ( $type eq 'int16' ) {
+
+                $rvalue = sprintf ("%.2f", uint16_int16($resp->{message}->{values}->[0]) * $factor);
+
             } elsif ( $type eq 'floatinv' ) {
 
                 $rvalue  = sprintf ("%.2f", unpack 'f', pack 'v*',
                                             reverse @{ $resp->{message}->{values} } );
             }
-
         }
 
         elsif ( $modbus_f == 4 ) {
@@ -446,6 +450,10 @@ sub getval {
             if ( $type eq 'uint16' ) {
 
                 $rvalue = sprintf ("%.2f", $resp->{message}->{values}->[0] * $factor);
+
+            } elsif ( $type eq 'int16' ) {
+
+                $rvalue = sprintf ("%.2f", uint16_int16($resp->{message}->{values}->[0]) * $factor);
 
             } elsif ( $type eq 'floatinv' ) {
 
@@ -561,6 +569,15 @@ sub exec_modbus {
         printf "%.${tp}f:%s%s\n", time, $name, $fval;
 
     }
+}
+
+
+# Convert unsigned int to signed int
+# used to convert different MODBUS values to signed int
+#
+sub uint16_int16 {
+  my $v = shift;
+  return ($v & 0x8000) ? -((~$v & 0xffff) + 1) : $v;
 }
 
 
@@ -711,7 +728,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.2.2, 2017-12-18 1143
+rs485rec: 1.2.3, 2018-03-11 2024
 END
     exit 0;
 }
