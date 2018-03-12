@@ -19,6 +19,7 @@ Bug Management System
 Releases
 
   1.3.4 09-03-2018 Release
+    Td cannot display negative values #167
     AWS EC2 awsrec recorder
     diskrec support for Debian 4,5 systems
     hdwrec support for Debian 4,5 systems
