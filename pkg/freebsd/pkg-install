@@ -62,13 +62,13 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
     chown -R krmx:krmx /opt/kronometrix
 
     # install kronometrix service
-    grep "^kdr_agents_enable" ${RC_CONF} >/dev/null 2>&1
+    grep "^kdr_enable" ${RC_CONF} >/dev/null 2>&1
     if [ $? -eq 1 ]; then
 
         # add the service
-        echo "kdr_agents_enable=\"YES\"" >> ${RC_CONF}
+        echo "kdr_enable=\"YES\"" >> ${RC_CONF}
         if [ $? -eq 1 ]; then
-            echo "Error: cannot activate service: kdr_agents, exit now"
+            echo "Error: cannot activate service: kdr, exit now"
             exit 1
         fi
     fi
@@ -94,14 +94,14 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
     fi
 
     # start and link the service
-    if [ ! -L /etc/rc.d/kdr_agents ]; then
-        ln -s /opt/kronometrix/etc/rc/kdr_agents /etc/rc.d/kdr_agents
+    if [ ! -L /etc/rc.d/kdr ]; then
+        ln -s /opt/kronometrix/etc/rc/kdr /etc/rc.d/kdr
     fi
 
     if [ ! -L /etc/rc.d/kdr_transport ]; then
         ln -s /opt/kronometrix/etc/rc/kdr_transport /etc/rc.d/kdr_transport
     fi
 
-    /etc/rc.d/kdr_agents onestart >/dev/null
+    /etc/rc.d/kdr onestart >/dev/null
     /etc/rc.d/kdr_transport onestart >/dev/null
 fi
