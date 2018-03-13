@@ -415,7 +415,6 @@ sub getval {
     # MODBUS-RTU FUNCTION 4
     if ( $type ne 'NA' ) {
 
-
         if ( $modbus_f == 3 ) {
 
             my $req = $client->read_holding_registers( unit     => $modbus_id,
@@ -506,7 +505,7 @@ sub exec_modbus {
             # virtual data type
             my $vf = $v[2];
 
-            # virtual function list: dewpoint
+            # virtual function list: dewpoint, lcl
             if ($vf eq 'dewpoint' ) {
 
                 # check metrix buffer
@@ -556,6 +555,7 @@ sub exec_modbus {
     }
 
     if ($logging) {
+
         # set krd raw file
         $rawfile = $curlog . "/" . $rawfile . ".krd";
 
@@ -564,6 +564,7 @@ sub exec_modbus {
         my $rawkrd = open_file($rawfile);
         printf $rawkrd "%.${tp}f:%s%s\n", time, $name, $fval;
         close ($rawkrd);
+
     } else {
 
         printf "%.${tp}f:%s%s\n", time, $name, $fval;
@@ -572,7 +573,7 @@ sub exec_modbus {
 }
 
 
-# Convert unsigned int to signed int
+# Changes from unsigned int to signed int
 # used to convert different MODBUS values to signed int
 #
 sub uint16_int16 {
@@ -581,15 +582,26 @@ sub uint16_int16 {
 }
 
 
-# Return dew point based on temperature & humidity
+# Returns dewpoint (Td) based on temperature & humidity
 # http://en.wikipedia.org/wiki/Dew_Point
 #
 sub dewpoint {
-        my $temp = shift;
-        my $humidity = shift;
-        $humidity /= 100.0;
-        my $gamma = (17.271 * $temp) / (237.7 + $temp) + log($humidity) ;
-        return (237.7 * $gamma) / (17.271 - $gamma);
+    my $temp = shift;
+    my $humidity = shift;
+    $humidity /= 100.0;
+    my $gamma = (17.271 * $temp) / (237.7 + $temp) + log($humidity) ;
+    return (237.7 * $gamma) / (17.271 - $gamma);
+}
+
+
+# Returns lifted condensation level (lcl) based on temperature & humidity
+# http://en.wikipedia.org/wiki/Lifted_condensation_level
+#
+sub lcl {
+    my $temp = shift;
+    my $humidity = shift;
+    my $lcl = (20 + ($temp / 5)) *  (100 - $humidity);
+    return $lcl;
 }
 
 
@@ -676,8 +688,10 @@ OPTIONS:
     #11 PM25      : PM2.5 level, in ug/m3, number
     #12 PM10      : PM10 level, in ug/m3, number
     #13 Ta        : Air termperature, in C, number
-    #14 Rh        : Relative humidity, in %, number
-    #15 P         : Air pressure, in mbar, number
+    #14 Td        : Dew point, in C, number
+    #15 Rh        : Relative humidity, in %, number
+    #16 Lcl       : Lifted condensation level, in meters, number
+    #17 P         : Air pressure, in mbar, number
 
  *** INDOOR AIR QUALITY ***
 
@@ -728,7 +742,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.2.3, 2018-03-11 2024
+rs485rec: 1.2.4, 2018-03-12 1403
 END
     exit 0;
 }

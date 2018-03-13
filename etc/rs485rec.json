@@ -87,10 +87,16 @@
             },
             {
               "name": "ta",
-              "type": "uint16",
+              "type": "int16",
               "register": 10,
               "length": 1,
               "factor": 0.1
+            },
+            {
+              "name": "td",
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "rh" ]
             },
             {
               "name": "rh",
@@ -98,6 +104,12 @@
               "register": 11,
               "length": 1,
               "factor": 0.1
+            },
+            {
+              "name": "lcl",
+              "type": "virtual",
+              "id": "lifted_condensation_level",
+              "args": [ "ta", "rh" ]
             },
             {
               "name": "p",
@@ -128,7 +140,7 @@
           "data": [
             {
               "name": "ta",
-              "type": "uint16",
+              "type": "int16",
               "register": 10,
               "length": 1,
               "factor": 0.1
@@ -228,7 +240,7 @@
           "data": [
             {
               "name": "ta",
-              "type": "uint16",
+              "type": "int16",
               "register": 258,
               "length": 1,
               "factor": 0.01
@@ -242,7 +254,7 @@
             },
             {
               "name": "td",
-              "type": "uint16",
+              "type": "int16",
               "register": 259,
               "length": 1,
               "factor": 0.01
