@@ -533,7 +533,7 @@ sub exec_modbus {
 
                 $val = sprintf ("%.2f", dewpoint($temp, $humidity) );
 
-            } elsif ($vf eq 'dewpoint_cimo' ) {
+            } elsif ($vf eq 'dewpointCIMO' ) {
 
                 $val = sprintf ("%.2f", dewpoint_cimo($temp, $humidity) );
  

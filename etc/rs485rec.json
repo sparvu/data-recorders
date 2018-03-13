@@ -108,7 +108,7 @@
             {
               "name": "lcl",
               "type": "virtual",
-              "id": "lifted_condensation_level",
+              "id": "lcl",
               "args": [ "ta", "rh" ]
             },
             {
