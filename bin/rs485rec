@@ -505,35 +505,42 @@ sub exec_modbus {
             # virtual data type
             my $vf = $v[2];
 
-            # virtual function list: dewpoint, lcl
+            # check metrix buffer
+            my @fname_args = @v[3..$#v];
+            
+            my ($temp, $humidity);
+                  
+            for my $fa (@fname_args) {
+                                                      
+                if ( $fa eq 'ta' ) {
+                                                      
+                    if (exists $metrix{$fa}) {
+                        my $arg = $metrix{$fa};
+                        $temp = $arg;
+                     }
+                
+                 } elsif ( $fa eq 'rh' ) {
+        
+                     if (exists $metrix{$fa}) {
+                         my $arg = $metrix{$fa};
+                         $humidity = $arg;
+                     }
+                 }
+            }
+
+            # virtual function list: dewpoint, dewpoint_cimo, lcl
             if ($vf eq 'dewpoint' ) {
 
-                # check metrix buffer
-                my @fname_args = @v[3..$#v];
+                $val = sprintf ("%.2f", dewpoint($temp, $humidity) );
 
-                my ($temp, $humidity);
+            } elsif ($vf eq 'dewpoint_cimo' ) {
 
-                for my $fa (@fname_args) {
-
-                    if ( $fa eq 'ta' ) {
+                $val = sprintf ("%.2f", dewpoint_cimo($temp, $humidity) );
  
-                        if (exists $metrix{$fa}) {
-                            my $arg = $metrix{$fa};
-                            $temp = $arg;
-                        }
+            } elsif ($vf eq 'lcl' ) {
 
-                     } elsif ( $fa eq 'rh' ) {
-
-                        if (exists $metrix{$fa}) {
-                            my $arg = $metrix{$fa};
-                            $humidity = $arg;
-                        }
-                        
-                    }
-                }
-
-                $val = sprintf ("%.2f", dewpoint ($temp, $humidity) );
-
+                $val = sprintf ("%.2f", lcl($temp, $humidity) );
+ 
             } else { next; }
 
         } else {
@@ -594,9 +601,23 @@ sub dewpoint {
 }
 
 
+# Returns dewpoint (Td) according with CIMO Guide-7th_Edition-2008
+# based on temperature and humidity 
+#
+sub dewpoint_cimo {
+    my $temp = shift;
+    my $humidity = shift;
+    my $c1 = 243.12;
+    my $c2 = 17.62;
+    my $g1 = $humidity * exp(($c2 * $temp) / ($c1 + $temp));
+    my $gamma = log($g1 / 100);
+    return ($c1 * $gamma) / ($c2 - $gamma);
+}
+
+
 # Returns lifted condensation level (lcl) based on temperature & humidity
 # http://en.wikipedia.org/wiki/Lifted_condensation_level
-#
+# 
 sub lcl {
     my $temp = shift;
     my $humidity = shift;
@@ -688,7 +709,7 @@ OPTIONS:
     #11 PM25      : PM2.5 level, in ug/m3, number
     #12 PM10      : PM10 level, in ug/m3, number
     #13 Ta        : Air termperature, in C, number
-    #14 Td        : Dew point, in C, number
+    #14 Td        : Dewpoint, in C, number
     #15 Rh        : Relative humidity, in %, number
     #16 Lcl       : Lifted condensation level, in meters, number
     #17 P         : Air pressure, in mbar, number
@@ -742,7 +763,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.2.4, 2018-03-12 1403
+rs485rec: 1.2.5, 2018-03-13 1405
 END
     exit 0;
 }
