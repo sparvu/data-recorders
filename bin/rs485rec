@@ -528,14 +528,14 @@ sub exec_modbus {
                  }
             }
 
-            # virtual function list: dewpoint, dewpoint_cimo, lcl
+            # virtual function list: dewpoint, dewpoint_wmo, lcl
             if ($vf eq 'dewpoint' ) {
 
                 $val = sprintf ("%.2f", dewpoint($temp, $humidity) );
 
-            } elsif ($vf eq 'dewpointCIMO' ) {
+            } elsif ($vf eq 'dewpointWMO' ) {
 
-                $val = sprintf ("%.2f", dewpoint_cimo($temp, $humidity) );
+                $val = sprintf ("%.2f", dewpoint_wmo($temp, $humidity) );
  
             } elsif ($vf eq 'lcl' ) {
 
@@ -604,7 +604,7 @@ sub dewpoint {
 # Returns dewpoint (Td) according with CIMO Guide-7th_Edition-2008
 # based on temperature and humidity 
 #
-sub dewpoint_cimo {
+sub dewpoint_wmo {
     my $temp = shift;
     my $humidity = shift;
     my $c1 = 243.12;
