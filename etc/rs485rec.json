@@ -93,17 +93,17 @@
               "factor": 0.1
             },
             {
-              "name": "td",
-              "type": "virtual",
-              "id": "dewpoint",
-              "args": [ "ta", "rh" ]
-            },
-            {
               "name": "rh",
               "type": "uint16",
               "register": 11,
               "length": 1,
               "factor": 0.1
+            },
+            {
+              "name": "td",
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "rh" ]
             },
             {
               "name": "lcl",
