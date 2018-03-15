@@ -15,7 +15,7 @@ README Kronometrix Data Recording
   transport utility. Along with these come the manual pages and 
   documentation, all for free:
 
-    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec, webrec, netrec,
+    - recorders: sysrec, cpurec, diskrec, nicrec, hdwrec, webrec, netrec,
       rs485rec, direc, ntprec
 
     - transport: sender at the moment uses HTTP protocol
@@ -97,20 +97,20 @@ README Kronometrix Data Recording
 
 5.Start procedure
 
-  5.1 Agents
+  5.1 Recorders
 
-    We can start all agents, data recorders using kronometrix/etc/agents 
+    We can start all data recorders using /opt/kronometrix/etc/rec
     script. Make sure before running that you are logged as krmx user
 
     As krmx user:
-      $ /opt/kronometrix/etc/agents start
+      $ /opt/kronometrix/etc/rec start
 
     As root:
-      # /etc/rc.d/kdr_agents start
+      # /etc/rc.d/kdr start
 
   5.1 Transport
   
-    We can start sender, the transport utility kronometrix/etc/transport
+    We can start sender, the transport utility /opt/kronometrix/etc/transport
     script. Make sure before running that you are logged as krmx user
 
     As krmx user:
@@ -122,20 +122,20 @@ README Kronometrix Data Recording
 
 6.Stop procedure
 
-  6.1 Agents
+  6.1 Recorders
   
-    We can stop all agents, data recorders using kronometrix/etc/agents 
+    We can stop all data recorders using /opt/kronometrix/etc/rec
     script. Make sure before running that you are logged as krmx user
 
     As krmx user:
-      $ /opt/kronometrix/etc/agents stop
+      $ /opt/kronometrix/etc/rec stop
 
     As root:
-      # /etc/rc.d/kdr_agents stop
+      # /etc/rc.d/kdr stop
 
   6.2 Transport
   
-    We can start sender, the transport utility kronometrix/etc/transport
+    We can start sender, the transport utility /opt/kronometrix/etc/transport
     script. Make sure before running that you are logged as krmx user
 
     As krmx user:
