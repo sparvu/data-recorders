@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  Copyright (c) 2015 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2018 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -26,43 +26,43 @@
 
 . /etc/rc.subr
 
-name=kdr_agents
-rcvar=kdr_agents_enable
+name=kdr
+rcvar=kdr_enable
 
 load_rc_config ${name}
 
-command=/opt/kronometrix/etc/agents
+command=/opt/kronometrix/etc/rec
 start_cmd="${name}_start"
 stop_cmd="${name}_stop"
 status_cmd="${name}_status"
 
-: ${kdr_agents_enable="YES"}
-: ${kdr_agents_user="krmx"}
-: ${kdr_agents_flags=""}
-: ${kdr_agents_args=""}
+: ${kdr_enable="YES"}
+: ${kdr_user="krmx"}
+: ${kdr_flags=""}
+: ${kdr_args=""}
 
-kdr_agents_start() {
+kdr_start() {
     unset "${rc_arg}_cmd"
     local cmd
-    kdr_agents_args="start"
-    cmd="${command} ${kdr_agents_args}"
-    su -m ${kdr_agents_user} -c "${cmd}" 
+    kdr_args="start"
+    cmd="${command} ${kdr_args}"
+    su -m ${kdr_user} -c "${cmd}" 
 }
 
 
-kdr_agents_stop() {
+kdr_stop() {
     local cmd
-    kdr_agents_args="stop"
-    cmd="${command} ${kdr_agents_args}"
-    su -m ${kdr_agents_user} -c "${cmd}" 
+    kdr_args="stop"
+    cmd="${command} ${kdr_args}"
+    su -m ${kdr_user} -c "${cmd}" 
 }
 
 
-kdr_agents_status() {
+kdr_status() {
     local cmd
-    kdr_agents_args="status"
-    cmd="${command} ${kdr_agents_args}"
-    su -m ${kdr_agents_user} -c "${cmd}" 
+    kdr_args="status"
+    cmd="${command} ${kdr_args}"
+    su -m ${kdr_user} -c "${cmd}" 
 }
 
 
