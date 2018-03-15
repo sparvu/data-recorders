@@ -3,8 +3,8 @@
 # initial installation, after tasks
 chown -R krmx:krmx /opt/kronometrix || :
 
-if [ ! -L /etc/init.d/kdr_agents ]; then
-    ln -s /opt/kronometrix/etc/rc/kdr_agents /etc/init.d/kdr_agents || :
+if [ ! -L /etc/init.d/kdr ]; then
+    ln -s /opt/kronometrix/etc/rc/kdr /etc/init.d/kdr || :
 fi
 
 if [ ! -L /etc/init.d/kdr_transport ]; then
@@ -12,7 +12,7 @@ if [ ! -L /etc/init.d/kdr_transport ]; then
 fi
 
 # link here kdr
-update-rc.d kdr_agents start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || :
+update-rc.d kdr start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || :
 
 # link here kdr.transport
 update-rc.d kdr_transport start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || :
@@ -20,7 +20,7 @@ update-rc.d kdr_transport start 20 2 3 4 5 . stop 20 0 1 6 . >/dev/null 2>&1 || 
 if [ -d /opt/kronometrix ]; then
     chown -R krmx:krmx /opt/kronometrix/log || :
 fi
-/etc/init.d/kdr_agents start >/dev/null 2>&1 || :
+/etc/init.d/kdr start >/dev/null 2>&1 || :
 
 # cronjobs
 if [ -f /etc/cron.allow ]; then

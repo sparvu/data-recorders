@@ -39,7 +39,7 @@ if [ $? -eq 0 ]; then
     fi
 fi
 
-update-rc.d -f kdr_agents remove >/dev/null 2>&1 || : 
+update-rc.d -f kdr remove >/dev/null 2>&1 || : 
 update-rc.d -f kdr_transport remove >/dev/null 2>&1 || :
 
 # check for old installs
@@ -50,9 +50,9 @@ if [ -f /etc/init.d/kdr_transport ]; then
 fi
 
 # uninstall
-if [ -f /etc/init.d/kdr_agents ]; then
-    /etc/init.d/kdr_agents stop >/dev/null 2>&1 || :
-    rm -f /etc/init.d/kdr_agents || :
+if [ -f /etc/init.d/kdr ]; then
+    /etc/init.d/kdr stop >/dev/null 2>&1 || :
+    rm -f /etc/init.d/kdr || :
 fi
 
 if [ -f /etc/init.d/kdr_transport ]; then

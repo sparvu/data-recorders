@@ -2,8 +2,8 @@
 
 # echo "preinst: preparing to install package"
 # initial installation
-if [ -f /etc/init.d/kdr_agents ]; then
-    /etc/init.d/kdr_agents stop >/dev/null 2>&1 || :
+if [ -f /etc/init.d/kdr ]; then
+    /etc/init.d/kdr stop >/dev/null 2>&1 || :
 fi
 
 if [ -f /etc/init.d/kdr_transport ]; then
