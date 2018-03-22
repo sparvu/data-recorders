@@ -6,7 +6,7 @@
 A simple and efficient set of data recorders and transport utilities for ICT, Environmental Monitoring, Meteorology and IoT , designed to record top essential performance metrics, save raw data and send it for further analysis. 
 
 ## Raw Data
-All recorded observations are stored as raw data. Raw data is produced by a monitoring agent, a system or a sensor, data which is oroginal and has not been modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format, like CSV format.
+All recorded observations are stored as raw data. Raw data is produced by a recorder, which fetches data from a system or a sensor, data which is original and has not been modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we simple store the observations on commodity disk drives, compressed, in text format, like CSV format.
 
 Time series let us understand what has happened in past and look in the future, using various statistical models. In addition , having access to these historical time series will help us to build a simple capacity planning model.
 
