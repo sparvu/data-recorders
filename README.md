@@ -24,16 +24,22 @@ All collected metrics over time are combined as a data message. There can be man
 ## Data Source
 A data source, is described as any system connected to a public or private network with a valid IPv4 or IPv6 address like, a server, a data logger, a graphic workstation, an iPad or an IoT sensor capable to send and receive data. There can be many types of data sources, each having one or many of data messages:
 
- * Computer system: overall cpu utilization, disk IO, network IO, or per device metrics (Linux, FreeBSD)
+ * Computer system: overall cpu utilization, disk and network IO, per device metrics (Linux, FreeBSD, Windows)
  
- * HTTP server: throughput and utilization along with its inventory data (Nginx, Apache)
+ * HTTP server: throughput and utilization along with its inventory data (Nginx, Apache, Tomcat)
  
- * Enterprise service: response time performance and its availability (SMTPS, IMAP, HTTP, LDAP)
+ * Enterprise service: response time performance and availability (SMTPS, IMAP, HTTP, LDAP, NTP, AD)
  
  * Automatic weather station: air temperature and pressure, humidity, wind speed and direction 
 
 
+## The recorder
+A light probe developed in Perl5 language which can extract data from different libraries or sources, like 
+an operating system interfaces, a sensor or device, an industrial equipment using MODBUS protocol, or an
+web based application or database.
+
 <img src="https://github.com/kronometrix/recording/blob/master/img/recorder.png" align="right" /> 
+
 
 ## Supported Industries
 
