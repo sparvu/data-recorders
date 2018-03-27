@@ -34,8 +34,8 @@ A data source, is described as any system connected to a public or private netwo
 
 
 ## The recorder
-A light probe developed in Perl5 language which can extract data from different libraries or sources, like 
-an operating system interfaces, a sensor or device, an industrial equipment using MODBUS protocol, or an
+A light probe developed in _Perl5_ language which can extract data from different libraries or sources, like 
+an operating system interfaces, a sensor or device, an industrial equipment using _MODBUS_ protocol, or an
 web based application or database.
 
 <img src="https://github.com/kronometrix/recording/blob/master/img/recorder.png" align="right" /> 
