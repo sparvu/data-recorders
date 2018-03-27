@@ -63,7 +63,7 @@ web based application or database.
 
 ### Environmental Monitoring, IoT
 
- * rs485rec - RS485 MODBUS ASCII, MODBUS RTU, MODBUS TCP recorder
+ * rs485rec - Serial, MODBUS(ASCII, RTU, TCP) industrial recorder
  
 
 ### General Meteorology
