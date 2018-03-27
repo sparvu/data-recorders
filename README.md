@@ -47,18 +47,18 @@ web based application or database.
 ### Information and Communications Technology
 
  * sysrec - overall system CPU, MEM, DISK, NIC utilization, throughput and errors
- * cpurec - per-CPU statistics
+ * cpurec - per CPU statistics
  * nicrec - per NIC statistics
  * diskrec - per DISK statistics
- * hdwrec - the hardware, software data inventory
+ * hdwrec - hardware and software data inventory
  * jvmrec - Java VM statistics
  * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
  * certrec - X.509 security certificate statistics
- * svcrec - entreprise service statistics: IMAP, SMTP, POP3, LDAP, DNS, TCP(Any)
- * direc - per directory statistics 
+ * svcrec - service performance and availability: IMAP, SMTP, POP3, LDAP, DNS, TCP(Any)
+ * direc - filesystem directory statistics 
  * ntprec - NTP server statistics
- * procrec - per process statistics
- * webrec - Web response time analyzer
+ * procrec - process statistics
+ * webrec - web application performance and availability
 
 
 ### Environmental Monitoring, IoT
