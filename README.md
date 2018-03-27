@@ -26,7 +26,9 @@ A data source, is described as any system connected to a public or private netwo
  * Enterprise service: response time performance and its availability (SMTPS, IMAP, HTTP, LDAP)
  
  * Automatic weather station: air temperature and pressure, humidity, wind speed and direction 
- 
+
+
+<img src="https://github.com/kronometrix/recording/blob/master/img/recorder.png" align="right" /> 
 
 ## Supported Industries
 
