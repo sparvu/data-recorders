@@ -38,6 +38,7 @@ A light probe developed in _Perl5_ language which can extract data from differen
 an operating system interfaces, a sensor or device, an industrial equipment using _MODBUS_ protocol, or an
 web based application or database.
 
+<img src="https://github.com/kronometrix/recording/blob/master/img/recorderplus.png" align="right" /> 
 <img src="https://github.com/kronometrix/recording/blob/master/img/recorder.png" align="right" /> 
 
 
