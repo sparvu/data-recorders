@@ -11,7 +11,8 @@ Bug Management System
 
 Releases
 
-  1.3.4 13-03-2018 Release
+  1.3.8 25-04-2018 Release
+    missing data on MODBUS RTU #172
     support for lifted condensation level #171
     support for dewpoint CIMO #170
     Td cannot display negative values #167
