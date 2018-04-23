@@ -137,6 +137,10 @@
           "model": "g01",
           "description": "Kronometrix IAQ Series",
           "function": 4,
+          "range": {
+            "register": 8,
+            "length": 4
+          },
           "data": [
             {
               "name": "ta",
@@ -237,6 +241,10 @@
           "model": "gmw90",
           "description": "Vaisala GMW90 Series",
           "function": 3,
+          "range": {
+            "register": 256,
+            "length": 4
+          },
           "data": [
             {
               "name": "ta",
