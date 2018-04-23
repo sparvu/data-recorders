@@ -66,6 +66,7 @@ my $timeout;                        # serial timeout config
 my $parity;                         # serial line parity config
 my $stopbits;                       # serial stopbits config
 my $databits;                       # serial databits config
+my $range     = 0;                  # serial range address config
 my ($cdata, $kdata);                # configuration data
 my ( $baselog, $curlog, $rlog);
 
@@ -127,12 +128,14 @@ if ($logging) {
 if($verbose) {
     if ($logging) {
         print $log "Total devices: " . keys(%devices) . ".\n";
+        print $log "Message:Device:ID:Function:Range:Vendor => Parameter_Type_Register_Length_Factor\n";
         for my $key (keys %devices) {
             my $value = $devices{$key};
             print $log "$key => $value\n";
         }
     } else {
         print "Total devices: " . keys(%devices) . ".\n";
+        print "Message:Device:ID:Function:Range:Vendor => Parameter_Type_Register_Length_Factor\n";
         for my $key (keys %devices) {
             my $value = $devices{$key};
             print "$key => $value\n";
@@ -149,9 +152,9 @@ while (1) {
     # get it as verbose
     if($verbose) {
         if ($logging) {
-            print $log "Client type: RTU: $MODBUS_RTU, ASCII: $MODBUS_ASCII\n";
+            print $log "\nProtocol(s): MODBUS(RTU:$MODBUS_RTU, ASCII:$MODBUS_ASCII, TCP:NA)\n";
         } else {
-            print "Client type: RTU: $MODBUS_RTU, ASCII: $MODBUS_ASCII\n";
+            print "\nProtocol(s): MODBUS(RTU:$MODBUS_RTU, ASCII:$MODBUS_ASCII, TCP:NA)\n";
         }
     }
 
@@ -216,10 +219,10 @@ while (1) {
         for my $key (keys %devices) {
 
             my $value = $devices{$key};
-            my ($rawfile, $dev_name, $modbus_id, $modbus_func, $desc) = split( /:/, $key );
+            my ($rawfile, $dev_name, $modbus_id, $modbus_func, $arange, $desc) = split( /:/, $key );
             my @values = split( /:/, $value );
             eval {
-                exec_modbus($client, $rawfile, $dev_name, $modbus_id, $modbus_func, @values);
+                exec_modbus($client, $rawfile, $dev_name, $modbus_id, $modbus_func, $arange, @values);
             };
 
             if ($@) {
@@ -229,7 +232,6 @@ while (1) {
                     print "error: cannot access device $dev_name, check $cfile\n";
                 }
             }
-            sleep 2;
         }
     }
 
@@ -302,7 +304,7 @@ sub get_log {
 }
 
 
-# get  defintion
+# get device defintion 
 #
 sub get_devices {
 
@@ -340,10 +342,20 @@ sub get_devices {
                 my @reqs = @{ $f->{$lmoid} };
 
                 for my $dev (@reqs) {
+
+                    my $rng_register;
+                    my $rng_length;
+
                     my $unit    = $dev -> {'unit'};
                     my $vendor  = $dev -> {'vendor'};
                     my $model   = $dev -> {'model'};
                     my $mf      = $dev -> {'function'};
+
+                    if (defined $dev->{'range'}) {
+                        $rng_register = $dev->{'range'}->{'register'};
+                        $rng_length = $dev->{'range'}->{'length'};
+                        $range = $rng_register . '-' . $rng_length;
+                    }
 
                     my @registers = @{ $dev->{'data'} };
 
@@ -392,7 +404,7 @@ sub get_devices {
                     }
                     my $rfile = $lmoid . '_' . $model . 'rec';
                     my $devname = $model . '_' . $unit;
-                    my $keyapp = $rfile . ':' . $devname . ':'  . $unit . ':' . $mf . ':' . $vendor;
+                    my $keyapp = $rfile . ':' . $devname . ':'  . $unit . ':' . $mf . ':' . $range . ':' . $vendor;
                     my $hvalue = $params;
                     $devs{$keyapp} = $hvalue;
                 }
@@ -405,14 +417,14 @@ sub get_devices {
 }
 
 
-# MODBUS RTU fetch register value, returns a single value
+# fetches a single register value
 #
-sub getval {
+sub getdata_modbus {
 
-    my ( $client, $modbus_id, $modbus_f, $type, $address, $quantity, $factor ) = @_;
+    my ( $client, $modbus_id, $modbus_f, $adrange, $type, $address, $quantity, $factor ) = @_;
     my $rvalue;
 
-    # MODBUS-RTU FUNCTION 4
+    # MODBUS FUNCTION 3
     if ( $type ne 'NA' ) {
 
         if ( $modbus_f == 3 ) {
@@ -438,6 +450,7 @@ sub getval {
             }
         }
 
+        # MODBUS FUNCTION 4
         elsif ( $modbus_f == 4 ) {
         
             my $req = $client->read_input_registers( unit     => $modbus_id,
@@ -468,15 +481,82 @@ sub getval {
 
     # return register single value
     return $rvalue;
-
 }
 
 
-# MODBUS Client communication
+sub fmtdata {
+
+    my ( $srdr, $dtype, $daddr, $dlen, $dfactor, @buf ) = @_;
+    my $rvalue ;
+ 
+    my $kadrs = $daddr - $srdr;
+    my $kadre = $kadrs + $dlen - 1;
+
+    #print "@buf\n";
+    #print "kadrs=$kadrs kadre=$kadre length=$dlen\n";
+    my @rdata = @buf[$kadrs..$kadre];
+
+    if ( $dtype eq 'uint16' ) {
+
+        $rvalue = sprintf ("%.2f", "@rdata" * $dfactor);
+
+    } elsif ( $dtype eq 'int16' ) {
+
+        $rvalue = sprintf ("%.2f", uint16_int16("@rdata") * $dfactor);
+
+    } elsif ( $dtype eq 'floatinv' ) {
+
+        $rvalue = sprintf ("%.2f", unpack 'f', pack 'v*', reverse @rdata );
+    }
+
+    return $rvalue;
+}
+
+
+# fetches a single register value
+#
+sub getrdata_modbus {
+
+    my ( $client, $modbus_id, $modbus_f, $adrange ) = @_;
+    my $rvalue = 'NA';
+
+    my ($address, $quantity) = split("-",  $adrange);
+
+    # MODBUS FUNCTION 3
+    if ( $modbus_f == 3 ) {
+
+        my $req = $client->read_holding_registers( unit     => $modbus_id,
+                                                   address  => $address,
+                                                   quantity => $quantity);
+        $client->send_request($req);
+        my $resp = $client->receive_response;
+
+        $rvalue = "@{$resp->{message}->{values}}";
+
+    }
+    # MODBUS FUNCTION 4
+    elsif ( $modbus_f == 4 ) {
+
+        my $req = $client->read_input_registers( unit     => $modbus_id,
+                                                 address  => $address,
+                                                 quantity => $quantity);
+        $client->send_request($req);
+        my $resp = $client->receive_response;
+
+        $rvalue = "@{$resp->{message}->{values}}";
+
+    }
+
+    # return all values as single record
+    return $rvalue;
+}
+
+
+# execute MODBUS client communication
 #
 sub exec_modbus {
 
-    my ( $rtu, $rawfile, $name, $modbus_id, $modbus_f, @vals ) = @_;
+    my ( $modbus_p, $rawfile, $name, $modbus_id, $modbus_f, $adrange, @vals ) = @_;
 
     tie my %metrix, "Tie::IxHash";
 
@@ -484,15 +564,23 @@ sub exec_modbus {
     my $fval;
 
     if ($logging) {
-        write_log ("krd: $rawfile, dev: $name, unit: $modbus_id, function: $modbus_f, @vals")
-            if ($verbose);
+        if ($verbose) {
+            print $log ("krd: $rawfile, dev: $name, unit: $modbus_id, function: $modbus_f, range: $adrange\n");
+            print $log (" @vals\n");
+        }
     } else {
-        print "krd: $rawfile, dev: $name, unit: $modbus_id, function: $modbus_f, @vals"
-            if ($verbose);
+        if ($verbose) {
+            print "\nkrd: $rawfile, dev: $name, unit: $modbus_id, function: $modbus_f, range: $adrange\n";
+            print " @vals\n"
+        }
     }
  
     my $treq = time;
     #$fval .= $treq . ':' . $name;
+
+    # keeps address range buffer
+    my ($sradr, $lradr)   = split('-', $adrange);            
+    my @rbuf;
 
     for my $metric (@vals) {
         my @v = split("_",  $metric);
@@ -507,13 +595,13 @@ sub exec_modbus {
 
             # check metrix buffer
             my @fname_args = @v[3..$#v];
-            
+
             my ($temp, $humidity);
-                  
+
             for my $fa (@fname_args) {
-                                                      
+
                 if ( $fa eq 'ta' ) {
-                                                      
+
                     if (exists $metrix{$fa}) {
                         my $arg = $metrix{$fa};
                         $temp = $arg;
@@ -545,17 +633,32 @@ sub exec_modbus {
 
         } else {
 
-            # numeric data types
-            $val = getval ($rtu, $modbus_id, $modbus_f, $v[1], $v[2], $v[3], $v[4]);
+            # numeric data types, get values
+            # multiple calls
+            if ($adrange eq 0) {
+
+                $val = getdata_modbus($modbus_p, $modbus_id, $modbus_f, $adrange, $v[1], $v[2], $v[3], $v[4]);
+
+            # single call, one value buffer
+            } else {
+
+                if (! defined $rbuf[0]) {
+                    my $rval = getrdata_modbus($modbus_p, $modbus_id, $modbus_f, $adrange);
+                    @rbuf = split (' ', $rval);
+                }
+
+                $val = fmtdata($sradr, $v[1], $v[2], $v[3], $v[4], @rbuf);
+
+            }
         }
 
         # all metrix buffer        
         $metrix{$v[0]} = $val;
 
         if ($logging) {
-            write_log ("Metric: $v[0] -> $val") if ($verbose);
+            print $log (" $v[0] -> $val\n") if ($verbose);
         } else {
-            print "Metric: $v[0] -> $val\n" if ($verbose);
+            print " $v[0] -> $val\n" if ($verbose);
         }
        
         $fval .=  ':' . $val;
@@ -566,7 +669,7 @@ sub exec_modbus {
         # set krd raw file
         $rawfile = $curlog . "/" . $rawfile . ".krd";
 
-        write_log ("rawfile=$rawfile") if ($verbose);
+        print $log (" rawfile=$rawfile\n") if ($verbose);
 
         my $rawkrd = open_file($rawfile);
         printf $rawkrd "%.${tp}f:%s%s\n", time, $name, $fval;
@@ -691,7 +794,7 @@ OPTIONS:
   -V        : release version
   interval  : maximum number of seconds between samples
 
- DATA MESSAGES
+ EXAMPLE DATA MESSAGES
 
  *** OUTDOOR AIR QUALITY ***
 
@@ -709,8 +812,8 @@ OPTIONS:
     #11 PM25      : PM2.5 level, in ug/m3, number
     #12 PM10      : PM10 level, in ug/m3, number
     #13 Ta        : Air termperature, in C, number
-    #14 Td        : Dewpoint, in C, number
-    #15 Rh        : Relative humidity, in %, number
+    #14 Rh        : Relative humidity, in %, number
+    #15 Td        : Dewpoint, in C, number
     #16 Lcl       : Lifted condensation level, in meters, number
     #17 P         : Air pressure, in mbar, number
 
@@ -755,7 +858,7 @@ OPTIONS:
  UNITS
   ppm    - parts per million
   mg/m3  - milligram per cubic meter
-  ug/m3 - microgram per cubic meter
+  ug/m3  - microgram per cubic meter
 END
     exit 0;
 }
@@ -763,7 +866,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.2.5, 2018-03-13 1405
+rs485rec: 1.2.8, 2018-04-23 2234
 END
     exit 0;
 }
