@@ -41,6 +41,11 @@ web based application or database.
 <img src="https://github.com/kronometrix/recording/blob/master/img/recorderplus.png" align="right" /> 
 <img src="https://github.com/kronometrix/recording/blob/master/img/recorder.png" align="right" /> 
 
+The recorder can operate in two modes:
+
+  * interactive: you can manually run the recorders using different samping rate values to analyse raw data
+  
+  * automatic: you can continuously record data, using a default sampling rate of _60 seconds_ 
 
 ## Supported Industries
 
