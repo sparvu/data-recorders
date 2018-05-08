@@ -17,6 +17,7 @@
           "data": [
             {
               "name": "no2",
+              "description": "nitrogen dioxide",
               "type": "uint16",
               "register": 0,
               "length": 1,
@@ -24,6 +25,7 @@
             },
             {
               "name": "so2",
+              "description": "sulfur dioxide",
               "type": "uint16",
               "register": 1,
               "length": 1,
@@ -31,6 +33,7 @@
             },
             {
               "name": "co",
+              "description": "carbon monoxide",
               "type": "uint16",
               "register": 2,
               "length": 1,
@@ -45,6 +48,7 @@
             },
             {
               "name": "h2s",
+              "description": "hydrogen sulfide",
               "type": "uint16",
               "register": 4,
               "length": 1,
@@ -52,6 +56,7 @@
             },
             {
               "name": "o3",
+              "description": "ozone",
               "type": "uint16",
               "register": 5,
               "length": 1,
@@ -59,6 +64,7 @@
             },
             {
               "name": "no",
+              "description": "nitrogen oxide",
               "type": "uint16",
               "register": 6,
               "length": 1,
@@ -66,6 +72,7 @@
             },
             {
               "name": "voc",
+              "description": "volatile organic compounds",
               "type": "uint16",
               "register": 7,
               "length": 1,
@@ -73,6 +80,7 @@
             },
             {
               "name": "pm25",
+              "description": "particulates",
               "type": "uint16",
               "register": 8,
               "length": 1,
@@ -80,6 +88,7 @@
             },
             {
               "name": "pm10",
+              "description": "particulates",
               "type": "uint16",
               "register": 9,
               "length": 1,
@@ -87,6 +96,7 @@
             },
             {
               "name": "ta",
+              "description": "air temperature",
               "type": "int16",
               "register": 10,
               "length": 1,
@@ -94,6 +104,7 @@
             },
             {
               "name": "rh",
+              "description": "relative humidity",
               "type": "uint16",
               "register": 11,
               "length": 1,
@@ -101,18 +112,21 @@
             },
             {
               "name": "td",
+              "description": "dewpoint",
               "type": "virtual",
               "id": "dewpoint",
               "args": [ "ta", "rh" ]
             },
             {
               "name": "lcl",
+              "description": "lifting condensation level",
               "type": "virtual",
               "id": "lcl",
               "args": [ "ta", "rh" ]
             },
             {
               "name": "p",
+              "description": "air pressure",
               "type": "uint16",
               "register": 12,
               "length": 1,
@@ -144,6 +158,7 @@
           "data": [
             {
               "name": "ta",
+              "description": "air temperature",
               "type": "int16",
               "register": 10,
               "length": 1,
@@ -151,6 +166,7 @@
             },
             {
               "name": "rh",
+              "description": "relative humidity",
               "type": "uint16",
               "register": 11,
               "length": 1,
@@ -158,12 +174,14 @@
             },
             {
               "name": "td",
+              "description": "dewpoint",
               "type": "virtual",
               "id": "dewpoint",
               "args": [ "ta", "rh" ]
             },
             {
               "name": "co2",
+              "description": "carbon dioxide",
               "type": "uint16",
               "register": 8,
               "length": 1,
@@ -171,6 +189,7 @@
             },
             {
               "name": "voc",
+              "description": "volatile organic compounds",
               "type": "uint16",
               "register": 9,
               "length": 1,
@@ -187,6 +206,7 @@
           "data": [
             {
               "name": "ta",
+              "description": "air temperature",
               "type": "floatinv",
               "register": 16,
               "length": 2,
@@ -194,6 +214,7 @@
             },
             {
               "name": "rh",
+              "description": "relative humidity",
               "type": "floatinv",
               "register": 18,
               "length": 2,
@@ -201,12 +222,14 @@
             },
             {
               "name": "td",
+              "description": "dewpoint",
               "type": "virtual",
               "id": "dewpoint",
               "args": [ "ta", "rh" ]
             },
             {
               "name": "co2",
+              "description": "carbon dioxide",
               "type": "floatinv",
               "register": 20,
               "length": 2,
@@ -214,6 +237,7 @@
             },
             {
               "name": "voc",
+              "description": "volatile organic compounds",
               "type": "floatinv",
               "register": 22,
               "length": 2,
@@ -221,6 +245,7 @@
             },
             {
               "name": "pm25",
+              "description": "particulates",
               "type": "floatinv",
               "register": 12,
               "length": 2,
@@ -228,6 +253,7 @@
             },
             {
               "name": "pm10",
+              "description": "particulates",
               "type": "floatinv",
               "register": 14,
               "length": 2,
@@ -248,6 +274,7 @@
           "data": [
             {
               "name": "ta",
+              "description": "air temperature",
               "type": "int16",
               "register": 258,
               "length": 1,
@@ -255,6 +282,7 @@
             },
             {
               "name": "rh",
+              "description": "relative humidity",
               "type": "uint16",
               "register": 257,
               "length": 1,
@@ -262,6 +290,7 @@
             },
             {
               "name": "td",
+              "description": "dewpoint",
               "type": "int16",
               "register": 259,
               "length": 1,
@@ -269,6 +298,7 @@
             },
             {
               "name": "co2",
+              "description": "carbon dioxide",
               "type": "uint16",
               "register": 256,
               "length": 1,
