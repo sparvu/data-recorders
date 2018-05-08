@@ -210,9 +210,9 @@ while (1) {
 
     if ($@) {
         if ($logging) {
-            write_log ("error: cannot initialize MODBUS Client port $port, check rs485rec.json");
+            write_log ("error: cannot initialize MODBUS client port $port $!");
         } else {
-            print "error: cannot initialize MODBUS Client port $port, check rs485rec.json\n";
+            print "error: cannot initialize MODBUS client port $port $!\n";
         }
     } else {
 
@@ -227,9 +227,9 @@ while (1) {
 
             if ($@) {
                 if ($logging) {
-                    write_log ("error: cannot access device $dev_name, check $cfile");
+                    write_log ("error: cannot access device $dev_name $!");
                 } else {
-                    print "error: cannot access device $dev_name, check $cfile\n";
+                    print "error: cannot access device $dev_name $!\n";
                 }
             }
         }
@@ -239,6 +239,9 @@ while (1) {
         # closing all
         $client->disconnect;
     }
+
+    # free client
+    # undef $client;
 
     ### Check for end
     last if ++$loop == $loop_max;
@@ -528,6 +531,7 @@ sub getrdata_modbus {
         my $req = $client->read_holding_registers( unit     => $modbus_id,
                                                    address  => $address,
                                                    quantity => $quantity);
+
         $client->send_request($req);
         my $resp = $client->receive_response;
 
@@ -866,7 +870,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.2.8, 2018-04-23 2234
+rs485rec: 1.2.9, 2018-04-25 0819
 END
     exit 0;
 }
