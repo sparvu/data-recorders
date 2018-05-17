@@ -1,0 +1,162 @@
+.\" Kronometrix man doc template 
+.\" See man mdoc for the short list of editing options
+.Dd May 17, 2018     \" DATE
+.Dt RS485REC 1 1\" Program name and manual section number
+.Os Linux, FreeBSD
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm rs485rec
+.\" The following lines are read in generating the apropos database.
+.\" Use only key words here as the database is built on these.
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd The industrial data recorder
+.Sh SYNOPSIS
+.Nm
+.Op Fl hlvV
+.Ar [time] [count]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is a multi-message data recorder capable to fetch data from
+different devices using MODBUS RTU, MODBUS ASCII or ASCII-POLLED protocols.
+.Pp                      \" Inserts a space
+The recorder will output all collected metrics as raw data without any
+additional changes or modifications. The recorder can run interactively or
+continuously for historical data collection.
+.Pp                      \" Inserts a space
+The following options are available:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl l                 \"-a flag as a list item
+non interactive mode, runs continuously
+.It Fl h
+help information
+.It Fl v
+verbose mode
+.It Fl V
+revision information
+.It time
+the time interval, in seconds, between each sample
+.It count
+the number of samples
+.El                      \" Ends the list
+.Sh EXAMPLES
+.Ss rs485rec 5
+executes every 5 seconds
+.Ss rs485rec 5 10
+executes 10 times, every 5 seconds
+.Ss rs485rec -l 60
+executes continuously, every 60 seconds
+.Sh DATA MESSAGES
+.Sh Vaisala AQT420 (aq_aqt420)
+This is the data message from the outdoor air quality device from Vaisala
+AQT 420 series. The following metrics are collected and displayed:
+.Bl -tag -width -indent
+.It time
+the UNIX time
+.It devid
+the device id
+.It NO2
+Nitrite ion level, in ppm, number
+.It SO2
+Sulphur dioxide level, in ppm, number
+.It CO
+Carbon monoxide level, in ppm, number
+.It Empty
+future usage
+.It H2S
+Hydrogen Sulfide level, in ppm, number
+.It O3
+Ozone level, in ppm, number
+.It NO
+Nitrogen oxide level, in ppm, number
+.It VOC
+Volatile organic compound level, in ppm, number
+.It PM25
+Particulate matter 2.5 micrometers, in ug/m3, number
+.It PM10
+Particulate matter 10 micrometers, in ug/m3, number
+.It TA
+Air termperature, in C/F, number
+.It Rh
+Relative humidity, in %, number
+.It Td
+Dewpoint, in C/F, number
+.It Lcl
+Lifted condensation level, in meters, number
+.It P
+Air pressure, in mbar, number
+.El                      \" Ends the list
+.Sh Vaisala GMW90 (iaq_gmw90)
+This is the data message from the indoor air quality device from Vaisala
+GMW90 series. The following metrics are collected and displayed:
+.Bl -tag -width -indent
+.It time
+the UNIX time
+.It devid
+the device id
+.It TA
+Air termperature, in C/F, number
+.It Rh
+Relative humidity, in %, number
+.It Td
+Dewpoint, in C/F, number
+.It CO2
+Carbon dioxide level, in ppm, number
+.El                      \" Ends the list
+.Sh Tongdy MSD-1618 (iaq_msd1618)
+This is the data message from the indoor air quality device from Tongdy
+MSD1600 series. The following metrics are collected and displayed:
+.Bl -tag -width -indent
+.It time
+the UNIX time
+.It devid
+the device id
+.It TA
+Air termperature, in C/F, number
+.It Rh
+Relative humidity, in %, number
+.It Td
+Dewpoint, in C/F, number
+.It CO2
+Carbon dioxide level, in ppm, number
+.It TVOC
+Total volatile organic compound, in mg/m3, number
+.It PM25
+Particulate matter 2.5 micrometers, in ug/m3, number
+.It PM10
+Particulate matter 10 micrometers, in ug/m3, number
+.El                      \" Ends the list
+.Sh Tongdy G01 (iaq_g01)
+This is the data message from the indoor air quality device from Tongdy
+G01 series. The following metrics are collected and displayed:
+.Bl -tag -width -indent
+.It time
+the UNIX time
+.It devid
+the device id
+.It TA
+Air termperature, in C/F, number
+.It Rh
+Relative humidity, in %, number
+.It Td
+Dewpoint, in C/F, number
+.It CO2
+Carbon dioxide level, in ppm, number
+.It VOC
+Volatile organic compound, in ppm, number
+.El                      \" Ends the list
+.Sh NOTES
+This recorder supports interval values lower than second !  Running the
+recorder  with  values  lower than second for long periods of time will
+add an overhead in terms of cpu utilization.  The  lower  the  interval
+value  the higher the cpu utilization. We do not recommend using values
+lower than 5 seconds for properly working on a MODBUS line or for
+long historical recordings.
+.Sh DOCUMENTATION
+See Kronometrix documentation for more details.
+.Sh EXIT
+.Nm
+will run continuously until is stopped by the master script
+or manually stopped.
+.Sh AUTHOR
+Stefan Parvu, sparvu@kronometrix.org
+.Sh SEE ALSO
+kronometrix(1), perl(1)
