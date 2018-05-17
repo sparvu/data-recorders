@@ -144,12 +144,13 @@ Carbon dioxide level, in ppm, number
 Volatile organic compound, in ppm, number
 .El                      \" Ends the list
 .Sh NOTES
-This recorder supports interval values lower than second !  Running the
-recorder  with  values  lower than second for long periods of time will
-add an overhead in terms of cpu utilization.  The  lower  the  interval
-value  the higher the cpu utilization. We do not recommend using values
-lower than 5 seconds for properly working on a MODBUS line or for
-long historical recordings.
+.Nm
+can run using low time intervals, like 10, 5 or even 1 second values, but we do no 
+recommend to use values lower than 5 or 10 seconds when using MODBUS devices.
+.Sh UNITS
+ ppm    - parts per million
+ mg/m3  - milligram per cubic meter
+ ug/m3  - microgram per cubic meter
 .Sh DOCUMENTATION
 See Kronometrix documentation for more details.
 .Sh EXIT
