@@ -18,7 +18,7 @@ Bug Management System
 
 Releases
 
-  1.3.8 25-04-2018 Release
+  1.3.8 19-05-2018 Release
     missing data on MODBUS RTU #172
     support for lifted condensation level #171
     support for dewpoint CIMO #170
@@ -27,7 +27,11 @@ Releases
     diskrec support for Debian 4,5 systems
     hdwrec support for Debian 4,5 systems
     hdwrec hypervisor improvements
-    OpenSSL 1.1.0g
+    perl-5.26.2 update
+    openssl-1.1.0h update
+    curl-7.60.0 update
+    sysstat-11.6.3 update 
+    
     CPAN update
 
   1.2.28 03-10-2017 Release
@@ -37,8 +41,8 @@ Releases
     transport force mode epd, dpd
     svcrec, webrec improvements
     WH1080 fixes for null connections
-    update libcurl 7.55.1
-    update perl 5.26.1
+    libcurl 7.55.1 update
+    perl-5.26.1 update
 
   1.2.16 30-08-2017 Release
     httprec improvements
@@ -53,7 +57,7 @@ Releases
     webrec async performance fixes
     svcrec async performance fixes
     hdwrec inventory message update
-    update perl 5.24.2
+    perl-5.24.2 update
 
   1.1.2 30-10-2016 Release
     wsrec does not have a release version #117
@@ -84,16 +88,16 @@ Releases
   1.0.19 02-03-2016 Release
     nicrec linux should discard vif NICs on Xen env #96
     diskrec should be able to report per mount point disk space usage #79
-    update curl-7.47.1
-    update openssl-1.0.2g
+    curl-7.47.1 update
+    openssl-1.0.2g update
 
   1.0.18 10-01-2016 Release
     diskrec should be able to report per mount point disk space usage #79
     sender should be aware of web monitoring dsid #77
     diskrec data message changes #53
     webrec - HTTP recorder #8
-    update curl-7.46.0
-    update openssl-1.0.2e
+    curl-7.46.0 update
+    openssl-1.0.2e update
 
   1.0.17 29-10-2015 Release
     sender transport POST compliance #72
@@ -105,13 +109,13 @@ Releases
     hdwrec inventory message rational usage #63
     SSL support for Linux, FreeBSD #50
     deb kdr pkg warnings #44
-    update curl-7.45.0
+    curl-7.45.0 update
 
   1.0.16 30-08-2015 Release
     diskrec data message changes #53
     on some Linux platforms we cant run data recorders #58 
     backup job does not work correctly in Linux #57
-    update curl-7.44.0
+    curl-7.44.0 update
 
   1.0.15 04-08-2015 Release
     raw2day should not use libcurl #55
@@ -123,8 +127,7 @@ Releases
     hdwrec on CloudLinux errors #40
     linux installer should not create cron.allow by default #46
     CPAN update June 2015 #43
-    update openssl-1.0.2d
-    removal curl
+    openssl-1.0.2d update
 
   1.0.13 06-06-2015 Release
     kronometrix_transport verbose during its operation #38
@@ -133,13 +136,12 @@ Releases
     cant install 32 bit package on debian systems #36
     recorders shutdown #34
     recorders master script should report status #33
-    update openssl-1.0.2a
-    update curl-7.42.1
+    openssl-1.0.2a update
+    curl-7.42.1 update
 
   1.0.12 29-03-2015 Release
     raw2day not properly rotating logs #28
     sender linux hostuuid improvements #30
-    update openssl-1.0.2a
 
   1.0.10 15-03-2015 Release
     hdwrec debian incorrect os and relos fields #21
@@ -156,7 +158,7 @@ Releases
     wsrec dies when connection is lost #4
     raw2day xml to json #2
     recording/wsrec warnings in strict mode #1
-    update perl-5.20.2
-    update openssl-1.0.2
-    update curl-7.41.0
-    update sysstat-10.2.1
+    perl-5.20.2 update
+    openssl-1.0.2 update
+    curl-7.41.0 update
+    sysstat-10.2.1 update
