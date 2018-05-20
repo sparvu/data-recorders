@@ -2,7 +2,7 @@
 <img src="https://github.com/kronometrix/recording/blob/master/docs/img/perl_logo.png" align="right" />
 <br/>
 
-# Description
+### Overview
 
 A simple and efficient set of data recorders and transport utilities for ICT, environmental monitoring, meteorology 
 and IoT, designed to record top essential performance metrics, save raw data and send it for further analysis.
