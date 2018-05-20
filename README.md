@@ -11,11 +11,6 @@ performance metrics, save raw data and send it for further analysis.
 * [Intro](docs/intro.md)
 * [Getting Started](docs/start.md)
 
-## Resources
-
-| [kronometrix.io][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3] |
-| ----------------------- | ------------- | --------------------- |
-
 ## Features
 
 * Support for raw data
@@ -48,17 +43,19 @@ performance metrics, save raw data and send it for further analysis.
 
  * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
  
-
 ### General Meteorology
 
  * wsrec - Weather data recorder. Currently supporting: WH1080, WH1081, WH1090, WH20xx family of devices
   
-
 ## Support
 
 If you need help regarding Kronometrix data recording, we are offering commercial support. 
 Please contact us +358 50 483 9978 or email us at: sales@kronometrix.com
   
+## Resources
+
+| [kronometrix.io][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3] |
+| ----------------------- | ------------- | --------------------- |
 
 [1]: https://kronometrix.io/
 [2]: https://twitter.com/KronometrixHelp
