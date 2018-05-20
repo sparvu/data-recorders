@@ -1,5 +1,5 @@
-<img src="https://github.com/kronometrix/recording/blob/master/img/k-logo.png" align="left" height="35" width="275" />
-<img src="https://github.com/kronometrix/recording/blob/master/img/perl_logo.png" align="right" />
+<img src="https://github.com/kronometrix/recording/blob/master/docs/img/k-logo.png" align="left" height="35" width="275" />
+<img src="https://github.com/kronometrix/recording/blob/master/docs/img/perl_logo.png" align="right" />
 <br/>
 
 # Description
@@ -44,8 +44,8 @@ The recorder can operate in two modes:
   
   * automatic: you can continuously record data, using a default sampling rate of _60 seconds_ 
 
-<img src="https://github.com/kronometrix/recording/blob/master/img/recorderplus.png" align="right" /> 
-<img src="https://github.com/kronometrix/recording/blob/master/img/recorder.png" align="right" /> 
+<img src="https://github.com/kronometrix/recording/blob/master/docs/img/recorderplus.png" align="right" /> 
+<img src="https://github.com/kronometrix/recording/blob/master/docs/img/recorder.png" align="right" /> 
 
 
 ## Supported Industries
