@@ -56,5 +56,9 @@ Please contact us +358 50 483 9978 or email us at: sales@kronometrix.com
   
 ## Resources
 
-| [https://kronometrix.io] | [https://twitter.com/KronometrixHelp] | [https://www.facebook.com/kronometrix] |
+| [kronometrix.io][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3] |
 | ----------------------- | ------------- | --------------------- |
+
+[1]: https://kronometrix.io/
+[2]: https://twitter.com/KronometrixHelp
+[3]: https://www.facebook.com/kronometrix
