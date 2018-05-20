@@ -1,3 +1,8 @@
+<img src="https://github.com/kronometrix/recording/blob/master/docs/img/k-logo.png" align="left" height="35" width="275" />
+<br/>
+
+## Getting started
+
 You can manually install Kronometrix data recording on several operating systems, 
 or you can open your free account, http://kronometrix.io/register to automatically 
 provision and visualize your data. 
