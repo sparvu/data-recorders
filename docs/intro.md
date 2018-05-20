@@ -1,11 +1,5 @@
 <img src="https://github.com/kronometrix/recording/blob/master/docs/img/k-logo.png" align="left" height="35" width="275" />
-<img src="https://github.com/kronometrix/recording/blob/master/docs/img/perl_logo.png" align="right" />
 <br/>
-
-# Introduction
-
-A simple and efficient set of data recorders and transport utilities for ICT, environmental monitoring, meteorology 
-and IoT, designed to record top essential performance metrics, save raw data and send it for further analysis.
 
 ## Raw Data
 All recorded observations are stored as raw data. Raw data is produced by a _recorder_, which fetches data from a 
