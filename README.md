@@ -46,7 +46,11 @@ performance metrics, save raw data and send it for further analysis.
 ### General Meteorology
 
  * wsrec - Weather data recorder. Currently supporting: WH1080, WH1081, WH1090, WH20xx family of devices
-  
+
+## Download 
+
+You can can download our software [here](docs/start.md)
+
 ## Support
 
 If you need help regarding Kronometrix data recording, we are offering commercial support. 
