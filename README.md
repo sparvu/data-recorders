@@ -2,9 +2,6 @@
 <img src="https://github.com/kronometrix/recording/blob/master/docs/img/perl_logo.png" align="right" />
 <br/>
 
-| [https://kronometrix.io][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3] |
-| ----------------------- | ------------- | --------------------- |
-
 ## Overview
 
 A simple and efficient set of data recorders and transport utilities for ICT, 
@@ -57,3 +54,7 @@ performance metrics, save raw data and send it for further analysis.
 If you need help regarding Kronometrix data recording, we are offering commercial support. 
 Please contact us +358 50 483 9978 or email us at: sales@kronometrix.com
   
+## Resources
+
+| [https://kronometrix.io] | [https://twitter.com/KronometrixHelp] | [https://www.facebook.com/kronometrix] |
+| ----------------------- | ------------- | --------------------- |
