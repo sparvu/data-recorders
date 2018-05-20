@@ -1,6 +1,3 @@
-<img src="https://github.com/kronometrix/recording/blob/master/docs/img/k-logo.png" align="left" height="35" width="275" />
-<br/>
-
 ## Raw Data
 All recorded observations are stored as raw data. Raw data is produced by a _recorder_, which fetches data from a 
 system, device or sensor, data which has not been modified, altered or changed in any way. All collected metrics 
