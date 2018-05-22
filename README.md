@@ -11,7 +11,7 @@ environmental monitoring, meteorology and IoT, designed to record top essential
 performance metrics, save raw data and send it for further analysis.
 
 * [Design](docs/design.md)
-* [Getting Started](docs/start.md)
+* [Getting started](docs/start.md)
 * [Contributing and support](docs/contributing.md)
 
 ## Features
