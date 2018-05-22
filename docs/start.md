@@ -23,7 +23,7 @@ your data.
   * Download packages
     * x64: http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x64.deb
     * x86: http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x86.deb
-    * arm 32bit: http://www.kronometrix.org/pkgs/linux/kdr-stable-raspbian-arm.deb
+    * armv7: http://www.kronometrix.org/pkgs/linux/kdr-stable-raspbian-arm.deb
     
 * Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
 
@@ -34,7 +34,7 @@ your data.
   * Download packages
     * x64: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x64.txz
     * x86: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x86.txz
-    * arm 32bit: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-arm.txz
+    * armv7: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-arm.txz
     
   * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
 
