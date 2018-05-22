@@ -57,9 +57,7 @@ You can can download our software [here](docs/start.md)
 ## Support
 
 If you have any technical problems, questions or new ideas, please 
-contact us by opening a [new change request](https://github.com/kronometrix/recording/issues).
-
-For any security vulnerabilities found please open a new
+contact us by opening a [new change request](https://github.com/kronometrix/recording/issues). For any security vulnerabilities found please open a new
 [change request](https://github.com/kronometrix/recording/issues) marking 
 the subject as security vulnerability.
 
