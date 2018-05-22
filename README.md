@@ -21,8 +21,8 @@ performance metrics, save raw data and send it for further analysis.
 * Conservative in CPU and memory usage on different architectures 
 * Easy to change or add new data recorders to collect new data 
 * Runs without human intervention, easy to detect data transmission problems
-* Full control with no complicated licenses for further developments 
 * Fetch data from any system, device, sensor with support for multi-industry
+* Full control with no complicated licenses for further developments 
 
 ## Supported Industries
 
@@ -36,11 +36,11 @@ performance metrics, save raw data and send it for further analysis.
  * jvmrec - Java VM statistics
  * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
  * certrec - X.509 security certificate statistics
- * svcrec - service performance and availability: IMAP, SMTP, POP3, LDAP, DNS, TCP(Any)
- * direc - filesystem directory statistics 
+ * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP(Any)
+ * direc - filesystem directory statistics
  * ntprec - NTP server statistics
  * procrec - process statistics
- * webrec - web application performance and availability
+ * webrec - web application performance,availability
 
 ### Environmental Monitoring, IoT
 
