@@ -2,7 +2,7 @@
 <img src="https://github.com/kronometrix/recording/blob/master/docs/img/perl_logo.png" align="right" />
 <br/>
 
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)<img src="https://github.com/kronometrix/recording/blob/master/docs/img/ver-prod-brightgreen.svg"/>
 
 ## Overview
 
