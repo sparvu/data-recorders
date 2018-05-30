@@ -4,6 +4,7 @@
 
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
 <img src="https://github.com/kronometrix/recording/blob/master/docs/img/ver-prod-brightgreen.svg"/>
+![(docs/start.md)](https://github.com/kronometrix/recording/blob/master/docs/img/ver-prod-brightgreen.svg)
 
 ## Overview
 
