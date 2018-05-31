@@ -1,4 +1,138 @@
 {
+  "ascii-polled" : [
+    {
+      "port" : "/dev/cuaU0",
+      "baudrate" : 9600,
+      "parity" : "even",
+      "stopbits" : 1,
+      "databits" : 7,
+      "timeout" : 10,
+      "aq" : [
+        {
+          "unit": 2,
+          "vendor": "vaisala",
+          "model": "wxt520",
+          "description": "Vaisala WXT520 Series",
+          "crc": "yes",
+          "command": "2R0",
+          "message_start": "2R0",
+          "record_start": "",
+          "record_sep": ",",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "dn",
+              "description": "wind direction min",
+              "type": "string"
+            },
+            {
+              "name": "dm",
+              "description": "wind direction avg",
+              "type": "string"
+            },
+            {
+              "name": "dx",
+              "description": "wind direction max",
+              "type": "string"
+            },
+            {
+              "name": "sn",
+              "description": "wind speed min",
+              "type": "string"
+            },
+            {
+              "name": "sm",
+              "description": "wind speed avg",
+              "type": "string"
+            },
+            {
+              "name": "sx",
+              "description": "wind speed max",
+              "type": "string"
+            },
+            {
+              "name": "ta",
+              "description": "air temperature",
+              "type": "string"
+            },
+            {
+              "name": "ua",
+              "description": "relative humidity",
+              "type": "string"
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "ua" ]
+            },
+            {
+              "name": "pa",
+              "description": "air pressure",
+              "type": "string"
+            },
+            {
+              "name": "rc",
+              "description": "rain accumulation",
+              "type": "string"
+            },
+            {
+              "name": "rd",
+              "description": "rain duration",
+              "type": "string"
+            },
+            {
+              "name": "ri",
+              "description": "rain intensity",
+              "type": "string"
+            },
+            {
+              "name": "hc",
+              "description": "hail accumulation",
+              "type": "string"
+            },
+            {
+              "name": "hd",
+              "description": "hail duration",
+              "type": "string"
+            },
+            {
+              "name": "hi",
+              "description": "hail intensity",
+              "type": "string"
+            },
+            {
+              "name": "rp",
+              "description": "rain peak intensity",
+              "type": "string"
+            },
+            {
+              "name": "hp",
+              "description": "hail peak intensity",
+              "type": "string"
+            },
+            {
+              "name": "th",
+              "description": "heating temperature",
+              "type": "string"
+            },
+            {
+              "name": "vh",
+              "description": "heating voltage",
+              "type": "string"
+            },
+            {
+              "name": "vs",
+              "description": "supply voltage",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "modbus-ascii" : [
     {
       "port" : "/dev/cuaU0",
@@ -14,11 +148,15 @@
           "model": "aqt420",
           "description": "Vaisala AQT Series",
           "function": 3,
+          "range": {
+            "register": 0,
+            "length":43 
+          },
           "data": [
             {
               "name": "no2",
               "description": "nitrogen dioxide",
-              "type": "uint16",
+              "type": "int16",
               "register": 0,
               "length": 1,
               "factor": 1
@@ -26,7 +164,7 @@
             {
               "name": "so2",
               "description": "sulfur dioxide",
-              "type": "uint16",
+              "type": "int16",
               "register": 1,
               "length": 1,
               "factor": 1
@@ -57,7 +195,7 @@
             {
               "name": "o3",
               "description": "ozone",
-              "type": "uint16",
+              "type": "int16",
               "register": 5,
               "length": 1,
               "factor": 0.1
@@ -131,6 +269,38 @@
               "register": 12,
               "length": 1,
               "factor": 0.1
+            },
+            {
+              "name": "msval",
+              "description": "measurement validity",
+              "type": "uint16",
+              "register": 27,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "health",
+              "description": "device health",
+              "type": "uint16",
+              "register": 31,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "aqi",
+              "description": "air quality index",
+              "type": "uint16",
+              "register": 41,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "aqic",
+              "description": "air quality index criteria",
+              "type": "uint16",
+              "register": 42,
+              "length": 1,
+              "factor": 1
             }
           ]
         }
