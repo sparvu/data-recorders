@@ -1,6 +1,11 @@
 <img src="https://github.com/kronometrix/recording/blob/master/docs/img/k-logo.png" align="left" height="35" width="275" />
 <br/>
 
+Kronometrix has been designed to _reduce_ the number of metrics collected from ICT, environment or meteorology to
+IoT equipment by conducting a _carefully_ selection and analysis of what is required and how these metrics and parameters should be used. We are working closely with experts from each industry we support, to analyse these aspects from data collection, to summary statistics and visualization. 
+
+All collected metrics and parameters are defined under our [library of monitoring objects](https://github.com/sparvu/lmo), an open source library, which keeps track of what is being monitored, what statistics are built and for what scope. This library plays an important role to Kronometrix to ensure we record, analyse and process what matters most.
+
 
 ## Raw Data
 All recorded observations are stored as raw data. Raw data is produced by a _recorder_, which fetches data from a 
