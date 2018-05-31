@@ -26,6 +26,7 @@ use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Tie::IxHash;
+use List::Util 'first';
 #use Data::Dumper;
 
 ###  Process command line args
@@ -60,12 +61,6 @@ $main::opt_V  = 0;                  # revision option
 my $cfile     = 'rs485rec.json';    # configuration file
 my $kfile     = 'kronometrix.json'; # configuration file
 my $tp        = 0;                  # time precision
-my $port;                           # serial port config
-my $baudrate;                       # serial baudrate config
-my $timeout;                        # serial timeout config
-my $parity;                         # serial line parity config
-my $stopbits;                       # serial stopbits config
-my $databits;                       # serial databits config
 my $range     = 0;                  # serial range address config
 my ($cdata, $kdata);                # configuration data
 my ( $baselog, $curlog, $rlog);
@@ -100,8 +95,6 @@ if ( $interval =~ /\./ ) {
 $cdata = open_config($cfile);
 
 my $log;
-my $MODBUS_RTU   = 0;
-my $MODBUS_ASCII = 0;
 
 # workloads
 tie my %devices, "Tie::IxHash";
@@ -127,18 +120,31 @@ if ($logging) {
 # get it as verbose
 if($verbose) {
     if ($logging) {
-        print $log "Total devices: " . keys(%devices) . ".\n";
-        print $log "Message:Device:ID:Function:Range:Vendor => Parameter_Type_Register_Length_Factor\n";
+        print $log "Msg:Dev:Id:Port:Baudrate:Parity:Stopbits:Databits:Timeout:Proto:Cmd:Crc:Som:Sor:Sep:Eor:Eom:Func:Range:Vendor => Parameter_Type[_Register_Length_Factor]\n";
+        my $nkey = 0;
         for my $key (keys %devices) {
             my $value = $devices{$key};
-            print $log "$key => $value\n";
+            if ($nkey == 0 ) {
+                print $log "$key =>\n$value\n" ;
+            } else {
+                print $log "\n$key =>\n$value\n" ;
+            }
+
+            $nkey++;
         }
+
     } else {
-        print "Total devices: " . keys(%devices) . ".\n";
-        print "Message:Device:ID:Function:Range:Vendor => Parameter_Type_Register_Length_Factor\n";
+        print "Msg:Dev:Id:Port:Baudrate:Parity:Stopbits:Databits:Timeout:Proto:Cmd:Crc:Som:Sor:Sep:Eor:Eom:Func:Range:Vendor => Parameter_Type[_Register_Length_Factor]\n";
+        my $nkey = 0;
         for my $key (keys %devices) {
             my $value = $devices{$key};
-            print "$key => $value\n";
+            if ($nkey == 0 ) { 
+                print "$key =>\n$value\n" ;
+            } else { 
+                print "\n$key =>\n$value\n" ;
+            }
+            
+            $nkey++;
         }
     }
 }
@@ -146,100 +152,73 @@ if($verbose) {
 
 # main loop
 while (1) {
-
-    my $client;
-
-    # get it as verbose
-    if($verbose) {
-        if ($logging) {
-            print $log "\nProtocol(s): MODBUS(RTU:$MODBUS_RTU, ASCII:$MODBUS_ASCII, TCP:NA)\n";
-        } else {
-            print "\nProtocol(s): MODBUS(RTU:$MODBUS_RTU, ASCII:$MODBUS_ASCII, TCP:NA)\n";
-        }
-    }
-
-    eval {
-        
-        if ($MODBUS_RTU) {
-
-            use Device::Modbus::RTU::Client;
-
-            if (defined $databits) {
-                $client = 
-                  Device::Modbus::RTU::Client->new( port     => $port,
-                                                    baudrate => $baudrate,
-                                                    timeout  => $timeout,
-                                                    parity   => $parity,
-                                                    databits => $databits,
-                                                    stopbits => $stopbits
-                                                  );
-            } else {
-                $client = 
-                  Device::Modbus::RTU::Client->new( port     => $port,
-                                                    baudrate => $baudrate,
-                                                    timeout  => $timeout,
-                                                    parity   => $parity,
-                                                    stopbits => $stopbits
-                                                  );
-            }
  
-        } elsif ($MODBUS_ASCII) {
+    # multiple clients running on different protocols
+    my ($client_apoll, $client_mrtu, $client_mascii);
 
-            use Device::Modbus::ASCII::Client;
+    for my $key (keys %devices) {
 
-            if (defined $databits) {
-                $client =
-                  Device::Modbus::ASCII::Client->new( port     => $port,
-                                                      baudrate => $baudrate,
-                                                      timeout  => $timeout,
-                                                      parity   => $parity,
-                                                      databits => $databits,
-                                                      stopbits => $stopbits
-                                                    );
-            } else {
-                $client =
-                  Device::Modbus::ASCII::Client->new( port     => $port,
-                                                      baudrate => $baudrate,
-                                                      timeout  => $timeout,
-                                                      parity   => $parity,
-                                                      stopbits => $stopbits
-                                                    );
-            }
-        }
-    };
+        my $value = $devices{$key};
 
-    if ($@) {
-        if ($logging) {
-            write_log ("error: cannot initialize MODBUS client port $port $!");
-        } else {
-            print "error: cannot initialize MODBUS client port $port $!\n";
-        }
-    } else {
+        my ($rawfile, $devname, $devid, $port, $baudrate, $parity, $stopbits, $databits, $timeout, $proto, $cmd, $crc, $som, $sor, $rsp, $eor, $eom, $func, $arange, $desc) = split( /:/, $key );
+        my @values = split( /:/, $value );
 
-        for my $key (keys %devices) {
+        if ($proto eq 'ascii-polled') {
 
-            my $value = $devices{$key};
-            my ($rawfile, $dev_name, $modbus_id, $modbus_func, $arange, $desc) = split( /:/, $key );
-            my @values = split( /:/, $value );
             eval {
-                exec_modbus($client, $rawfile, $dev_name, $modbus_id, $modbus_func, $arange, @values);
+
+                if (! defined $client_apoll) {
+                    $client_apoll = init_apoll($port, $baudrate, $parity, $stopbits, $databits);
+                }
+
+                exec_apoll($client_apoll, $rawfile, $devname, $devid, $timeout, $cmd, $crc, $som, $sor, $rsp, $eor, $eom, @values);
             };
 
-            if ($@) {
-                if ($logging) {
-                    write_log ("error: cannot access device $dev_name $!");
-                } else {
-                    print "error: cannot access device $dev_name $!\n";
+        } elsif ($proto eq 'modbus-rtu') {
+
+            eval {
+
+                if (! defined $client_mrtu) {
+                    $client_mrtu = init_mrtu($port, $baudrate, $parity, $stopbits, $databits, $timeout);
                 }
+
+                exec_modbus($client_mrtu, $rawfile, $devname, $devid, $func, $arange, @values);
+            };
+
+        } elsif ($proto eq 'modbus-ascii') {
+
+            eval {
+
+                if (! defined $client_mascii) {
+                    $client_mascii = init_mascii($port, $baudrate, $parity, $stopbits, $databits, $timeout);
+                }
+
+                exec_modbus($client_mascii, $rawfile, $devname, $devid, $func, $arange, @values);
+            };
+        }
+
+        if ($@) {
+            if ($logging) {
+                write_log ("error processing $devname: $!");
+            } else {
+                print "error processing $devname: $!\n";
             }
         }
     }
 
-    if ($client) {
-        # closing all
-        $client->disconnect;
-    }
+    if (defined $client_apoll) {
 
+        $client_apoll->close;
+
+    } elsif (defined $client_mrtu) {
+
+        $client_mrtu->disconnect;
+
+    } elsif (defined $client_mascii) {
+
+        $client_mascii->disconnect;
+    }
+ 
     # free client
     # undef $client;
 
@@ -314,17 +293,21 @@ sub get_devices {
     my ($data) = @_;
     tie my %devs, "Tie::IxHash";
 
-    my @proto = ('modbus-ascii', 'modbus-rtu');
+    my @proto = ('ascii-polled', 'modbus-ascii', 'modbus-rtu');
 
     for my $protocol (@proto) {
 
         # skip protocols if not defined
         next if (! defined $data->{$protocol});
 
-        $MODBUS_RTU = 1 if ($protocol eq 'modbus-rtu');
-        $MODBUS_ASCII = 1 if ($protocol eq 'modbus-ascii');
-
         my @temp = @{ $data->{$protocol} };
+
+            my $port = 'NA';
+            my $baudrate = 'NA';
+            my $parity   = 'NA';
+            my $databits = 'NA';
+            my $stopbits = 'NA';
+            my $timeout  = 'NA';
 
         for my $f (@temp) {
             my ($sid, $tid, $dsid);
@@ -333,9 +316,12 @@ sub get_devices {
             $baudrate  = $f->{'baudrate'};
             $timeout   = $f->{'timeout'};
             $parity    = $f->{'parity'};
+
+            # databits
             if (defined $f->{'databits'}) {
                 $databits = $f->{'databits'};
             }
+
             $stopbits  = $f->{'stopbits'};
 
             my @lmoids = ('iaq', 'aq');
@@ -348,38 +334,98 @@ sub get_devices {
 
                     my $rng_register;
                     my $rng_length;
+                    my $mf  = 'NA';
+                    my $crc = 'NA';
+                    my $cmd = 'NA';
+                    my $som = 'NA';
+                    my $sor = 'NA';
+                    my $rsp = 'NA';
+                    my $eor = 'NA';
+                    my $eom = 'NA';
 
                     my $unit    = $dev -> {'unit'};
                     my $vendor  = $dev -> {'vendor'};
                     my $model   = $dev -> {'model'};
-                    my $mf      = $dev -> {'function'};
 
+                    # check for modbus parameters
+                    if (defined $dev->{'function'}) {
+                        $mf = $dev->{'function'};
+                    }
+
+                    # check for ascii command
+                    if (defined $dev->{'command'}) {
+                        $cmd = $dev->{'command'};
+
+                        if ($dev->{'crc'}) {
+                            $crc = $dev->{'crc'};
+                        }
+
+                        if ($dev->{'message_start'}) { 
+                            $som = $dev->{'message_start'};
+                        }
+
+                        if ($dev->{'record_start'}) { 
+                            $sor = $dev->{'record_start'};
+                        }
+
+                        if ($dev->{'record_sep'}) { 
+                            $rsp = $dev->{'record_sep'};
+                        }
+
+                        if ($dev->{'record_end'}) { 
+                            $eor = $dev->{'record_end'};
+                        }
+
+                        if ($dev->{'message_end'}) { 
+                            $eom = $dev->{'message_end'};
+                        }
+                    }
+
+                    # check for modbus range filter
                     if (defined $dev->{'range'}) {
                         $rng_register = $dev->{'range'}->{'register'};
                         $rng_length = $dev->{'range'}->{'length'};
                         $range = $rng_register . '-' . $rng_length;
                     }
 
-                    my @registers = @{ $dev->{'data'} };
-
                     my $k=0;
                     my $params;
-                    for my $dt (@registers) {
+
+                    my @metrix = @{ $dev->{'data'} };
+                    for my $dt (@metrix) {
                         my ($dname, $dtype);
                         my $dreg; my $dlen; my $dfct;
 
-                        if ( $dt -> {'type'} eq 'uint16' or
-                             $dt -> {'type'} eq 'int16' or
-                             $dt -> {'type'} eq 'floatinv'  ) {
+                        if ( $dt -> {'type'} eq 'uint16'   or
+                             $dt -> {'type'} eq 'int16'    or
+                             $dt -> {'type'} eq 'floatinv' or
+                             $dt -> {'type'} eq 'string'  ) {
 
                             $dname = $dt -> {'name'};
                             $dtype = $dt -> {'type'};
 
-                            $dreg = $dt -> {'register'};
-                            $dlen = $dt -> {'length'};
-                            $dfct = $dt -> {'factor'};
-             
-                            $dname .=  '_' . $dtype . '_' . $dreg . '_' . $dlen . '_' . $dfct;
+                            if(defined $dt -> {'register'}) {
+                                $dreg = $dt -> {'register'};
+                            }
+
+                            if(defined $dt -> {'length'}) {
+                                $dlen = $dt -> {'length'};
+                            }
+
+                            if(defined $dt -> {'factor'}) {
+                                $dfct = $dt -> {'factor'};
+                            }
+                            
+                            if (defined $dreg and 
+                                defined $dlen and 
+                                defined $dfct ) {
+                            
+                                $dname .=  '_' . $dtype . '_' . $dreg . '_' . $dlen . '_' . $dfct;
+
+                            } else {
+
+                                $dname .=  '_' . $dtype;
+                            }
 
                         } elsif ( $dt -> {'type'} eq 'virtual' ) {
 
@@ -405,9 +451,10 @@ sub get_devices {
     
                         $k++;
                     }
+
                     my $rfile = $lmoid . '_' . $model . 'rec';
                     my $devname = $model . '_' . $unit;
-                    my $keyapp = $rfile . ':' . $devname . ':'  . $unit . ':' . $mf . ':' . $range . ':' . $vendor;
+                    my $keyapp = $rfile . ':' . $devname . ':'  . $unit . ':' . $port . ':' . $baudrate . ':' . $parity . ':' . $stopbits . ':' . $databits . ':' . $timeout . ':' . $protocol . ':' . $cmd . ':' . $crc . ':' . $som . ':' . $sor . ':' . $rsp . ':' . $eor . ':' . $eom . ':' . $mf . ':' . $range . ':' . $vendor;
                     my $hvalue = $params;
                     $devs{$keyapp} = $hvalue;
                 }
@@ -417,6 +464,106 @@ sub get_devices {
     }
 
     return %devs;
+}
+
+
+# init ascii-polled devices
+#
+sub init_apoll {
+
+    my ($port, $baudrate, $parity, $stopbits, $databits) = @_;
+    my $c;
+
+    use Device::SerialPort;
+
+    if (defined $databits) {
+
+        $c = new Device::SerialPort($port);
+
+        $c->databits($databits);
+        $c->baudrate($baudrate);
+        $c->parity($parity);
+        $c->stopbits($stopbits);
+        $c->handshake('none');
+        $c->stty_onlcr(1);
+        $c->write_settings;
+
+    } else {
+
+        $c = new Device::SerialPort($port);
+
+        $c->baudrate($baudrate);
+        $c->parity($parity);
+        $c->stopbits($stopbits);
+        $c->handshake('none');
+        $c->stty_onlcr(1);
+        $c->write_settings;
+    }
+
+    # return client
+    return $c;
+}
+
+
+# init modbus-rtu devices
+#
+sub init_mrtu {
+
+    my ($port, $baudrate, $parity, $stopbits, $databits, $timeout) = @_;
+    my $c;
+
+    use Device::Modbus::RTU::Client;
+
+    if (defined $databits and $databits ne 'NA') {
+        $c = Device::Modbus::RTU::Client->new( port     => $port,
+                                              baudrate => $baudrate,
+                                              timeout  => $timeout,
+                                              parity   => $parity,
+                                              databits => $databits,
+                                              stopbits => $stopbits
+                                             );
+    } else {
+        $c = Device::Modbus::RTU::Client->new( port     => $port,
+                                               baudrate => $baudrate,
+                                               timeout  => $timeout,
+                                               parity   => $parity,
+                                               stopbits => $stopbits
+                                             );
+    }
+
+    # return client
+    return $c;
+}
+
+
+# init modbus-ascii devices
+#
+sub init_mascii {
+
+    my ($port, $baudrate, $parity, $stopbits, $databits, $timeout) = @_;
+    my $c;
+
+    use Device::Modbus::ASCII::Client;
+
+    if (defined $databits and $databits ne 'NA') {
+        $c = Device::Modbus::ASCII::Client->new( port     => $port,
+                                                 baudrate => $baudrate,
+                                                 timeout  => $timeout,
+                                                 parity   => $parity,
+                                                 databits => $databits,
+                                                 stopbits => $stopbits
+                                               );
+    } else {
+        $c = Device::Modbus::ASCII::Client->new( port     => $port,
+                                                 baudrate => $baudrate,
+                                                 timeout  => $timeout,
+                                                 parity   => $parity,
+                                                 stopbits => $stopbits
+                                               );
+    }       
+
+    # return client
+    return $c;
 }
 
 
@@ -556,7 +703,269 @@ sub getrdata_modbus {
 }
 
 
-# execute MODBUS client communication
+
+# fetches values using ascii polled
+#
+sub getdata_apoll {
+
+    my ( $client, $id, $timeout, $cmd, $crc, $som, $sor, $rsp, $eor, $eom ) = @_;
+    my $rvalue = 'NA';
+    my $endrec = '\n';
+
+    if ($eor eq 'CRLF') {
+        $endrec = "\r\n";
+    }
+
+    $client->purge_all;
+    # send command to device
+    $client->write($cmd);
+    $client->write($endrec);
+
+    my $c = 0;
+    my $msgcrc = 'NA';
+    my $record = "";
+
+    while ($timeout>0) {
+    
+        # reading from device
+        for (;;) {
+
+            if ($c = $client->input) {
+                $record .= $c;
+                last if $record =~ /$endrec/;
+            } else { $timeout--; }
+        }
+    }
+
+    if ($timeout==0) {
+
+        if ($logging) {
+            print $log ("\nError timeout\n");
+        } else {
+            print "\nError timeout\n";
+        }
+    }
+
+    if (defined $record) {
+
+        # check for message checksum
+        if ($crc eq 'yes') {
+
+            $msgcrc = substr($record, -5);
+            $record = substr($record, 0, -5);
+            $rvalue = $record;
+
+        } else {
+
+            $rvalue = $record;
+        } 
+    }
+    
+    # return all values as single record
+    return $rvalue;
+}
+
+
+# format ascii-polled data
+#
+sub apoll_fmtdata {
+
+    my ( $dname, $dtype, @buf ) = @_;
+    my $rvalue ;
+    
+    if ( $dtype eq 'string' ) {
+
+        # device type: metric=value (WXT520)
+        if ( grep( /=/, @buf ) ) {
+
+            # match metrix name
+            my $match = first { /$dname/i } @buf;
+
+            # fetch the value
+            $rvalue = $match =~ s/^.*=//gr;
+
+            # handle unit value
+            my $tr = $rvalue;
+            my $lchar = chop($tr);
+            if ($lchar ne '#') {
+
+                $rvalue = substr($rvalue, 0, -1);
+
+            } else { 
+
+                $rvalue = 'NA';
+            }
+
+        # device type: value (HMP)
+        } else {
+
+            $rvalue = 'NA';
+        }
+
+    } else {
+
+        $rvalue = 'NA';
+
+    }
+
+    return $rvalue;
+}
+
+
+
+# execute ASCII POLLED communication
+#
+sub exec_apoll {
+
+    my ( $dclient, $rawfile, $dname, $did, $dtimeout, $dcmd, $dcrc, $dsom, $dsor, $drsp, $deor, $deom, @vals ) = @_;
+
+    tie my %metrix, "Tie::IxHash";
+
+    my $val;
+    my $fval;
+
+    if ($logging) {
+        if ($verbose) {
+            print $log ("\nData message\n");
+            print $log (" krd:'$rawfile'\n dev:'$dname' id:'$did' timeout:'$dtimeout'\n cmd:'$dcmd' crc:'$dcrc' som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n");
+            print $log ("Parameters\n");
+            foreach (@vals) {
+                print $log " $_\n";
+            }
+        }
+    } else {
+        if ($verbose) {
+            print "\nData message\n";
+            print " krd:'$rawfile'\n dev:'$dname' id:'$did'\n cmd:'$dcmd' crc:'$dcrc' som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n";
+            print "Parameters\n";
+            foreach (@vals) {
+                print " $_\n";
+            }
+        }
+    }
+
+    my $treq = time;
+
+    my @rbuf;
+
+    # process every metrix defined in msg
+    for my $metric (@vals) {
+        my @v = split("_",  $metric);
+
+        # metric name
+        # $v[0];
+ 
+        if ( $v[1] eq 'virtual' ) {
+
+            # virtual data type
+            my $vf = $v[2];
+
+            # check metrix buffer
+            my @fname_args = @v[3..$#v];
+
+            my ($temp, $humidity);
+
+            for my $fa (@fname_args) {
+
+                if ( $fa eq 'ta' ) {
+
+                    if (exists $metrix{$fa}) {
+                        my $arg = $metrix{$fa};
+                        $temp = $arg;
+                     }
+                
+                 } elsif ($fa eq 'rh' or $fa eq 'ua') {
+        
+                     if (exists $metrix{$fa}) {
+                         my $arg = $metrix{$fa};
+                         $humidity = $arg;
+                     }
+                 } 
+            }
+
+            # virtual function list: dewpoint, dewpoint_wmo, lcl
+            if ($vf eq 'dewpoint' ) {
+
+                if ($temp ne 'NA' or $humidity ne 'NA') {
+
+                    $val = sprintf ("%.2f", dewpoint($temp, $humidity) );
+
+                } else {
+
+                    $val='NA';
+
+                }
+
+            } elsif ($vf eq 'dewpointWMO' ) {
+
+                if ($temp ne 'NA' and $humidity ne 'NA') {
+
+                    $val = sprintf ("%.2f", dewpoint_wmo($temp, $humidity) );
+
+                } else {
+
+                    $val='NA';
+
+                }
+
+            } elsif ($vf eq 'lcl' ) {
+
+                if ($temp ne 'NA' and $humidity ne 'NA') {
+
+                    $val = sprintf ("%.2f", lcl($temp, $humidity) );
+
+                } else {
+
+                    $val = 'NA';
+
+                }
+
+            } else { next; }
+
+        } else {
+
+            # make the ascii call, one call
+            if (! defined $rbuf[0]) {
+                my $rval = getdata_apoll($dclient, $did, $dtimeout, $dcmd, $dcrc, $dsom, $dsor, $drsp, $deor, $deom );
+                @rbuf = split ($drsp, $rval);
+            }
+          
+            $val = apoll_fmtdata($v[0], $v[1], @rbuf);
+        }
+
+        # all metrix buffer        
+        $metrix{$v[0]} = $val;
+
+        if ($logging) {
+            print $log (" $v[0] -> $val\n") if ($verbose);
+        } else {
+            print " $v[0] -> $val\n" if ($verbose);
+        }
+       
+        $fval .=  ':' . $val;
+    }
+
+    if ($logging) {
+
+        # set krd raw file
+        $rawfile = $curlog . "/" . $rawfile . ".krd";
+
+        print $log (" rawfile=$rawfile\n") if ($verbose);
+
+        my $rawkrd = open_file($rawfile);
+        printf $rawkrd "%.${tp}f:%s%s\n", time, $dname, $fval;
+        close ($rawkrd);
+
+    } else {
+
+        printf "%.${tp}f:%s%s\n", time, $dname, $fval;
+
+    }
+}
+
+
+
+# execute MODBUS communication
 #
 sub exec_modbus {
 
@@ -569,13 +978,21 @@ sub exec_modbus {
 
     if ($logging) {
         if ($verbose) {
-            print $log ("krd: $rawfile, dev: $name, unit: $modbus_id, function: $modbus_f, range: $adrange\n");
-            print $log (" @vals\n");
+            print $log ("\nData message\n");
+            print $log (" krd:'$rawfile'\n dev:'$name' unit id:'$modbus_id'\n function:'$modbus_f' range:'$adrange'\n");
+            print $log ("Parameters\n");
+            foreach (@vals) {
+                print $log " $_\n";
+            }
         }
     } else {
         if ($verbose) {
-            print "\nkrd: $rawfile, dev: $name, unit: $modbus_id, function: $modbus_f, range: $adrange\n";
-            print " @vals\n"
+            print ("\nData message\n");
+            print (" krd:'$rawfile'\n dev:'$name' unit id:'$modbus_id'\n function:'$modbus_f' range:'$adrange'\n");
+            print ("Parameters\n");
+            foreach (@vals) {
+                print " $_\n";
+            }
         }
     }
  
@@ -623,15 +1040,39 @@ sub exec_modbus {
             # virtual function list: dewpoint, dewpoint_wmo, lcl
             if ($vf eq 'dewpoint' ) {
 
-                $val = sprintf ("%.2f", dewpoint($temp, $humidity) );
+                if ($temp ne 'NA' or $humidity ne 'NA') {
+
+                    $val = sprintf ("%.2f", dewpoint($temp, $humidity) );
+
+                } else { 
+
+                    $val='NA';
+
+                }
 
             } elsif ($vf eq 'dewpointWMO' ) {
 
-                $val = sprintf ("%.2f", dewpoint_wmo($temp, $humidity) );
+                if ($temp ne 'NA' and $humidity ne 'NA') {
+
+                    $val = sprintf ("%.2f", dewpoint_wmo($temp, $humidity) );
+
+                } else { 
+
+                    $val='NA';
+
+                }
  
             } elsif ($vf eq 'lcl' ) {
 
-                $val = sprintf ("%.2f", lcl($temp, $humidity) );
+                if ($temp ne 'NA' and $humidity ne 'NA') {
+
+                    $val = sprintf ("%.2f", lcl($temp, $humidity) );
+                
+                } else {
+
+                    $val = 'NA';
+
+                }
  
             } else { next; }
 
@@ -797,72 +1238,6 @@ OPTIONS:
   -v        : verbose information
   -V        : release version
   interval  : maximum number of seconds between samples
-
- EXAMPLE DATA MESSAGES
-
- *** OUTDOOR AIR QUALITY ***
-
-   Vaisala AQT420 AQ (aq_aqt420)
-    #01 Timestamp : Seconds since Epoch, time
-    #02 Devid     : The device id, string
-    #03 NO2       : Nitrite ion level, in ppm, number
-    #04 SO2       : Sulphur dioxide level, in ppm, number
-    #05 CO        : Carbon monoxide level, in ppm, number
-    #06 EMPTY     : Future usage
-    #07 H2S       : Hydrogen Sulfide level, in ppm, number
-    #08 O3        : Ozone level, in ppm, number
-    #09 NO        : Nitrogen oxide level, in ppm, number
-    #10 VOC       : Volatile organic compound level, in ppm, number
-    #11 PM25      : PM2.5 level, in ug/m3, number
-    #12 PM10      : PM10 level, in ug/m3, number
-    #13 Ta        : Air termperature, in C, number
-    #14 Rh        : Relative humidity, in %, number
-    #15 Td        : Dewpoint, in C, number
-    #16 Lcl       : Lifted condensation level, in meters, number
-    #17 P         : Air pressure, in mbar, number
-
- *** INDOOR AIR QUALITY ***
-
-   Tongdy MSD-1618 IAQ (iaq_msd1618)
-    #01 Timestamp : Seconds since Epoch, time
-    #02 Devid     : The device id, string
-    #03 Ta        : Air termperature, in C, number
-    #04 Rh        : Relative humidity, in %, number
-    #05 Td        : Dew point, in C, number
-    #06 CO2       : CO2 level, in ppm, number
-    #07 TVOC      : Total volatile organic compound, in mg/m3, number
-    #08 PM25      : Particulate matter 2.5 micrometers, in ug/m3, number
-    #09 PM10      : Particulate matter 10 micrometers, in ug/m3, number
-
-   Tongdy G01 IAQ (iaq_g01)
-    #01 Timestamp : Seconds since Epoch, time
-    #02 Devid     : The device id, string
-    #03 Ta        : Air termperature, in C, number
-    #04 Rh        : Relative humidity, in %, number
-    #05 Td        : Dew point, in C, number
-    #06 CO2       : CO2 level, in ppm, number
-    #07 VOC       : Volatile organic compound, in ppm, number
-
-   Vaisala GMW90 IAQ (iaq_gmw90)
-    #01 Timestamp : Seconds since Epoch, time
-    #02 Devid     : The device id, string
-    #03 Ta        : Air termperature, in C, number
-    #04 Rh        : Relative humidity, in %, number
-    #05 Td        : Dew point, in C, number
-    #06 CO2       : CO2 level, in ppm, number
-
- NOTES
- rs485rec is a multi-message data recorder, capable to handle multiple 
- devices on RS485 wire, using different protocols, like: MODBUS RTU, 
- MODBUS TCP or MODBUS ASCII.
-
- The recorder uses rs485rec.json configuration file, where all data messages
- are defined. 
-
- UNITS
-  ppm    - parts per million
-  mg/m3  - milligram per cubic meter
-  ug/m3  - microgram per cubic meter
 END
     exit 0;
 }
@@ -870,7 +1245,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-rs485rec: 1.2.9, 2018-04-25 0819
+rs485rec: 1.3.8, 2018-05-30 2131
 END
     exit 0;
 }
