@@ -202,6 +202,13 @@
       "domain" : [ "aqd" ]
     },
     {
+      "name"   : "aq_wxt520",
+      "file"   : "aq_wxt520rec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "aqd" ]
+    },
+    {
       "name"   : "iaq_g01",
       "file"   : "iaq_g01rec.krd",
       "sample" : 60,
