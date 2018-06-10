@@ -335,7 +335,7 @@ while (1) {
 
                     # message id
                     if ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-ntprec"; }
-                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-netrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-ntprec"; }
 
                 } elsif ($jvmrec_on) {
 
