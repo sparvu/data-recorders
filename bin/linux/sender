@@ -1,5 +1,5 @@
 #!/opt/kronometrix/perl/bin/perl
-
+#
 #  Copyright (c) 2018 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
@@ -90,7 +90,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "kdr/1.3.4 sender $osname";
+my $agent = "kdr/1.2.26 sender $osname";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -213,6 +213,7 @@ while (1) {
             my $a2invrec_on       = 0;
             my $a2busrec_on       = 0;
             my $aq_aqt420rec_on   = 0;
+            my $aq_wxt520rec_on   = 0;
             my $iaq_g01rec_on     = 0;
             my $iaq_gmw90rec_on   = 0;
             my $iaq_msd1618rec_on = 0;
@@ -238,6 +239,7 @@ while (1) {
         elsif ( $_->{"input"} =~ /a2invrec/       ) { $a2invrec_on  = 1; }
         elsif ( $_->{"input"} =~ /a2busrec/       ) { $a2busrec_on  = 1; }
         elsif ( $_->{"input"} =~ /aq_aqt420rec/   ) { $aq_aqt420rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_wxt520rec/   ) { $aq_wxt520rec_on  = 1; }
         elsif ( $_->{"input"} =~ /iaq_g01rec/     ) { $iaq_g01rec_on  = 1; }
         elsif ( $_->{"input"} =~ /iaq_gmw90rec/   ) { $iaq_gmw90rec_on  = 1; }
         elsif ( $_->{"input"} =~ /iaq_msd1618rec/ ) { $iaq_msd1618rec_on  = 1; }
@@ -268,6 +270,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-sysrec";     }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-sysrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-sysrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-sysrec"; }
 
                 } elsif ($cpurec_on) {
@@ -278,6 +281,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-cpurec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-cpurec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-cpurec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-cpurec"; }
 
                 } elsif ($diskrec_on) {
@@ -288,6 +292,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-diskrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-diskrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-diskrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-diskrec"; }
 
                 } elsif ($direc_on) {
@@ -298,6 +303,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd')  { $f=1; $msgid = "$osname-direc"; }
                  elsif ($lid eq 'dpd')  { $f=1; $msgid = "dpd-$osname-direc"; }
+                 elsif ($lid eq 'spd')  { $f=1; $msgid = "spd-$osname-direc"; }
                  elsif ($lid eq 'wpd')  { $f=1; $msgid = "wpd-$osname-direc"; }
 
                 } elsif ($nicrec_on) {
@@ -308,6 +314,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-nicrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-nicrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-nicrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-nicrec"; }
 
                 } elsif ($netrec_on) {
@@ -318,6 +325,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-netrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-netrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-netrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-netrec"; }
 
                 } elsif ($ntprec_on) {
@@ -326,7 +334,8 @@ while (1) {
                     $devid = get_devid(1, $delta);
 
                     # message id
-                    if ($lid eq 'dpd' ) { $f=1; $msgid = "dpd-$osname-ntprec"; }
+                    if ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-ntprec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-netrec"; }
 
                 } elsif ($jvmrec_on) {
 
@@ -336,6 +345,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-jvmrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-jvmrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-jvmrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-jvmrec"; }
 
                 } elsif ($aq_aqt420rec_on) {
@@ -345,6 +355,15 @@ while (1) {
         
                     # message id
                     if ($lid eq 'aqd') { $f=1; $msgid = "aq_aqt420"; }
+
+
+                } elsif ($aq_wxt520rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'aqd') { $f=1; $msgid = "aq_wxt520"; }
 
                 } elsif ($iaq_g01rec_on) {
 
@@ -402,6 +421,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-procrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-procrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-procrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-procrec"; }
 
                 } elsif ($zonerec_on) {
@@ -412,6 +432,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-zonerec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-zonerec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-zonerec"; }
 
                 } elsif ($hdwrec_on) {
 
@@ -421,6 +442,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-hdwrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-hdwrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-hdwrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-hdwrec"; }
 
                 } elsif ($xenrec_on) {
@@ -431,6 +453,7 @@ while (1) {
                     # message id
                     if ($lid eq 'cpd') { $f=1; $msgid = "$osname-xenrec"; }
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-xenrec"; }
+                 elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-xenrec"; }
 
                 } elsif ($wsrec_on) {
 
@@ -492,8 +515,8 @@ while (1) {
                         }
 
                         $msgid = "epd-svc";
-                    }
-                 elsif ($lid eq 'dpd') { 
+
+                    } elsif ($lid eq 'dpd') { 
 
                         $f=1;
                     
@@ -544,7 +567,58 @@ while (1) {
                         }
 
                         $msgid = "dpd-svc";
+                    
+                    } elsif ($lid eq 'spd') { 
 
+                        $f=1;
+
+                        my $devtemp = get_devid(1, $delta);
+
+                        if ( $devtemp =~ /_/ ) {
+
+                            ($dsname, $devid ) = split ( /_/, $devtemp );
+
+                            # no dsid in the lookup epd table
+                            #my $idl = 'svc' . $lid;
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'svc' . $sid;
+                            }
+
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
+                            } else {
+                                $dsid = $tblk{$kkey};
+                            }
+
+                        } else {
+
+                            $dsname = $devtemp;
+                            # no dsid in the lookup epd table
+                            # my $idl = 'svc' . $lid;
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'svc' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'svc' . $sid;
+                            }
+
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
+                            } else {
+                                $dsid = $tblk{$kkey};
+                            }
+
+                            $devid = "system";
+                        }
+
+                        $msgid = "spd-svc";
                     }
 
                 } elsif ($certrec_on) {
@@ -584,9 +658,8 @@ while (1) {
                         }
 
                         $msgid = "epd-cert";
-                    }
 
-                 elsif ($lid eq 'dpd') { 
+                    } elsif ($lid eq 'dpd') { 
 
                         $f=1;
                     
@@ -622,7 +695,42 @@ while (1) {
 
                         $msgid = "dpd-cert";
 
-                  }
+                    } elsif ($lid eq 'spd') { 
+
+                        $f=1;
+
+                        my $devtemp = get_devid(1, $delta);
+
+                        if ( $devtemp =~ /_/ ) {
+
+                            ($dsname, $devid ) = split ( /_/, $devtemp );
+
+                            # no dsid in the lookup epd table
+                            my $kkey = $dsname . $lid . 'cert' . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
+                            } else {
+                                $dsid = $tblk{$kkey};
+                            }
+
+                        } else {
+
+                            $dsname = $devtemp;
+                            # no dsid in the lookup epd table
+                            my $kkey = $dsname . $lid . 'cert' . $sid;
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
+                            } else {
+                                $dsid = $tblk{$kkey};
+                            }
+
+                            $devid = "system";
+                        }
+
+                        $msgid = "spd-cert";
+                    }
 
                 } elsif ($webrec_on) {
 
@@ -657,7 +765,6 @@ while (1) {
                             } else {
                                 $dsid = $tblk{$kkey};
                             }
-                            
 
                         } else {
 
@@ -682,6 +789,57 @@ while (1) {
                         }
 
                         $msgid = "epd-ttfb";
+                    
+                    } elsif ($lid eq 'spd') {
+
+                        $f=1;
+
+                        my $devtemp = get_devid(1, $delta);
+
+                        if ( $devtemp =~ /_/ ) {
+
+                            ($dsname, $devid ) = split ( /_/, $devtemp );
+
+                            # no dsid in the lookup epd table
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'web' . $sid;
+                            }
+
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
+                            } else {
+                                $dsid = $tblk{$kkey};
+                            }
+
+                        } else {
+
+                            $dsname = $devtemp;
+                            # no dsid in the lookup epd table
+                            my $kkey;
+
+                            if ($force_uuid) {
+                                $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                            } else {
+                                $kkey = $dsname . $lid . 'web' . $sid;
+                            }
+
+                            if (! exists($tblk{$kkey})) {
+                                $dsid = make_wdsid($kkey);
+                                $tblk{$kkey} = $dsid;
+                            } else {
+                                $dsid = $tblk{$kkey};
+                            }
+
+                            $devid = "system";
+                        }
+
+                        $msgid = "spd-ttfb";
+
                     }
 
                 } elsif ($webinvrec_on) {
@@ -714,6 +872,31 @@ while (1) {
 
                         $devid = "system";
                         $msgid = "epd-inv";
+                    
+                    } elsif ($lid eq 'spd') {
+
+                        $f=1;
+                        my $devtemp = get_devid(1, $delta);
+
+                        $dsname = $devtemp;
+                        # no dsid in the lookup epd table
+                        my $kkey;
+
+                        if ($force_uuid) {
+                            $kkey = $dsname . $lid . 'web' . $hostid . $sid;
+                        } else {
+                            $kkey = $dsname . $lid . 'web' . $sid;
+                        }
+
+                        if (! exists($tblk{$kkey})) {
+                            $dsid = make_wdsid($kkey);
+                            $tblk{$kkey} = $dsid;
+                        } else {
+                            $dsid = $tblk{$kkey};
+                        }
+
+                        $devid = "system";
+                        $msgid = "spd-inv";
                     }
                 }
 
@@ -943,7 +1126,7 @@ sub get_hostid {
 sub make_hdsid {
 
     my ($data, $huuid) = @_;
-    my @lmo = ('amd', 'cpd', 'dpd', 'epd', 'aqd', 'iaqd', 'wcd', 'wpd' );
+    my @lmo = ('amd', 'cpd', 'dpd', 'epd', 'spd', 'aqd', 'iaqd', 'wcd', 'wpd' );
 
     # sid - subscription id
     # dsid - data source id
@@ -1060,7 +1243,7 @@ sub get_platform {
     my ($data) = @_;
     my %kplt;
 
-    my @lmo = ('amd', 'cpd', 'dpd', 'epd', 'aqd', 'iaqd', 'wcd', 'wpd');
+    my @lmo = ('amd', 'cpd', 'dpd', 'epd', 'spd', 'aqd', 'iaqd', 'wcd', 'wpd');
 
     my @temp = @{ $data->{'transport'}->{'platform'} };
 
@@ -1197,7 +1380,7 @@ sub send_data {
     my ($hash, $post);
 
     # EPD-TTFB
-    if ( $msg_id =~ /epd-ttfb/ ) {
+    if ( $msg_id =~ /epd-ttfb|spd-ttfb/ ) {
 
         #1481544913:www.fi:0.243:0.202:0.163:0.202:0.080:1719:200
         my ( $t, $n, $v1, $v2, $v3, $v4, $v5, $v6, $v7 ) = split ( /:/, $delta );
@@ -1227,7 +1410,7 @@ sub send_data {
     # TTFB                                   - WPD DOMAIN
     # IAQ_G01, IAQ_GMW90, IAQ_MSD            - IAQD DOMAIN
     # CPUREC, DISKREC, NICREC, DIREC, NTPREC - CPD DOMAIN
-    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|aq_aqt420|iaq_g01|iaq_gmw90|iaq_msd1618|a2*|wpd-.*-ttfb/ ) {
+    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|aq*|iaq_g01|iaq_gmw90|iaq_msd1618|a2*|wpd-.*-ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
 
@@ -1280,7 +1463,7 @@ sub usage {
     print STDERR <<END;
 USAGE: sender [-t secs] [-fhvV] | [interval]
 OPTIONS:
-  -f        : force host uuid for epd, dpd subscriptions
+  -f        : force host uuid for epd, dpd, spd subscriptions
   -h        : help information
   -t        : timeout in seconds
   -v        : verbose information
@@ -1297,7 +1480,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.2.5, 2018-06-02 0808
+sender: 1.2.8, 2018-06-10 1031
 END
     exit 0;
 }
