@@ -435,6 +435,7 @@ sub get_fs {
              ($fs->format($_) eq 'selinuxfs') or
              ($fs->mount_point($_) =~ /media\/floppy/ ) or
              ($fs->mount_point($_) =~ /dev\/\.static/ ) or
+             ($fs->mount_point($_) =~ /virtfs/ ) or
              ($fs->mount_point($_) =~ /cagefs-skeleton/ ) ) {
             next;
         }
@@ -533,7 +534,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.9, 2017-10-31 1311
+diskrec: 1.1.10, 2018-07-02 0206
 END
     exit 0;
 }
