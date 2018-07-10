@@ -17,7 +17,7 @@ README Kronometrix Data Recording
   Kronometrix Windows edition contains, all data records and the 
   transport utility and additional tools:
 
-    - agents: sysrec, cpurec, diskrec, nicrec, hdwrec, direc, ntprec
+    - recorders: sysrec, cpurec, diskrec, nicrec, hdwrec, direc, ntprec
 
     - transport: sender at the moment uses HTTP protocol
 
@@ -56,7 +56,7 @@ README Kronometrix Data Recording
 
 5.Operation
 
-  5.1.Start Agents
+  5.1.Start Recorders 
 
   We can start all data recorders using each recorder file, using 
   install option. This will run and install the data recorder as a Windows
@@ -81,7 +81,7 @@ README Kronometrix Data Recording
       c:\Program Files\Kronometrix\bin>sender.exe -install auto
 
 
-  5.3.Stop Agents
+  5.3.Stop Recorders
 
   We can stop all data recorders running each recorder file, using 
   remove option. This will run and remove the data recorders from

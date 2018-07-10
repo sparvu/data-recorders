@@ -107,7 +107,7 @@ README Kronometrix Data Recording
 
 5.Start procedure
 
-  5.1 Agents
+  5.1 Recorders
 
     We can start all data recorders using /opt/kronometrix/etc/rec
     script. Make sure before running that you are logged as krmx user
