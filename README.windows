@@ -128,29 +128,30 @@ README Kronometrix Data Recording
 
 7.Configuration
 
-  All data recorders and transport utility use kronometrix.json as the main
-  configuration file. 
+  The main configuratin file, kronometrix.json stores information about
+  the active data recorders being used, the address where data will be
+  delivered for analysis. Additonal, certain recorders might have their
+  own configuration files, like: webrec.json, svcrec.json, rs485rec.json
 
   7.1 kronometrix.json
 
-  This is the main configuration file used by the data recorders and 
-  sender, the transport utility. 
+    This is the main configuration file, including:
 
-    o Logging section
+    Logging section
 
-    This is the section defining all raw data logs will be stored and
-    the base path for the entire logs. This can be located on a local
-    disk or a remote LUN. Usually, this section, should not be changed 
-    or removed.
+    This is the section defining the base path and the location where all 
+    raw data logs will be stored. This can be located on a local disk or 
+    a remote LUN storage. Usually, this section, should not be changed or 
+    removed.
 
 
-    o Transport section
+    Transport section
 
     Describes all raw data files and their naming convention. Usually, 
     this section, should not be changed or removed.
 
 
-    o Platform section
+    Platform section
  
     This is the section where users should defined where they want to 
     send data. The platform section describes the details of one or
@@ -159,18 +160,18 @@ README Kronometrix Data Recording
     All raw data can be transported to one or many platforms at the same
     time. Under this section we need to define and configure, the following:
 
-      - platform port number, the port number default 80
+      o platform port number, the port number default 80
      
-      - platform hostname, IP or FQD of the platform 
+      o platform hostname, IP or FQD of the platform 
   
-      - protocol: HTTP or HTTPS, currently we support HTTP only
+      o protocol: HTTP or HTTPS
 
-      - lmo id: cpd or amd or wcd. cpd means, computer performance data 
+      o lmo id: cpd or amd or wcd. cpd means, computer performance data 
         and describes data belong to IT computer performance.
 
-        - sid: subscription id
+        o sid: subscription id
 
-        - tid: token id
+        o tid: token id
 
-        - dsid: to be let empty, will be computed
+        o dsid: to be let empty, will be automatically be computed
 
