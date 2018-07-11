@@ -175,3 +175,9 @@ README Kronometrix Data Recording
 
         o dsid: to be let empty, will be automatically be computed
 
+
+Notes
+
+  Kronometrix uses its own log rotate mechanism in order to be flexible and 
+  dont conflict with the operating system.
+

@@ -224,6 +224,5 @@ README Kronometrix Data Recording
 
 Notes
 
-  Kronometrix uses its own logrotate job in order to be flexible and dont 
-  conflict with other operating system jobs. raw2day as well is called after 
-  the log rotation has taken place ! 
+  Kronometrix uses its own log rotate mechanism in order to be flexible and 
+  dont conflict with the operating system.
