@@ -5,6 +5,7 @@ README Kronometrix Data Recording
 1.Supported Operating Systems
 
   We support the following Linux based operating systems:
+
     CentOS 6,7 (Final) x86_64, i386
     Foobar Linux 6.x, 7.x x86_64, i386
     CloudLinux 6 x86_64, i386
@@ -17,14 +18,37 @@ README Kronometrix Data Recording
 
 2.Package Content
 
-  Kronometrix Linux edition contains, all data records, the 
-  transport and raw data processing utilties. Along with these 
-  come the manual pages and documentation, all for free:
+  Kronometrix Linux edition contains, all data records, the transport 
+  and raw data processing utilties. Along with these comes the documentation, 
+  all included:
 
-    - recorders: sysrec, cpurec, diskrec, nicrec, hdwrec, procrec, jvmrec, 
-      netrec, wsrec, xenrec, webrec, rs485rec, direc, ntprec
+    - recorders:
 
-    - transport: sender
+      Information and Communications Technology
+
+      * sysrec - overall system CPU, MEM, DISK, NIC utilization
+      * cpurec - per CPU statistics
+      * nicrec - per NIC statistics
+      * diskrec - per DISK statistics
+      * hdwrec - hardware and software data inventory
+      * jvmrec - Java VM statistics
+      * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
+      * certrec - X.509 security certificate statistics
+      * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP(Any)
+      * direc - filesystem directory statistics
+      * ntprec - NTP server statistics
+      * procrec - process statistics
+      * webrec - web application performance,availability
+
+      Environmental Monitoring, IoT
+
+      * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
+
+      General Meteorology
+
+      * wsrec - Weather data recorder
+
+    - transport: sender utility
 
     - all needed libraries: openssl, libcurl, perl
 

@@ -17,9 +17,22 @@ README Kronometrix Data Recording
   Kronometrix Windows edition contains, all data records and the 
   transport utility and additional tools:
 
-    - recorders: sysrec, cpurec, diskrec, nicrec, hdwrec, direc, ntprec
+    - recorders:
 
-    - transport: sender at the moment uses HTTP protocol
+      Information and Communications Technology
+      
+      * sysrec - overall system CPU, MEM, DISK, NIC utilization
+      * cpurec - per CPU statistics
+      * nicrec - per NIC statistics
+      * diskrec - per DISK statistics
+      * hdwrec - hardware and software data inventory
+      * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
+      * certrec - X.509 security certificate statistics
+      * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP(Any)
+      * direc - filesystem directory statistics
+      * ntprec - NTP server statistics
+
+    - transport: sender
 
     - disks.exe: utility to return all disks attached to the system
 
