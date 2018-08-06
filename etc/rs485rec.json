@@ -476,6 +476,153 @@
             }
           ]
         }
+      ],
+      "aq": [
+        {
+          "unit": 192,
+          "vendor": "QUINT",
+          "model": "qups242410x",
+          "description": "Phoenix Contact QUINT-UPS/24DC/24DC/10",
+          "function": 4,
+          "data": [
+            {
+              "name": "BatteryMode",
+              "description": "",
+              "type": "uint16",
+              "register": 29697,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "ShutdownEvent",
+              "description": "",
+              "type": "uint16",
+              "register": 29698,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "BatteryCharging",
+              "description": "",
+              "type": "uint16",
+              "register": 29699,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "PowerSourceBoost",
+              "description": "",
+              "type": "uint16",
+              "register": 29702,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "OutputVoltage",
+              "description": "",
+              "type": "uint16",
+              "register": 29745,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "SocStateOfCharge",
+              "description": "",
+              "type": "uint16",
+              "register": 29749,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "SocResidualBackupTimeM",
+              "description": "",
+              "type": "uint16",
+              "register": 29750,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "SohResidualLifeTime",
+              "description": "",
+              "type": "uint16",
+              "register": 29753,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "BatteryVoltage",
+              "description": "",
+              "type": "uint16",
+              "register": 29792,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "BatteryTemperature",
+              "description": "",
+              "type": "uint16",
+              "register": 29793,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "OutputVoltage2",
+              "description": "",
+              "type": "uint16",
+              "register": 29794,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "BatteryChargeCurrent",
+              "description": "",
+              "type": "uint16",
+              "register": 29797,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "BatteryDischaCurrent",
+              "description": "",
+              "type": "uint16",
+              "register": 29798,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "BatteryDetectedUnits",
+              "description": "",
+              "type": "uint16",
+              "register": 29799,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "BatteryNomCapacitymAh",
+              "description": "",
+              "type": "uint16",
+              "register": 29800,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "ActualAlarm",
+              "description": "",
+              "type": "uint16",
+              "register": 29840,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "ActualWarning",
+              "description": "",
+              "type": "uint16",
+              "register": 29844,
+              "length": 1,
+              "factor": 1
+            }
+          ]
+        }
       ]
     }
   ]
