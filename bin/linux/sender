@@ -192,57 +192,63 @@ while (1) {
             my $lmoid;
             my $dsname;
 
-            my $sysrec_on         = 0;
-            my $cpurec_on         = 0;
-            my $certrec_on        = 0;
-            my $diskrec_on        = 0;
-            my $nicrec_on         = 0;
-            my $hdwrec_on         = 0;
-            my $procrec_on        = 0;
-            my $netrec_on         = 0;
-            my $zonerec_on        = 0;
-            my $jvmrec_on         = 0;
-            my $xenrec_on         = 0;
-            my $wsrec_on          = 0;
-            my $svcrec_on         = 0;
-            my $webrec_on         = 0;
-            my $webinvrec_on      = 0;
-            my $direc_on          = 0;
-            my $ntprec_on         = 0;
-            my $a2statrec_on      = 0;
-            my $a2invrec_on       = 0;
-            my $a2busrec_on       = 0;
-            my $aq_aqt420rec_on   = 0;
-            my $aq_wxt520rec_on   = 0;
-            my $iaq_g01rec_on     = 0;
-            my $iaq_gmw90rec_on   = 0;
-            my $iaq_msd1618rec_on = 0;
+            my $sysrec_on            = 0;
+            my $cpurec_on            = 0;
+            my $certrec_on           = 0;
+            my $diskrec_on           = 0;
+            my $nicrec_on            = 0;
+            my $hdwrec_on            = 0;
+            my $procrec_on           = 0;
+            my $netrec_on            = 0;
+            my $zonerec_on           = 0;
+            my $jvmrec_on            = 0;
+            my $xenrec_on            = 0;
+            my $wsrec_on             = 0;
+            my $svcrec_on            = 0;
+            my $webrec_on            = 0;
+            my $webinvrec_on         = 0;
+            my $direc_on             = 0;
+            my $ntprec_on            = 0;
+            my $a2statrec_on         = 0;
+            my $a2invrec_on          = 0;
+            my $a2busrec_on          = 0;
+            my $iaq_g01rec_on        = 0;
+            my $iaq_gmw90rec_on      = 0;
+            my $iaq_msd1618rec_on    = 0;
+            my $aq_aqt420rec_on      = 0;
+            my $aq_wxt520rec_on      = 0;
+            my $aq_qups24rec_on      = 0;
+            my $aq_qups24ahrec_on    = 0;
+            my $aq_qups242410xrec_on = 0;
 
-           if ( $_->{"input"} =~ /sysrec/         ) { $sysrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /cpurec/         ) { $cpurec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /certrec/        ) { $certrec_on  = 1;   }
-        elsif ( $_->{"input"} =~ /diskrec/        ) { $diskrec_on = 1;    }
-        elsif ( $_->{"input"} =~ /nicrec/         ) { $nicrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /netrec/         ) { $netrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /jvmrec/         ) { $jvmrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /procrec/        ) { $procrec_on = 1;    } 
-        elsif ( $_->{"input"} =~ /zonerec/        ) { $zonerec_on = 1;    }
-        elsif ( $_->{"input"} =~ /hdwrec/         ) { $hdwrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /xenrec/         ) { $xenrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /wsrec/          ) { $wsrec_on   = 1;    }
-        elsif ( $_->{"input"} =~ /svcrec/         ) { $svcrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /webrec/         ) { $webrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /webinvrec/      ) { $webinvrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /direc/          ) { $direc_on   = 1;    }
-        elsif ( $_->{"input"} =~ /ntrpec/         ) { $ntprec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /a2statrec/      ) { $a2statrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /a2invrec/       ) { $a2invrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /a2busrec/       ) { $a2busrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /aq_aqt420rec/   ) { $aq_aqt420rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /aq_wxt520rec/   ) { $aq_wxt520rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /iaq_g01rec/     ) { $iaq_g01rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /iaq_gmw90rec/   ) { $iaq_gmw90rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /iaq_msd1618rec/ ) { $iaq_msd1618rec_on  = 1; }
+           if ( $_->{"input"} =~ /sysrec/            ) { $sysrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /cpurec/            ) { $cpurec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /certrec/           ) { $certrec_on  = 1;   }
+        elsif ( $_->{"input"} =~ /diskrec/           ) { $diskrec_on = 1;    }
+        elsif ( $_->{"input"} =~ /nicrec/            ) { $nicrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /netrec/            ) { $netrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /jvmrec/            ) { $jvmrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /procrec/           ) { $procrec_on = 1;    } 
+        elsif ( $_->{"input"} =~ /zonerec/           ) { $zonerec_on = 1;    }
+        elsif ( $_->{"input"} =~ /hdwrec/            ) { $hdwrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /xenrec/            ) { $xenrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /wsrec/             ) { $wsrec_on   = 1;    }
+        elsif ( $_->{"input"} =~ /svcrec/            ) { $svcrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /webrec/            ) { $webrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /webinvrec/         ) { $webinvrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /direc/             ) { $direc_on   = 1;    }
+        elsif ( $_->{"input"} =~ /ntrpec/            ) { $ntprec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /a2statrec/         ) { $a2statrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /a2invrec/          ) { $a2invrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /a2busrec/          ) { $a2busrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_g01rec/        ) { $iaq_g01rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_gmw90rec/      ) { $iaq_gmw90rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_msd1618rec/    ) { $iaq_msd1618rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_aqt420rec/      ) { $aq_aqt420rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_wxt520rec/      ) { $aq_wxt520rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups24rec/      ) { $aq_qups24rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups24ahrec/    ) { $aq_qups24ahrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups242410xrec/ ) { $aq_qups242410xrec_on  = 1; }
 
             # each platform
             for my $key ( keys %platform ) {
@@ -364,6 +370,30 @@ while (1) {
 
                     # message id
                     if ($lid eq 'aqd') { $f=1; $msgid = "aq_wxt520"; }
+
+                } elsif ($aq_qups24rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'aqd') { $f=1; $msgid = "aq_qups24"; }
+
+                } elsif ($aq_qups24ahrec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'aqd') { $f=1; $msgid = "aq_qups24ah"; }
+
+                } elsif ($aq_qups242410xrec_on) {
+        
+                    # device id
+                    $devid = get_devid(1, $delta);
+        
+                    # message id
+                    if ($lid eq 'aqd') { $f=1; $msgid = "aq_qups242410x"; }
 
                 } elsif ($iaq_g01rec_on) {
 
@@ -1410,7 +1440,7 @@ sub send_data {
     # TTFB                                   - WPD DOMAIN
     # IAQ_G01, IAQ_GMW90, IAQ_MSD            - IAQD DOMAIN
     # CPUREC, DISKREC, NICREC, DIREC, NTPREC - CPD DOMAIN
-    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|aq*|iaq_g01|iaq_gmw90|iaq_msd1618|a2*|wpd-.*-ttfb/ ) {
+    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|a2*|iaq*|aq*|wpd-.*-ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
 
@@ -1480,7 +1510,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.2.8, 2018-06-10 1031
+sender: 1.3.1, 2018-08-08 1224
 END
     exit 0;
 }
