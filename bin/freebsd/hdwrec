@@ -24,6 +24,7 @@ use JSON;
 use Getopt::Std;
 use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
+use Regexp::Common;
 use Sys::Hostname;
 use BSD::Sysctl qw(sysctl);
 use Sys::HostIP;
@@ -132,17 +133,17 @@ if ($logging) {
 while (1) {
 
     ## initial values
-    my $swapmem    = "NA";
-    my $pcpu = 1;
-    my $ncores = 1;
-    my $ht = "NA";
+    my $swapmem = "NA";
+    my $pcpu    = 1;
+    my $ncores  = 1;
+    my $ht      = "NA";
 
     ## get stats
     my $arch    = $bhdw->get();
 
     my $model   = 'NA';
     if ($bmodel) {
-        $model   = $bmodel->get();
+        $model  = $bmodel->get();
     } else { $model = $arch; }
 
     my $os      = lc $bos->get();
@@ -153,8 +154,19 @@ while (1) {
     my $guest   = $bguest->get();
     my $kernel  = $bkernel->get();
     my $vcpu    = $bvcpu->get();
+
+    my $swap = $bswapmem->get();
+    my $smem;
+
+    if ($swap =~ /$RE{num}{real}/) {
+        $smem    = sprintf ("%.2f", $bswapmem->get() / 1048576);
+    } else { 
+        # we call swap by cmdline
+        my $sm = get_swap();
+        $smem = sprintf ("%.2f", $sm / 1048576);
+    }
+
     my $pmem    = sprintf ("%.2f", $bphysmem->get() / 1048576);
-    my $smem    = sprintf ("%.2f", $bswapmem->get() / 1048576);
 
     my $rawkrd;
     if ($logging) {
@@ -513,6 +525,28 @@ sub get_dmesg {
 }
 
 
+sub get_swap {
+
+    my $sysctl = "/sbin/sysctl";
+    my $value;
+
+    open my $fh, "-|", "$sysctl", "vm.swap_total"
+      or die "cannot execute '$sysctl' - $!";
+
+    my @swapbuf = <$fh>;
+    
+    close $fh;
+
+    foreach (@swapbuf) {
+        $_ =~ s/.*://;
+        $_ =~ s/^\s+//;
+        $value = $_;
+    }
+
+    return $value;
+}
+
+
 sub rstimer {
 
     my ($lt) = @_;
@@ -561,7 +595,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.1.6, 2017-09-08 1149
+hdwrec: 1.2.1, 2018-11-06 1916
 END
     exit 0;
 }
