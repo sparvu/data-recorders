@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use JSON;
 use Getopt::Std;
-use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use Time::HiRes qw(time sleep alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Tie::IxHash;
 use List::Util 'first';
@@ -120,32 +120,15 @@ if ($logging) {
 # get it as verbose
 if($verbose) {
     if ($logging) {
-        print $log "Msg:Dev:Id:Port:Baudrate:Parity:Stopbits:Databits:Timeout:Proto:Cmd:Crc:Som:Sor:Sep:Eor:Eom:Func:Range:Vendor => Parameter_Type[_Register_Length_Factor]\n";
-        my $nkey = 0;
-        for my $key (keys %devices) {
-            my $value = $devices{$key};
-            if ($nkey == 0 ) {
-                print $log "$key =>\n$value\n" ;
-            } else {
-                print $log "\n$key =>\n$value\n" ;
-            }
 
-            $nkey++;
-        }
+        my $ndev = keys %devices;
+        print $log "Total devices: $ndev";
 
     } else {
-        print "Msg:Dev:Id:Port:Baudrate:Parity:Stopbits:Databits:Timeout:Proto:Cmd:Crc:Som:Sor:Sep:Eor:Eom:Func:Range:Vendor => Parameter_Type[_Register_Length_Factor]\n";
-        my $nkey = 0;
-        for my $key (keys %devices) {
-            my $value = $devices{$key};
-            if ($nkey == 0 ) { 
-                print "$key =>\n$value\n" ;
-            } else { 
-                print "\n$key =>\n$value\n" ;
-            }
-            
-            $nkey++;
-        }
+
+        my $ndev = keys %devices;
+        print "Total devices: $ndev";
+
     }
 }
 
@@ -160,8 +143,11 @@ while (1) {
 
         my $value = $devices{$key};
 
-        my ($rawfile, $devname, $devid, $port, $baudrate, $parity, $stopbits, $databits, $timeout, $proto, $cmd, $crc, $som, $sor, $rsp, $eor, $eom, $func, $arange, $desc) = split( /:/, $key );
-        my @values = split( /:/, $value );
+        my ($rawfile, $devname, $devid, $port, $baudrate, $parity, 
+            $stopbits, $databits, $timeout, $proto, 
+            $cmd, $crc, $som, $sor, $rsp, $eor, $eom, $func, $arange, $desc) = split( /\^/, $key );
+
+        my @values = split( /\^/, $value );
 
         if ($proto eq 'ascii-polled') {
 
@@ -171,7 +157,11 @@ while (1) {
                     $client_apoll = init_apoll($port, $baudrate, $parity, $stopbits, $databits);
                 }
 
-                exec_apoll($client_apoll, $rawfile, $devname, $devid, $timeout, $cmd, $crc, $som, $sor, $rsp, $eor, $eom, @values);
+                exec_apoll($client_apoll, $rawfile, $devname, $devid, 
+                           $port, $baudrate, $parity, $stopbits, $databits, 
+                           $timeout, $cmd, $crc, $som, $sor, $rsp, $eor, $eom, @values);
+
+                sleep 0.2;
             };
 
         } elsif ($proto eq 'modbus-rtu') {
@@ -219,9 +209,6 @@ while (1) {
         $client_mascii->disconnect;
     }
  
-    # free client
-    # undef $client;
-
     ### Check for end
     last if ++$loop == $loop_max;
 
@@ -356,8 +343,8 @@ sub get_devices {
                     if (defined $dev->{'command'}) {
                         $cmd = $dev->{'command'};
 
-                        if ($dev->{'crc'}) {
-                            $crc = $dev->{'crc'};
+                        if ($dev->{'checksum'}) {
+                            $crc = $dev->{'checksum'};
                         }
 
                         if ($dev->{'message_start'}) { 
@@ -399,7 +386,8 @@ sub get_devices {
                         if ( $dt -> {'type'} eq 'uint16'   or
                              $dt -> {'type'} eq 'int16'    or
                              $dt -> {'type'} eq 'floatinv' or
-                             $dt -> {'type'} eq 'string'  ) {
+                             $dt -> {'type'} eq 'string'   or 
+                             $dt -> {'type'} eq 'unixtime' ) {
 
                             $dname = $dt -> {'name'};
                             $dtype = $dt -> {'type'};
@@ -444,7 +432,7 @@ sub get_devices {
                         } else { next; }
     
                         if ($k > 0) {
-                            $params .= ':' . $dname;
+                            $params .= '^' . $dname;
                         } else {
                             $params .= $dname;
                         }
@@ -454,7 +442,7 @@ sub get_devices {
 
                     my $rfile = $lmoid . '_' . $model . 'rec';
                     my $devname = $model . '_' . $unit;
-                    my $keyapp = $rfile . ':' . $devname . ':'  . $unit . ':' . $port . ':' . $baudrate . ':' . $parity . ':' . $stopbits . ':' . $databits . ':' . $timeout . ':' . $protocol . ':' . $cmd . ':' . $crc . ':' . $som . ':' . $sor . ':' . $rsp . ':' . $eor . ':' . $eom . ':' . $mf . ':' . $range . ':' . $vendor;
+                    my $keyapp = $rfile . '^' . $devname . '^'  . $unit . '^' . $port . '^' . $baudrate . '^' . $parity . '^' . $stopbits . '^' . $databits . '^' . $timeout . '^' . $protocol . '^' . $cmd . '^' . $crc . '^' . $som . '^' . $sor . '^' . $rsp . '^' . $eor . '^' . $eom . '^' . $mf . '^' . $range . '^' . $vendor;
                     my $hvalue = $params;
                     $devs{$keyapp} = $hvalue;
                 }
@@ -708,13 +696,15 @@ sub getrdata_modbus {
 #
 sub getdata_apoll {
 
-    my ( $client, $id, $timeout, $cmd, $crc, $som, $sor, $rsp, $eor, $eom ) = @_;
+    my ( $client, $model, $timeout, $cmd, $crc, 
+         $som, $sor, $rsp, $eor, $eom ) = @_;
+
     my $rvalue = 'NA';
     my $endrec = '\n';
 
-    if ($eor eq 'CRLF') {
-        $endrec = "\r\n";
-    }
+    my ($dev_model, $dev_id) = split( /_/, $model );
+
+    if ($eor eq 'CRLF') { $endrec = "\r\n"; }
 
     $client->purge_all;
     # send command to device
@@ -722,7 +712,7 @@ sub getdata_apoll {
     $client->write($endrec);
 
     my $c = 0;
-    my $msgcrc = 'NA';
+    my $msg_cksum = 'NA';
     my $record = "";
 
     while ($timeout>0) {
@@ -746,21 +736,38 @@ sub getdata_apoll {
         }
     }
 
+    $record =~ s/[\n\r]//g;
+
     if (defined $record) {
 
         # check for message checksum
         if ($crc eq 'yes') {
+     
+            # QML201 Model Checksum 
+            if ($dev_model eq 'qml201' ) {
 
-            $msgcrc = substr($record, -5);
-            $record = substr($record, 0, -5);
-            $rvalue = $record;
+                $msg_cksum = substr($record, -4);
+                my $trec = substr($record, 0, -4);
+                my $nmsg_cksum = qml201_crc16($trec);
+
+                if ( $msg_cksum eq $nmsg_cksum ) {
+                    $rvalue = substr($record, 0, -5);
+                } else { return; }
+
+            # WXT520 Weather transmitter
+            } elsif ( $dev_model eq 'wxt520' ) {
+
+                $msg_cksum = substr($record, -5);
+                $rvalue = substr($record, 0, -5);
+
+            }
 
         } else {
 
             $rvalue = $record;
         } 
     }
-    
+
     # return all values as single record
     return $rvalue;
 }
@@ -768,9 +775,9 @@ sub getdata_apoll {
 
 # format ascii-polled data
 #
-sub apoll_fmtdata {
+sub fmtdata_apoll {
 
-    my ( $dname, $dtype, @buf ) = @_;
+    my ( $dname, $dtype, $idx, @buf ) = @_;
     my $rvalue ;
     
     if ( $dtype eq 'string' ) {
@@ -796,11 +803,17 @@ sub apoll_fmtdata {
                 $rvalue = 'NA';
             }
 
-        # device type: value (HMP)
+        # device type: value (HMP, QML201)
         } else {
 
-            $rvalue = 'NA';
+            # we will use rbuf index
+            $rvalue = $buf[$idx];
         }
+
+    } elsif ( $dtype eq 'unixtime' ) {
+
+        # we will use rbuf index
+        $rvalue = $buf[$idx];
 
     } else {
 
@@ -817,7 +830,9 @@ sub apoll_fmtdata {
 #
 sub exec_apoll {
 
-    my ( $dclient, $rawfile, $dname, $did, $dtimeout, $dcmd, $dcrc, $dsom, $dsor, $drsp, $deor, $deom, @vals ) = @_;
+    my ( $dclient, $rawfile, $dname, $did, 
+         $dport, $dbaudrate, $dparity, $dstopbits, $ddatabits,
+         $dtimeout, $dcmd, $dcrc, $dsom, $dsor, $drsp, $deor, $deom, @vals ) = @_;
 
     tie my %metrix, "Tie::IxHash";
 
@@ -826,27 +841,36 @@ sub exec_apoll {
 
     if ($logging) {
         if ($verbose) {
-            print $log ("\nData message\n");
-            print $log (" krd:'$rawfile'\n dev:'$dname' id:'$did' timeout:'$dtimeout'\n cmd:'$dcmd' crc:'$dcrc' som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n");
+            print $log "\nData message\n";
+            print $log " port: $dport\n";
+            print $log " baudrate:$dbaudrate databits:$ddatabits parity:$dparity stopbits:$dstopbits\n";
+            print $log " krd:'$rawfile'\n dev:'$dname' id:'$did' timeout:'$dtimeout'\n cmd:'$dcmd' crc:'$dcrc' som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n";
             print $log ("Parameters\n");
             foreach (@vals) {
                 print $log " $_\n";
             }
+            print $log "Values\n";
         }
     } else {
         if ($verbose) {
             print "\nData message\n";
+            print " port: $dport\n";
+            print " baudrate:$dbaudrate databits:$ddatabits parity:$dparity stopbits:$dstopbits\n";
             print " krd:'$rawfile'\n dev:'$dname' id:'$did'\n cmd:'$dcmd' crc:'$dcrc' som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n";
             print "Parameters\n";
             foreach (@vals) {
                 print " $_\n";
             }
+            print "Values\n";
         }
     }
 
     my $treq = time;
 
     my @rbuf;
+
+    # used by fmtdata apoll index based devices
+    my $rbufidx = 0;
 
     # process every metrix defined in msg
     for my $metric (@vals) {
@@ -926,11 +950,17 @@ sub exec_apoll {
 
             # make the ascii call, one call
             if (! defined $rbuf[0]) {
-                my $rval = getdata_apoll($dclient, $did, $dtimeout, $dcmd, $dcrc, $dsom, $dsor, $drsp, $deor, $deom );
-                @rbuf = split ($drsp, $rval);
+
+                my $rval = getdata_apoll($dclient, $dname, $dtimeout, $dcmd,
+                                         $dcmd, $dcrc, $dsom, $dsor, $drsp, 
+                                         $deor, $deom );
+
+                if (defined $rval) {
+                    @rbuf = split ($drsp, $rval);
+                } else { return; }
             }
           
-            $val = apoll_fmtdata($v[0], $v[1], @rbuf);
+            $val = fmtdata_apoll($v[0], $v[1], $rbufidx, @rbuf);
         }
 
         # all metrix buffer        
@@ -941,8 +971,11 @@ sub exec_apoll {
         } else {
             print " $v[0] -> $val\n" if ($verbose);
         }
-       
+      
+        $val = 'NA' if (! defined $val);
         $fval .=  ':' . $val;
+
+        $rbufidx++;
     }
 
     if ($logging) {
@@ -1174,8 +1207,27 @@ sub lcl {
 }
 
 
-## auxiliares
+# CRC16 CRC-CCITT (XModem) found under
+# Vaisala QML201 data logger
+#
+sub qml201_crc16 {
+    my ($string) = @_;
+    my $poly = 0x1021;
+    my $crc = 0;
+    for my $c ( unpack 'C*', $string ) {
+        $crc ^= ( $c << 8 );
+        for ( 0 .. 7 ) {
+            my $carry = $crc & 0x8000;
+            $crc <<= 1;
+            $crc ^= $poly if $carry;
+        }
+    }
+    $crc &= 0xffff;
+    return sprintf("%04X", $crc);
+}
 
+
+## auxiliares
 
 # write_log - write log message
 #
@@ -1243,9 +1295,11 @@ END
 }
 
 # revision - print revision and exit
+#
 sub revision {
     print STDERR <<END;
-rs485rec: 1.3.8, 2018-05-30 2131
+IIoT, environmental monitoring, meteorology data recorder
+rs485rec: 1.3.10, 2018-11-11 1556
 END
     exit 0;
 }
