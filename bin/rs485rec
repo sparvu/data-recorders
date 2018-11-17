@@ -735,21 +735,11 @@ sub getserial {
         $timeout -= $client->read_const_time + 255 * $char_time;
     } until ($timeout <= 0 || ($bytes == 0 && length($data) > 0) || ($data =~ /$endrecord/));
 
-
-    #while ($timeout > 0) {
-    #    # reading from device
-    #    for (;;) {
-    #    if ($c = $client->input) {
-    #        $data .= $c;
-    #        last if $data =~ /$endrecord/;
-    #    } else { $timeout--; }
-    #}
-
     if ($timeout <= 0) {
         if ($logging) {
-            print $log ("\nCommunication error: timeout\n");
+            write_log ("Error processing command:$command, read timeout");
         } else {
-            print "\nCommunication error: timeout\n";
+            print "Error processing command:$command, read timeout\n";
         }
     }
 
@@ -822,9 +812,9 @@ sub getdata_apoll {
                 } else {
 
                     if ($logging) {
-                        write_log ("Communication error, retrying...");
+                        write_log ("Data message checksum error ,retrying...");
                     } else {
-                        print "Communication error, retrying...\n";
+                        print "Data message checksum error, retrying...\n";
                     }
 
                     sleep 3;
@@ -850,9 +840,9 @@ sub getdata_apoll {
                 } else {
 
                     if ($logging) {
-                        write_log ("Checksum communication error, retrying...");
+                        write_log ("Data message checksum error, retrying...");
                     } else {
-                        print "Checksum communication error, retrying...\n";
+                        print "Data message checksum error, retrying...\n";
                     }
 
                     sleep 3;
