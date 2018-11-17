@@ -27,6 +27,7 @@ use Time::HiRes qw(time sleep alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Tie::IxHash;
 use List::Util 'first';
+use Benchmark ':hireswallclock';
 #use Data::Dumper;
 
 ###  Process command line args
@@ -62,6 +63,7 @@ my $cfile     = 'rs485rec.json';    # configuration file
 my $kfile     = 'kronometrix.json'; # configuration file
 my $tp        = 0;                  # time precision
 my $range     = 0;                  # serial range address config
+my $char_time = 0;                  # serial char timeout
 my ($cdata, $kdata);                # configuration data
 my ( $baselog, $curlog, $rlog);
 
@@ -120,15 +122,11 @@ if ($logging) {
 # get it as verbose
 if($verbose) {
     if ($logging) {
-
         my $ndev = keys %devices;
         print $log "Total devices: $ndev";
-
     } else {
-
         my $ndev = keys %devices;
         print "Total devices: $ndev";
-
     }
 }
 
@@ -161,7 +159,7 @@ while (1) {
                            $port, $baudrate, $parity, $stopbits, $databits, 
                            $timeout, $cmd, $crc, $som, $sor, $rsp, $eor, $eom, @values);
 
-                sleep 0.2;
+                sleep 0.1;
             };
 
         } elsif ($proto eq 'modbus-rtu') {
@@ -198,7 +196,9 @@ while (1) {
 
     if (defined $client_apoll) {
 
+        $client_apoll->purge_all;
         $client_apoll->close;
+        #undef $client_apoll;
 
     } elsif (defined $client_mrtu) {
 
@@ -311,7 +311,7 @@ sub get_devices {
 
             $stopbits  = $f->{'stopbits'};
 
-            my @lmoids = ('iaq', 'aq');
+            my @lmoids = ('iaq', 'aq', 'amd');
 
             for my $lmoid (@lmoids) {
                 next if (! defined $f->{$lmoid});
@@ -447,7 +447,7 @@ sub get_devices {
                     $devs{$keyapp} = $hvalue;
                 }
 
-            } # iaq, aq
+            } # iaq, aq, amd
         }
     }
 
@@ -473,7 +473,18 @@ sub init_apoll {
         $c->parity($parity);
         $c->stopbits($stopbits);
         $c->handshake('none');
-        $c->stty_onlcr(1);
+        #$c->stty_onlcr(1);
+
+        $char_time = 
+            1000*($c->databits+$c->stopbits+1)/$c->baudrate;
+
+        $c->read_char_time($char_time);
+        if ($c->baudrate < 19200) { 
+            $c->read_const_time(3.5 * $char_time);
+        } else {
+            $c->read_const_time(1.75);
+        }
+
         $c->write_settings;
 
     } else {
@@ -484,7 +495,18 @@ sub init_apoll {
         $c->parity($parity);
         $c->stopbits($stopbits);
         $c->handshake('none');
-        $c->stty_onlcr(1);
+        #$c->stty_onlcr(1);
+
+        $char_time =
+            1000*($c->databits+$c->stopbits+1)/$c->baudrate;
+
+        $c->read_char_time($char_time);
+        if ($c->baudrate < 19200) {
+            $c->read_const_time(3.5 * $char_time);
+        } else {
+            $c->read_const_time(1.75);
+        }
+
         $c->write_settings;
     }
 
@@ -691,52 +713,97 @@ sub getrdata_modbus {
 }
 
 
+sub getserial {
+
+    my ($client, $command, $endrecord, $tout) = @_;
+
+    my $rec;
+    #my $c    = 0;
+    my $data = "";
+
+    $client->purge_all;
+    # send command to device
+    $client->write($command);
+
+    my $buffer  = '';
+    my $bytes   = 0;
+    my $timeout = 1000 * $tout; # Turn to milliseconds
+    do {
+        my $read;
+        ($bytes, $read) = $client->read(255);
+        $data  .= $read;
+        $timeout -= $client->read_const_time + 255 * $char_time;
+    } until ($timeout <= 0 || ($bytes == 0 && length($data) > 0) || ($data =~ /$endrecord/));
+
+
+    #while ($timeout > 0) {
+    #    # reading from device
+    #    for (;;) {
+    #    if ($c = $client->input) {
+    #        $data .= $c;
+    #        last if $data =~ /$endrecord/;
+    #    } else { $timeout--; }
+    #}
+
+    if ($timeout <= 0) {
+        if ($logging) {
+            print $log ("\nCommunication error: timeout\n");
+        } else {
+            print "\nCommunication error: timeout\n";
+        }
+    }
+
+    $data =~ s/[\n\r]//g;
+
+    return $data;
+}
+
 
 # fetches values using ascii polled
 #
 sub getdata_apoll {
 
-    my ( $client, $model, $timeout, $cmd, $crc, 
+    my ( $client, $model, $timeout, $cmd, $crc,
          $som, $sor, $rsp, $eor, $eom ) = @_;
 
-    my $rvalue = 'NA';
-    my $endrec = '\n';
+    my $record    = "";
+    my $rvalue    = 'NA';
+    my $endrec    = '\n';
+    my $msg_cksum = 'NA';
 
     my ($dev_model, $dev_id) = split( /_/, $model );
 
-    if ($eor eq 'CRLF') { $endrec = "\r\n"; }
+    # analyse end of record for CRLF
+       if ($eor eq 'CRLF') { $endrec = '\r\n'; }
+    elsif ( $eor eq 'CR' ) { $endrec = '\r';   }
+    elsif ( $eor eq 'LF' ) { $endrec = '\n';   }
 
-    $client->purge_all;
-    # send command to device
-    $client->write($cmd);
-    $client->write($endrec);
-
-    my $c = 0;
-    my $msg_cksum = 'NA';
-    my $record = "";
-
-    while ($timeout>0) {
-    
-        # reading from device
-        for (;;) {
-
-            if ($c = $client->input) {
-                $record .= $c;
-                last if $record =~ /$endrec/;
-            } else { $timeout--; }
+    # Analyse command for CRLF, CR, LF
+    if ( $cmd =~ /CRLF/ ) {
+        my $ecmd = substr($cmd, -4);
+        if ( $ecmd eq 'CRLF' ) {
+            my $ncmd = substr($cmd, 0, -4);
+            $cmd = $ncmd . "\r\n";
+        } elsif ( $ecmd eq 'CR' ) {
+            my $ncmd = substr($cmd, 0, -2);
+            $cmd = $ncmd . "\r";
+        } elsif ( $ecmd eq 'LF' ) {
+            my $ncmd = substr($cmd, 0, -2);
+            $cmd = $ncmd . "\n";
         }
     }
 
-    if ($timeout==0) {
+    $record = getserial ($client, $cmd, $endrec, $timeout);
 
-        if ($logging) {
-            print $log ("\nError timeout\n");
-        } else {
-            print "\nError timeout\n";
+    if ($logging) {
+        if ($verbose) {
+            print $log " raw data-> $record\n";
+        }
+    } else {
+        if ($verbose) {
+            print " raw data-> $record\n";
         }
     }
-
-    $record =~ s/[\n\r]//g;
 
     if (defined $record) {
 
@@ -744,28 +811,66 @@ sub getdata_apoll {
         if ($crc eq 'yes') {
      
             # QML201 Model Checksum 
-            if ($dev_model eq 'qml201' ) {
+            if ($dev_model =~ 'qml201' ) {
 
-                $msg_cksum = substr($record, -4);
-                my $trec = substr($record, 0, -4);
-                my $nmsg_cksum = qml201_crc16($trec);
+                my $vck = qml201_msgck($record);
 
-                if ( $msg_cksum eq $nmsg_cksum ) {
+                if ( $vck == 1 ) {
+
                     $rvalue = substr($record, 0, -5);
-                } else { return; }
+
+                } else {
+
+                    if ($logging) {
+                        write_log ("Communication error, retrying...");
+                    } else {
+                        print "Communication error, retrying...\n";
+                    }
+
+                    sleep 3;
+                    $record = getserial ($client, $cmd, $endrec, $timeout);
+
+                    $vck = qml201_msgck($record);
+
+                    if ( $vck == 1 ) {
+
+                        $rvalue = substr($record, 0, -5);
+
+                    }
+                }
 
             # WXT520 Weather transmitter
             } elsif ( $dev_model eq 'wxt520' ) {
 
-                $msg_cksum = substr($record, -5);
-                $rvalue = substr($record, 0, -5);
+                my $vck = wxt520_msgck($record);
+                if ( $vck == 1 ) {
 
+                    $rvalue = substr($record, 0, -3);
+
+                } else {
+
+                    if ($logging) {
+                        write_log ("Checksum communication error, retrying...");
+                    } else {
+                        print "Checksum communication error, retrying...\n";
+                    }
+
+                    sleep 3;
+                    $record = getserial ($client, $cmd, $endrec, $timeout);
+ 
+                    $vck = wxt520_msgck($record);
+
+                    if ( $vck == 1 ) {
+
+                        $rvalue = substr($record, 0, -3);
+                    }
+                }
             }
 
         } else {
 
             $rvalue = $record;
-        } 
+        }
     }
 
     # return all values as single record
@@ -797,7 +902,7 @@ sub fmtdata_apoll {
             if ($lchar ne '#') {
 
                 $rvalue = substr($rvalue, 0, -1);
-
+               
             } else { 
 
                 $rvalue = 'NA';
@@ -818,7 +923,6 @@ sub fmtdata_apoll {
     } else {
 
         $rvalue = 'NA';
-
     }
 
     return $rvalue;
@@ -844,7 +948,8 @@ sub exec_apoll {
             print $log "\nData message\n";
             print $log " port: $dport\n";
             print $log " baudrate:$dbaudrate databits:$ddatabits parity:$dparity stopbits:$dstopbits\n";
-            print $log " krd:'$rawfile'\n dev:'$dname' id:'$did' timeout:'$dtimeout'\n cmd:'$dcmd' crc:'$dcrc' som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n";
+            print $log " krd:'$rawfile'\n dev:'$dname' id:'$did'\n cmd:'$dcmd' checksum:'$dcrc'\n";
+            print $log " som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n";
             print $log ("Parameters\n");
             foreach (@vals) {
                 print $log " $_\n";
@@ -856,7 +961,8 @@ sub exec_apoll {
             print "\nData message\n";
             print " port: $dport\n";
             print " baudrate:$dbaudrate databits:$ddatabits parity:$dparity stopbits:$dstopbits\n";
-            print " krd:'$rawfile'\n dev:'$dname' id:'$did'\n cmd:'$dcmd' crc:'$dcrc' som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n";
+            print " krd:'$rawfile'\n dev:'$dname' id:'$did'\n cmd:'$dcmd' checksum:'$dcrc'\n";
+            print " som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n";
             print "Parameters\n";
             foreach (@vals) {
                 print " $_\n";
@@ -952,19 +1058,21 @@ sub exec_apoll {
             if (! defined $rbuf[0]) {
 
                 my $rval = getdata_apoll($dclient, $dname, $dtimeout, $dcmd,
-                                         $dcmd, $dcrc, $dsom, $dsor, $drsp, 
+                                         $dcrc, $dsom, $dsor, $drsp, 
                                          $deor, $deom );
 
                 if (defined $rval) {
                     @rbuf = split ($drsp, $rval);
                 } else { return; }
             }
-          
+           
             $val = fmtdata_apoll($v[0], $v[1], $rbufidx, @rbuf);
         }
 
         # all metrix buffer        
-        $metrix{$v[0]} = $val;
+        if (defined $val) {
+            $metrix{$v[0]} = $val;
+        }
 
         if ($logging) {
             print $log (" $v[0] -> $val\n") if ($verbose);
@@ -1207,8 +1315,33 @@ sub lcl {
 }
 
 
-# CRC16 CRC-CCITT (XModem) found under
 # Vaisala QML201 data logger
+# Message Check Verification
+#
+sub qml201_msgck {
+
+    my $data = "@_";
+    my $rdata = 0;
+
+    my $m = substr($data, -4);
+    my $t = substr($data, 0, -4);
+    my $n = qml201_crc16($t);
+
+    if ( $m eq $n ) {
+
+        $rdata = 1;
+
+    } else {
+
+        $rdata = 0;
+    }
+
+    return $rdata;
+}
+
+
+# Vaisala QML201 data logger
+# CRC16 CRC-CCITT (XModem)
 #
 sub qml201_crc16 {
     my ($string) = @_;
@@ -1224,6 +1357,58 @@ sub qml201_crc16 {
     }
     $crc &= 0xffff;
     return sprintf("%04X", $crc);
+}
+
+
+# Vaisala WXT520 transmitter
+# Message Check Verification
+#
+sub wxt520_msgck {
+  
+    my $data = "@_";
+    my $rdata = 0;
+
+    my $m = substr($data, -3);
+    my $t = substr($data, 0, -3);
+    my $n = wxt520_crc16($t);
+
+    if ( $m eq $n ) {
+    
+        $rdata = 1;
+    
+    } else {
+ 
+        $rdata = 0;
+    }       
+
+    return $rdata;
+}
+
+# Vaisala WXT520 transmitter
+# CRC16
+#
+sub wxt520_crc16 {
+    my ($string) = @_;
+
+    my $crc = 0;
+    for my $c (split //, $string) {
+        $crc = $crc ^ ord($c);
+        for(my $i=0; $i < 8; $i++) {
+            if($crc & 1) {
+                $crc = $crc >> 1;
+                $crc = $crc ^ hex '0xA001';
+            } else {
+                $crc = $crc >> 1;
+            }
+        }
+    }
+
+    my $c1 = hex '0x40' | ($crc >> 12);
+    my $c2 = hex '0x40' | (($crc >> 6) & hex '0x3F');
+    my $c3 = hex '0x40' | ($crc & hex '0x3f');
+    my $result = chr($c1) . chr($c2) . chr($c3);
+
+    return $result;
 }
 
 
@@ -1299,7 +1484,7 @@ END
 sub revision {
     print STDERR <<END;
 IIoT, environmental monitoring, meteorology data recorder
-rs485rec: 1.3.10, 2018-11-11 1556
+rs485rec: 1.3.12, 2018-11-17 1550
 END
     exit 0;
 }
