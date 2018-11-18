@@ -7,6 +7,143 @@
       "stopbits" : 1,
       "databits" : 7,
       "timeout" : 10,
+      "amd" : [
+        {
+          "unit": 1,
+          "vendor": "vaisala",
+          "model": "qml201-hmp155",
+          "description": "Vaisala QML201 Logger Data message",
+          "checksum": "yes",
+          "command": "data",
+          "message_start": "",
+          "record_start": "",
+          "record_sep": ":",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "sname",
+              "description": "station name",
+              "type": "string"
+            },
+            {
+              "name": "logtime",
+              "description": "logger observations time",
+              "type": "unixtime"
+            },
+            {
+              "name": "ta",
+              "description": "air temperature",
+              "type": "string"
+            },
+            {
+              "name": "rh",
+              "description": "relative humidity",
+              "type": "string"
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "description": "status",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "unit": 2,
+          "vendor": "vaisala",
+          "model": "qml201",
+          "description": "Vaisala QML201 Logger Inventory message",
+          "checksum": "yes",
+          "command": "info",
+          "message_start": "",
+          "record_start": "",
+          "record_sep": ":",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "sname",
+              "description": "station name",
+              "type": "string"
+            },
+            {
+              "name": "timestamp",
+              "description": "current time",
+              "type": "string"
+            },
+            {
+              "name": "extdc",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "voltage",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "temp",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "sastate",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "pwrstate",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "warning",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "error",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "availog",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "freemem",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "minmem",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "reset",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "uptime",
+              "description": "",
+              "type": "string"
+            }
+          ]
+        }
+      ],
       "aq" : [
         {
           "unit": 2,
@@ -14,7 +151,7 @@
           "model": "wxt520",
           "description": "Vaisala WXT520 Series",
           "crc": "yes",
-          "command": "2R0",
+          "command": "2R0CRLF",
           "message_start": "2R0",
           "record_start": "",
           "record_sep": ",",
