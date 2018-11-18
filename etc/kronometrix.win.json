@@ -195,6 +195,20 @@
       "domain" : [ "epd", "dpd", "spd" ]
     },
     {
+      "name"   : "amd_qml201",
+      "file"   : "amd_qml201rec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "amd" ]
+    },
+    {
+      "name"   : "amd_qml201_hmp155",
+      "file"   : "amd_qml201_hmp155rec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "amd" ]
+    },
+    {
       "name"   : "aq_aqt420",
       "file"   : "aq_aqt420rec.krd",
       "sample" : 60,
