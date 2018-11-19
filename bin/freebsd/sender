@@ -90,7 +90,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "kdr/1.3.4 sender $osname";
+my $agent = "kdr/1.3.16 sender $osname";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -193,63 +193,67 @@ while (1) {
             my $lmoid;
             my $dsname;
 
-            my $sysrec_on            = 0;
-            my $cpurec_on            = 0;
-            my $certrec_on           = 0;
-            my $diskrec_on           = 0;
-            my $nicrec_on            = 0;
-            my $hdwrec_on            = 0;
-            my $procrec_on           = 0;
-            my $netrec_on            = 0;
-            my $zonerec_on           = 0;
-            my $jvmrec_on            = 0;
-            my $xenrec_on            = 0;
-            my $wsrec_on             = 0;
-            my $svcrec_on            = 0;
-            my $webrec_on            = 0;
-            my $webinvrec_on         = 0;
-            my $direc_on             = 0;
-            my $ntprec_on            = 0;
-            my $a2statrec_on         = 0;
-            my $a2invrec_on          = 0;
-            my $a2busrec_on          = 0;
-            my $iaq_g01rec_on        = 0;
-            my $iaq_gmw90rec_on      = 0;
-            my $iaq_msd1618rec_on    = 0;
-            my $aq_aqt420rec_on      = 0;
-            my $aq_wxt520rec_on      = 0;
-            my $aq_qups24rec_on      = 0;
-            my $aq_qups24ahrec_on    = 0;
-            my $aq_qups242410xrec_on = 0;
+            my $sysrec_on               = 0;
+            my $cpurec_on               = 0;
+            my $certrec_on              = 0;
+            my $diskrec_on              = 0;
+            my $nicrec_on               = 0;
+            my $hdwrec_on               = 0;
+            my $procrec_on              = 0;
+            my $netrec_on               = 0;
+            my $zonerec_on              = 0;
+            my $jvmrec_on               = 0;
+            my $xenrec_on               = 0;
+            my $wsrec_on                = 0;
+            my $svcrec_on               = 0;
+            my $webrec_on               = 0;
+            my $webinvrec_on            = 0;
+            my $direc_on                = 0;
+            my $ntprec_on               = 0;
+            my $a2statrec_on            = 0;
+            my $a2invrec_on             = 0;
+            my $a2busrec_on             = 0;
+            my $iaq_g01rec_on           = 0;
+            my $iaq_gmw90rec_on         = 0;
+            my $iaq_msd1618rec_on       = 0;
+            my $aq_aqt420rec_on         = 0;
+            my $aq_wxt520rec_on         = 0;
+            my $aq_qups24rec_on         = 0;
+            my $aq_qups24ahrec_on       = 0;
+            my $aq_qups242410xrec_on    = 0;
+            my $amd_qml201rec_on        = 0;
+            my $amd_qml201_hmp155rec_on = 0;
 
-           if ( $_->{"input"} =~ /sysrec/            ) { $sysrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /cpurec/            ) { $cpurec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /certrec/           ) { $certrec_on  = 1;   }
-        elsif ( $_->{"input"} =~ /diskrec/           ) { $diskrec_on = 1;    }
-        elsif ( $_->{"input"} =~ /nicrec/            ) { $nicrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /netrec/            ) { $netrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /jvmrec/            ) { $jvmrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /procrec/           ) { $procrec_on = 1;    }
-        elsif ( $_->{"input"} =~ /zonerec/           ) { $zonerec_on = 1;    }
-        elsif ( $_->{"input"} =~ /hdwrec/            ) { $hdwrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /xenrec/            ) { $xenrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /wsrec/             ) { $wsrec_on   = 1;    }
-        elsif ( $_->{"input"} =~ /svcrec/            ) { $svcrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /webrec/            ) { $webrec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /webinvrec/         ) { $webinvrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /direc/             ) { $direc_on   = 1;    }
-        elsif ( $_->{"input"} =~ /ntrpec/            ) { $ntprec_on  = 1;    }
-        elsif ( $_->{"input"} =~ /a2statrec/         ) { $a2statrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /a2invrec/          ) { $a2invrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /a2busrec/          ) { $a2busrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /aq_aqt420rec/      ) { $aq_aqt420rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /aq_wxt520rec/      ) { $aq_wxt520rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /iaq_g01rec/        ) { $iaq_g01rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /iaq_gmw90rec/      ) { $iaq_gmw90rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /iaq_msd1618rec/    ) { $iaq_msd1618rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /aq_qups24rec/      ) { $aq_qups24rec_on  = 1; }
-        elsif ( $_->{"input"} =~ /aq_qups24ahrec/    ) { $aq_qups24ahrec_on  = 1; }
-        elsif ( $_->{"input"} =~ /aq_qups242410xrec/ ) { $aq_qups242410xrec_on  = 1; }
+           if ( $_->{"input"} =~ /sysrec/               ) { $sysrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /cpurec/               ) { $cpurec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /certrec/              ) { $certrec_on  = 1;   }
+        elsif ( $_->{"input"} =~ /diskrec/              ) { $diskrec_on = 1;    }
+        elsif ( $_->{"input"} =~ /nicrec/               ) { $nicrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /netrec/               ) { $netrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /jvmrec/               ) { $jvmrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /procrec/              ) { $procrec_on = 1;    }
+        elsif ( $_->{"input"} =~ /zonerec/              ) { $zonerec_on = 1;    }
+        elsif ( $_->{"input"} =~ /hdwrec/               ) { $hdwrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /xenrec/               ) { $xenrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /wsrec/                ) { $wsrec_on   = 1;    }
+        elsif ( $_->{"input"} =~ /svcrec/               ) { $svcrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /webrec/               ) { $webrec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /webinvrec/            ) { $webinvrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /direc/                ) { $direc_on   = 1;    }
+        elsif ( $_->{"input"} =~ /ntrpec/               ) { $ntprec_on  = 1;    }
+        elsif ( $_->{"input"} =~ /a2statrec/            ) { $a2statrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /a2invrec/             ) { $a2invrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /a2busrec/             ) { $a2busrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_aqt420rec/         ) { $aq_aqt420rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_wxt520rec/         ) { $aq_wxt520rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_g01rec/           ) { $iaq_g01rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_gmw90rec/         ) { $iaq_gmw90rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /iaq_msd1618rec/       ) { $iaq_msd1618rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups24rec/         ) { $aq_qups24rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups24ahrec/       ) { $aq_qups24ahrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups242410xrec/    ) { $aq_qups242410xrec_on  = 1; }
+        elsif ( $_->{"input"} =~ /amd_qml201rec/        ) { $amd_qml201rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /amd_qml201_hmp155rec/ ) { $amd_qml201_hmp155rec_on  = 1; }
 
             # each platform
             for my $key ( keys %platform ) {
@@ -354,6 +358,22 @@ while (1) {
                  elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-$osname-jvmrec"; }
                  elsif ($lid eq 'spd') { $f=1; $msgid = "spd-$osname-jvmrec"; }
                  elsif ($lid eq 'wpd') { $f=1; $msgid = "wpd-$osname-jvmrec"; }
+
+                } elsif ($amd_qml201rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'amd') { $f=1; $msgid = "amd-qml201-info"; }
+
+                } elsif ($amd_qml201_hmp155rec_on) {
+
+                    # device id
+                    $devid = get_devid(1, $delta);
+
+                    # message id
+                    if ($lid eq 'amd') { $f=1; $msgid = "amd-qml201-hmp155"; }
 
                 } elsif ($aq_aqt420rec_on) {
         
@@ -1327,7 +1347,7 @@ sub send_databulk {
             writelog("info: send_databulk - $msg_id data delivered");
         } else {
             writelog(
-            "error: send_databulk - cant send $msg_id krd data, transport error, CODE: $status");
+            "error: send_databulk - cant send $msg_id data, $response->{status} $response->{reason}");
         }
     }
 
@@ -1376,6 +1396,29 @@ sub send_data {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$dname:$delta");
         $post   = "$msg_id:$sid:$dsid:$dname:$delta:$hash";
 
+    # AMD QML201 messages
+    } elsif ( $msg_id =~ /amd-qml201-hmp155/ ) {
+        # DATA Msg 
+        #  devid=qml201_hmp155_1
+        #  delta=1542538879:qml201_hmp155_1:SKRLAB:1542538861:23.0:35:6.8:0
+        #  good: amd-qml201-hmp155:b1a69b175ecdda0194a6e62702d72c8a:RTS_LAB:hmp155:1542538152:24.3:24:2.7:0:80A6
+        my ( $t, $devname, $ds, $v1, $v2, $v3, $v4, $v5 ) = split ( /:/, $delta );
+        $devname = $1 if($devname =~ m/qml201_(.*)_.*$/);
+        $delta = join(':', $v1, $v2, $v3, $v4, $v5);
+        $hash   = qml201_crc16("$msg_id:$sid:$ds:$devname:$delta");
+        $post   = "$msg_id:$sid:$ds:$devname:$delta:$hash";
+
+    } elsif ( $msg_id =~ /amd-qml201-info/ ) {
+        # DATA Msg
+        #  devid=qml201_1
+        #  delta=1542578461:qml201_2:SKRLAB:1542578401:14.21:14.12:23.7:0:1:0:1:2468864:1556800:1553896:0:0:55h 14min 14sec since Fri Nov 16 164546 2018
+        #  good: amd-qml201-info:b1a69b175ecdda0194a6e62702d72c8a:BACAU:qml201:1542577201:12.40:12.69:23.8:0:1:0:0:3211264:1491416:1481220:0:1:79h 36min 25sec since Thu Nov 15 160335 2018:5DEA 
+        my ( $t, $devname, $ds, $v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14 ) = split ( /:/, $delta );
+        $devname = $1 if($devname =~ m/(.*)_.*$/);
+        $delta = join(':', $v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14);
+        $hash   = qml201_crc16("$msg_id:$sid:$ds:$devname:$delta");
+        $post   = "$msg_id:$sid:$ds:$devname:$delta:$hash";
+
     # TTFB                                   - WPD DOMAIN
     # IAQ_G01, IAQ_GMW90, IAQ_MSD            - IAQD DOMAIN
     # CPUREC, DISKREC, NICREC, DIREC, NTPREC - CPD DOMAIN
@@ -1403,10 +1446,10 @@ sub send_data {
     if ( $verbose == 1 ) {
 
         if ($response->{success} ) {
-            writelog("info: send_data - $msg_id krd data delivered");
+            writelog("info: send_data - $msg_id data delivered");
         } else {
             writelog(
-            "error: send_data - cant send $msg_id krd data, transport error");
+            "error: send_data - cant send $msg_id data, $response->{status} $response->{reason}");
         }
     }
 
@@ -1415,6 +1458,8 @@ sub send_data {
 
 
 # get logs
+#
+#
 sub get_log {
     my ($data) = @_;
 
@@ -1426,6 +1471,8 @@ sub get_log {
 
 
 # get datafile
+#
+#
 sub get_datafile {
 
     my ($data) = @_;
@@ -1447,9 +1494,11 @@ sub get_datafile {
 }
 
 
-## auxiliares
+## Auxiliares
 
 # write log message
+#
+#
 sub writelog {
 
     my ($logbuf) = @_;
@@ -1465,7 +1514,9 @@ sub writelog {
 }
 
 
-# NIST SHA-256 message digest for krd raw data
+# NIST SHA-256 message digest
+# krd raw data
+#
 sub sha256krd {
     my ($message) = @_;
 
@@ -1479,7 +1530,30 @@ sub sha256krd {
 }
 
 
+# Vaisala QML201 data logger
+# CRC16 CRC-CCITT (XModem)
+#
+sub qml201_crc16 {
+    my ($string) = @_;
+    my $poly = 0x1021;
+    my $crc = 0;
+    for my $c ( unpack 'C*', $string ) {
+        $crc ^= ( $c << 8 );
+        for ( 0 .. 7 ) {
+            my $carry = $crc & 0x8000;
+            $crc <<= 1;
+            $crc ^= $poly if $carry;
+        }
+    }
+    $crc &= 0xffff;
+    return sprintf("%04X", $crc);
+}
+
+
+
 # usage - print usage and exit.
+#
+#
 sub usage {
     print STDERR <<END;
 USAGE: sender [-t secs] [-fhvV] | [interval]
@@ -1502,7 +1576,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.3.1, 2018-08-08 1224
+sender: 1.3.3, 2018-11-19 0018
 END
     exit 0;
 }
