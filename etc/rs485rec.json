@@ -27,8 +27,13 @@
               "type": "string"
             },
             {
+              "name": "curtime",
+              "description": "current logger time",
+              "type": "unixtime"
+            },
+            {
               "name": "logtime",
-              "description": "logger observations time",
+              "description": "logger data measurements time",
               "type": "unixtime"
             },
             {
@@ -72,9 +77,9 @@
               "type": "string"
             },
             {
-              "name": "timestamp",
-              "description": "current time",
-              "type": "string"
+              "name": "curtime",
+              "description": "current logger time",
+              "type": "unixtime"
             },
             {
               "name": "extdc",
