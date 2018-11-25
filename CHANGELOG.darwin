@@ -1,0 +1,24 @@
+
+Kronometrix Data Recording
+
+Platforms
+    MacOS Mojave
+
+Bug Management System
+  https://github.com/kronometrix/recording/issues
+
+Releases
+
+  1.3.20 xx-xx-2018 Release
+    added support for darwin kernel and macos
+    rs485rec ascii-polled timeout
+    rs485rec ascii-polled improvements
+    hdwrec on arm64 errors #180
+    missing data on MODBUS RTU #172
+    support for lifted condensation level #171
+    support for dewpoint CIMO #170
+    Td cannot display negative values #167
+    AWS EC2 awsrec recorder
+    Database dbrec recorder: Redis
+    OpenSSL 1.1.1
+    CPAN update
