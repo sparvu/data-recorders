@@ -1,0 +1,785 @@
+#!/opt/kronometrix/perl/bin/perl
+
+#  Copyright (c) 2018 Stefan Parvu (www.kronometrix.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use BSD::Sysctl qw(sysctl);
+use POSIX qw(pause);
+
+# Debug Only
+# use Data::Dumper;
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('lhV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+### Variables
+my $kdata;                           # configuration data
+my $update;                          # used for deltas
+my %old_cpudata;                     # cpu_stats data
+my %old_nicdata;                     # nic_stats data
+my $loop     = 0;                    # current loop number
+$main::opt_h = 0;                    # help option
+$main::opt_l = 0;                    # logging option
+$main::opt_V = 0;                    # revision option
+my $tp       = 0;                    # time precision
+my $pgfactor = 4;                    # default pagesize factor
+my $kfile    = 'kronometrix.json';   # configuration file
+my ($baselog, $curlog, $slog, $log); # logs
+local $| = 1;                        # autoflush
+
+
+
+### MAIN BODY
+
+# Set a timer for BSD::Sysctl objects
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $bsd_cputime     = BSD::Sysctl->new( 'kern.cp_time' );
+my $bsd_ncpu        = BSD::Sysctl->new( 'hw.ncpu' );
+my $bsd_pgsize      = BSD::Sysctl->new( 'hw.pagesize' );
+my $bsd_memphys     = BSD::Sysctl->new( 'hw.physmem' );
+my $bsd_memall      = BSD::Sysctl->new( 'vm.stats.vm.v_page_count' );
+my $bsd_memactive   = BSD::Sysctl->new( 'vm.stats.vm.v_active_count' );
+my $bsd_meminactive = BSD::Sysctl->new( 'vm.stats.vm.v_inactive_count' );
+my $bsd_memwire     = BSD::Sysctl->new( 'vm.stats.vm.v_wire_count' );
+my $bsd_memcache    = BSD::Sysctl->new( 'vm.stats.vm.v_cache_count' );
+my $bsd_memfree     = BSD::Sysctl->new( 'vm.stats.vm.v_free_count' );
+my $bsd_vmtotal     = BSD::Sysctl->new( 'vm.vmtotal' );
+my $bsd_la          = BSD::Sysctl->new( 'vm.loadavg' );
+my $bsd_swapin      = BSD::Sysctl->new( 'vm.stats.vm.v_swapin' );
+my $bsd_swappgsin   = BSD::Sysctl->new( 'vm.stats.vm.v_swappgsin' );
+my $bsd_swapout     = BSD::Sysctl->new( 'vm.stats.vm.v_swapout' );
+my $bsd_swappgsout  = BSD::Sysctl->new( 'vm.stats.vm.v_swappgsout' );
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+# check interval input
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+my $rawfile;
+
+# logging option
+if ($logging) {
+
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'sysrec' . '.krd';
+    $slog = $baselog . "/sysrec.log";
+    $log = open_file($slog);
+
+    # save STDERR to log file
+    *STDERR = $log;
+
+    write_log ("info: started");
+}
+
+
+while (1) {
+
+    # fetch new values 
+    my $la       = $bsd_la->get();
+    my $nproc    = $bsd_ncpu->get();
+    my $pagesize = $bsd_pgsize->get();
+
+    ## debug
+    # print "pagesize=$pagesize, factor=$pgfactor\n";
+
+    my $cid = 0;
+    my $nid = 0;
+
+    ## debug
+    # print @cpudata;
+    # print $#cpudata;
+
+    ## CPU stats
+    my @cpudata = get_cpustat();
+    # print "CPU: @cpudata\n";
+    
+    my ($cpupct,$sumpct,$headpct,$user,$nice,$sys,$intr,$idle);
+
+    foreach my $values (@cpudata) {
+
+        # $values =~ s/\:$//;
+
+        my ($u, $n, $s, $r, $i ) = split /:/, $values;
+
+        # across all cpus
+
+        ## debug
+        # print "new: $u, $n, $s, $r, $i\n";
+
+        # old values
+        my ($old_u, $old_n, $old_s, $old_r, $old_i);
+
+        if (defined $old_cpudata{$cid}) {
+            ($old_u, $old_n, $old_s, $old_r, $old_i) = 
+                split /:/, $old_cpudata{$cid};
+            ##
+            # print "old: $old_u, $old_n, $old_s, $old_r, $old_i\n";
+
+        } else {
+            $old_u = $old_n = $old_s = $old_r = $old_i = 0;
+        }
+
+
+        my $ticks = cpu_ticks($old_u, $u);
+        $ticks = $ticks + cpu_ticks($old_n, $n);
+        $ticks = $ticks + cpu_ticks($old_s, $s);
+        $ticks = $ticks + cpu_ticks($old_r, $r);
+        $ticks = $ticks + cpu_ticks($old_i, $i);
+
+        my $etime = $ticks; 
+        if ($etime == 0) { $etime = 1; }
+
+        my $percent = 100 / $etime;
+      
+        $user     = delta($old_u, $u) * $percent;
+        $nice     = delta($old_n, $n) * $percent;
+        $sys      = delta($old_s, $s) * $percent;
+        $intr     = delta($old_r, $r) * $percent;
+        $idle     = delta($old_i, $i) * $percent;
+        $cpupct   = $user + $nice + $sys + $intr;
+        $sumpct   = $cpupct * $nproc;
+        $headpct  = ($nproc * 100) - $sumpct;
+
+        $old_cpudata{$cid} = "$u:$n:$s:$r:$i";
+
+    }
+
+    ## memory stats
+    my @vm = get_vmstat($pagesize);
+
+    ## disk stats
+    my $ts = sprintf ("%.2f", $interval / 3);
+    my @ds = get_diskstat($ts);
+
+    ## nic stats
+    my @ns = get_nicstat();
+    # print "NIC: @ns\n";
+
+    my ($rxpkt,$rxerr,$rxdrop,$rxbyte,$txpkt,$txerr,$txbyte,$cols,$pdrop);
+
+    foreach (@ns) {
+ 
+        my ($ipkt,$ierr,$idrop,$ibyt,$opkt,$oerr,$obyt,$col,$drop) = split /:/, $_;
+ 
+        # old values
+        my ($old_ipkt,$old_ierr,$old_idrop,$old_ibyt,
+            $old_opkt,$old_oerr,$old_obyt,$old_col,$old_drop);
+
+        if (defined $old_nicdata{$nid}) {
+            ($old_ipkt,$old_ierr,$old_idrop,$old_ibyt,
+             $old_opkt,$old_oerr,$old_obyt,$old_col,$old_drop) = split /:/, $old_nicdata{$nid};
+        } else {
+            $old_ipkt = $old_ierr = $old_idrop = $old_ibyt =
+            $old_opkt = $old_oerr = $old_obyt = $old_col = $old_drop = 0;
+        }
+ 
+        $rxpkt  = delta($old_ipkt, $ipkt);
+        $rxerr  = delta($old_ierr, $ierr);
+        $rxdrop = delta($old_idrop, $idrop);
+        $rxbyte = delta($old_ibyt, $ibyt);
+
+        $txpkt  = delta($old_opkt, $opkt);
+        $txerr  = delta($old_oerr, $oerr);
+        $txbyte = delta($old_obyt, $obyt);
+
+        $cols  = delta($old_col, $col);
+        $pdrop = delta($old_drop, $drop);
+
+        # save old data
+        $old_nicdata{$nid} = "$ipkt:$ierr:$idrop:$ibyt:$opkt:$oerr:$obyt:$col:$drop";
+
+    }
+
+    my $rxtxpkt = $rxpkt + $txpkt;
+
+    # turn to KB
+    my $rxkbyte    = sprintf("%.2f", $rxbyte / 1000);
+    my $txkbyte    = sprintf("%.2f", $txbyte / 1000);
+    my $rxtxkbytes = sprintf("%.2f", $rxkbyte + $txkbyte);
+
+
+    if ($logging) {
+
+        my $rawkrd = open_file($rawfile);
+
+        printf $rawkrd "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
+            time, $cpupct, $sumpct, $headpct,
+            $user, $nice, $sys, $intr, $idle,
+            $vm[0], $vm[1], $vm[2], $vm[3], $vm[4], $vm[5], 
+            $vm[6], $vm[7], $vm[8], $vm[9], $vm[10], $vm[11], 
+            $vm[12], $vm[13], $vm[14], $vm[15], $vm[16], 
+            $vm[17], $vm[18], $vm[19], $vm[20], $vm[21],
+            $ds[0], $ds[1], $ds[2], $ds[3], 
+            $ds[4], $ds[5], $ds[6], 
+            $ds[7], $ds[8], 
+            $rxpkt, $rxkbyte, $rxerr, $rxdrop,
+            $txpkt, $txkbyte, $txerr, $cols, $pdrop,
+            $rxtxpkt, $rxtxkbytes,
+            $la->[0], $la->[1], $la->[2];
+
+        close ($rawkrd);
+
+    } else {
+        printf "%.${tp}f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%.2f:%.2f:%.2f:%d:%.2f:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f:%.2f:%.2f:%.2f\n",
+            time, $cpupct, $sumpct, $headpct,
+            $user, $nice, $sys, $intr, $idle,
+            $vm[0], $vm[1], $vm[2], $vm[3], $vm[4],
+            $vm[5], $vm[6], $vm[7], $vm[8], $vm[9], $vm[10],
+            $vm[11], $vm[12], $vm[13], $vm[14], $vm[15],
+            $vm[16], $vm[17], $vm[18], $vm[19], $vm[20], $vm[21],
+            $ds[0], $ds[1], $ds[2], $ds[3],
+            $ds[4], $ds[5], $ds[6],
+            $ds[7], $ds[8],
+            $rxpkt, $rxkbyte, $rxerr, $rxdrop,
+            $txpkt, $txkbyte, $txerr, $cols, $pdrop,
+            $rxtxpkt, $rxtxkbytes,
+            $la->[0], $la->[1], $la->[2];
+    }
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+### SUBROUTINES
+
+
+# open JSON configuration file
+#
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+
+# get log defintion
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# write_log - write log message
+#
+sub write_log {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+
+## getcpu
+sub get_cpustat {
+
+    ### Get Stats
+    my $cpu_time = $bsd_cputime->get();
+
+    my @cdata = ();
+    my $len = $#{ $cpu_time };
+
+    my $count = 0;
+
+    my ($us, $ni, $sy, $iq, $id) = 0;
+
+    for (my $i=0; $i<$len+1; $i++) {
+         ## debug
+         # print "|${ $ cpu_time}[$i]|";
+
+         if ($count == 0) {
+              $us = "${$cpu_time}[$i]";
+         }
+
+         if ($count == 1) {
+             $ni = "${$cpu_time}[$i]";
+         }
+ 
+         if ($count == 2 ) {
+             $sy = "${$cpu_time}[$i]";
+         }
+
+         if ($count == 3) {
+             $iq = "${$cpu_time}[$i]";
+         }
+
+         if ($count == 4) {
+             $id = "${$cpu_time}[$i]";
+         }
+
+         $count++;
+
+         if ($count == 5) {
+             $count=0;
+         }
+    }
+
+    ## debug
+    # print "$us $ni $sy $iq $id\n"; 
+
+    my $payload = "$us:$ni:$sy:$iq:$id";
+
+    push @cdata, $payload;
+
+    return @cdata;
+}
+
+
+sub cpu_ticks {
+    my ($old, $new) = @_;
+    my $lticks = 0;
+
+    my $d = delta($old, $new);
+    $lticks += $d;
+
+    return $lticks;
+}
+
+
+sub delta {
+    my ($old, $new) = @_;
+    return $new - $old;
+}
+
+
+sub get_vmstat {
+
+    my $factor = shift;
+
+    ### get mem stats
+    my $vmtotal  = $bsd_vmtotal->get();
+    my $memphys  = $bsd_memphys->get();
+    my $memall   = $bsd_memall->get() * $factor;
+    my $active   = $bsd_memactive->get() * $factor;
+    my $inactive = $bsd_meminactive->get() * $factor;
+    my $wired    = $bsd_memwire->get() * $factor;
+    my $cache    = $bsd_memcache->get() * $factor;
+    my $free     = $bsd_memfree->get() * $factor;
+    my $swapin   = $bsd_swapin->get();
+    my $swappin  = $bsd_swappgsin->get();
+    my $swapout  = $bsd_swapout->get();
+    my $swappout = $bsd_swappgsout->get();
+
+    # vmtotal keys
+    # my @keys = keys % { $vmtotal };
+    # keys: vmsharedactive sleeping vmshared realshared diskwait 
+    # realsharedactive pagewait vmactive pagefree realactive 
+    # runqueue pagesize vmtotal realtotal
+
+    # runqueue
+    my $rq = $vmtotal->{runqueue} - 1;
+
+    # pagewait, diskwait
+    my $pw = $vmtotal->{pagewait};
+    my $dw = $vmtotal->{diskwait};
+    my $bl = $pw + $dw;
+
+    # sleeps
+    my $sp = $vmtotal->{sleeping};
+    my $procs = $pw + $dw + $bl + $sp;
+    
+    # vm stats
+
+    # total memory
+    my $mt = $memphys;
+    my $realfree = $inactive + $cache + $free;
+    my $mu = $mt - $realfree;
+
+    # format stats
+    my $memusedpct  = sprintf ("%.2f", ($mu / $mt) * 100);
+    my $memused  = sprintf ("%.2f", $mu / 1024);
+    my $memavailpct = sprintf ("%.2f", ($realfree  / $mt) * 100);
+    my $memavail = sprintf ("%.2f", $realfree  / 1024);
+    my $memtotal = sprintf ("%.2f", ($mt / 1024));
+
+    my $memactive = sprintf("%.2f", $active / 1024);
+    my $meminactive = sprintf("%.2f", $inactive / 1024);
+    my $memwired = sprintf("%.2f", $wired / 1024);
+    my $memcache = sprintf("%.2f", $cache / 1024);
+    my $memfree = sprintf("%.2f", $free / 1024);
+    my $memrealfree = sprintf("%.2f", $realfree / 1024);
+    my $memrealfreepct = sprintf("%.2f", ($memrealfree / ( $memall / 1024 ) ) * 100 );
+
+    my @stats;
+    push(@stats, $rq, $bl, $pw, $dw, $sp, $procs,
+         $memusedpct, $memused, $memavailpct, $memavail,
+         $memtotal, $memactive, $meminactive, $memwired, $memcache,
+         $memfree, $memrealfree, $memrealfreepct,
+         $swapin, $swappin, $swapout, $swappout);
+
+    # print "@stats";
+    # print "len=$#stats+1";
+
+    return @stats; 
+}
+
+
+sub get_diskstat {
+
+    my ($tsample) = @_;
+
+    my $iostat = "/usr/sbin/iostat";
+
+    my ($reads,$kbreads,$writes,$kbwrites,$qlen,$svc,$busy,$iops,$rwkbytes);
+
+    $reads = $kbreads = $writes = $kbwrites = $qlen = $svc = 
+    $busy = $iops = $rwkbytes = 0;
+
+    my $diskcount = 0;
+
+    open my $fh, "-|", "$iostat", "-x", "$tsample", "2"
+      or die "cannot execute '$iostat' - $!";
+    
+    my @ds = <$fh>;
+    
+    close $fh;
+
+    foreach ( @ds ) {
+
+        # filter out
+        next if /extended/ ... /extended/;
+        next if /^device|pass|cd/;
+ 
+        $diskcount++;
+    
+        my ($name,$xr,$xw,$xkbr,$xkbw,$q,$s,$b) = split /\s+/, $_;
+        
+        # reads
+        $reads += $xr;
+        $kbreads += $xkbr;
+ 
+        # writes
+        $writes += $xw;
+        $kbwrites += $xkbw;
+    
+        # queue length
+        $qlen += $q;
+
+        # service time
+        $svc += $s;
+
+        # busy
+        $busy += $b;
+
+    }    
+
+    eval {
+        $reads    /= $diskcount;
+        $kbreads  /= $diskcount;
+
+        $writes   /= $diskcount;
+        $kbwrites /= $diskcount;
+
+        $qlen     /= $diskcount;
+        $svc      /= $diskcount;
+        $busy     /= $diskcount;
+    };
+
+
+    $iops      = $reads + $writes;
+    $rwkbytes  = $kbreads + $kbwrites;
+
+    my @stats;
+    push(@stats, $reads, $kbreads, $writes, $kbwrites, 
+                 $qlen, $svc, $busy, $iops, $rwkbytes);
+
+    return @stats; 
+}
+
+
+sub get_nicstat {
+    
+    my $netstat = "/usr/bin/netstat";
+
+    my ($rxpkt,$rxerr,$rxdrop,$rxbyte,$txpkt,$txerr,$txbyte,$cols,$drop) = 0;
+
+    my $nicount = 0;
+
+    open my $fh, "-|", "$netstat", "-ibnd", "-f", "link"
+      or die "cannot execute '$netstat' - $!";
+
+    my @ns = <$fh>;
+    
+    close $fh;
+
+    #Name Mtu Network Address Ipkts Ierrs Idrop Ibytes Opkts Oerrs Obytes Coll Drop
+    foreach ( @ns ) {
+
+        # filter out
+        next if /^Name|lo/;
+        $nicount++;
+
+        my ($name,$mtu,$net,$mac,$ipkt,$ierr,$idrop,$ibyt,$opkt,$oerr,$obyt,$c,$d) = split;
+
+        # rx
+        $rxpkt += $ipkt;
+        $rxerr += $ierr;
+        $rxdrop += $idrop;
+        $rxbyte += $ibyt;
+
+        # tx
+        $txpkt += $opkt;
+        $txerr += $oerr;
+        $txbyte += $obyt;
+
+        # collisions 
+        $cols += $c;
+
+        # droped
+        $drop += $d;
+    }
+
+    $rxpkt  /= $nicount;
+    $rxerr  /= $nicount;
+    $rxdrop /= $nicount;
+    $rxbyte /= $nicount;
+
+    $txpkt  /= $nicount;
+    $txerr  /= $nicount;
+    $txbyte /= $nicount;
+
+    $cols   /= $nicount;
+    $drop   /= $nicount;
+
+    ## debug 
+    # printf "%.${tp}f:%d:%d:%d:%d:%d:%d:%d:%d:%d\n",
+    #           time,
+    #           $rxpkt, $rxbyte, $rxerr, $rxdrop,
+    #           $txpkt, $txbyte, $txerr,
+    #           $cols, $drops;
+
+    my @stats;
+    my $payload = 
+      "$rxpkt:$rxerr:$rxdrop:$rxbyte:$txpkt:$txerr:$txbyte:$cols:$drop";
+
+    push @stats, $payload;
+
+    return @stats;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: sysrec [-hV] | [interval [count]]
+ e.g. sysrec 5       print continuously, every 5 seconds
+      sysrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  CPU
+   #01 timestamp  : seconds since Epoch, time
+   #02 cpupct     : cpu utilization, across all cpus, number
+   #03 sumpct     : sum of all cpus utilization, number
+   #04 headpct    : headroom cpu available, all cpus, number
+   #05 userpct    : cpu utilization, user space in percent, number
+   #06 nicepct    : cpu utilization, user space with nice priority, number
+   #07 syspct     : cpu utilization, system space, number
+   #08 irqpct     : cpu percentage servicing interrupts, number
+   #09 idlepct    : cpu utilization, idle state, number
+   #10 runqsz     : run queue length, tasks waiting for run time, number
+   #11 blocked    : processes blocked for resources, number
+   #12 pagewait   : processes blocked for paging, number
+   #13 diskwait   : processes blocked for disk io, number
+   #14 sleeping   : processes sleeping, number
+   #15 plistsz    : total number of processes in the system, number
+
+  MEM
+   #16 memusedpct : size of used memory in percent, number
+   #17 memused    : size of used memory in kilobytes, number
+   #18 memavailpct: size of available memory in kilobytes, number
+   #19 memavail   : size of available memory in kilobytes, number
+   #20 memtotal   : size of memory in kilobytes, number
+   #21 active     : size of active memory pages in kilobytes, number
+   #22 inactive   : size of inactive memory pages in kilobytes, number
+   #23 wired      : size of wired memory pages in kilobytes, number
+   #24 cache      : size of memory pages on cache queue in kilobytes, number
+   #25 free       : size of free memory pages in kilobytes, number
+   #26 realfree   : size of real free memory in kilobytes, number
+                     (inactive + cache + free)
+   #27 realfreepct: size of real free memory in percent of total memory, number
+   #28 swapin     : swap pager pageins, rate
+   #29 swappgsin  : swap pager pages paged in, rate 
+   #30 swapout    : swap pager pageouts, rate
+   #31 swappgsout : swap pager pages paged out, rate
+
+  DISK
+   #32 reads      : read requests per second, rate
+   #33 rkbytes    : read KB per second,rate
+   #34 writes     : write requests per second, rate
+   #35 wkbytes    : write KB per second, rate
+
+   # throughput
+   #36 queue      : the number of not yet completed transactions, rate
+   #37 service    : service time per transaction in miliseconds, number 
+   #38 diskutil   : the percentage of time the device had one or more 
+                     transactions outstanding, number
+   #39 iops       : disk read+write requests per second, rate
+   #40 rwkbytes   : read+write KB per second, rate
+   
+  NIC
+   # rx received, inbound
+   #41 rxpkt      : rx packets per second, rate
+   #42 rxkbytes   : rx KB per second, rate
+   #43 rxerr      : rx packets containing errors, rate
+   #44 rxdrop     : rx drop packets per second, rate
+
+   # tx transmitted, outbound
+   #45 txpkt      : transmitted packets per second, rate
+   #46 txkbytes   : transmitted KB per second, rate 
+   #47 txerr      : number of errors while transmitting pkt per second, rate
+   #48 cols       : number of collisions, rate
+   #49 drop       : number of dropped packets per second, rate
+   
+   # throughput
+   #50 rxtxpkt    : rx+tx packets per second, rate
+   #51 rxtxkbytes : rx+tx KB per second, rate
+
+   #52 avg1       : LA of the last minute, number
+   #53 avg5       : LA of the last 5 minutes, number
+   #54 avg15      : LA of the last 15 minutes, number
+
+END
+    exit 0;
+}
+
+
+## revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+sysrec: 1.1.4, 2017-06-25 1104
+END
+    exit 0;
+}

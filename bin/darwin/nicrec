@@ -1,0 +1,366 @@
+#!/opt/kronometrix/perl/bin/perl
+
+#  Copyright (c) 2018 Stefan Parvu (www.kronometrix.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+
+# Debug Only
+# use Data::Dumper;
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('lhV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+### Variables
+my %old_nicdata;                     # nic_stats data
+my $loop     = 0;                    # current loop number
+$main::opt_h = 0;                    # help option
+$main::opt_l = 0;                    # logging option
+$main::opt_V = 0;                    # revision option
+my $tp       = 0;                    # time precision
+my $kfile    = 'kronometrix.json';   # configuration file
+my $rawfile;                         # krd raw data file
+my $kdata;                           # configuration data
+my ($baselog, $curlog, $nlog, $log); # logs
+local $| = 1;                        # autoflush
+
+
+### MAIN BODY
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+# check interval input
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+my $cnt = 0;
+
+# logging option
+if ($logging) {
+
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'nicrec' . '.krd';
+    $nlog = $baselog . "/nicrec.log";
+    $log = open_file($nlog);
+
+    # save STDERR to log file
+    *STDERR = $log;
+
+    write_log ("info: started");
+}
+
+while (1) {
+
+    # get NIC stats
+    my @nicstat = get_nicstat();
+
+    my $rawkrd;
+    if ($logging) {
+        $rawkrd = open_file($rawfile);
+    }
+
+    foreach (@nicstat) {
+
+        my ($n,$m,$net,$mac,$ipkt,$ierr,$idrop,$ibyt,$opkt,$oerr,$obyt,$col,$drop) = split;
+
+        # old values
+        my ($old_ipkt,$old_ierr,$old_idrop,$old_ibyt,
+            $old_opkt,$old_oerr,$old_obyt,$old_col,$old_drop);
+
+        if (defined $old_nicdata{$n}) {
+            ($old_ipkt,$old_ierr,$old_idrop,$old_ibyt,
+             $old_opkt,$old_oerr,$old_obyt,$old_col,$old_drop) = split / /, $old_nicdata{$n};
+        } else {
+            $old_ipkt = $old_ierr = $old_idrop = $old_ibyt = 
+            $old_opkt = $old_oerr = $old_obyt = $old_col = $old_drop = 0;
+        }
+
+        my $rpkt   = delta($old_ipkt, $ipkt);
+        my $rerr   = delta($old_ierr, $ierr);
+        my $rdrop  = delta($old_idrop, $idrop);
+        my $rkbyte = delta($old_ibyt, $ibyt);
+        $rkbyte = sprintf ("%.2f", $rkbyte / 1024);
+
+        my $tpkt   = delta($old_opkt, $opkt);
+        my $terr   = delta($old_oerr, $oerr);
+        my $tkbyte = delta($old_obyt, $obyt);
+        $tkbyte = sprintf ("%.2f", $tkbyte / 1024);
+
+        my $cols   = delta($old_col, $col);
+        my $pdrop  = delta($old_drop, $drop);
+
+        my $rxtxpkt = $rpkt + $tpkt;
+        my $rxtxkbytes = $rkbyte + $tkbyte;
+
+        # save old data
+        $old_nicdata{$n} = 
+            "$ipkt $ierr $idrop $ibyt $opkt $oerr $obyt $col $drop";
+
+        if ($logging) {
+            printf $rawkrd 
+               "%.${tp}f:%s:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
+               time, $n,
+               $rpkt, $rkbyte, $rerr, $rdrop,
+               $tpkt, $tkbyte, $terr,
+               $pdrop, $cols,
+               $rxtxpkt, $rxtxkbytes;
+        } else {
+            printf
+               "%.${tp}f:%s:%d:%.2f:%d:%d:%d:%.2f:%d:%d:%d:%d:%.2f\n",
+               time, $n,
+               $rpkt, $rkbyte, $rerr, $rdrop,
+               $tpkt, $tkbyte, $terr,
+               $pdrop, $cols,
+               $rxtxpkt, $rxtxkbytes;
+        }
+    }
+
+    if ($logging) {
+        close ($rawkrd);
+    }
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+
+}
+
+
+### SUBROUTINES
+
+
+# open JSON configuration file
+#
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+
+# get log defintion
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# write_log - write log message
+#
+sub write_log {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+sub delta {
+    my ($old, $new) = @_;
+    return $new - $old;
+}
+
+
+sub get_nicstat {
+    
+    my $netstat = "/usr/bin/netstat";
+    my $pt      = time;
+    my @stats;
+
+    open my $fh, "-|", "$netstat", "-ibnd", "-f", "link"
+      or die "cannot execute '$netstat' - $!";
+
+    my @ns = <$fh>;
+    
+    close $fh;
+
+    #Name Mtu Network Address Ipkts Ierrs Idrop Ibytes Opkts Oerrs Obytes Coll Drop
+    foreach ( @ns ) {
+
+        # filter out
+        next if /^Name|lo/;
+
+        my ($n,$m,$net,$mac,$ipkt,$ierr,$idrop,$ibyt,$opkt,$oerr,$obyt,$col,$drop) = split;
+
+        if ($n !~ m/\d/) {
+            # NICs dont have ID, fetch them from link
+            $net =~ m/.*#(\d+)\>$/;
+            my $id = $1;
+            $n .= $id;
+        }
+ 
+        $mac =~ s/:/_/go;
+
+        my $payload = "$n $m $net $mac $ipkt $ierr $idrop $ibyt $opkt $oerr $obyt $col $drop";
+        push @stats, $payload;
+    }
+
+    return @stats;
+}
+
+
+## usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: diskrec [-hV] | [interval [count]]
+ e.g. diskrec 5       print continuously, every 5 seconds
+      diskrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 nicid      : NIC id, string
+
+  # rx received, inbound
+  #03 rxpkt      : rx packets per sec, rate
+  #04 rxkbytes   : rx KBytes per sec, rate
+  #05 rxerr      : rx packets containing errors, rate 
+  #06 rxdrop     : rx drop packets, number
+
+  # tx transmitted, outbound
+  #07 txpkt      : tx packets per sec, rate
+  #08 txkbytes   : tx KBytes per sec, rate
+  #09 txerr      : tx packets containg errors, rate 
+  #10 txdrop     : tx drop packets, number
+  #11 txcol      : packet collision, rate 
+
+  # throughput
+  #12 rxtxpkt    : rx+tx packets per sec, rate
+  #13 rxtxkbytes : rx+tx KBytes per sec, rate
+
+END
+    exit 0;
+}
+
+
+## revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+nicrec: 1.1.4, 2017-10-01 1538
+END
+    exit 0;
+}

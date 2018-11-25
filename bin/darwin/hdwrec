@@ -1,0 +1,601 @@
+#!/opt/kronometrix/perl/bin/perl
+
+#  Copyright (c) 2018 Stefan Parvu (www.kronometrix.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use Regexp::Common;
+use Sys::Hostname;
+use BSD::Sysctl qw(sysctl);
+use Sys::HostIP;
+
+# Debug Only
+#use Data::Dumper;
+
+### Command line arguments
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('lhV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
+
+# process [[interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+###  Variables
+$main::opt_h = 0;                    # help option
+$main::opt_l = 0;                    # logging option
+$main::opt_V = 0;                    # revision option
+my $loop     = 0;                    # current loop number
+my $tp       = 0;                    # time precision
+my $kfile    = 'kronometrix.json';   # configuration file
+my $rawfile;                         # krd raw data file
+my $kdata;                           # configuration data
+my $hypervisor = "NA";
+my ($baselog, $curlog, $hlog, $log); # log files
+my $dboot    = "/var/run/dmesg.boot";
+local $| = 1;
+
+
+
+### MAIN BODY
+
+# Set a timer for BSD::Sysctl objects
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+my $bhdw     = BSD::Sysctl->new( 'hw.machine_arch' );
+my $bdisk    = BSD::Sysctl->new( 'kern.disks' );
+my $bos      = BSD::Sysctl->new( 'kern.ostype' );
+my $brelos   = BSD::Sysctl->new( 'kern.osrelease' );
+my $bnic     = BSD::Sysctl->new( 'net.link.generic.system.ifcount' );
+my $bboot    = BSD::Sysctl->new( 'kern.boottime' );
+my $bguest   = BSD::Sysctl->new( 'kern.vm_guest' );
+my $bkernel  = BSD::Sysctl->new( 'kern.ident' );
+my $bvcpu    = BSD::Sysctl->new( 'hw.ncpu' );
+my $bmodel   = BSD::Sysctl->new( 'hw.model' );
+my $bphysmem = BSD::Sysctl->new( 'hw.physmem' );
+my $bswapmem = BSD::Sysctl->new( 'vm.swap_total' );
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+# speedup option, default 1hr
+my $boot    = 60;             # we speedup 60 times 60sec
+my $speedup = 1;              # default on
+my $defint  = $interval;      # we save the original interval
+
+if ( $speedup == 1 ) { rstimer($boot); }
+
+# logging option
+if ($logging) {
+
+    if ( $speedup == 1 ) { rstimer($boot); }
+
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'hdwrec' . '.krd';
+    $hlog = $baselog . "/hdwrec.log";
+    $log = open_file($hlog);
+
+    # save STDERR to log file
+    *STDERR = $log;
+
+    write_log ("info: started");
+}
+
+
+while (1) {
+
+    ## initial values
+    my $swapmem = "NA";
+    my $pcpu    = 1;
+    my $ncores  = 1;
+    my $ht      = "NA";
+
+    ## get stats
+    my $arch    = $bhdw->get();
+
+    my $model   = 'NA';
+    if ($bmodel) {
+        $model  = $bmodel->get();
+    } else { $model = $arch; }
+
+    my $os      = lc $bos->get();
+    my $relos   = $brelos->get();
+    my $disk    = $bdisk->get();
+    my $nic     = $bnic->get();
+    my $btime   = sprintf("%d",$bboot->get());
+    my $guest   = $bguest->get();
+    my $kernel  = $bkernel->get();
+    my $vcpu    = $bvcpu->get();
+
+    my $swap = $bswapmem->get();
+    my $smem;
+
+    if ($swap =~ /$RE{num}{real}/) {
+        $smem    = sprintf ("%.2f", $bswapmem->get() / 1048576);
+    } else { 
+        # we call swap by cmdline
+        my $sm = get_swap();
+        $smem = sprintf ("%.2f", $sm / 1048576);
+    }
+
+    my $pmem    = sprintf ("%.2f", $bphysmem->get() / 1048576);
+
+    my $rawkrd;
+    if ($logging) {
+        $rawkrd = open_file($rawfile);
+    }
+
+    #$model =~ s/[^\S]{2,}//g;
+    $model =~ s/(\s+)/ /g;
+    chop($arch);
+    chop($os);
+    chop($relos);
+    $relos =~ s/\-.*$//;
+    chop($kernel);
+
+    # hostname# hostname
+    my $host = hostname;
+    $host =~ s/\..*$// if $host =~ /\./;
+
+    # pcpu
+    my @pcpu_stats = get_dmesg();
+
+    
+    if (@pcpu_stats) {
+
+        if ($#pcpu_stats == 2) {
+            $pcpu = $pcpu_stats[0];
+            $ncores = $pcpu_stats[1];
+            $ht = 1;
+        } else {
+            $pcpu = $pcpu_stats[0];
+            $ncores = $pcpu_stats[1];
+            $ht = 0;
+        }
+    } else {
+        $pcpu   = 1;
+        $ncores = 'NA';
+        $ht     = 'NA';
+    }
+
+    # get disks
+    my $num_disk = 0;
+    foreach my $i (split / /, $disk ) {
+        $num_disk++ if $i !~ /cd0/;
+    }
+
+    # diskspace in GB
+    my $lsize = 0;
+
+    # get NICs
+    my $num_nic = $nic - 1;
+
+    # uptime
+    my $u = sprintf("%d", time - $btime);
+    my $uptime = sec2human($u);
+    
+    # swapmem can be NA or value, defaults to string
+    # num_jvm can be NA or value, defaults to string
+    # HT can be NA or value, defaults to string
+
+    # get kdr release version
+    my $kdrrel = get_version();
+
+    my $hostip     = Sys::HostIP->new;
+    my $interfaces = $hostip->interfaces;
+
+    #foreach my $interface ( keys %{$interfaces} ) {
+    #    next if $interface =~ /lo/;
+    #    my $ip = $interfaces->{$interface};
+    #    print "$interface $ip\n";
+    #}
+
+    my $ifs;
+
+    my $k=0;
+    for my $if (keys %{$interfaces}) {
+        next if $if =~ /lo/;
+        my $ip = $interfaces->{$if};
+        if ( $k > 0 ) {
+            $ifs = $ifs . ' ' . $if . '_' . $ip;
+        } else {
+            $ifs = $if . '_' . $ip;
+        }
+        $k++;
+    }
+
+    if ($logging) {
+
+        printf $rawkrd
+        "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n", 
+        time, $host, $arch, $model, $hypervisor, $os, $relos,
+        $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem, 
+        $num_disk, $lsize, $num_nic, $uptime, $ifs, $kdrrel;
+
+    } else {
+
+        printf
+        "%.${tp}f:%s:%s:%s:%s:%s:%s:%s:%s:%s:%d:%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
+        time, $host, $arch, $model, $hypervisor, $os, $relos,
+        $kernel, $pcpu, $ncores, $vcpu, $ht, $pmem, $smem,
+        $num_disk, $lsize, $num_nic, $uptime, $ifs, $kdrrel;
+    }
+
+    if ($logging) {
+        close ($rawkrd);
+    }
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Check for speedup
+    if ( $speedup > 0 ) {
+        if ( $speedup == $boot ) {
+            rstimer($defint);
+            $speedup = -1;
+        } else { $speedup++; }
+    }
+
+    ### Interval
+    pause;
+
+}
+
+
+
+### SUBROUTINES
+
+# open JSON configuration file
+#
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+
+# get log defintion
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# write_log - write log message
+#
+sub write_log {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+sub get_version {
+
+    my $fver = '/opt/kronometrix/VERSION';
+    my $rel  = 'NA';
+
+    if (-f $fver) {
+        open my $fh, "<", $fver
+            or die "error: cannot find VERSION file: $!\n";
+        while (<$fh>) {
+            chomp;
+            $rel = $_;
+        }
+        close $fh;
+    }
+
+    return $rel;
+}
+
+
+## sec2human
+sub sec2human {
+    my $t = shift;
+    my ($d, $h, $m, $s);
+
+    $d = int($t / 86400);
+    $t -= ($d * 86400);
+
+    $h = int($t / 3600);
+    $t -= ($h * 3600);
+
+    $m = int($t / 60);
+
+    $s = $t % 60;
+
+    $d = $d < 1 ? '' : $d . 'd ';
+    $h = $h < 1 ? '' : $h . 'h ';
+    $m = $m < 1 ? '' : $m . 'm ';
+    $t = $d . $h . $m . $s . 's';
+
+    return $t;
+}
+
+
+## convert
+sub convert {
+    my( $size, $n ) = ( shift, 0 );
+    ++$n and $size /= 1024 until $size < 1024;
+    return sprintf "%.2f %s", $size, ( qw[ bytes KB MB GB ] )[ $n ];
+}
+
+
+## get_param
+sub get_param {
+    my ($dm) = @_;
+    my $p;
+
+    while (<$dm>) {
+        chomp;
+        next if $_ !~ /FreeBSD\/SMP\: \d+/;
+        $_ =~ s/FreeBSD\/SMP\://;
+        $p = $_; 
+    }
+
+    my @cpu_info;
+
+    # last occurance
+    if ($p) {
+
+        # HT ON
+        # 2 package(s) x 8 core(s) x 2 SMT threads
+
+        # HT OFF
+        # 2 package(s) x 8 core(s)
+        foreach my $l (split( /x/, $p )) {
+
+            if ( $l =~ /(\d+)\s*package/ ) {
+                $l =~ s/package\(s\)//;
+                $l =~ s/[\h\v]+//g;
+                push @cpu_info, $l;
+            }
+            elsif ( $l =~ /(\d+)\s*core/ ) {
+                $l =~ s/core\(s\)//;
+                $l =~ s/[\h\v]+//g;
+                push @cpu_info, $l;
+            }
+            elsif ( $l =~ /(\d+)\s*SMT threads/ ) {
+                $l =~ s/SMT threads//;
+                $l =~ s/[\h\v]+//g;
+                push @cpu_info, $l;
+            }
+        }
+
+    }
+
+    return @cpu_info;
+}
+
+sub get_hypervisor {
+    my ($input) = @_;
+    my $hp='NA';
+ 
+    while (<$input>) {
+        chomp;
+        next if $_ !~ /Hypervisor\: Origin \= /;
+        $_ =~ s/Hypervisor\: Origin \= //;
+        $hp = $_;
+    }
+    $hp =~ s/"//g;
+
+    if ($hp eq "KVMKVMKVM" ) { 
+        $hp = 'kvm';
+    }
+
+    return $hp;
+}
+ 
+sub get_dmesg {
+
+    my @cpu_stats;
+
+    open my $fh, "<", "$dboot"
+      or die "cannot open dmesg boot file - $!";
+
+    $hypervisor = get_hypervisor($fh);
+
+    @cpu_stats = get_param($fh);
+
+    close $fh;
+
+    return @cpu_stats;
+}
+
+
+sub get_swap {
+
+    my $sysctl = "/sbin/sysctl";
+    my $value;
+
+    open my $fh, "-|", "$sysctl", "vm.swap_total"
+      or die "cannot execute '$sysctl' - $!";
+
+    my @swapbuf = <$fh>;
+    
+    close $fh;
+
+    foreach (@swapbuf) {
+        $_ =~ s/.*://;
+        $_ =~ s/^\s+//;
+        $value = $_;
+    }
+
+    return $value;
+}
+
+
+sub rstimer {
+
+    my ($lt) = @_;
+
+    my $fint = $lt;
+
+    setitimer( ITIMER_REAL, $fint, $lt );
+
+    return;
+}
+
+
+## usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: hdwrec [-hV] | [interval [count]]
+ e.g. hdwrec 5       print continuously every 5 seconds
+      hdwrec 1 5     print 5 times, every 1 second
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 hostname   : hostname, string
+  #03 hdw        : machine hardware name, string
+  #04 model      : machine hardware model, string
+  #05 hypervisor : name of the hypervisor, string
+  #06 os         : name of the operating system, string
+  #07 relos      : release number of operating system, string
+  #08 kernel     : kernel version and release number, string
+  #09 pcpu       : number of physical installed CPUs, number
+  #10 cores      : number of physical CPU cores , number
+  #11 vcpu       : number of virtual CPUs, number
+  #12 ht         : hyper-threading: 0(OFF)/1(ON)/NA, string
+  #13 memtotal   : total physical memory installed in MB, number
+  #14 swaptotal  : total physical swap installed in MB, number
+  #15 disks      : total number of disks, number
+  #16 diskspace  : total GB across all disks, number
+  #17 nics       : total number of NICs, number
+  #18 uptime     : how long the system has been running, number
+  #19 ips        : IP interface settings, string
+  #20 version    : data recorders release number, string 
+END
+    exit 0;
+}
+
+
+## revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+hdwrec: 1.2.1, 2018-11-06 1916
+END
+    exit 0;
+}
