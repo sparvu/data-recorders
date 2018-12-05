@@ -1591,7 +1591,7 @@ sub usage {
     print STDERR <<END;
 USAGE: sender [-t secs] [-fhvV] | [interval]
 OPTIONS:
-  -f        : force host uuid for epd, dpd, spd subscriptions
+  -f        : force backward compatible mode hostid (epd, dpd, spd) 
   -h        : help information
   -t        : timeout in seconds
   -v        : verbose information
@@ -1609,7 +1609,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.3.6, 2018-12-05 1958
+sender: 1.3.6, 2018-12-05 2024
 END
     exit 0;
 }
