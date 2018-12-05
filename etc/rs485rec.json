@@ -149,7 +149,280 @@
           ]
         }
       ],
-      "aq" : [
+      "wcd" : [
+        {
+          "unit": 1,
+          "vendor": "vaisala",
+          "model": "qml201_bh2qw",
+          "description": "Vaisala QML201 BM01, HMP155, QMS101, QMR101, WMS302",
+          "checksum": "yes",
+          "command": "data",
+          "message_start": "",
+          "record_start": "",
+          "record_sep": ":",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "sname",
+              "description": "station name",
+              "type": "string"
+            },
+            {
+              "name": "curtime",
+              "description": "current logger time",
+              "type": "unixtime"
+            },
+            {
+              "name": "logtime",
+              "description": "logger data measurements time",
+              "type": "unixtime"
+            },
+            {
+              "name": "dd",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ff",
+              "description": "",
+              "type": "string"
+            },
+
+            {
+              "name": "dd10min",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "dd10max",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ff10min",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ff10max",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "rff10min",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ta",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "tamin6",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "tamax6",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "rh",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "string"
+            },
+            {
+              "name": "p",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "qff",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "a",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ppp",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "r10min",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "r1h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "r1h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "r3h",
+              "description": "",
+              "type": "string"
+            },            
+            {
+              "name": "r6h",
+              "description": "",
+              "type": "string"
+            },            
+            {
+              "name": "r24h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "rg1h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "sss1h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "windstat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "tastat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "rhstat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "pastat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "prstat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "srstat",
+              "description": "",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "unit": 2,
+          "vendor": "vaisala",
+          "model": "qml201",
+          "description": "Vaisala QML201 Logger Inventory message",
+          "checksum": "yes",
+          "command": "info",
+          "message_start": "",
+          "record_start": "",
+          "record_sep": ":",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "sname",
+              "description": "station name",
+              "type": "string"
+            },
+            {
+              "name": "curtime",
+              "description": "current logger time",
+              "type": "unixtime"
+            },
+            {
+              "name": "extdc",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "voltage",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "temp",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "sastate",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "pwrstate",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "warning",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "error",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "availog",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "freemem",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "minmem",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "reset",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "uptime",
+              "description": "",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "aqd" : [
         {
           "unit": 2,
           "vendor": "vaisala",
