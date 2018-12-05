@@ -311,7 +311,7 @@ sub get_devices {
 
             $stopbits  = $f->{'stopbits'};
 
-            my @lmoids = ('iaq', 'aq', 'amd');
+            my @lmoids = ('iaq', 'aq', 'amd', 'wcd');
 
             for my $lmoid (@lmoids) {
                 next if (! defined $f->{$lmoid});
@@ -447,7 +447,7 @@ sub get_devices {
                     $devs{$keyapp} = $hvalue;
                 }
 
-            } # iaq, aq, amd
+            } # iaq, aq, amd, wcd
         }
     }
 
@@ -1474,7 +1474,7 @@ END
 sub revision {
     print STDERR <<END;
 IIoT, environmental monitoring, meteorology data recorder
-rs485rec: 1.3.12, 2018-11-17 1550
+rs485rec: 1.3.13, 2018-12-05 0838
 END
     exit 0;
 }
