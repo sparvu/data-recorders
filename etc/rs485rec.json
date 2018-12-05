@@ -556,7 +556,7 @@
       "stopbits" : 1,
       "databits" : 7,
       "timeout" : 10,
-      "aq" : [
+      "aqd" : [
         {
           "unit": 1,
           "vendor": "vaisala",
@@ -729,7 +729,7 @@
       "parity" : "none",
       "stopbits" : 1,
       "timeout" : 10,
-      "iaq" : [
+      "iaqd" : [
         {
           "unit": 1,
           "vendor": "tongdy",
@@ -892,7 +892,7 @@
           ]
         }
       ],
-      "aq": [
+      "aqd": [
         {
           "unit": 192,
           "vendor": "QUINT",
