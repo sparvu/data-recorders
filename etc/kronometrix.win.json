@@ -209,6 +209,20 @@
       "domain" : [ "amd" ]
     },
     {
+      "name"   : "wcd_qml201",
+      "file"   : "wcd_qml201rec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "wcd" ]
+    },
+    {
+      "name"   : "wcd_qml201_bh2qw"
+      "file"   : "wcd_qml201_bh2qwrec.krd",
+      "sample" : 60,
+      "status" : "inactive",
+      "domain" : [ "wcd" ]
+    },
+    {
       "name"   : "aq_aqt420",
       "file"   : "aq_aqt420rec.krd",
       "sample" : 60,
