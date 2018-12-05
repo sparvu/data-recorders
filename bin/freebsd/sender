@@ -223,6 +223,8 @@ while (1) {
             my $aq_qups242410xrec_on    = 0;
             my $amd_qml201rec_on        = 0;
             my $amd_qml201_hmp155rec_on = 0;
+            my $wcd_qml201rec_on        = 0;
+            my $wcd_qml201_bh2qwrec_on  = 0;
 
            if ( $_->{"input"} =~ /sysrec/               ) { $sysrec_on  = 1;    }
         elsif ( $_->{"input"} =~ /cpurec/               ) { $cpurec_on  = 1;    }
@@ -253,7 +255,9 @@ while (1) {
         elsif ( $_->{"input"} =~ /aq_qups24ahrec/       ) { $aq_qups24ahrec_on  = 1; }
         elsif ( $_->{"input"} =~ /aq_qups242410xrec/    ) { $aq_qups242410xrec_on  = 1; }
         elsif ( $_->{"input"} =~ /amd_qml201rec/        ) { $amd_qml201rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /wcd_qml201rec/        ) { $wcd_qml201rec_on  = 1; }
         elsif ( $_->{"input"} =~ /amd_qml201_hmp155rec/ ) { $amd_qml201_hmp155rec_on  = 1; }
+        elsif ( $_->{"input"} =~ /wcd_qml201_bh2qwrec/ ) { $wcd_qml201_bh2qwrec_on  = 1; }
 
             # each platform
             for my $key ( keys %platform ) {
@@ -374,6 +378,22 @@ while (1) {
 
                     # message id
                     if ($lid eq 'amd') { $f=1; $msgid = "amd-qml201-hmp155"; }
+
+                } elsif ($wcd_qml201rec_on) {
+        
+                    # device id
+                    $devid = get_devid(1, $delta);
+        
+                    # message id
+                    if ($lid eq 'wcd') { $f=1; $msgid = "wcd-qml201-info"; }
+        
+                } elsif ($wcd_qml201_bh2qwrec_on) {
+        
+                    # device id
+                    $devid = get_devid(1, $delta);
+        
+                    # message id
+                    if ($lid eq 'wcd') { $f=1; $msgid = "wcd-qml201-bh2qw"; }
 
                 } elsif ($aq_aqt420rec_on) {
         
@@ -1401,18 +1421,16 @@ sub send_data {
         # DATA Msg 
         #  devid=qml201_hmp155_1
         #  raw data:SKRLAB:1542800461:1542800460:24.0:35:7.5:0:33E8
-        #  good: amd-qml201-hmp155:b1a69b175ecdda0194a6e62702d72c8a:RTS_LAB:hmp155:1542538152:24.3:24:2.7:0:80A6
         my ( $t, $devname, $ds, $v1, $v2, $v3, $v4, $v5, $v6 ) = split ( /:/, $delta );
         $devname = $1 if($devname =~ m/qml201_(.*)_.*$/);
         $delta = join(':', $v1, $v2, $v3, $v4, $v5, $v6);
         $hash   = qml201_crc16("$msg_id:$sid:$ds:$devname:$delta");
         $post   = "$msg_id:$sid:$ds:$devname:$delta:$hash";
 
-    } elsif ( $msg_id =~ /amd-qml201-info/ ) {
+    } elsif ( $msg_id =~ /qml201-info/ ) {
         # DATA Msg
         #  devid=qml201_1
         #  raw data: SKRLAB:1542800461:14.23:14.07:25.4:0:1:0:0:3390464:1557120:1553532:0:1:0h 44min 40sec since Wed Nov 21 125620 2018:4919
-        #  good: amd-qml201-info:b1a69b175ecdda0194a6e62702d72c8a:BACAU:qml201:1542577201:12.40:12.69:23.8:0:1:0:0:3211264:1491416:1481220:0:1:79h 36min 25sec since Thu Nov 15 160335 2018:5DEA 
         my ( $t, $devname, $ds, $v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14 ) = split ( /:/, $delta );
         $devname = $1 if($devname =~ m/(.*)_.*$/);
         $delta = join(':', $v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14 );
@@ -1576,7 +1594,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.3.4, 2018-11-21 1343
+sender: 1.3.5, 2018-12-05 1045
 END
     exit 0;
 }
