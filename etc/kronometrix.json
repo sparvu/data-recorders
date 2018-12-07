@@ -216,7 +216,7 @@
       "domain" : [ "wcd" ]
     },
     {
-      "name"   : "wcd_qml201_bh2qw"
+      "name"   : "wcd_qml201_bh2qw",
       "file"   : "wcd_qml201_bh2qwrec.krd",
       "sample" : 60,
       "status" : "inactive",
