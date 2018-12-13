@@ -258,22 +258,22 @@
       "domain" : [ "aqd" ]
     },
     {
-      "name"   : "iaq_g01",
-      "file"   : "iaq_g01rec.krd",
+      "name"   : "iaqd_g01",
+      "file"   : "iaqd_g01rec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "iaqd" ]
     },
     {
-      "name"   : "iaq_msd1618",
-      "file"   : "iaq_msd1618rec.krd",
+      "name"   : "iaqd_msd1618",
+      "file"   : "iaqd_msd1618rec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "iaqd" ]
     },
     {
-      "name"   : "iaq_gmw90",
-      "file"   : "iaq_gmw90rec.krd",
+      "name"   : "iaqd_gmw90",
+      "file"   : "iaqd_gmw90rec.krd",
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "iaqd" ]
