@@ -129,7 +129,7 @@
       "file"   : "certrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "epd", "dpd", "spd" ]
+      "domain" : [ "dpd", "epd", "spd" ]
     },
     {
       "name"   : "pg",
@@ -185,14 +185,14 @@
       "file"   : "ntprec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "epd", "dpd", "spd" ]
+      "domain" : [ "dpd", "epd", "spd" ]
     },
     {
       "name"   : "svc",
       "file"   : "svcrec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "epd", "dpd", "spd" ]
+      "domain" : [ "dpd", "epd", "spd" ]
     },
     {
       "name"   : "amd_qml201",
@@ -262,21 +262,21 @@
       "file"   : "iaqd_g01rec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "iaqd" ]
+      "domain" : [ "iaqd", "dpd" ]
     },
     {
       "name"   : "iaqd_msd1618",
       "file"   : "iaqd_msd1618rec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "iaqd" ]
+      "domain" : [ "iaqd", "dpd" ]
     },
     {
       "name"   : "iaqd_gmw90",
       "file"   : "iaqd_gmw90rec.krd",
       "sample" : 60,
       "status" : "inactive",
-      "domain" : [ "iaqd" ]
+      "domain" : [ "iaqd", "dpd" ]
     },
     {
       "name"   : "ws",
