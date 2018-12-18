@@ -258,6 +258,13 @@
       "domain" : [ "aqd" ]
     },
     {
+      "name" : "aqd_q1615emk2_floud",
+      "file" : "aqd_q1615emk2_floudrec.krd",
+      "domain" : [ "aqd" ],
+      "status" : "active",
+      "sample" : 60
+    },
+    {
       "name"   : "iaqd_g01",
       "file"   : "iaqd_g01rec.krd",
       "sample" : 60,
