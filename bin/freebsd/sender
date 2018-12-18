@@ -443,6 +443,7 @@ while (1) {
 
                     # message id
                     if ($lid eq 'iaqd') { $f=1; $msgid = "iaqd-g01"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-iaq-g01"; }
 
                 } elsif ($iaqd_gmw90rec_on) {
 
@@ -451,6 +452,7 @@ while (1) {
 
                     # message id
                     if ($lid eq 'iaqd') { $f=1; $msgid = "iaqd-gmw90"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-iaq-gmw90"; }
 
                 } elsif ($iaqd_msd1618rec_on) {
                  
@@ -459,6 +461,7 @@ while (1) {
                 
                     # message id
                     if ($lid eq 'iaqd') { $f=1; $msgid = "iaqd-msd1618"; }
+                 elsif ($lid eq 'dpd') { $f=1; $msgid = "dpd-iaq-msd1618"; }
 
                 } elsif ($a2statrec_on) {
 
@@ -1610,7 +1613,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.3.7, 2018-12-13 0422
+sender: 1.3.8, 2018-12-18 0756
 END
     exit 0;
 }
