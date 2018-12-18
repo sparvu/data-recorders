@@ -77,6 +77,7 @@ XENREC_LOG=${KRMX_LOG}/xenrec.log
 WEBREC_LOG=${KRMX_LOG}/webrec.log
 WEBINVREC_LOG=${KRMX_LOG}/webinvrec.log
 CERTREC_LOG=${KRMX_LOG}/certrec.log
+AXISREC_LOG=${KRMX_LOG}/axisrec.log
 SVCREC_LOG=${KRMX_LOG}/svcrec.log
 WSREC_LOG=${KRMX_LOG}/wsrec.log
 
