@@ -311,7 +311,7 @@ sub get_devices {
 
             $stopbits  = $f->{'stopbits'};
 
-            my @lmoids = ('iaqd', 'aqd', 'amd', 'wcd');
+            my @lmoids = ('iaqd', 'aq', 'amd', 'wcd');
 
             for my $lmoid (@lmoids) {
                 next if (! defined $f->{$lmoid});
@@ -447,7 +447,7 @@ sub get_devices {
                     $devs{$keyapp} = $hvalue;
                 }
 
-            } # iaqd, aqd, amd, wcd
+            } # iaqd, aq, amd, wcd
         }
     }
 

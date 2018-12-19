@@ -422,7 +422,7 @@
           ]
         }
       ],
-      "aqd" : [
+      "aq" : [
         {
           "unit": 2,
           "vendor": "vaisala",
@@ -556,7 +556,7 @@
       "stopbits" : 1,
       "databits" : 7,
       "timeout" : 10,
-      "aqd" : [
+      "aq" : [
         {
           "unit": 1,
           "vendor": "vaisala",
@@ -892,7 +892,7 @@
           ]
         }
       ],
-      "aqd": [
+      "aq": [
         {
           "unit": 192,
           "vendor": "QUINT",
