@@ -1376,13 +1376,16 @@ sub send_databulk {
 
     my $status = $response->{status};
 
+    # we always report errors
+    if (! $response->{success} ) {
+        writelog(
+        "error: send_databulk - cant send $msg_id data, $response->{status} $response->{reason}");
+    }
+
     if ( $verbose == 1 ) {
 
         if ($response->{success} ) {
             writelog("info: send_databulk - $msg_id data delivered");
-        } else {
-            writelog(
-            "error: send_databulk - cant send $msg_id data, $response->{status} $response->{reason}");
         }
     }
 
@@ -1490,13 +1493,16 @@ sub send_data {
 
     my $status = $response->{status};
 
+    # we always report errors
+    if (! $response->{success} ) {
+        writelog(
+        "error: send_data - cant send $msg_id data, $response->{status} $response->{reason}");
+    }
+
     if ( $verbose == 1 ) {
 
         if ($response->{success} ) {
             writelog("info: send_data - $msg_id data delivered");
-        } else {
-            writelog(
-            "error: send_data - cant send $msg_id data, $response->{status} $response->{reason}");
         }
     }
 
@@ -1623,7 +1629,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.3.9, 2018-12-19 2311
+sender: 1.3.10, 2018-12-21 0940
 END
     exit 0;
 }
