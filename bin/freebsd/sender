@@ -66,7 +66,6 @@ $main::opt_h = 0;               # help option
 $main::opt_V = 0;               # revision option
 my $cfile = 'kronometrix.json'; # configuration file
 my $cdata;                      # configuration data
-my $wdata;                      # webrec configuration data
 my $tcpka = 0;                  # transport TCP keepalive settings
 my $sid   = "";                 # subscription id
 my $token = "NA";               # token id
@@ -141,7 +140,7 @@ if ( Proc::PID::File->running( { dir => "$baselog" } ) ) {
 
 # cd krd raw data directory
 chdir("$curlog")
-  or die "error: main - cannot open raw data directory, $!\n";
+  or die "error: cannot open raw data directory, $!\n";
 
 foreach (@dbs) {
     my $n = $_ . "rec.krd";
@@ -1036,7 +1035,7 @@ sub open_config {
                 close $fh;
             }
             else {
-                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                print "error: cannot open config $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
                 usage();
             }
         }
@@ -1047,7 +1046,7 @@ sub open_config {
                 close $fh;
             }
             else {
-                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                print "error: cannot open config $! /opt/kronometrix/etc/$conf \n";
                 usage();
             }
         }
@@ -1078,11 +1077,11 @@ sub write_config {
             move(
                 "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
                 "$ENV{'KRMX_PREFIX'}/etc/$conf"
-            ) or die "Error: cannot update $conf: $!";
+            ) or die "Error: cannot write config $conf: $!";
 
         }
         else {
-            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+            print "error: cannot write config $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
             usage();
         }
     }
@@ -1092,10 +1091,10 @@ sub write_config {
             print $fh $json_data;
             close $fh;
             move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
-              or die "Error: cannot update $conf: $!";
+              or die "Error: cannot write config $conf: $!";
         }
         else {
-            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
+            print "error: cannot write config $! /opt/kronometrix/etc/$conf \n";
             usage();
         }
     }
@@ -1606,7 +1605,6 @@ sub qml201_crc16 {
     $crc &= 0xffff;
     return sprintf("%04X", $crc);
 }
-
 
 
 # usage - print usage and exit.
