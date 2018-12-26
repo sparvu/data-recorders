@@ -1,0 +1,424 @@
+#!/opt/kronometrix/perl/bin/perl
+
+#  Copyright (c) 2019 Stefan Parvu (www.kronometrix.org).
+#  Initial Author: Stefan Parvu
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use File::Temp qw(tempfile);
+use Getopt::Std;
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use Tie::IxHash;
+use LWP;
+#use Data::Dumper qw(Dumper);
+
+###  Process command line args
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hlp:vV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# verbose flag
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
+
+# process [interval [count]],
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    $loop_max = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    usage() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+###  Variables
+my $rawfile;                         # krd raw data file
+my $kdata;                           # configuration data
+my $loop     = 0;                    # current loop number
+$main::opt_h = 0;                    # help option
+$main::opt_V = 0;                    # revision option
+my $tp       = 0;                    # time precision
+my $kfile    = 'kronometrix.json';   # configuration file
+my ($baselog, $curlog, $wlog, $log); # logs
+local $| = 1;
+
+
+### MAIN BODY #
+
+# Set a timer
+local $SIG{ALRM} = sub { };
+setitimer( ITIMER_REAL, .1, .1 );
+
+### 0.1sec sleep using a timer
+pause;
+
+# how often do we trigger (seconds)?
+my $first_interval = $interval;
+
+# signal handler is empty
+local $SIG{ALRM} = sub { };
+
+# first value is the initial wait, second is the wait thereafter
+setitimer( ITIMER_REAL, $first_interval, $interval );
+
+# check interval input
+if ( $interval =~ /\./ ) {
+    $tp = 3;
+}
+
+# osname
+my $osname = "$^O";
+my $agent = "kdr/1.3.20 axisrec $osname";
+
+my $np = 1;
+# check for pid list
+if ( defined $main::opt_p ) {
+    $np=$main::opt_p;
+}
+
+my $rawkrd;
+# logging option
+if ($logging) {
+
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'aq_q1615emk2_floudrec' . '.krd';
+    $wlog = $baselog . "/axisrec.log";
+    $log = open_file($wlog);
+
+    # save STDERR to log file
+    *STDERR = $log;
+
+    write_log ("info: started");
+}
+
+my $ip       = '';
+my $port     = 80;
+my $realm    = 'AXIS_ACCC8E62E39D';
+my $req      = 'local/VehicleCounter/getStatsPerClass.cgi';
+my $username = '';
+my $password = '';
+
+# main loop
+while (1) {
+
+    # message raw data file
+    my $rawkrd;
+    if ($logging) {
+        $rawkrd = open_file($rawfile);
+    }
+
+    my $ua = LWP::UserAgent->new('Mozilla');
+    # fetching, parsing the requests for each probe
+    for(my $i=0; $i <= $np-1; $i++) {
+
+        my $url = "http://$ip/$req?interval=60&pid=$i";
+        $ua->credentials("$ip:$port","$realm",$username=>$password);
+        my $response=$ua->get($url);
+        #print $response->content;
+        my $fdata = JSON->new->utf8->decode($response->content);
+        my %fd = get_floudata($fdata);
+
+        # load probe values
+        my @values = (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+
+        for my $tclass (keys %fd) {
+
+            my $value = $fd{$tclass};
+
+            my @tval = split(':', $value);
+
+            if ($tclass == 0) {
+
+                splice(@values, 0, 3, @tval);
+
+            } elsif ( $tclass == 1 ) {
+
+                splice(@values, 3, 3, @tval);
+
+            } elsif ( $tclass == 2 ) {
+
+                splice(@values, 6, 3, @tval);
+
+            } elsif ( $tclass == 3 ) {
+
+                splice(@values, 9, 3, @tval);
+
+            } elsif ( $tclass == 4 ) {
+
+                splice(@values, 12, 3, @tval);
+
+            } elsif ( $tclass == 5 ) {
+
+                splice(@values, 15, 3, @tval);
+            }
+        }
+
+        my $value = join( ':', @values );
+        $value =~ s/:// if ($value =~ /:$/);
+
+        my $prbid = 'probe' . $i;
+
+        if ($logging) {
+            printf $rawkrd "%.${tp}f:%s:%s\n", time, $prbid, $value;
+        } else {
+            printf "%.${tp}f:%s:%s\n", time, $prbid, $value;
+        }
+
+    }
+
+    if ($logging) {
+        close ($rawkrd);
+    }
+
+    ### Check for end
+    last if ++$loop == $loop_max;
+
+    ### Interval
+    pause;
+}
+
+
+
+### Subroutines
+
+## configuration file
+
+# open JSON configuration file
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+# write config file
+sub write_config {
+
+    my ( $conf, $perl_data ) = @_;
+
+    # JSON Object
+    my $json_data = JSON->new->utf8->pretty->encode($perl_data);
+
+    # we will parse now the file
+    if ( defined $ENV{'KRMX_PREFIX'} ) {
+        if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+            open my $fh, ">", "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp";
+
+            # print $fh encode_json($data);
+            print $fh $json_data;
+            close $fh;
+            move(
+                "$ENV{'KRMX_PREFIX'}/etc/$conf.tmp",
+                "$ENV{'KRMX_PREFIX'}/etc/$conf"
+            ) or die "Error: cannot update $conf: $!";
+
+        }
+        else {
+            print "error: write_config - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+            usage();
+        }
+    }
+    else {
+        if ( -e "/opt/kronometrix/etc/$conf" ) {
+            open my $fh, ">", "/opt/kronometrix/etc/$conf.tmp";
+            print $fh $json_data;
+            close $fh;
+            move( "/opt/kronometrix/etc/$conf.tmp", "/opt/kronometrix/etc/$conf" )
+              or die "Error: cannot update $conf: $!";
+        }
+        else {
+            print "error: write_config - $! /opt/kronometrix/etc/$conf \n";
+            usage();
+        }
+    }
+}
+
+
+# get log defintion
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# get workloads defintion
+sub get_floudata {
+
+    my ($data) = @_;
+    tie my %floud, "Tie::IxHash";
+
+    my @temp = @{ $data->{'count'} };
+    foreach my $f (@temp) {
+
+       my $cls  = $f->{'cls'};
+       my $cnt  = $f->{'count()'};
+       my $alen = sprintf ("%.2f", $f->{'avg(len)'});
+       my $aspd = sprintf ("%.2f", $f->{'avg(spd)'});
+
+       my $keycls = $cls;
+       my $hvalue = $cnt . ':' . $alen . ':' . $aspd;
+
+       $floud{$keycls} = $hvalue;
+    }
+
+    # return traffic class
+    return %floud;
+}
+
+
+# write_log - write log message
+#
+sub write_log {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+# usage - print usage and exit.
+sub usage {
+    print STDERR <<END;
+USAGE: axisrec [-hlvV] [-p number] | [interval]
+OPTIONS:
+  -h        : help information
+  -l        : log raw data to krd file, no STDOUT
+  -p number : number of probes, default 1
+  -v        : verbose information
+  -V        : release version
+  interval  : maximum number of seconds between samples
+
+ FIELDS:
+
+ A2STAT MESSAGE (APACHE)
+  #01 timestamp  : seconds since Epoch, time
+  #02 probe      : probe number, number
+  #03 count c0   : count class0, number
+  #04 avglen c0  : average length class0, number
+  #05 avgspd c0  : average speed class0, number
+  #06 count c1   : count class1, number
+  #07 avglen c1  : average length class1, number
+  #08 avgspd c1  : average speed class1, number
+  #09 count c2   : count class2, number
+  #10 avglen c2  : average length class2, number
+  #11 avgspd c2  : average speed class2, number
+  #12 count c3   : count class3, number
+  #13 avglen c3  : average length class3, number
+  #14 avgspd c3  : average speed class3, number
+  #15 count c4   : count class4, number
+  #16 avglen c4  : average length class4, number
+  #17 avgspd c4  : average speed class4, number
+  #18 count c5   : count class5, number
+  #19 avglen c5  : average length class5, number
+  #20 avgspd c5  : average speed class5, number
+
+END
+    exit 0;
+}
+
+# revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+axisrec: 1.0.3, 2018-12-19 2301
+END
+    exit 0;
+}
