@@ -1473,8 +1473,9 @@ END
 #
 sub revision {
     print STDERR <<END;
-IIoT, environmental monitoring, meteorology data recorder
-rs485rec: 1.3.13, 2018-12-05 0838
+Serial communication data recorder for RS232, RS422, RS485
+for weather, environment and industrial IoT
+rs485rec: 1.3.14, 2019-01-19 1817
 END
     exit 0;
 }
