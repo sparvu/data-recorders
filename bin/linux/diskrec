@@ -249,17 +249,18 @@ while ( 1 ) {
                     $lused = ceil(100 - (100 * ($lfree / $lsize)));
                 }
 
-                my $nfs;
+                my $mntfs;
                 if ( $filesystem =~ /^\/$/ ) {
-                    $nfs  = "root";
+                    $mntfs  = "root";
 
                 } elsif ( $filesystem =~ m/^.*\/(.*?)$/ ) {
-                    $nfs  = $1;
+                    $mntfs  = $1;
                 }
-                $d = $d . $nfs;
 
+                $d .= $mntfs;
+ 
+                last if ($mntfs =~ /tmp/);
             } 
-            #else { print "Not found major, minor same: $d, $filesystem\n"; }
         }
 
         # remove '-'
@@ -534,7 +535,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.10, 2018-07-02 0206
+diskrec: 1.1.11, 2019-01-23 1133
 END
     exit 0;
 }
