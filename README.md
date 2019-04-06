@@ -1,4 +1,5 @@
 <img src="/docs/img/k-logo.png" align="left" height="35" width="275" />
+<br/>
 <img src="/docs/img/perl_logo.png" align="right" />
 <br/>
 
