@@ -39,27 +39,35 @@ performance metrics, save raw data and send it for further analysis.
 
 ### Information and Communications Technology
 
- * sysrec - overall system CPU, MEM, DISK, NIC utilization, throughput and errors
- * cpurec - per CPU statistics
- * nicrec - per NIC statistics
- * diskrec - per DISK statistics
- * hdwrec - hardware and software data inventory
- * jvmrec - Java VM statistics
- * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
- * certrec - X.509 security certificate statistics
+ * sysrec - Overall system performance data recorder
+ * cpurec - Per CPU statistics data recorder
+ * nicrec - Per NIC statistics data recorder
+ * diskrec - Per disk statistics data recorder
+ * hdwrec - System inventory data recorder
+ * faultrec - Fault Management data recorder
+ * jvmrec - Java VM statistics data recorder
+ * snmprec - Ethernet and SAN Switch, SNMP data recorder
+ * netrec - TCP, UDP data recorder
+ * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
+ * dbrec - database data recorder: MariaDB, MySQL, PostgreSQL
+ * certrec - X.509 security certificate statistics data recorder
  * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP(Any)
- * direc - filesystem directory statistics
- * ntprec - NTP server statistics
- * procrec - process statistics
- * webrec - web application performance,availability
+ * direc - filesystem directory statistics data recorder
+ * ntprec - NTP server statistics data recorder
+ * procrec - process statistics data recorder
+ * webrec - web application performance,availability data recorder
 
-### Environmental Monitoring, IoT
+### Public Cloud Providers
 
- * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
- 
-### General Meteorology
+ * awsrec - Amazon Web Services data recorder
+ * azurec - Microsoft Azure data recorder
+ * gcprec - Google Computing Platform data recorder
+ * dgorec - DigitalOcean data recorder
 
- * wsrec - Weather data recorder. Currently supporting: WH1080, WH1081, WH1090, WH20xx family of devices
+### Industrial IoT, Weather and Environment
+
+ * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial idata recorder
+ * wsrec - FineOffset WH1080 weather station data recorder RS-232/USB
 
   
 ## Resources
