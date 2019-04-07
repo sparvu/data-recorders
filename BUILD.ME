@@ -1,4 +1,3 @@
-
 KDR BUILD.ME 
 ============
 
@@ -12,7 +11,7 @@ utility friends to build all data recorders, the transporter
 and the documentation.
 
 The simplest way to download builder is to clone the builder
-repository: https://github.com/kronometrix/builder and bootstrap
+repository: https://gitlab.com/kronometrix/builder and bootstrap
 it's installation:
 
   * Create a Kronometrix user and group account
@@ -27,7 +26,7 @@ it's installation:
   
   * As krmx user:
  
-    % git clone https://github.com/kronometrix/builder
+    % git clone https://gitlab.com/kronometrix/builder
     % cd builder
     % cp -pr bin etc sfw log /opt/builder
     % cp -pr cpan /opt/builder
@@ -44,7 +43,7 @@ For example create here the config spec for building, the latest version
 KDR 1.3.20 release:
 
    % mkdir -p workspace/kronometrix
-   % git clone https://github.com/kronometrix/recording
+   % git clone https://gitlab.com/kronometrix/recording
    % cd recording
 
 
@@ -73,7 +72,7 @@ Info: Step 4 - Make test perl...
 Info: Step 5 - Make install perl...
 ############################################################
 Submodule: openssl
-Info: Step 1 - Extracting openssl-1.1.1a ...
+Info: Step 1 - Extracting openssl-1.1.1b ...
 Info: Step 2 - Configure openssl ...
 Info: Step 3 - Make openssl...
 Info: Step 4 - Make install openssl...
@@ -176,8 +175,8 @@ Info: Step 4 - Make install Kronometrix...
 Submodule: bin freebsd
 Info: Step 1 - Installing setenv ...
 Info: Step 2 - Installing recorders ...
-\n############################################################
-Testing SDR
+############################################################
+Testing Kronometrix Data Recording
 Info: Step 1 - Check recorders
 Executing sysrec
 Executing cpurec
@@ -212,7 +211,7 @@ Info: Step 3 - Cleanup stage directory
 # curl: ok
 # X509: ok
 # webrec, svcrec: ok
-# tests: failed
+# tests: ok
 # freebsd pkg: ok
 # FINALIZE: ok
 #################################################################
