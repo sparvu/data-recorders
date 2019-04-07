@@ -68,7 +68,7 @@ performance metrics, save raw data and send it for further analysis.
 
  * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial idata recorder
  * wsrec - FineOffset WH1080 weather station data recorder RS-232/USB
-
+ * axisrec - Network AXIS camera data recorder
   
 ## Resources
 
