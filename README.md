@@ -4,7 +4,7 @@
 <br/><br/>
 
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
-[![Alt-Text](https://gitlab.com/kronometrix/recording/blob/master/docs/img/stable-ver.png)](docs/start.md)
+[![Alt-Text](https://gitlab.com/kronometrix/recording/blob/master/docs/img/stable-ver.svg)](docs/start.md)
 
 ## Overview
 
