@@ -3,9 +3,9 @@
 <br/><br/>
 <br/>
 
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.3.20&color=success)](docs/start.md)
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
 
 ## Overview
 
