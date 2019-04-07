@@ -22,11 +22,17 @@ _Time series let us understand what has happened in past and look in the future,
 
 
 ## Data Message
-All collected metrics over time are combined as a data message. There can be many types of data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data from a meteorological station, or water cubic meters per hour from an water pump. A data message is in direct relation to a data source. To describe one or many data messages, we have built a library of monitoring objects, (LMO) documented here: [library of monitoring objects](https://github.com/sparvu/lmo)
+All collected metrics over time are combined as a data message. There can be many types of 
+data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data 
+from a meteorological station, or water cubic meters per hour from an water pump. A data message is in 
+direct relation to a data source. To describe one or many data messages, we have built a library of 
+monitoring objects, (LMO) documented here: [library of monitoring objects](https://gitlab.com/kronometrix/lmo)
 
 
 ## Data Source
-A data source, is described as any system connected to a public or private network with a valid IPv4 or IPv6 address. Example: a server, a logger, a graphic workstation, an iPad or an IoT sensor capable to send and receive data. There can be many types of data sources, each having one or many of data messages:
+A data source, is described as any system connected to a public or private network with a valid IPv4 or IPv6 address. 
+Example: a server, a logger, a graphic workstation, an iPad or an IoT sensor capable to send and receive data. 
+There can be many types of data sources, each having one or many of data messages:
 
  * Computer system: overall cpu utilization, disk and network IO, per device metrics (Linux, FreeBSD, Windows)
  
@@ -38,7 +44,8 @@ A data source, is described as any system connected to a public or private netwo
 
 
 ## The recorder
-A light probe developed in _Perl5_ language which can extract data from different sources, like an operating system interfaces, a sensor or device, an industrial equipment using _MODBUS_ protocol, or an web based application or database.
+A light probe developed in _Perl5_ language which can extract data from different sources, like an operating system interfaces, 
+a sensor or device, an industrial equipment using _MODBUS_ protocol, or an web based application or database.
 
 The recorder can operate in two modes:
 
