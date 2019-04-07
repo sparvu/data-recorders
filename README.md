@@ -72,9 +72,9 @@ performance metrics, save raw data and send it for further analysis.
   
 ## Resources
 
-[kronometrix.io][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3]
+[www.kronometrix.com][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3]
 
 
-[1]: https://kronometrix.io/
+[1]: https://www.kronometrix.com/
 [2]: https://twitter.com/KronometrixHelp
 [3]: https://www.facebook.com/kronometrix
