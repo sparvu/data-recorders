@@ -46,6 +46,6 @@ The recorder can operate in two modes:
   
   * automatic: you can continuously record data, using a default sampling rate of _60 seconds_ or a custom one 
 
-<img src="https://github.com/kronometrix/recording/blob/master/docs/img/recorderplus.png" align="right" /> 
-<img src="https://github.com/kronometrix/recording/blob/master/docs/img/recorder.png" align="right" /> 
+<img src="https://gitlab.com/kronometrix/recording/blob/master/docs/img/recorderplus.png" align="right" /> 
+<img src="https://gitlab.com/kronometrix/recording/blob/master/docs/img/recorder.png" align="right" /> 
 
