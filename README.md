@@ -1,11 +1,10 @@
 <img src="/docs/img/k-logo.png" align="left" height="35" width="275" />
+<img src="/docs/img/perl_logo.png" align="right" height="100" width="100" />
 <br/>
-<img src="/docs/img/perl_logo.png" align="right" />
-<br/>
+<br/><br/>
 
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
-[![](/docs/img/ver-prod-brightgreen.svg)](docs/start.md)
-[![](https://gitlab.com/kronometrix/recording/blob/master/docs/img/license-badge.svg)](LICENSE)
+[![](https://gitlab.com/kronometrix/recording/blob/master/docs/img/ver-prod-brightgreen.svg)](docs/start.md)
 
 ## Overview
 
