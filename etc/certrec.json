@@ -5,12 +5,6 @@
       "description" : "IMAPS, SMTPS kronometrix.org",
       "certificates" : [
         {
-          "id" : "imaps",
-          "type" : "ssl",
-          "host" : "kronometrix.org",
-          "port" : 993
-        },
-        {
           "id" : "smtps",
           "type" : "ssl",
           "host" : "kronometrix.org",
@@ -33,6 +27,12 @@
           "type" : "ssl",
           "host" : "mail.kronometrix.com",
           "port" : 465
+        },
+        {
+          "id" : "https",
+          "type" : "https",
+          "host" : "www.kronometrix.com",
+          "port" : 443
         }
       ]
     }

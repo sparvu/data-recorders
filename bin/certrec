@@ -182,10 +182,11 @@ while (1) {
             my $expired = $ed->is_expired;
             if (!$expired) { $status = 1; } 
             else { $status=0; }
-        } else { print "i dont wanna be here ..."; }
+
+        } else { print "Error: X.509 expire date not defined\n"; }
 
         if ($@) {
-            print "Error: cannot connect to: $host:$port\n";
+            print "Error: cannot process $host:$port\n";
             $duration='NA';
             $days='NA';
             $status='NA';
