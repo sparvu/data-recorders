@@ -2,8 +2,8 @@
   "workloads" : [
     {
       "keepalive" : 0,
-      "name" : "kronometrix.org",
-      "description" : "korg",
+      "name" : "kronometrix.com",
+      "description" : "kcom",
       "zone" : "EFHK",
       "delay" : 0.1,
       "proxy" : {
@@ -16,18 +16,18 @@
         {
           "id" : "main",
           "method" : "GET",
-          "scheme" : "http",
-          "host" : "kronometrix.org",
-          "port" : 80,
+          "scheme" : "https",
+          "host" : "www.kronometrix.com",
+          "port" : 443,
           "path" : "/"
         },
         {
-          "id" : "contact",
+          "id" : "platform",
           "method" : "GET",
-          "scheme" : "http",
-          "host" : "kronometrix.org",
-          "port" : 80,
-          "path" : "/contact.html"
+          "scheme" : "https",
+          "host" : "www.kronometrix.com",
+          "port" : 443,
+          "path" : "/platform"
         }
       ]
     },
@@ -47,17 +47,17 @@
         {
           "id" : "www.kronometrix.com",
           "method" : "GET",
-          "scheme" : "http",
+          "scheme" : "https",
           "host" : "www.kronometrix.com",
-          "port" : 80,
+          "port" : 443,
           "path" : "/"
         },
         {
           "id" : "www.amazon.com",
           "method" : "GET",
-          "scheme" : "http",
+          "scheme" : "https",
           "host" : "www.amazon.com",
-          "port" : 80,
+          "port" : 443,
           "path" : "/"
         },
         {
