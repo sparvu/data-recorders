@@ -4,21 +4,7 @@ Kronometrix Data Recording
 Platforms
     MacOS Mojave
 
-Bug Management System
-  https://github.com/kronometrix/recording/issues
+Defect Management System
+  https://gitlab.com/kronometrix/recording/issues 
 
 Releases
-
-  1.3.20 December 2018 Release
-
-    Update latest 1.3.20 for ARM64, AMD64, X64 (64bit only)
-    32bit systems are deprecated, not supported anymore, including all platforms
-    Improvements for Serial ASCII-POLLED devices
-    Support for new weather devices: Vaisala QML201, HMP155, WxT520
-    Improvements for air quality devices: Vaisala AQT410, AQT420
-    Support for network cameras: AXIS Q1615-E MkII. AXIS Q6052-E PTZ
-    Better error handling and reporting for serial communication
-    HTTP/HTTPS transport: error handling improvements
-    Update OpenSSL 1.1.1a
-    Update libcurl 7.63.0
-
