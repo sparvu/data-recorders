@@ -1,19 +1,25 @@
 
-README Kronometrix Data Recording
+Kronometrix Data Recording
+
+An automatic, simple to use, data collection and transport utility 
+with a low system footprint, supporting raw data, available as 
+open-source software. Kronometrix K1 is a commercial product, based
+on Kronometrix Data Recording, available from Kronometrix Analytics
+More information: www.kronometrix.com/k1
 
 
 1.Supported Operating Systems
 
   We support the following Linux based operating systems:
 
-    CentOS 6,7 (Final) x86_64, i386
-    Foobar Linux 6.x, 7.x x86_64, i386
-    CloudLinux 6 x86_64, i386
-    Debian 7,8,9 x86_64, i386
-    Ubuntu Server Edition 6,7 x86_64, i386
-    Raspbian GNU/Linux 7,8 armv6,armv7
+    CentOS 6,7 (Final) x86_64
+    Foobar Linux 6.x, 7.x x86_64
+    CloudLinux 6 x86_64
+    Debian 7,8,9 x86_64
+    Ubuntu Server Edition 6,7 x86_64
+    Raspbian GNU/Linux 7,8 armv8
 
-  Note: Kernel 2.6.32 (x86_64 i386), 3.12 (armv6)
+  Note: Kernel 2.6.32 (x86_64), 3.12 (armv8)
 
 
 2.Package Content
