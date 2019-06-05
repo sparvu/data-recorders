@@ -18,17 +18,15 @@ to verify the system prerequisites, how to install and setup KDR on Linux like o
 ### RPM based systems
 
   * Download packages 
-    * x64: http://www.kronometrix.org/pkgs/linux/kdr-stable-rhel-x64.rpm
-    * x86: http://www.kronometrix.org/pkgs/linux/kdr-stable-rhel-x86.rpm
+    * x64: https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-rhel-x64.rpm
         
   * Install package ```# rpm -ihv kdr-stable-rhel-x64.rpm``` 
   
 ### DEB based systems
 
   * Download packages
-    * x64: http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x64.deb
-    * x86: http://www.kronometrix.org/pkgs/linux/kdr-stable-debian-x86.deb
-    * armv7: http://www.kronometrix.org/pkgs/linux/kdr-stable-raspbian-arm.deb
+    * x64: https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-debian-x64.deb
+    * armv8: https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-raspbian-armv8.deb
     
 * Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
 
@@ -40,9 +38,8 @@ to verify the system prerequisites, how to install and setup KDR on FreeBSD UNIX
 ### FreeBSD systems
 
   * Download packages
-    * x64: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x64.txz
-    * x86: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-x86.txz
-    * armv7: http://www.kronometrix.org/pkgs/freebsd/kdr-stable-freebsd-arm.txz
+    * x64: https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-x64.txz
+    * armv8: https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-arm.txz
     
   * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
 
@@ -54,7 +51,7 @@ to verify the system prerequisites, how to install and setup KDR on Windows oper
 ### Windows 2008, 2012, 2016 systems
 
   * Download package
-    * x64: http://www.kronometrix.org/pkgs/win/kdr-stable-windows-x64.exe
+    * x64: https://gitlab.com/kronometrix/k1/blob/master/win/kdr-stable-windows-x64.exe
 
 * Execute kdr-stable-windows-x64.exe
 
