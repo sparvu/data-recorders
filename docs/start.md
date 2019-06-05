@@ -12,7 +12,7 @@ your data.
 
 ## Linux
 
-Please check [README.linux](https://github.com/kronometrix/recording/blob/master/README.linux)
+Please check [README.linux](https://gitlab.com/kronometrix/recording/blob/master/README.linux)
 to verify the system prerequisites, how to install and setup KDR on Linux like operating systems.
 
 ### RPM based systems
@@ -32,7 +32,7 @@ to verify the system prerequisites, how to install and setup KDR on Linux like o
 
 ## UNIX
 
-Please check [README.freebsd](https://github.com/kronometrix/recording/blob/master/README.freebsd)
+Please check [README.freebsd](https://gitlab.com/kronometrix/recording/blob/master/README.freebsd)
 to verify the system prerequisites, how to install and setup KDR on FreeBSD UNIX operating systems.
 
 ### FreeBSD systems
@@ -45,7 +45,7 @@ to verify the system prerequisites, how to install and setup KDR on FreeBSD UNIX
 
 ## Windows
 
-Please check [README.windows](https://github.com/kronometrix/recording/blob/master/README.windows)
+Please check [README.windows](https://gitlab.com/kronometrix/recording/blob/master/README.windows)
 to verify the system prerequisites, how to install and setup KDR on Windows operating systems.
 
 ### Windows 2008, 2012, 2016 systems
