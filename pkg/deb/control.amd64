@@ -3,9 +3,8 @@ Architecture: amd64
 Section: utils
 Priority: extra
 Version:1.0.0-b10
-Maintainer: support@kronometrix.org
-Homepage: http://www.kronometrix.org/
+Maintainer: support@kronometrix.com
+Homepage: https://www.kronometrix.com/
 Description: Kronometrix Data Recording module
- A real-time, event based data analytics platform for ICT, IoT, 
- Environmental Monitoring and Meteorology, focusing on deep domain 
- expertise and prescriptive analytics.
+ Kronometrix is an easy-to-use, real-time data analytics platform
+ designed for Industrial IoT, ICT, weather and environment.
