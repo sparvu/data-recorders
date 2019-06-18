@@ -21,7 +21,7 @@ Releases
     Better error handling and reporting for serial communication
     HTTP/HTTPS transport: error handling improvements
     OpenSSL 1.1.1c update
-    Libcurl 7.65.0 update
+    Libcurl 7.65.1 update
     CPAN May 2019 update
 
   1.2.28 03-10-2017 Release
