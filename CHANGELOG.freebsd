@@ -10,7 +10,7 @@ Defect Management System
 
 Releases
 
-  1.3.22 May 2019 Release
+  1.3.22 June 2019 Release
     Update latest 1.3.22 for ARM64, AMD64, X64 (64bit only)
     32bit systems are deprecated, not supported anymore, including all platforms
     ICT data recorders improvements
@@ -20,7 +20,7 @@ Releases
     Support for network cameras: AXIS Q1615-E MkII. AXIS Q6052-E PTZ
     Better error handling and reporting for serial communication
     HTTP/HTTPS transport: error handling improvements
-    OpenSSL 1.1.1b update
+    OpenSSL 1.1.1c update
     Libcurl 7.65.0 update
     CPAN May 2019 update
 
