@@ -1,0 +1,28 @@
+#!/opt/kronometrix/perl/bin/perl
+
+use Device::Modbus::RTU::Client;
+use strict;
+use warnings;
+use Data::Dumper;
+
+my $client = Device::Modbus::RTU::Client->new(
+    port     => '/dev/ttyUSB0',
+    baudrate => 9600,
+    parity   => 'none',
+    stopbits => '1',
+    timeout => '5'
+ );
+
+my $req = $client->read_holding_registers(
+    unit     => 1,
+    address  => 1,
+    quantity => 25
+ );
+
+$client->send_request($req);
+
+my $resp = $client->receive_response;
+
+print Dumper($resp);
+
+$client->disconnect;
