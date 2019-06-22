@@ -16,6 +16,9 @@ Defect Management System
 
 Releases
 
+  1.4.0 July 2019 Release
+    rs485rec improvements
+
   1.3.22 June 2019 Release
     Update latest 1.3.22 for ARM64, AMD64, X64 (64bit only)
     32bit systems are deprecated, not supported anymore, including all platforms
