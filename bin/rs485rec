@@ -381,7 +381,7 @@ sub get_devices {
                     my @metrix = @{ $dev->{'data'} };
                     for my $dt (@metrix) {
                         my ($dname, $dtype);
-                        my $dreg; my $dlen; my $dfct;
+                        my $dreg; my $dlen; my $dcor='NA'; my $dfct;
 
                         if ( $dt -> {'type'} eq 'uint16'   or
                              $dt -> {'type'} eq 'int16'    or
@@ -403,12 +403,16 @@ sub get_devices {
                             if(defined $dt -> {'factor'}) {
                                 $dfct = $dt -> {'factor'};
                             }
+
+                            if(defined $dt -> {'correction'}) {
+                                $dcor = $dt -> {'correction'};
+                            }
                             
-                            if (defined $dreg and 
-                                defined $dlen and 
+                            if (defined $dreg and
+                                defined $dlen and
                                 defined $dfct ) {
                             
-                                $dname .=  '_' . $dtype . '_' . $dreg . '_' . $dlen . '_' . $dfct;
+                                $dname .=  '_' . $dtype . '_' . $dreg . '_' . $dlen . '_' . $dfct . '_' . $dcor;
 
                             } else {
 
@@ -581,7 +585,7 @@ sub init_mascii {
 #
 sub getdata_modbus {
 
-    my ( $client, $modbus_id, $modbus_f, $adrange, $type, $address, $quantity, $factor ) = @_;
+    my ( $client, $modbus_id, $modbus_f, $adrange, $type, $address, $quantity, $factor, $corr ) = @_;
     my $rvalue;
 
     # MODBUS FUNCTION 3
@@ -631,6 +635,33 @@ sub getdata_modbus {
 
                 $rvalue  = sprintf ("%.2f", unpack 'f', pack 'v*', 
                                             reverse @{ $resp->{message}->{values} } );
+
+            }
+        }
+
+        # check for field correction
+
+        if ($corr ne 'NA') {
+
+            my $cf = substr($corr, 0, 1);
+            my $cv = substr($corr, 1);
+    
+            if ($cf eq '+') {
+
+                $rvalue += $cv;
+
+            } elsif ($cf eq '-') {
+
+                $rvalue -= $cv;
+
+            } elsif ($cf eq '*') {
+
+                $rvalue *= $cv;
+
+            } elsif ($cf eq '/') {
+
+                $rvalue = sprintf ("%.2f", $rvalue /= $cv);
+
             }
         }
 
@@ -1213,7 +1244,7 @@ sub exec_modbus {
             # multiple calls
             if ($adrange eq 0) {
 
-                $val = getdata_modbus($modbus_p, $modbus_id, $modbus_f, $adrange, $v[1], $v[2], $v[3], $v[4]);
+                $val = getdata_modbus($modbus_p, $modbus_id, $modbus_f, $adrange, $v[1], $v[2], $v[3], $v[4], $v[5]);
 
             # single call, one value buffer
             } else {
@@ -1474,8 +1505,8 @@ END
 sub revision {
     print STDERR <<END;
 Serial communication data recorder for RS232, RS422, RS485
-for weather, environment and industrial IoT
-rs485rec: 1.3.14, 2019-01-19 1817
+Industrial IoT, Weather and Environment
+rs485rec: 1.4.0, 2019-06-22 1752
 END
     exit 0;
 }
