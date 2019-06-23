@@ -1,102 +1,115 @@
-.TH hdwrec 1  "$Date: 2014-04-27 #$" "USER COMMANDS"
-.SH NAME
-hdwrec \- Hardware and Software Inventory Recorder.
-.SH SYNOPSIS
-.B hdwrec
-.SH DESCRIPTION
-hdwrec is responsible for collecting server physical specification.
-This is the hardware inventory recorder responsible to gather
-several information about the current server being used: operating
-system, number of physical CPUs, virtual CPUs, disks, network cards,
-virtualization, applications. The recorder does not run continuously.
-
-.SH OS
-Linux 2.6+
-
-.PP
-.SH EXAMPLES
-.TP
-Example 1: collect hardware specification
-.B # hdwrec 
-
-.PP
-.SH FIELDS
-hdwrec outputs server details, separated by the character \:
-
-.TP
-#1 timestamp
-the time in seconds since Epoch
-
-.TP
-#2 hostname 
-the server hostname
-
-.TP
-#3 hdw
-machine hardware name
-
-.TP
-#4 hypervisor
-name of the hypervisor, if present
-
-.TP
-#5 os
-operating system version
-
-.TP
-#6 codename
-codename of the operating system
-
-.TP
-#7 distributor
-name of the operating system distributor
-
-.TP
-#8 kernel
-kernel version and release number
-
-.TP
-#9 pcpu
-number of physical cpus
-
-.TP
-#10 vcpu
-number of virtual processing units, vcpus
-
-.TP
-#11 memtotal
-total physical memory installed
-
-.TP
-#12 swaptotal 
-total physical swap installed
-
-.TP
-#13 disks
-total number of disks, might include USB devices
-
-.TP
-#14 nics
-total number of NICs
-
-.TP
-#15 jvms
-total number of running JVMs
-
-.TP
-#16 uptime
-how long the system has been running
-
-.PP
-.SH DOCUMENTATION
-See SDR documentation for more details.
-
-.SH EXIT
-hdwrec will run continuously until is stopped by the master script or
-manually stopped.
- 
-.SH AUTHOR
-Stefan Parvu
-
-.SH SEE ALSO
-uname(1)
+.\" Kronometrix Data Recording Manual Pages
+.\" See man kronometrix for the short list of Kronometrix
+.Dd June 23, 2019     \" DATE
+.Dt HDWREC 1          \" Program name and manual section number
+.Os FreeBSD
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm hdwrec
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd computer system software and hardware inventory data recorder
+.Sh SYNOPSIS        \" Section Header - required - don't modify
+.Nm
+.Op Fl lhV          \" [-lhV]
+.Ar | [interval     \" Underlined argument - use .Ar anywhere to underline
+[count]]            \" Arguments
+.Sh DESCRIPTION     \" Section Header - required - don't modify
+Reports computer system software and hardware inventory information: operating
+system, number of physical or virtual CPUs, number of attached disks, network
+cards and IP settings, virtualization platform, uptime.
+.Pp
+.Nm
+can run as a command line interface utility, interactive or continuous mode. In
+interactive mode data is displayed to screen, which is useful for troubleshooting
+and debug cases. For capacity planning or long-term trend analysis, continuous
+mode is used, data being saved to disk, as
+.Ar CSV (comma-separated values)
+.Pp                      \" Inserts a space
+The following options are available:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl h                 \"-a flag as a list item
+help information
+.It Fl l
+logging mode
+.It Fl V
+revision information
+.It interval sampling interval, in seconds
+.It count
+number of samples
+.El                      \" Ends the list
+.Sh PARAMETERS          \" Section Header - required - don't modify
+.Nm
+saves all recorded data as
+.Ar CSV (comma-separated values),
+all fields separated by the character ':'
+.Bl -tag -width -indent  \" Begins a tagged list
+.It time
+UNIX time. If interval is less than a second the time will be expressed in
+milliseconds since Epoch. (Time)
+.It hostname
+computer system host name. (String)
+.It hdw
+machine hardware name. (String)
+.It model
+machine hardware model. (String)
+.It hypervisor
+name of the hypervisor. (String)
+.It os
+name of the operating system. (String)
+.It relos
+release number of operating system. (String)
+.It kernel
+kernel version and release number. (String)
+.It pcpu
+number of physical installed CPUs. (Number)
+.It cores
+number of physical CPU cores. (Number)
+.It vcpu
+number of virtual CPUs. (Number)
+.It ht
+hyper-threading: 0(OFF)/1(ON)/NA. (String)
+.It memtotal
+total physical memory installed in MB. (Number)
+.It swaptotal
+total physical swap installed in MB. (Number)
+.It disks
+total number of disks. (Number)
+.It diskspace
+total GB across all disks. (Number)
+.It nics
+total number of NICs. (Number)
+.It uptime
+how long the system has been running. (Number)
+.It ips
+IP interface settings. (String)
+.It version
+data recorders release number. (String)
+.El
+.Sh EXAMPLES
+.Bl -tag -width -compact
+.It Pa hdwrec 5
+print system inventory data, every 5 seconds
+.It  Pa hdwrec 5 10
+print 10 times, every 5 seconds interactively to screen
+.It  Pa hdwrec -l 60
+print continuously, every 60 seconds to raw datafile
+.El                      \" Ends the list
+.Sh DIAGNOSTICS       \" May not be needed
+.Bl -diag
+.It Sampling interval
+This recorder supports sub second interval values. Running the recorder with
+values lower than second for long periods of time will add an overhead in terms
+of cpu utilization. The lower the interval value the higher the cpu utilization.
+We do not recommend using values lower than 60 seconds (60s) for capacity
+planning, performance analysis or other type of long historical data analysis.
+.El
+.Sh SEE ALSO
+.Xr cpurec 1 ,
+.Xr diskrec 1 ,
+.Xr kronometrix 1 ,
+.Xr nicrec 1 ,
+.Xr sysrec 1
+.\" .Sh STANDARDS       \" Standards relating to command being described
+.\" .Sh HISTORY         \" Document history if command behaves uniquely
+.Sh AUTHORS
+.An Stefan Parvu, sparvu@kronometrix.org
+.\" .Sh BUGS            \" Document known, unremedied bugs

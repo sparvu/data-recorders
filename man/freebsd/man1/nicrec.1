@@ -1,158 +1,101 @@
-.TH nicrec 1  "$Date: 2014-04-27 #$" "USER COMMANDS"
-.SH NAME
-nicrec \- NIC Recorder. Uses perl
-.SH SYNOPSIS
-.B nicrec
-[-hvV] [-i int[,int...]] | [interval [count]]
-
-.SH DESCRIPTION
-nicrec records per per-NIC statistics:
-number of KBytes received/sec, number of packets received/sec, 
-number of KBytes transmitted/sec, number of packets transmitted/sec 
-and many other metrics. 
-
-.PP
-The recorder uses Sys::Statistics::Linux to fetch all metrics. 
-The raw data is already prepared and formatted for SDR analysis process. 
-The recorder runs continuously.
-
-.SH OS
-Linux 2.6+
-
-.SH OPTIONS
-.SS
-\-i int,...
-monitor one or many interfaces with a specific name
-
-.SS
-\-h
-print help information
-.SS
-\-v
-print verbose information
-.SS
-\-V
-print revision information
-.SS
-interval
-interval in seconds between each sample
-.SS
-count
+.\" Kronometrix Data Recording Manual Pages
+.\" See man kronometrix for the short list of Kronometrix
+.Dd June 23, 2019     \" DATE
+.Dt NICREC 1          \" Program name and manual section number
+.Os FreeBSD
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm nicrec
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd computer system NIC data recorder
+.Sh SYNOPSIS        \" Section Header - required - don't modify
+.Nm
+.Op Fl lhV          \" [-lhV]
+.Ar | [interval     \" Underlined argument - use .Ar anywhere to underline
+[count]]            \" Arguments
+.Sh DESCRIPTION     \" Section Header - required - don't modify
+Reports per NIC performance metrics including: number of KBytes received/sec,
+number of packets received/sec, number of KBytes transmitted/sec, number of 
+packets transmitted/sec, transmission errors.
+.Pp
+.Nm
+can run as a command line interface utility, interactive or continuous mode. In
+interactive mode data is displayed to screen, which is useful for troubleshooting
+and debug cases. For capacity planning or long-term trend analysis, continuous
+mode is used, data being saved to disk, as
+.Ar CSV (comma-separated values)
+.Pp                      \" Inserts a space
+The following options are available:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl h                 \"-a flag as a list item
+help information
+.It Fl l
+logging mode
+.It Fl V
+revision information
+.It interval sampling interval, in seconds
+.It count
 number of samples
-
-.PP
-.SH EXAMPLES
-.SS nicrec 5
-monitor all found NICs every 5 seconds 
-
-.SS nicrec -i eth0 5 10
-monitor eth0 interface only, 10 times sampled every 5 seconds
-
-.SS nicrec -i wlan0,eth1,eth1:2 1.5
-monitor wlan0, eth1 and eth1:2 interfaces every 1.5 seconds
-
-.PP
-.SH FIELDS
-.TP
-#1 timestamp
-the time in seconds since Epoch
-
-.TP
-#2 interface
-the interface name, NIC name
-
-.TP
-#3 rxKB 
-number of KBytes received/sec
-
-.TP
-#4 rxpcks 
-number of packets received/sec
-
-.TP
-#5 rxerrs 
-number of errors while received packets/sec
-
-.TP
-#6 rxdrop 
-number of packets that were dropped/sec
-
-.TP
-#7 rxfifo 
-number of FIFO overruns on received packets/sec
-
-.TP
-#8 rxframe 
-number of carrier errors on received packets/sec
-
-.TP
-#9 rxcompr 
-number of compressed packets received/sec
-
-.TP
-#10 rxmulti 
-number of multicast packets received/sec
-
-.TP
-#11 txKB 
-number of KBytes transmitted/sec
-
-.TP
-#12 txpcks
-number of packets transmitted/sec
-
-.TP
-#13 txerrs
-number of errors transmitting packets/sec
-
-.TP
-#14 txdrop
-number of packets that were dropped/sec
-
-.TP
-#15 txfifo
-number of FIFO overruns on transmitted packets/sec
-
-.TP
-#16 txcolls
-number of collisions that were detected/sec
-
-.TP
-#17 txcarr
-number of carrier errors on transmitted packets/sec
-
-.TP
-#18 txcompr
-number of compressed packets transmitted/sec
-
-.TP
-#19 ttpcks
-number of total packets (received + transmitted)/sec
-
-.TP
-#20 ttKB
-number of total KBytes (received + transmitted)/sec
-
-.PP
-.SH NOTES
-This recorder supports interval values lower than second !  Running the
-recorder  with  values  lower than second for long periods of time will
-add an overhead in terms of CPU utilisation.  The  lower  the  interval
-value  the higher the CPU utilisation. We do not recommend using values
-lower than second for long historical recordings !
-
-.PP
-nicrec records 18 Linux OS metrics on x64 and x86 platforms !
-
-
-.PP
-.SH DOCUMENTATION
-See SDR documentation for more details.
-.SH EXIT
-nicrec will run continuously until is stopped by the master script 
-or manually stopped. 
-
-.SH AUTHOR
-Stefan Parvu
-.SH SEE ALSO
-perl(1)
+.El                      \" Ends the list
+.Sh PARAMETERS          \" Section Header - required - don't modify
+.Nm
+saves all recorded data as
+.Ar CSV (comma-separated values),
+all fields separated by the character ':'
+.Bl -tag -width -indent  \" Begins a tagged list
+.It time
+UNIX time. If interval is less than a second the time will be expressed in
+milliseconds since Epoch. (Time)
+.It NICID
+the NIC ID. (Number)
+.It rxpkt
+rx packets per sec. (Number)
+.It rxkbytes
+rx KBytes per sec. (Number)
+.It rxerr
+rx packets containing errors. (Number)
+.It rxdrop
+rx drop packets. (Number)
+.It txpkt
+tx packets per sec. (Number)
+.It txkbytes
+tx KBytes per sec. (Number)
+.It txerr
+tx packets containg errors. (Number)
+.It txdrop
+tx drop packets. (Number)
+.It txcol
+packet collision. (Number)
+.It rxtxpkt
+rx+tx packets per sec. (Number)
+.It rxtxkbytes
+rx+tx KBytes per sec. (Number)
+.El
+.Sh EXAMPLES
+.Bl -tag -width -compact
+.It Pa nicrec 5
+print per-NIC performance data, every 5 seconds
+.It  Pa nicrec 5 10
+print 10 times, every 5 seconds interactively to screen
+.It  Pa nicrec -l 60
+print continuously, every 60 seconds to raw datafile
+.El                      \" Ends the list
+.Sh DIAGNOSTICS       \" May not be needed
+.Bl -diag
+.It Sampling interval
+This recorder supports sub second interval values. Running the recorder with
+values lower than second for long periods of time will add an overhead in terms
+of cpu utilization. The lower the interval value the higher the cpu utilization.
+We do not recommend using values lower than 60 seconds (60s) for capacity
+planning, performance analysis or other type of long historical data analysis.
+.El
+.Sh SEE ALSO
+.Xr cpurec 1 ,
+.Xr diskrec 1 ,
+.Xr hdwrec 1 ,
+.Xr kronometrix 1 ,
+.Xr sysrec 1
+.\" .Sh STANDARDS       \" Standards relating to command being described
+.\" .Sh HISTORY         \" Document history if command behaves uniquely
+.Sh AUTHORS
+.An Stefan Parvu, sparvu@kronometrix.org
+.\" .Sh BUGS            \" Document known, unremedied bugs
