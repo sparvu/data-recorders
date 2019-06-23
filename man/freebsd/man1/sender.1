@@ -1,50 +1,30 @@
 .TH sender 1  "$Date: 2014-04-27 #$" "USER COMMANDS"
 .SH NAME
-sender \- sdrd raw data transport utility. Uses perl
+sender \- krd raw data transport utility. Uses perl
 
 .SH SYNOPSIS
 .B sender
 [\-hvV] [\-t secs] [interval]
 .SH DESCRIPTION
-sender is responsible for sending sdrd raw data updates to a backend 
+sender is responsible for sending krd raw data updates to a backend 
 reporting system for instant monitoring: updates, plotting. It uses
-two types of transport protocols: HTTP or SSH2. By default sender
-uses HTTP.
+two types of transport protocols: HTTP or HTTPS. At this moment we 
+are supporting only HTTP.
 .PP
-During its start, sender, will look for the main SDR configuration file, 
-sdr.conf to fetch what sdrd raw data files will look after and where to 
-transport the changes. Make sure you have a single backend reporting server 
-defined currently under sdr.conf ! Currently the last definition of the
-reporting host will be used. It will then check what transport protocol
-will be used: HTTP or SSH2. At last sender will loop over a number of
-sdrd raw data files, waiting for any changes and will select the change
-and trasport this set of data to the reporting backend system.
+During its start, sender, will look for the main configuration file, 
+kronometrix.json to fetch the raw data files will look after and where to 
+transport the changes, one or many analytics appliances.
 
-.SH HTTP transport
-By default sender uses HTTP transport protocol to send all sdrd raw data
-updates over to reporting system. The HTTP protocol is suitable for most
-installations where the targets sit on Internet, on different networks.
+.SH Transport
+sender uses HTTP or HTTPS transport protocols to send all krd raw data
+updates over to one or many analytics appliances. The HTTP protocol is 
+suitable for most installations where the targets sit on Internet, on different networks.
 As well this transport can be used if a number of targets are placed
 on a private network.
-
-.SH SSH2 transport
-.PP
-The utility uses SSH2 transport libraries to create a connection from
-each recording host to a backend reporting system and send all updates via
-this connection. In case of a temporarily failure sender will reopen the 
-SSH2 connections and start sending the updates again. If for some reasons 
-the backend system wont answer in a proper time, sender will wait until 
-the reporting will allow connections or comeback alive. In case of a fatal 
-connection failure sender will wait permanentely for the backend reporting 
-server. The SSH2 transport mode is suitable where all your hosts sit on a
-private network within your domain.
 
 .PP
 By default, sender will output all its messages and errors under 
 prefix/log/sender.log log file.
-
-.SH OS
-Linux, Solaris
 
 .SH OPTIONS
 .SS
@@ -65,35 +45,21 @@ interval in seconds between each sample, default 60 seconds
 
 .SH EXAMPLES
 .SS sender 5
-will look for new sdrd raw data every 5 seconds
+will look for new krd raw data every 5 seconds
 .SS sender -t5 15
 will look every 15 seconds, forcing a timeout value at every 5 seconds to check
-for sdrd raw data updates
+for krd raw data updates
 
 .SH FILES
-.I /opt/sdr/etc/sdr.conf
-SDR System configuration file.
+.I /opt/kronometrix/etc/kronometrix.json
+configuration file.
 
 .SH NOTES
-Currently sender does not cache or maintain a buffer of all sdrd raw data changes
-in case the reporting backend turns unavailable. Do make sure you have a functional
-backend reporting server up, accepting SSH2 connections.
-Currently sender does not support more than one backend reporting server.
-
-.PP
-By default sender will know to close and re-open the SSH2 channel to the reporting 
-server if the connection is terminated or the server itself terminates the connection.
-However, in certain situations, like power outages or sudden crashes sender might
-remain in established mode even if the SSH2 server has died. In such cases sender will
-wait for TCP Keepalive system to terminate the connection.
-
-.PP
-By default sender does not open the SSH2 channel using keep alive option turned ON.
-You should change under sdr.conf tcp_keepalive element to 1 in order to have 
-sender opening the TCP socket using keepalive mechanism and benefit from that.
+Currently sender does not cache or maintain a buffer of all krd raw data changes
+in case the reporting backend turns unavailable. 
 
 .SH DOCUMENTATION
-See SDR documentation for more details.
+See Kronometrix documentation for more details.
 
 .SH AUTHOR
 Stefan Parvu
