@@ -562,7 +562,7 @@ sub rstimer {
 ## usage - print usage and exit.
 sub usage {
     print STDERR <<END;
-USAGE: hdwrec [-hV] | [interval [count]]
+USAGE: hdwrec [-hlV] | [interval [count]]
  e.g. hdwrec 5       print continuously every 5 seconds
       hdwrec 1 5     print 5 times, every 1 second
 
@@ -595,7 +595,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.2.1, 2018-11-06 1916
+hdwrec: 1.2.2, 2019-06-23 1928
 END
     exit 0;
 }

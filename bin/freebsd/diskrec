@@ -272,9 +272,10 @@ sub get_diskstat {
 #
 sub usage {
     print STDERR <<END;
-USAGE: diskrec [-hV] | [interval [count]]
+USAGE: diskrec [-hlV] | [interval [count]]
  e.g. diskrec 5       print continuously, every 5 seconds
       diskrec 1 5     print 5 times, every 1 second
+      diskrec -l 60   print continuously, every 60 seconds to raw datafile
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
@@ -309,7 +310,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-diskrec: 1.1.3, 2016-12-13 0004
+diskrec: 1.2.0, 2019-06-23 1922
 END
     exit 0;
 }

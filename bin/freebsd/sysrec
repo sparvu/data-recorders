@@ -694,7 +694,7 @@ sub get_nicstat {
 #
 sub usage {
     print STDERR <<END;
-USAGE: sysrec [-hV] | [interval [count]]
+USAGE: sysrec [-hlV] | [interval [count]]
  e.g. sysrec 5       print continuously, every 5 seconds
       sysrec 1 5     print 5 times, every 1 second
       sysrec -l 60   print continuously, every 60 seconds to raw datafile

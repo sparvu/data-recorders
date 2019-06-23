@@ -347,9 +347,10 @@ sub delta {
 #
 sub usage {
     print STDERR <<END;
-USAGE: cpurec [-hV] | [interval [count]]
+USAGE: cpurec [-hlV] | [interval [count]]
  e.g. cpurec 5       print continuously, every 5 seconds
       cpurec 1 5     print 5 times, every 1 second
+      cpurec -l 60   print continuously, every 60 seconds to raw datafile
 
  FIELDS:
   #01 timestamp  : seconds since Epoch, time
@@ -369,7 +370,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-cpurec: 1.1.4, 2017-10-23 0114
+cpurec: 1.2.0, 2019-06-23 1920
 END
     exit 0;
 }
