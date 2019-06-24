@@ -1,68 +1,70 @@
-.TH sender 1  "$Date: 2014-04-27 #$" "USER COMMANDS"
-.SH NAME
-sender \- krd raw data transport utility. Uses perl
-
-.SH SYNOPSIS
-.B sender
-[\-hvV] [\-t secs] [interval]
-.SH DESCRIPTION
-sender is responsible for sending krd raw data updates to a backend 
-reporting system for instant monitoring: updates, plotting. It uses
-two types of transport protocols: HTTP or HTTPS. At this moment we 
-are supporting only HTTP.
-.PP
-During its start, sender, will look for the main configuration file, 
-kronometrix.json to fetch the raw data files will look after and where to 
-transport the changes, one or many analytics appliances.
-
-.SH Transport
-sender uses HTTP or HTTPS transport protocols to send all krd raw data
-updates over to one or many analytics appliances. The HTTP protocol is 
-suitable for most installations where the targets sit on Internet, on different networks.
-As well this transport can be used if a number of targets are placed
-on a private network.
-
-.PP
-By default, sender will output all its messages and errors under 
-prefix/log/sender.log log file.
-
-.SH OPTIONS
-.SS
-\-h
-print help information
-.SS
-\-v 
+.\" Kronometrix Data Recording Manual Pages
+.\" See man kronometrix for the short list of Kronometrix
+.Dd June 23, 2019     \" DATE
+.Dt SENDER 1          \" Program name and manual section number
+.Os FreeBSD
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm sender
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd raw data transport utility
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl hvV              \" [-hvV]
+.Op Fl t Ar secs         \" [-a path]
+.Ar [interval]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+Transports Kronometrix raw data files to Kronometrix Data Analytics Platform for
+analysis and visualization. Kronometrix raw datafiles are flat files on disk,
+produced by the Kronometrix data recorders. The transport utility uses HTTP and
+HTTPS communication protocols.
+.Pp
+.Nm
+will look and read kronometrix.json, the main configuration file, where all data
+recorders and platform analytics destinations are defined. The transport utility
+automatically receives data from data recorders and deliveres to one or many data
+analytics platform for analysis. The utility will output all its messages and
+errors under its own log file, called sender.log.
+.Pp                      \" Inserts a space
+The following options are available:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl h                 \"-a flag as a list item
+help information
+.It Fl v
 verbose mode
-.SS
-\-t
-timeout seconds, default 25 seconds
-.SS
-\-V
-print revision information
-.SS
-interval
-interval in seconds between each sample, default 60 seconds
-
-.SH EXAMPLES
-.SS sender 5
-will look for new krd raw data every 5 seconds
-.SS sender -t5 15
+.It Fl t Ar sec
+timeout in seconds
+.It Fl V
+revision information
+.It interval sampling interval, in seconds. default to 60
+.El                      \" Ends the list
+.Sh FILES       \" May not be needed
+.Bl -diag
+.It Configuration file
+/opt/kronometrix/etc/kronometrix.json
+.El
+.Sh EXAMPLES
+.Bl -tag -width -compact
+.It Pa sender 5
+will look for new raw data every 5 seconds
+.It  Pa sender -t5 15
 will look every 15 seconds, forcing a timeout value at every 5 seconds to check
-for krd raw data updates
-
-.SH FILES
-.I /opt/kronometrix/etc/kronometrix.json
-configuration file.
-
-.SH NOTES
-Currently sender does not cache or maintain a buffer of all krd raw data changes
-in case the reporting backend turns unavailable. 
-
-.SH DOCUMENTATION
-See Kronometrix documentation for more details.
-
-.SH AUTHOR
-Stefan Parvu
-
-.SH SEE ALSO
-perl(1)
+for raw data updates
+.El                      \" Ends the list
+.Sh DIAGNOSTICS       \" May not be needed
+.Bl -diag
+.It Buffering data
+Currently the transport utility does not cache or maintain a buffer or queue of
+the raw data changes.
+.El
+.Sh SEE ALSO
+.Xr cpurec 1 ,
+.Xr diskrec 1 ,
+.Xr hdwrec 1 ,
+.Xr kronometrix 1 ,
+.Xr nicrec 1 ,
+.Xr sysrec 1
+.\" .Sh STANDARDS       \" Standards relating to command being described
+.\" .Sh HISTORY         \" Document history if command behaves uniquely
+.Sh AUTHORS
+.An Stefan Parvu, sparvu@kronometrix.org
+.\" .Sh BUGS            \" Document known, unremedied bugs
