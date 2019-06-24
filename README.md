@@ -69,7 +69,13 @@ performance metrics, save raw data and send it for further analysis.
  * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial idata recorder
  * wsrec - FineOffset WH1080 weather station data recorder RS-232/USB
  * axisrec - Network AXIS camera data recorder
-  
+
+## Commercial support
+For any other questions or assistance we are offering commercial support.
+[K1](https://www.kronometrix.com/k1) is a commercial product built on top 
+Kronometrix Data Recording. Please contact us +358 50 483 9978 or email us at: 
+sales@kronometrix.com for more information.
+
 ## Resources
 
 [www.kronometrix.com][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3]
