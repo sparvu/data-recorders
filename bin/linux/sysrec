@@ -110,10 +110,25 @@ if ($logging) {
 
 while (1) {
 
-    my ( $reads, $rkbytes, $writes, $wkbytes, $iops, $rwkbytes ) = 0;
+    my $reads = 0;
+    my $rkbytes = 0;
+    my $writes = 0;
+    my $wkbytes = 0;
+    my $iops = 0;
+    my $rwkbytes = 0;
 
     # net stats
-    my ( $rxpkt, $rxkbytes, $rxerr, $rxdrop, $txpkt, $txkbytes, $txerr, $txdrop, $ntByt, $rxtxpkt, $rxtxkbytes ) = 0;
+    my $rxpkt = 0;
+    my $rxkbytes = 0;
+    my $rxerr = 0;
+    my $rxdrop = 0;
+    my $txpkt = 0;
+    my $txkbytes = 0;
+    my $txerr = 0;
+    my $txdrop = 0;
+    my $ntByt = 0;
+    my $rxtxpkt = 0;
+    my $rxtxkbytes = 0;
 
     # runq size and task count
     my ( $rqsz, $tcount ) = 0;
@@ -565,7 +580,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-sysrec: 1.1.4, 2017-07-31 1416
+sysrec: 1.1.5, 2019-10-24 2211
 END
     exit 0;
 }
