@@ -8,7 +8,7 @@ use strict;
 use warnings;
 use feature ':5.24';
 
-our $VERSION = 0.06;
+our $VERSION = 0.07;
 
 sub new {
     my ($class, @args) = @_;
@@ -79,70 +79,11 @@ sub build_requests {
 sub process {
     my $self = shift;
 
-    $self->{index} = 0;
-
-    if ($self->{max_concurrent} > 1) {
-        $self->{report_queue} = [];
-        $self->{report_next}  = 0;
-        $self->process_async;
-    }
-    else {
-        $self->process_sync;
-    }
-}
-
-sub process_sync {
-    my $self = shift;
-
-    $self->write_verbose('Note: Starting serial processing cycle');
-
-    while ($self->{index} < $self->{total}) {
-        $self->write_debug('Debug: Processing cycle at '
-            . sprintf("%.2f", 100 * $self->{index} / $self->{total})
-            . '% of the queue'
-        );
-
-        my $t0 = time;
-        my $service = $self->{queue}[ $self->{index} ];
-
-        my $p = Net::Ping->new('tcp');
-        $p->hires;
-        $p->port_number($service->{port});
-        my ($status, $duration, $ip);
-        eval {
-            ($status, $duration, $ip) =
-                $p->ping($service->{host}, $self->{timeout});
-            $p->close;
-        };
-
-        if ($@) {
-            $self->write_log("Error: Failed sending ping to host "
-                . $service->{host}
-                . " port " . $service->{post}
-                . " : $@"
-            );
-            next;
-        }
-
-        my %saved = (
-            service => $service,
-            t       => time()
-        );
-        $self->write_report(\%saved, $duration);
-        $self->{index}++;
-        $self->write_debug(
-            "Debug: Sent ping to " . $service->{host}
-            . ":" . $service->{port}
-            . " (duration: $duration)"
-        );
-        sleep $self->{nap_time} if $self->{nap_time};
-    }
-}
-
-sub process_async {
-    my $self = shift;
-
     $self->write_verbose('Note: Starting asynchronous processing cycle');
+
+    $self->{index} = 0;
+    $self->{report_queue} = [];
+    $self->{report_next}  = 0;
 
     my %pinged;
     while ($self->{index} < $self->{total}) {
@@ -172,7 +113,7 @@ sub process_async {
                 );
                 next;
             }
-            
+
             $pinged{"$host:$port"} = {
                 service => $service,
                 index   => $self->{index},
@@ -193,6 +134,7 @@ sub process_async {
             # Print the report ensuring the correct order
             $self->process_report($acked);
         }
+        sleep $self->{nap_time} if $self->{nap_time};
     }
 
     # Failed pings remain in the %pinged hash

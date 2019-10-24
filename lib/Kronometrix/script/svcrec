@@ -11,15 +11,14 @@ use strict;
 use warnings;
 use feature ':5.20';
 
-our $VERSION = '1.2.4';
-my  $LASTREV = '2017-09-20';
+our $VERSION = '1.2.5';
+my  $LASTREV = '2019-10-20';
 
 ### Configuration variables
 
 my $cfile   = 'svcrec.json';           # ping configuration file
 my $kfile   = 'kronometrix.json';      # general configuration file
 my $recname = basename($0);
-my $timeout = 30;
 
 ### Process command line args
 
@@ -27,7 +26,7 @@ my %opts;
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
-getopts('ahlvVdg:s:', \%opts) or HELP_MESSAGE();
+getopts('ahlvVdg:s:t', \%opts) or HELP_MESSAGE();
 if ($opts{h}) {
     HELP_MESSAGE();
 }
@@ -41,9 +40,12 @@ my $verbose  = exists $opts{v} || exists $opts{d} || 0;
 my $debug    = exists $opts{d} || 0;
 
 # Time between requests
-print STDERR "-s switch in invalid in async mode\n" and HELP_MESSAGE()
+print STDERR "-s switch is invalid in async mode\n" and HELP_MESSAGE()
     if exists $opts{a} && exists $opts{s};
 my $nap_time = exists $opts{s} ? $opts{s} : 0.1;
+
+# Timeout
+my $timeout = exists $opts{t} ? $opts{t} : 5;
 
 # Maximum number of concurrent requests
 my $num_concurrent_reqs = exists $opts{g} ? $opts{g} : 25;
@@ -71,7 +73,7 @@ else {
 my $svcrec = Kronometrix::Svcrec->new(
     config_file             => $cfile,
     max_concurrent_requests => $num_concurrent_reqs,
-    timeout                 => 5,
+    timeout                 => $timeout,
     precision               => $precision,
     nap_time                => $nap_time,
     verbose                 => $verbose,
@@ -107,11 +109,12 @@ Kronometrix->write_log("INFO: Iterations finished");
 # Usage - print usage and exit.
 sub HELP_MESSAGE {
     print STDERR <<END;
-USAGE: svcrec [-dhlvV] [-s secs] [-a [-g concurrent]] | [interval [count]]
+USAGE: svcrec [-dhlvV] [-s secs] [-t secs] [-a [-g concurrent]] | [interval [count]]
 OPTIONS:
   -a        : perform requests asynchronously
   -g        : the number of concurrent requests. Default is 25.
   -s        : sleep delay between transactions, default 0.1
+  -t        : ping timeout, 5 seconds by default
   -l        : log raw data to krd file, no STDOUT
   -h        : help information
   -v        : verbose information
