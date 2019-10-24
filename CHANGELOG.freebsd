@@ -2,16 +2,21 @@
 Kronometrix Data Recording
 
 Supported Platforms
-    FreeBSD 11 amd64
-    FreeBSD 12 arm64, amd64
+    FreeBSD 11.x amd64
+    FreeBSD 12.x arm64, amd64
 
 Defect Management System
   https://gitlab.com/kronometrix/recording/issues 
 
 Releases
 
-  1.4.0 July 2019 Release
+  1.4.0 October 2019 Release
+    svcrec sync, async mode improvements
     rs485rec improvements
+    OpenSSL 1.1.1d update
+    Libcurl 7.66.0 update
+    CPAN October 2019 update  
+    Perl 5.30.0 update
 
   1.3.22 June 2019 Release
     Update latest 1.3.22 for ARM64, AMD64, X64 (64bit only)
