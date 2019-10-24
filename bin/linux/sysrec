@@ -131,7 +131,8 @@ while (1) {
     my $rxtxkbytes = 0;
 
     # runq size and task count
-    my ( $rqsz, $tcount ) = 0;
+    my $rqsz = 0;
+    my $tcount = 0;
 
     ### Get Stats
     my $stat    = $lxs->get;
@@ -149,7 +150,8 @@ while (1) {
     ### sum(cpus)
     my $scpus = $stat->cpustats;
     my @cpus = sort $stat->cpustats;
-    my ($ncpu, $numcpus) = 0;
+    my $ncpu = 0;
+    my $numcpus = 0;
 
     foreach (@cpus) {
         next if ( $_ eq "cpu" );
@@ -480,7 +482,7 @@ sub get_disks {
 
 sub get_part {
     my ($entry) = @_;
-    my ( $s, $maj, $min, $bks, $name );
+    my ($s, $maj, $min, $bks, $name);
 
     chomp $entry;
     return if $entry =~ /^major/;
