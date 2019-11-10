@@ -1,14 +1,17 @@
 package Kronometrix::Svcrec;
 
+use Kronometrix::Svcrec::Probes;
 use Net::Ping;
-use Time::HiRes qw(sleep);
+use Time::HiRes qw(time sleep);
+use IO::Poll qw(POLLIN POLLOUT POLLERR POLLHUP);
+use IO::Socket::INET;
 use Carp;
 use parent 'Kronometrix';
 use strict;
 use warnings;
 use feature ':5.24';
 
-our $VERSION = 0.07;
+our $VERSION = 0.08;
 
 sub new {
     my ($class, @args) = @_;
@@ -20,9 +23,15 @@ sub new {
         verbose                 => 0,
         debug                   => 0,
         config_file             => 'svcrec.json',
+
+        # tcp protocol
         queue                   => [],
-        index                   => 0,
         total                   => 0,
+        # udp protocol
+        queue_udp               => [],
+        total_udp               => 0,
+
+        index                   => 0,
         @args
     );
 
@@ -65,11 +74,21 @@ sub build_requests {
                 $srv{siteid} = $service->{id};
             }
 
-            push $self->{queue}->@*, \%srv;
-            $self->{total}++;
+            if (exists $service->{protocol}
+                and uc $service->{protocol} eq 'UDP') {
+                $srv{protocol} = 'udp';
+                push $self->{queue_udp}->@*, \%srv;
+                $self->{total_udp}++;
+            }
+            else {
+                # tcp protocol by default
+                $srv{protocol} = 'tcp';
+                push $self->{queue}->@*, \%srv;
+                $self->{total}++;
+            }
 
             $self->write_debug(
-                "Debug: Added $srv{name} - $srv{id} to the queue");
+                "Debug: Added $srv{name} - $srv{id} to the $srv{protocol} queue");
         }
     }
 
@@ -79,7 +98,15 @@ sub build_requests {
 sub process {
     my $self = shift;
 
-    $self->write_verbose('Note: Starting asynchronous processing cycle');
+    $self->process_tcp if $self->{queue}->@* > 0;
+    $self->process_udp if $self->{queue_udp}->@* > 0;
+}
+
+sub process_tcp {
+    my $self = shift;
+
+    $self->write_verbose(
+        'Note: Starting asynchronous processing cycle, tcp');
 
     $self->{index} = 0;
     $self->{report_queue} = [];
@@ -87,17 +114,18 @@ sub process {
 
     my %pinged;
     while ($self->{index} < $self->{total}) {
-        $self->write_debug('Debug: Processing cycle at '
+        $self->write_debug('Debug: Processing TCP cycle at '
             . sprintf("%.2f", 100 * $self->{index} / $self->{total})
             . '% of the queue'
         );
 
         # Ping the next max_concurrent servers
         my $n = $self->{max_concurrent} + $self->{index};
-        $n = $self->{total} - 1 if $n > $self->{total} - 1;
+        $n = $self->{total} if $n > $self->{total};
+
         my $t0 = time;
         my $p = Net::Ping->new('syn');
-        while ($self->{index} <= $n) {
+        while ($self->{index} < $n) {
             my $service       = $self->{queue}[ $self->{index} ];
             my ($host, $port) = @$service{qw(host port)};
 
@@ -148,6 +176,125 @@ sub process {
     }
 }
 
+sub process_udp {
+    my $self = shift;
+
+    $self->write_verbose(
+        'Note: Starting asynchronous processing cycle, udp');
+
+    my $poll = IO::Poll->new;
+
+    $self->{index} = 0;
+    $self->{report_queue} = [];
+    $self->{report_next}  = 0;
+
+    my %pinged;
+    while ($self->{index} < $self->{total_udp}) {
+        $self->write_debug('Debug: Processing UDP cycle at '
+            . sprintf("%.2f", 100 * $self->{index} / $self->{total_udp})
+            . "% of the queue (index: $self->{index})"
+        );
+
+        # Ping the next max_concurrent servers
+        my $n = $self->{max_concurrent} + $self->{index};
+        $n = $self->{total_udp} if $n > $self->{total_udp};
+
+        while ($self->{index} < $n) {
+            my $service       = $self->{queue_udp}[ $self->{index} ];
+            my ($host, $port) = @$service{qw(host port)};
+
+            my %inet = (
+                PeerAddr => "$host:$port",
+                Blocking => 0,
+                Timeout  => $self->{timeout},
+                Proto    => 'udp',
+                Type     => SOCK_DGRAM,
+            );
+
+            my $sock = IO::Socket::INET->new(%inet);
+            my $t0 = time;
+
+            if (defined $sock) {
+                my $probe =
+                    Kronometrix::Svcrec::Probes->probe_for_port($port);
+
+                unless (defined $probe) {
+                    $self->write_log(
+                        "Error: probe for UDP $port does not exist");
+                    $probe = "\0";
+                }
+
+
+                $poll->mask($sock => POLLIN);
+                $sock->send($probe);
+                $self->write_debug("Debug: Sent ping to $host:$port");
+            }
+            else {
+                $self->write_debug("Debug: Failed ping to $host:$port");
+                $sock = "$host:$port";
+            }
+
+            $pinged{$sock} = {
+                service => $service,
+                index   => $self->{index},
+                t       => $t0
+            };
+
+            $self->{index}++;
+        }
+
+        # Get the resulting acknowledgements
+        my $tout = $self->{timeout};
+        $self->write_debug("Note: Looking for acknowledgements");
+
+        # Poll at least once. If this is the last iteration (index > total_udp)
+        # then poll until the last request is timed out
+        do {
+            $poll->poll($tout);
+            foreach my $sock ($poll->handles(POLLIN)) {
+                $poll->remove($sock);
+                eval { $sock->shutdown( 2 ) };
+
+                my $ping = delete $pinged{$sock};
+                $self->write_debug("Debug: Received ack from $ping->{service}{name}");
+                $ping->{duration} = time - $ping->{t};
+                $self->process_report($ping);
+            }
+
+            # Remove handles with errors or hanged up
+            foreach my $sock ($poll->handles(POLLERR | POLLHUP)) {
+                my $ping = $pinged{$sock};
+                $self->write_debug("Debug: Error event from $ping->{service}{name}");
+                $poll->remove($sock);
+            }
+
+            # Remove handles whose timeout has passed
+            foreach my $sock ($poll->handles()) {
+                if (time > $pinged{$sock}->{t} + $tout) {
+                    my $ping = $pinged{$sock};
+                    $self->write_debug("Debug: Time out for $ping->{service}{name}");
+                    $poll->remove($sock);
+                    $self->write_debug("Debug: Remaining handles: " . scalar $poll->handles);
+                }
+            }
+        }
+        while ($poll->handles > 0 && $self->{index} >= $self->{total_udp});
+
+        sleep $self->{nap_time} if $self->{nap_time};
+    }
+
+    # Failed pings remain in the %pinged hash
+    $self->write_debug(
+          'Debug: There are ' . scalar(keys(%pinged))
+        . ' failed pings to process in the UDP queue'
+    );
+
+    foreach my $ping (values %pinged) {
+        $ping->{duration} = 0;
+        $self->process_report($ping);
+    }
+}
+
 sub process_report {
     my ($self, $ping) = @_;
 
@@ -158,7 +305,8 @@ sub process_report {
     while (@$queue && $self->{report_next} == $queue->[0]{index}) {
         my $next = shift @$queue;
         $self->write_report($next, $next->{duration});
-        $self->write_debug("Debug: Just reported " . $next->{index});
+        $self->write_debug("Debug: Just reported service index "
+            . $next->{index});
         $self->{report_next}++;
     }
 }
