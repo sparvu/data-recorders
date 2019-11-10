@@ -16,9 +16,9 @@ Defect Management System
 
 Releases
 
-  1.4.1 November 2019 Release
+  1.4.2 November 2019 Release
     ntprec fixes
-    svcrec sync, async mode improvements
+    svcrec improvements
     rs485rec improvements
     OpenSSL 1.1.1d update
     Libcurl 7.66.0 update
