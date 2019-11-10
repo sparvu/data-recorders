@@ -7,21 +7,45 @@
       "service" : [
         {
           "id" : "imaps",
-          "host" : "kronometrix.com",
+          "host" : "mail.kronometrix.com",
           "type" : "imaps",
-          "port" : 993
+          "port" : 993,
+          "protocol": "tcp"
         },
         {
           "id" : "smtps",
-          "host" : "kronometrix.com",
+          "host" : "mail.kronometrix.com",
           "type" : "smtps",
-          "port" : 465
+          "port" : 465,
+          "protocol": "tcp"
         },
         {
           "id" : "https",
-          "host" : "kronometrix.com",
+          "host" : "www.kronometrix.com",
           "type" : "https",
-          "port" : 443 
+          "port" : 443,
+          "protocol": "tcp"
+        }
+      ]
+    },
+    {
+      "name" : "ntpool service",
+      "description" : "",
+      "zone" : "EFHK",
+      "service" : [
+        {
+          "id" : "ntp1",
+          "host" : "europe.pool.ntp.org",
+          "type" : "ntp",
+          "port" : 123,
+          "protocol": "udp"
+        },
+        {
+          "id" : "ntp2",
+          "host" : "north-america.pool.ntp.org",
+          "type" : "ntp",
+          "port" : 123,
+          "protocol": "udp"
         }
       ]
     }
