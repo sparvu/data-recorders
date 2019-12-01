@@ -62,11 +62,11 @@ performance metrics, save raw data and send it for further analysis.
  * awsrec - Amazon Web Services data recorder
  * azurec - Microsoft Azure data recorder
  * gcprec - Google Computing Platform data recorder
- * dgorec - DigitalOcean data recorder
 
 ### Industrial IoT, Weather and Environment
 
  * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial idata recorder
+ * blrec - Bluetooth Low Energy data recorder
  * wsrec - FineOffset WH1080 weather station data recorder RS-232/USB
  * axisrec - Network AXIS camera data recorder
 
