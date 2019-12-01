@@ -54,6 +54,8 @@ performance metrics, save raw data and send it for further analysis.
  * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP(Any)
  * direc - filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
+ * smtprec - Sendmail SMTP server data recorder
+ * imaprec - Dovecot IMAP/POP server data recorder
  * procrec - process statistics data recorder
  * webrec - web application performance,availability data recorder
 
@@ -65,10 +67,11 @@ performance metrics, save raw data and send it for further analysis.
 
 ### Industrial IoT, Weather and Environment
 
- * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial idata recorder
+ * axisrec - AXIS security and video surveillance data recorder
+ * bacrec - Building management BACnet data recorder
  * blrec - Bluetooth Low Energy data recorder
- * wsrec - FineOffset WH1080 weather station data recorder RS-232/USB
- * axisrec - Network AXIS camera data recorder
+ * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
+ * wsrec - General weather station recorder RS-232/USB
 
 ## Commercial products
 
