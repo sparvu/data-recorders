@@ -12,14 +12,13 @@ More information: www.kronometrix.com/k1
 
   We support the following Linux based operating systems:
 
-    CentOS 6,7 (Final) x86_64
-    Foobar Linux 6.x, 7.x x86_64
-    CloudLinux 6 x86_64
+    CentOS 6,7,8 (Final) x86_64
+    CloudLinux 6,7 x86_64
     Debian 7,8,9,10 x86_64
     Ubuntu Server Edition 16,18 x86_64
     Raspbian GNU/Linux 7,8 armv8
 
-  Note: Kernel 2.6.32 (x86_64), 3.12 (armv8)
+  Note: 64bit only, min kernel 2.6.32 (x86_64)
 
 
 2.Package Content
