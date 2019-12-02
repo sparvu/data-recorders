@@ -16,7 +16,7 @@ no warnings 'experimental::postderef';
 
 use parent 'Kronometrix';
 
-our $VERSION = 0.09;
+our $VERSION = 0.10;
 
 sub new {
     my ($class, @args) = @_;
@@ -211,6 +211,7 @@ sub init {
     if ($self->is_async) {
         eval {
             $self->{multi} = Net::Curl::Multi->new;
+            $self->{multi}->setopt(CURLMOPT_SOCKETFUNCTION, sub { return 0 });
         };
         if ($@) {
             $self->write_log("ERROR: The constructor of Net::Curl::Multi threw $@");
