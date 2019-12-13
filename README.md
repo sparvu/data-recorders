@@ -10,7 +10,7 @@
 ## Overview
 
 A simple and efficient set of data recorders and transport utilities for ICT, 
-environmental monitoring, meteorology and IoT, designed to record top essential 
+environmental monitoring, meteorology and industrial IoT, designed to record top essential 
 performance metrics, save raw data and send it for further analysis.
 
 * [Design](docs/design.md)
