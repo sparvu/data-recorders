@@ -75,7 +75,7 @@ performance metrics, save raw data and send it for further analysis.
 
 ## Commercial products
 
-[Kronometrix K1 IoT Gateway](https://www.kronometrix.com/k1)
+[Kronometrix K1 Industrial IoT Gateway](https://www.kronometrix.com/k1)
 
 ## Resources
 
