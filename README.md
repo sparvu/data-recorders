@@ -28,7 +28,7 @@ performance metrics, save raw data and send it for further analysis.
 ## Features
 
 * Support for raw data
-* IoT readiness
+* Industrial IoT readiness
 * Conservative in CPU and memory usage on different architectures 
 * Easy to change or add new data recorders to collect new data 
 * Runs without human intervention, easy to detect data transmission problems
