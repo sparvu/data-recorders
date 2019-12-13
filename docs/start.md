@@ -17,18 +17,15 @@ to verify the system prerequisites, how to install and setup KDR on Linux like o
 
 ### RPM based systems
 
-  * Download packages 
-    * x64: https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-rhel-x64.rpm
+  * Download latest, stable [x64 package](https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-rhel-x64.rpm)
         
   * Install package ```# rpm -ihv kdr-stable-rhel-x64.rpm``` 
   
 ### DEB based systems
 
-  * Download packages
-    * x64: https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-debian-x64.deb
-    * armv8: https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-raspbian-armv8.deb
+  * Download lateast, stable Debian [x64 package](https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-debian-x64.deb) and [armv8 package](https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-raspbian-armv8.deb)
     
-* Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
+  * Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
 
 ## UNIX
 
@@ -37,9 +34,7 @@ to verify the system prerequisites, how to install and setup KDR on FreeBSD UNIX
 
 ### FreeBSD systems
 
-  * Download packages
-    * x64: https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-x64.txz
-    * armv8: https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-arm.txz
+  * Download packages [x64 package](https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-x64.txz) and [armv8 package](https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-arm.txz)
     
   * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
 
@@ -50,8 +45,7 @@ to verify the system prerequisites, how to install and setup KDR on Windows oper
 
 ### Windows 2008, 2012, 2016 systems
 
-  * Download package
-    * x64: https://gitlab.com/kronometrix/k1/blob/master/win/kdr-stable-windows-x64.exe
+  * Download [x64 package](https://gitlab.com/kronometrix/k1/blob/master/win/kdr-stable-windows-x64.exe)
 
-* Execute kdr-stable-windows-x64.exe
+  * Execute kdr-stable-windows-x64.exe
 
