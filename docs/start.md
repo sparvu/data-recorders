@@ -34,7 +34,7 @@ to verify the system prerequisites, how to install and setup KDR on FreeBSD UNIX
 
 ### FreeBSD systems
 
-  * Download packages [x64 package](https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-x64.txz) and [armv8 package](https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-arm.txz)
+  * Download packages [x64 package](https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-x64.txz) and [armv8 package](https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-armv8.txz)
     
   * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
 
