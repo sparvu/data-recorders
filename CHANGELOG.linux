@@ -15,13 +15,13 @@ Defect Management System
 
 Releases
 
-  1.4.4 January 2020 Release
+  1.4.4 February 2020 Release
     ntprec fixes
     svcrec improvements for TCP/UDP services
     rs485rec improvements
     OpenSSL 1.1.1d update
-    Libcurl 7.67.0 update
-    CPAN October 2019 update
+    Libcurl 7.68.0 update
+    CPAN January 2020 update
     Perl 5.30.1 update
 
   1.3.22 June 2019 Release
