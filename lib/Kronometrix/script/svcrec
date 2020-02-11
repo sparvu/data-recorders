@@ -11,8 +11,8 @@ use strict;
 use warnings;
 use feature ':5.20';
 
-our $VERSION = '1.2.5';
-my  $LASTREV = '2019-10-20';
+our $VERSION = '1.2.6';
+my  $LASTREV = '2020-02-11';
 
 ### Configuration variables
 
