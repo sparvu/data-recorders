@@ -32,16 +32,25 @@
       "name" : "ntpool service",
       "description" : "",
       "zone" : "EFHK",
+      "retry_count" : 3,
+      "delay" : 0.1,
       "service" : [
         {
-          "id" : "ntp1",
+          "id" : "europe.pool.ntp.org",
           "host" : "europe.pool.ntp.org",
           "type" : "ntp",
           "port" : 123,
           "protocol": "udp"
         },
         {
-          "id" : "ntp2",
+          "id" : "oceania.pool.ntp.org",
+          "host" : "oceania.pool.ntp.org",
+          "type" : "ntp",
+          "port" : 123,
+          "protocol": "udp"
+        },
+        {
+          "id" : "north-america.pool.ntp.org",
           "host" : "north-america.pool.ntp.org",
           "type" : "ntp",
           "port" : 123,
