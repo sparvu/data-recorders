@@ -14,6 +14,8 @@ More information: www.kronometrix.com/k1
     FreeBSD 11 amd64
     FreeBSD 12 amd64, aarch64
 
+  Note: 64bit only. IoT, weather and environment data recorders are supported 
+  for Raspberry PI 3B/3B+/4B SBC ARM64 systems.
 
 2.Package Content
 
@@ -24,7 +26,7 @@ More information: www.kronometrix.com/k1
     - recorders:
 
       Information and Communications Technology
-      
+
       * sysrec - overall system CPU, MEM, DISK, NIC utilization
       * cpurec - per CPU statistics
       * nicrec - per NIC statistics
@@ -33,18 +35,15 @@ More information: www.kronometrix.com/k1
       * jvmrec - Java VM statistics
       * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
       * certrec - X.509 security certificate statistics
-      * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP(Any)
+      * svcrec - service performance, availability: TCP, UDP services
       * direc - filesystem directory statistics
       * ntprec - NTP server statistics
       * procrec - process statistics
-      * webrec - web application performance,availability
+      * webrec - web application performance, availability
 
-      Environmental Monitoring, IoT
+      IoT, Weather and Environment
 
       * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
-
-      General Meteorology
-
       * wsrec - Weather data recorder
 
     - transport: sender utility

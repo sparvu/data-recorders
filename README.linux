@@ -19,7 +19,7 @@ More information: www.kronometrix.com/k1
     Raspbian GNU/Linux 7,8 armv8
 
   Note: 64bit only, min kernel 2.6.32 (x86_64). IoT, weather and environment
-  data recorders are supported for Raspberry PI 3b/3B+/4B SBC ARM64 systems.
+  data recorders are supported for Raspberry PI 3B/3B+/4B SBC ARM64 systems.
 
 
 2.Package Content
