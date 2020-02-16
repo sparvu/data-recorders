@@ -262,7 +262,6 @@ sub process_udp {
             $self->write_debug(
                 "Debug: Error event from " . $ping->name);
             $poll->remove($sock);
-            $ping->reset;
         }
 
         # Remove timed out handles after tries are exhausted
@@ -282,7 +281,6 @@ sub process_udp {
                 delete $ping_for{$sid};
                 $ping->duration(0);
                 $self->process_report($ping);
-                $ping->reset;
             }
         }
 
@@ -297,7 +295,6 @@ sub process_udp {
             delete $ping_for{$sid};
             $ping->duration(0);
             $self->process_report($ping);
-            $ping->reset;
         }
 
         $self->write_debug("Debug: Remaining handles: "
