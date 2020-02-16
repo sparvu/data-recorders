@@ -17,8 +17,9 @@ Releases
 
   1.4.4 February 2020 Release
     ntprec fixes
-    svcrec improvements for TCP/UDP services
     rs485rec improvements
+    svcrec improvements for TCP/UDP services
+    Service recorder UDP probes: NTP, DHCP
     OpenSSL 1.1.1d update
     Libcurl 7.68.0 update
     CPAN February 2020 update
