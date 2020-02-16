@@ -15,7 +15,7 @@ More information: www.kronometrix.com/k1
     FreeBSD 12 amd64, aarch64
 
   Note: 64bit only. IoT, weather and environment data recorders are supported 
-  for Raspberry PI 3B/3B+/4B SBC ARM64 systems.
+  for Raspberry PI 3B/3B+/4B SBC ARM64 only.
 
 2.Package Content
 
