@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use feature ':5.24';
 
-our $VERSION = 0.09;
+our $VERSION = 0.10;
 
 sub new {
     my ($class, @args) = @_;
@@ -166,7 +166,10 @@ sub process_tcp {
                 next;
             }
 
-            $pinged{"$host:$port"} = {
+            $pinged{"$host:$port"} = []
+                unless exists $pinged{"$host:$port"};
+
+            push $pinged{"$host:$port"}->@*, {
                 service => $service,
                 index   => $self->{index},
                 t       => $t0
@@ -179,7 +182,7 @@ sub process_tcp {
         # Get the resulting acknowledgements
         $self->write_debug('Note: Looking for acknowledgements');
         while (my ($host,$duration, $ip, $port) = $p->ack) {
-            my $acked = delete $pinged{"$host:$port"};
+            my $acked = shift $pinged{"$host:$port"}->@*;
             $acked->{duration} = $duration;
             $self->write_debug("Debug: Received ack from $host:$port (duration: $duration)");
 
@@ -193,9 +196,12 @@ sub process_tcp {
           'Debug: There are ' . scalar(keys(%pinged))
         . ' failed pings to process'
     );
-    foreach my $ping (values %pinged) {
-        $ping->{duration} = 0;
-        $self->process_report($ping);
+
+    foreach my $list (values %pinged) {
+        foreach my $ping (@$list) {
+            $ping->{duration} = 0;
+            $self->process_report($ping);
+        }
     }
 }
 
