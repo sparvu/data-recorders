@@ -19,7 +19,7 @@ my $cfile   = 'webrec.json';           # webloads configuration file
 my $kfile   = 'kronometrix.json';      # general configuration file
 my $recname = basename($0);
 my $osname  = "$^O";
-my $agent   = "kdr/1.3.4 webrec $osname";
+my $agent   = "kdr/1.4.6 webrec $osname";
 my $timeout = 30;
 
 ### Process command line args
