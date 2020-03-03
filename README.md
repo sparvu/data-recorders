@@ -3,7 +3,7 @@
 <br/><br/>
 <br/>
 
-[![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.4.4&color=success)](docs/start.md)
+[![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.4.6&color=success)](docs/start.md)
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
 
