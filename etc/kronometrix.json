@@ -193,104 +193,6 @@
       "sample" : 60,
       "status" : "inactive",
       "domain" : [ "dpd", "epd", "spd" ]
-    },
-    {
-      "name"   : "amd_qml201",
-      "file"   : "amd_qml201rec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "amd" ]
-    },
-    {
-      "name"   : "amd_qml201_hmp155",
-      "file"   : "amd_qml201_hmp155rec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "amd" ]
-    },
-    {
-      "name"   : "wcd_qml201",
-      "file"   : "wcd_qml201rec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "wcd" ]
-    },
-    {
-      "name"   : "wcd_qml201_bh2qw",
-      "file"   : "wcd_qml201_bh2qwrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "wcd" ]
-    },
-    {
-      "name"   : "aq_aqt420",
-      "file"   : "aq_aqt420rec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "aqd" ]
-    },
-    {
-      "name"   : "aq_wxt520",
-      "file"   : "aq_wxt520rec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "aqd" ]
-    },
-    {
-      "name" : "aq_qups24",
-      "sample" : 60,
-      "file" : "aq_qups24rec.krd",
-      "status" : "inactive",
-      "domain" : [ "aqd" ]
-    },
-    {
-      "name" : "aq_qups24ah",
-      "sample" : 60,
-      "file" : "aq_qups24ahrec.krd",
-      "status" : "inactive",
-      "domain" : [ "aqd" ]
-    },
-    {
-      "name" : "aq_qups242410x",
-      "sample" : 60,
-      "file" : "aq_qups242410xrec.krd",
-      "status" : "inactive",
-      "domain" : [ "aqd" ]
-    },
-    {
-      "name" : "aq_q1615emk2_floud",
-      "file" : "aq_q1615emk2_floudrec.krd",
-      "domain" : [ "aqd" ],
-      "status" : "inactive",
-      "sample" : 60
-    },
-    {
-      "name"   : "iaqd_g01",
-      "file"   : "iaqd_g01rec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "iaqd", "dpd" ]
-    },
-    {
-      "name"   : "iaqd_msd1618",
-      "file"   : "iaqd_msd1618rec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "iaqd", "dpd" ]
-    },
-    {
-      "name"   : "iaqd_gmw90",
-      "file"   : "iaqd_gmw90rec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "iaqd", "dpd" ]
-    },
-    {
-      "name"   : "ws",
-      "file"   : "wsrec.krd",
-      "sample" : 60,
-      "status" : "inactive",
-      "domain" : [ "wcd" ]
     }
   ],
   "transport" : {
@@ -300,7 +202,7 @@
         "keepalive" : 0,
         "name" : "Kronometrix Data Analytics Platform",
         "host" : "change me",
-        "protocol" : "http",
+        "protocol" : "https",
         "description" : "Kronometrix Data Analytics Platform",
         "cpd" : [
           {
