@@ -21,7 +21,7 @@ Releases
     svcrec improvements and bug fixes for TCP/UDP services
     svcrec service recorder support for UDP probes: NTP, DHCP
     OpenSSL 1.1.1d update
-    Libcurl 7.69.0 update
+    Libcurl 7.68.0 update
     CPAN February 2020 update
     Perl 5.30.1 update
 
