@@ -91,7 +91,7 @@ if ( $interval =~ /\./ ) {
 
 # osname
 my $osname = "$^O";
-my $agent = "kdr/1.4.6 axisrec $osname";
+my $agent = "kdr/1.4.8 axisrec $osname";
 
 my $np = 1;
 # check for pid list
