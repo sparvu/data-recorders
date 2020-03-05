@@ -15,7 +15,7 @@ Defect Management System
 
 Releases
 
-  1.4.6 March 2020 Release
+  1.4.8 March 2020 Release
     ntprec bug fixes
     rs485rec improvements and bug fixes
     svcrec improvements and bug fixes for TCP/UDP services
