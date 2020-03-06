@@ -33,12 +33,9 @@ test -f ${KRMX_ETC}/cpurec.start  || exit 0
 test -f ${KRMX_ETC}/diskrec.start || exit 0
 test -f ${KRMX_ETC}/nicrec.start  || exit 0
 test -f ${KRMX_ETC}/hdwrec.start  || exit 0
-test -f ${KRMX_ETC}/jvmrec.start  || exit 0
-test -f ${KRMX_ETC}/netrec.start  || exit 0
-test -f ${KRMX_ETC}/procrec.start || exit 0
-test -f ${KRMX_ETC}/rs485rec.start || exit 0
+test -f ${KRMX_ETC}/svcrec.start || exit 0
 test -f ${KRMX_ETC}/webrec.start || exit 0
-test -f ${KRMX_ETC}/xenrec.start  || exit 0
+test -f ${KRMX_ETC}/webinvrec.start || exit 0
 
 
 start() {
