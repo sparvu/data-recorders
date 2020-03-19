@@ -202,7 +202,7 @@
         "keepalive" : 0,
         "name" : "Kronometrix Data Analytics Platform",
         "host" : "change me",
-        "protocol" : "https",
+        "protocol" : "http",
         "description" : "Kronometrix Data Analytics Platform",
         "cpd" : [
           {
