@@ -15,6 +15,7 @@ performance metrics, save raw data and send it for further analysis.
 
 * [Design](docs/design.md)
 * [Getting started](docs/start.md)
+* [Main Features](docs/features.md)
 * [Contributing and support](docs/contributing.md)
 
 ## Requirements
