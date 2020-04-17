@@ -25,10 +25,8 @@
 | Low latency | **yes** | | | | |
 | Low latency | **yes** | | | | |
 | Low latency | **yes** | | | | |
+| Low latency | **yes** | | | | |
+| Low latency | **yes** | | | | |
+| Low latency | **yes** | | | | |
 
-
-
-
-<img src="/docs/img/recorderplus.png" align="right" /> 
-<img src="/docs/img/recorder.png" align="right" /> 
 
