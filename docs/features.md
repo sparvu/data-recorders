@@ -19,14 +19,19 @@
 
 || Kronometrix | Nagios Xi | Datadog | Paessler | Dynatrace | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
-| Built-in recorders | **yes** |  | **yes** | | **yes** | Run it as a service, over Internet |
-| Raw data | **yes** | **yes** | no | **yes** | no | Run it as a product on your private network |  
-| Low latency | **yes** | | | | |
-| Low latency | **yes** | | | | |
-| Low latency | **yes** | | | | |
-| Low latency | **yes** | | | | |
-| Low latency | **yes** | | | | |
-| Low latency | **yes** | | | | |
-| Low latency | **yes** | | | | |
-
-
+| Built-in recorders | **yes** |  | **yes** | | **yes** | Own or 3rd party recorders. Datadog uses StatsD. Dynatrace uses Java Compuware agent for Linux, Windows, AIX |
+| Raw data | **yes** | **yes** | no | **yes** | no | Datadog aggregates raw data every 10 seconds |  
+| Low latency | **yes** | | | | | Kronometrix recorders have a low memory and CPU footprint, designed  to monitor individual system resources, offered as a open-source software based on Perl 5 for easy customisatio |
+| Observability and Troubleshooting | **yes** | | | | | Designed to be used interactive and continuous mode |
+| Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity management |
+| Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
+| Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
+| Network equipment (SNMP) | coming soon | **yes** | **yes** | **yes** | **yes** | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
+| Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q3 2020 J2EE, DB monitoring |
+| Internet Entreprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
+| X.509 Security Certificates | **yes** | | | | | |
+| IoT Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2020 |
+| Industrial monitoring | **yes** | | | | | Kronometrix supports MODBUS, Serial RS232/RS485. Soon available BACNet |
+| Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
+| ARM compatible | **yes** | | | | | |
+| Based on | Perl | C/Perl/Shell | Python | C | Java | |
