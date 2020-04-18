@@ -36,4 +36,4 @@
 | ARM compatible | **yes** | | | | | |
 | Based on | Perl | C/Perl/Shell | Python | C | Java | |
 
-* [Main page](/README.md)
+Go back [main page](https://gitlab.com/kronometrix/recording/)
