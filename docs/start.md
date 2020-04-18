@@ -48,4 +48,6 @@ to verify the system prerequisites, how to install and setup KDR on Windows oper
   * Download [x64 package](https://gitlab.com/kronometrix/k1/blob/master/win/kdr-stable-windows-x64.exe)
 
   * Execute kdr-stable-windows-x64.exe
+ 
 
+Go back [main page](https://gitlab.com/kronometrix/recording/)
