@@ -56,3 +56,5 @@ The recorder can operate in two modes:
 <img src="/docs/img/recorderplus.png" align="right" /> 
 <img src="/docs/img/recorder.png" align="right" /> 
 
+
+Go back [main page](https://gitlab.com/kronometrix/recording/)
