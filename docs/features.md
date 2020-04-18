@@ -35,3 +35,5 @@
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | | |
 | Based on | Perl | C/Perl/Shell | Python | C | Java | |
+
+* [Main page](/README.md)
