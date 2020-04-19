@@ -20,9 +20,9 @@ performance metrics, save raw data and send it for further analysis.
 ## Requirements
 
 * CPU: x64, ARMv8
-* Memory: 32 MB RAM
-* Storage: 128 MB, 750KB per day, per data source
-* Protocols: HTTP(S), MODBUS(RTU, TCP, ASCII), BACnet, SERIAL
+* Memory: min 32 MB RAM
+* Storage: 128 MB, 750KB per day / data source
+* Protocols: SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), BLE, BACnet, HTTP(S)
 * SBC: Raspberry PI 3B, 3B+
 
 ## Features
