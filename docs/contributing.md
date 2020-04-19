@@ -16,3 +16,6 @@ For any other questions or assistance we are offering commercial support.
 [K1](https://www.kronometrix.com/k1) is a commercial product built on top 
 Kronometrix Data Recording. Please contact us +358 50 483 9978 or email us at: 
 sales@kronometrix.com for more information.
+
+
+Go back [main page](https://gitlab.com/kronometrix/recording/)
