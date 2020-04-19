@@ -35,7 +35,7 @@ performance metrics, save raw data and send it for further analysis.
 * Runs without human intervention, easy to detect data transmission problems
 * Fetch data from any system, device, sensor with support for multi-industry
 * Full control with no complicated licenses for further developments
-* [Kronometrix vs Others](docs/features.md)
+* [See more](docs/features.md)
 
 ## Supported Industries
 
