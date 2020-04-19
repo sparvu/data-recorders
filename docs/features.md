@@ -30,7 +30,9 @@
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q3 2020 J2EE, DB monitoring |
 | Internet Entreprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | X.509 Security Certificates | **yes** | | | | | |
+| MODBUS | **yes** | | | | | MODBUS RTU, ASCII, TCP support |
 | IoT Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2020 |
+| BACnet | coming soon | | | | | Kronometrix roadmap 2020 |
 | Industrial monitoring | **yes** | | | | | Kronometrix supports MODBUS, Serial RS232/RS485. Soon available BACNet |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | | |
