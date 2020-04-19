@@ -12,7 +12,7 @@
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
 | SaaS | **yes** |  | **yes** | | **yes** | Run it as a service, over Internet |
 | On-premises | **yes** | **yes** | no | **yes** | no | Run it as a product on your private network |  
-| IoT Edge Computing | **yes** | | | |  | Run on RaspberryPI or ARMv8 single-board computers |
+| IoT Edge Computing | **yes** | | | |  | Run on RaspberryPI or ARMv8 SBC |
 
 
 ### Data Recording
@@ -33,7 +33,7 @@
 | MODBUS | **yes** | | | | | MODBUS RTU, ASCII, TCP support |
 | IoT Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2020 |
 | BACnet | coming soon | | | | | Kronometrix roadmap 2020 |
-| Industrial monitoring | **yes** | | | | | Kronometrix supports MODBUS, Serial RS232/RS485. Soon available BACNet |
+| RS232/485 | **yes** | | | | | Serial RS232/RS485 support |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | | |
 | Based on | Perl | C/Perl/Shell | Python | C | Java | |
