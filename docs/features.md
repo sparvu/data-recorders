@@ -12,7 +12,7 @@
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
 | SaaS | **yes** |  | **yes** | | **yes** | Run it as a service, over Internet |
 | On-premises | **yes** | **yes** | no | **yes** | no | Run it as a product on your private network |  
-| IoT Edge Computing | **yes** | | | |  | Run on RaspberryPI or ARMv8 SBC |
+| IoT Edge Computing | **yes** | | | |  | Run it on RaspberryPI or ARMv8 SBC |
 
 
 ### Data Recording
