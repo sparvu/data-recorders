@@ -5,11 +5,15 @@
 
 ## How to write a new data recorder
 
-Kronometrix Data Recorder module contains many recorders, developed for different industries and sources of data. You can extend the data recording module by building a new data recorder for your own industry, or extend a current domain. The new data 
-recorder will require the Kronometrix Data Recording runtime environment, and its cofiguration files. The new data recorder cannot be deployed as a 
-standalone application.
+Kronometrix Data Recorder contains many recorders, developed for different industries and sources of data. 
+You can extend the data recording module by building a new data recorder for your own industry, or extend a current domain. 
+The new data recorder will require the Kronometrix Data Recording runtime environment, and its cofiguration files. 
+The new data recorder cannot be deployed as a standalone application.
 
-In the following example, we will show how to write a new data recorder, called myrec
+In the following example, we will show how to write a new data recorder, called myrec, which will fetch data from an industrial
+sensor. The recorder will be a single data mesaage recorder, using only one raw output data file.
+
+Note: Before you start make sure you have installed Kronometrix Data Recording on your system.
 
 ## Template
 
@@ -381,6 +385,141 @@ else {
 
 
 * subroutines section
+
+```
+### SUBROUTINES
+
+# open JSON configuration file
+#
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: open_conf - $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+
+# get log defintion
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# write_log - write log message
+#
+sub write_log {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+# usage - print usage and exit.
+#
+sub usage {
+    print STDERR <<END;
+USAGE: myrec [-hlV] | [interval [count]]
+ e.g. myrec 5       print continuously, every 5 seconds
+      myrec 1 5     print 5 times, every 1 second
+      myrec -l 60   print continuously, every 60 seconds to raw datafile
+
+ FIELDS:
+  #01 timestamp  : seconds since Epoch, time
+  #02 sensorid   : sensor id, number
+  #03 param1     : sensor parameter 1, number
+  #04 param1     : sensor parameter 2, number
+  #05 status     : sensor status ONLINE / OFFLINE, number
+
+END
+    exit 0;
+}
+
+
+## revision - print revision and exit
+sub revision {
+    print STDERR <<END;
+myrec: 1.0, 2020-04-28 1414
+END
+    exit 0;
+}
+
+```
+
+
+
 
 ## Input data
 
