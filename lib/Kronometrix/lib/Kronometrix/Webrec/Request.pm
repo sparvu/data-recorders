@@ -149,7 +149,7 @@ sub init {
         $self->setopt('VERBOSE', 1);
     }
 
-    unless ($self->{method} eq 'POST' || $self->{method} eq 'GET') {
+    unless ($self->{method} eq 'POST' || $self->{method} eq 'GET' || $self->{method} eq 'HEAD') {
         $self->{webrec_queue}->write_log("error: not supported method "
               . $self->{method} . " for "
               . $self->{initial_url});
