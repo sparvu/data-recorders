@@ -16,10 +16,7 @@ Defect Management System
 Releases
 
   1.4.10 May 2020 Release
-    ntprec bug fixes
-    rs485rec improvements and bug fixes
-    svcrec improvements and bug fixes for TCP/UDP services
-    svcrec service recorder support for UDP probes: NTP, DHCP
+    webrec improvements and bug fixes
     OpenSSL 1.1.1g update
     Libcurl 7.70.0 update
     CPAN February 2020 update
