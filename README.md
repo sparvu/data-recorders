@@ -9,20 +9,20 @@
 
 ## Overview
 
-A simple and efficient set of data recorders and transport utilities for ICT, 
-environmental monitoring, meteorology and industrial IoT, designed to record top essential 
+A simple and efficient set of data recorders and transport utilities for ICT, environmental monitoring, meteorology and industrial IoT, designed to record top essential 
 performance metrics, save raw data and send it for further analysis.
 
 * [Design](docs/design.md)
+* [Main Features](docs/features.md)
 * [Getting started](docs/start.md)
 * [Contributing and support](docs/contributing.md)
 
 ## Requirements
 
 * CPU: x64, ARMv8
-* Memory: 32 MB RAM
-* Storage: 128 MB, 750KB per day, per data source
-* Protocols: HTTP(S), MODBUS(RTU, TCP, ASCII)
+* Memory: min 32 MB RAM
+* Storage: 128 MB, 750KB per day / data source
+* Protocols: SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), BLE, BACnet, HTTP(S)
 * SBC: Raspberry PI 3B, 3B+
 
 ## Features
@@ -33,7 +33,8 @@ performance metrics, save raw data and send it for further analysis.
 * Easy to change or add new data recorders to collect new data 
 * Runs without human intervention, easy to detect data transmission problems
 * Fetch data from any system, device, sensor with support for multi-industry
-* Full control with no complicated licenses for further developments 
+* Full control with no complicated licenses for further developments
+* [See more](docs/features.md)
 
 ## Supported Industries
 
