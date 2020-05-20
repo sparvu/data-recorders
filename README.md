@@ -59,6 +59,7 @@ performance metrics, save raw data and send it for further analysis.
  * imaprec - Dovecot IMAP/POP server data recorder
  * procrec - process statistics data recorder
  * webrec - web application performance,availability data recorder
+ * wprec - Wordpress security, performance and availability data recorder
 
 ### Public Cloud Providers
 
