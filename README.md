@@ -55,8 +55,8 @@ performance metrics, save raw data and send it for further analysis.
  * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP(Any)
  * direc - filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
- * smtprec - Sendmail SMTP server data recorder
- * imaprec - Dovecot IMAP/POP server data recorder
+ * smtprec - SMTP server data recorder
+ * imaprec - IMAP/POP server data recorder
  * procrec - process statistics data recorder
  * webrec - web application performance,availability data recorder
  * wprec - Wordpress security, performance and availability data recorder
