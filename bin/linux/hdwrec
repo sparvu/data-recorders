@@ -158,7 +158,6 @@ while (1) {
     my $ht = 'NA';
 
     #uptime
-    my $uplxs = 
     my $uptime = $nlxs->get_uptime;
     
     # disks might become available, check disks every sample
@@ -701,7 +700,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.2.0, 2018-03-09 1607
+hdwrec: 1.2.1, 2020-08-10 1152
 END
     exit 0;
 }
