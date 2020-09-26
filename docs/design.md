@@ -8,7 +8,7 @@
 Kronometrix has been designed to _reduce_ the number of metrics collected from ICT, environment or meteorology to
 IoT equipment by conducting a _carefully_ selection and analysis of what is required and how these metrics and parameters should be used. We are working closely with experts from each industry we support, to analyse these aspects from data collection, to summary statistics and visualization. Thats why we call our technology _deep domain expertise_ software.
 
-All collected metrics and parameters are defined under our [library of monitoring objects](https://gitlab.com/kronometrix/lmo), an open source library, which keeps track of what is being monitored, what statistics are built and for what scope. This library plays an important role to Kronometrix to ensure we record, analyse and process what matters most.
+All collected metrics and parameters are part of the intelligent data objects repository, [the data neurons](https://gitlab.com/kronometrix/dataneurons). This repsository library plays an important role for Kronometrix.
 
 
 ## Raw Data
