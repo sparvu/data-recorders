@@ -8,7 +8,7 @@
 Kronometrix has been designed to _reduce_ the number of metrics collected from ICT, environment or meteorology to
 IoT equipment by conducting a _carefully_ selection and analysis of what is required and how these metrics and parameters should be used. We are working closely with experts from each industry we support, to analyse these aspects from data collection, to summary statistics and visualization. Thats why we call our technology _deep domain expertise_ software.
 
-All collected metrics and parameters are part of the intelligent data objects repository, [the data neurons](https://gitlab.com/kronometrix/dataneurons). This repsository library plays an important role for Kronometrix.
+All collected metrics and parameters are part of the intelligent data object repository, which include [the data neurons](https://gitlab.com/kronometrix/dataneurons).
 
 
 ## Raw Data
@@ -25,8 +25,7 @@ _Time series let us understand what has happened in past and look in the future,
 All collected metrics over time are combined as a data message. There can be many types of 
 data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data 
 from a meteorological station, or water cubic meters per hour from an water pump. A data message is in 
-direct relation to a data source. To describe one or many data messages, we have built a library of 
-monitoring objects, (LMO) documented here: [library of monitoring objects](https://gitlab.com/kronometrix/lmo)
+direct relation to a data source. All these data messages are part of, [the data neurons repository](https://gitlab.com/kronometrix/dataneurons)
 
 
 ## Data Source
