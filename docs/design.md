@@ -25,7 +25,7 @@ _Time series let us understand what has happened in past and look in the future,
 All collected metrics over time are combined as a data message. There can be many types of 
 data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data 
 from a meteorological station, or water cubic meters per hour from an water pump. A data message is in 
-direct relation to a data source. All these data messages are part of, [the data neurons repository](https://gitlab.com/kronometrix/dataneurons)
+direct relation to a data source. All these data messages are part of, [the data neurons repository](https://gitlab.com/kronometrix/dataneurons).
 
 
 ## Data Source
