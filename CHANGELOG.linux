@@ -16,10 +16,13 @@ Defect Management System
 Releases
 
   1.6.1 October 2020 Release
+    changelog fixes
     certrec bug fixes 
+    webrec improvements and bug fixes
     Libcurl 7.73.0 update
     OpenSSL 1.1.1h update
     CPAN Oct 2020 update
+    Perl 5.30.2 update
 
   1.5.1 August 2020 Release
     smtprec new SMTP data recorder
