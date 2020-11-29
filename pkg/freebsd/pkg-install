@@ -3,6 +3,7 @@
 RC_CONF=/etc/rc.conf
 
 if [ "X$2" == "XPRE-INSTALL" ]; then
+
     if ! /usr/sbin/pw groupshow krmx >/dev/null 2>&1; then
         /usr/sbin/pw groupadd krmx -g 5000
     fi
@@ -102,6 +103,8 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
         ln -s /opt/kronometrix/etc/rc/kdr_transport /etc/rc.d/kdr_transport
     fi
 
-    /etc/rc.d/kdr onestart >/dev/null
-    /etc/rc.d/kdr_transport onestart >/dev/null
+    /etc/rc.d/kdr_transport start >/dev/null 2>&1
+
+    /etc/rc.d/kdr start >/dev/null 2>&1
+
 fi
