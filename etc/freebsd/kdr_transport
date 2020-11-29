@@ -45,7 +45,7 @@ kdr_transport_start() {
     local cmd
     kdr_transport_args="start"
     cmd="${command} ${kdr_transport_args}"
-    su -m ${kdr_user} -c "${cmd}" 
+    su -m ${kdr_user} -c "${cmd}"
 }
 
 
