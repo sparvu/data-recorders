@@ -10,7 +10,7 @@ Defect Management System
 
 Releases
 
-  1.8.0 December 2020 Release
+  1.6.2 December 2020 Release
     add support for dynamic sampling rate (interval)
     FreeBSD pkg installation improvements
     Data Fabric rebranding

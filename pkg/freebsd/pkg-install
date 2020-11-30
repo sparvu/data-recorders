@@ -105,6 +105,8 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
 
     # /etc/rc.d/kdr_transport start >/dev/null 2>&1
 
-    ( /usr/bin/su -m krmx -c "/opt/kronometrix/etc/sysrec.start" )
+fi
 
+if [ -f /etc/rc.d/kdr ]; then
+    /etc/rc.d/kdr start >/dev/null 2>&1
 fi
