@@ -11,9 +11,9 @@ Defect Management System
 Releases
 
   1.8.0 December 2020 Release
-    interval sampling rate fixes
-    pkg installation fixes
-    data fabric rebranding
+    add support for dynamic sampling rate (interval)
+    FreeBSD pkg installation improvements
+    Data Fabric rebranding
     Net::Curl 4.47 update
 
   1.6.1 October 2020 Release
