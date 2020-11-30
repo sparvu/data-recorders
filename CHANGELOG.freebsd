@@ -11,7 +11,7 @@ Defect Management System
 Releases
 
   1.6.2 December 2020 Release
-    add support for dynamic sampling rate (interval)
+    add support for dynamic sample rate (interval)
     FreeBSD pkg installation improvements
     Data Fabric rebranding
     Net::Curl 4.47 update
