@@ -10,8 +10,10 @@ Defect Management System
 
 Releases
 
-  1.6.2 December 2020 Release
+  1.8.0 December 2020 Release
+    interval sampling rate fixes
     pkg installation fixes
+    data fabric rebranding
     Net::Curl 4.47 update
 
   1.6.1 October 2020 Release

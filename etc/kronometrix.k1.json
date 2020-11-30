@@ -6,302 +6,305 @@
   },
   "message" : [
     {
-      "name"   : "sys",
-      "file"   : "sysrec.krd",
-      "sample" : 60,
+        "name" : "sys",
+        "file" : "sysrec.krd",
       "status" : "active",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "cpu",
-      "file"   : "cpurec.krd",
-      "sample" : 60,
+        "name" : "cpu",
+        "file" : "cpurec.krd",
       "status" : "active",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "disk",
-      "file"   : "diskrec.krd",
-      "sample" : 60,
+        "name" : "disk",
+        "file" : "diskrec.krd",
       "status" : "active",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "nic",
-      "file"   : "nicrec.krd",
-      "sample" : 60,
+        "name" : "nic",
+        "file" : "nicrec.krd",
       "status" : "active",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "hdw",
-      "file"   : "hdwrec.krd",
-      "sample" : 1800,
+        "name" : "hdw",
+        "file" : "hdwrec.krd",
       "status" : "active",
+    "interval" : 1800,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "net",
-      "file"   : "netrec.krd",
-      "sample" : 60,
+        "name" : "net",
+        "file" : "netrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "jvm",
-      "file"   : "jvmrec.krd",
-      "sample" : 60,
+        "name" : "jvm",
+        "file" : "jvmrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "proc",
-      "file"   : "procrec.krd",
-      "sample" : 60,
+        "name" : "proc",
+        "file" : "procrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "xen",
-      "file"   : "xenrec.krd",
-      "sample" : 60,
+        "name" : "xen",
+        "file" : "xenrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd" ]
     },
     {
-      "name"   : "zone",
-      "file"   : "zonerec.krd",
-      "sample" : 60,
+        "name" : "zone",
+        "file" : "zonerec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd" ]
     },
     {
-      "name"   : "web",
-      "file"   : "webrec.krd",
-      "sample" : 60,
+        "name" : "web",
+        "file" : "webrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "epd", "spd", "wpd" ]
     },
     {
-      "name"   : "webinv",
-      "file"   : "webinvrec.krd",
+        "name" : "webinv",
+        "file" : "webinvrec.krd",
       "sample" : 1800,
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "epd", "spd", "wpd" ]
     },
     {
-      "name"   : "a2stat",
-      "file"   : "a2statrec.krd",
-      "sample" : 60,
+        "name" : "a2stat",
+        "file" : "a2statrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "a2inv",
-      "file"   : "a2invrec.krd",
-      "sample" : 60,
+        "name" : "a2inv",
+        "file" : "a2invrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "a2bus",
-      "file"   : "a2busrec.krd",
-      "sample" : 60,
+        "name" : "a2bus",
+        "file" : "a2busrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "ngxstat",
-      "file"   : "ngxstatrec.krd",
-      "sample" : 60,
+        "name" : "ngxstat",
+        "file" : "ngxstatrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "ngxinv",
-      "file"   : "ngxinvrec.krd",
-      "sample" : 60,
+        "name" : "ngxinv",
+        "file" : "ngxinvrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "cert",
-      "file"   : "certrec.krd",
-      "sample" : 60,
+        "name" : "cert",
+        "file" : "certrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "dpd", "epd", "spd" ]
     },
     {
-      "name"   : "pg",
-      "file"   : "pgrec.krd",
-      "sample" : 60,
+        "name" : "pg",
+        "file" : "pgrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "pginv",
-      "file"   : "pginvrec.krd",
-      "sample" : 60,
+        "name" : "pginv",
+        "file" : "pginvrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "mdb",
-      "file"   : "mdbrec.krd",
-      "sample" : 60,
+        "name" : "mdb",
+        "file" : "mdbrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "mdbinv",
-      "file"   : "mdbinvrec.krd",
-      "sample" : 60,
+        "name" : "mdbinv",
+        "file" : "mdbinvrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "mysql",
-      "file"   : "mysqlrec.krd",
-      "sample" : 60,
+        "name" : "mysql",
+        "file" : "mysqlrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "mysqlinv",
-      "file"   : "mysqlinvrec.krd",
-      "sample" : 60,
+        "name" : "mysqlinv",
+        "file" : "mysqlinvrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wpd" ]
     },
     {
-      "name"   : "dir",
-      "file"   : "direc.krd",
-      "sample" : 60,
+        "name" : "dir",
+        "file" : "direc.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
     {
-      "name"   : "ntp",
-      "file"   : "ntprec.krd",
-      "sample" : 60,
+        "name" : "ntp",
+        "file" : "ntprec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "dpd", "epd", "spd" ]
     },
     {
-      "name"   : "svc",
-      "file"   : "svcrec.krd",
-      "sample" : 60,
+        "name" : "svc",
+        "file" : "svcrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "dpd", "epd", "spd" ]
     },
     {
-      "name"   : "amd_qml201",
-      "file"   : "amd_qml201rec.krd",
-      "sample" : 60,
+        "name" : "amd_qml201",
+        "file" : "amd_qml201rec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "amd" ]
     },
     {
-      "name"   : "amd_qml201_hmp155",
-      "file"   : "amd_qml201_hmp155rec.krd",
-      "sample" : 60,
+        "name" : "amd_qml201_hmp155",
+        "file" : "amd_qml201_hmp155rec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "amd" ]
     },
     {
-      "name"   : "wcd_qml201",
-      "file"   : "wcd_qml201rec.krd",
-      "sample" : 60,
+        "name" : "wcd_qml201",
+        "file" : "wcd_qml201rec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wcd" ]
     },
     {
-      "name"   : "wcd_qml201_bh2qw",
-      "file"   : "wcd_qml201_bh2qwrec.krd",
-      "sample" : 60,
+        "name" : "wcd_qml201_bh2qw",
+        "file" : "wcd_qml201_bh2qwrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wcd" ]
     },
     {
-      "name"   : "aq_aqt420",
-      "file"   : "aq_aqt420rec.krd",
-      "sample" : 60,
+        "name" : "aq_aqt420",
+        "file" : "aq_aqt420rec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "aqd" ]
     },
     {
-      "name"   : "aq_wxt520",
-      "file"   : "aq_wxt520rec.krd",
-      "sample" : 60,
+        "name" : "aq_wxt520",
+        "file" : "aq_wxt520rec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "aqd" ]
     },
     {
-      "name" : "aq_qups24",
-      "sample" : 60,
-      "file" : "aq_qups24rec.krd",
+        "name" : "aq_qups24",
+        "file" : "aq_qups24rec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "aqd" ]
     },
     {
-      "name" : "aq_qups24ah",
-      "sample" : 60,
-      "file" : "aq_qups24ahrec.krd",
+        "name" : "aq_qups24ah",
+        "file" : "aq_qups24ahrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "aqd" ]
     },
     {
-      "name" : "aq_qups242410x",
-      "sample" : 60,
-      "file" : "aq_qups242410xrec.krd",
+        "name" : "aq_qups242410x",
+        "file" : "aq_qups242410xrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "aqd" ]
     },
     {
-      "name" : "aq_q1615emk2_floud",
-      "file" : "aq_q1615emk2_floudrec.krd",
+        "name" : "aq_q1615emk2_floud",
+        "file" : "aq_q1615emk2_floudrec.krd",
+      "status" : "inactive",
       "domain" : [ "aqd" ],
-      "status" : "inactive",
-      "sample" : 60
+    "interval" : 60,
+      "domain" : [ "aqd" ]
     },
     {
-      "name"   : "iaqd_g01",
-      "file"   : "iaqd_g01rec.krd",
-      "sample" : 60,
+        "name" : "iaqd_g01",
+        "file" : "iaqd_g01rec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "iaqd", "dpd" ]
     },
     {
-      "name"   : "iaqd_msd1618",
-      "file"   : "iaqd_msd1618rec.krd",
-      "sample" : 60,
+        "name" : "iaqd_msd1618",
+        "file" : "iaqd_msd1618rec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "iaqd", "dpd" ]
     },
     {
-      "name"   : "iaqd_gmw90",
-      "file"   : "iaqd_gmw90rec.krd",
-      "sample" : 60,
+        "name" : "iaqd_gmw90",
+        "file" : "iaqd_gmw90rec.krd",
       "status" : "inactive",
+      "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "iaqd", "dpd" ]
     },
     {
-      "name"   : "ws",
-      "file"   : "wsrec.krd",
-      "sample" : 60,
+        "name" : "ws",
+        "file" : "wsrec.krd",
       "status" : "inactive",
+    "interval" : 60,
       "domain" : [ "wcd" ]
     }
   ],
   "transport" : {
-    "platform" : [
+    "fabric" : [
       {
         "port" : 80,
         "keepalive" : 0,
-        "name" : "Kronometrix Data Analytics Platform",
+        "name" : "Kronometrix Distributed Data Fabric",
         "host" : "change me",
         "protocol" : "http",
-        "description" : "Kronometrix Data Analytics Platform",
+        "description" : "Kronometrix Distributed Data Fabric",
         "cpd" : [
           {
             "dsid" : "",

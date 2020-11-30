@@ -47,6 +47,7 @@ kdr_start() {
     kdr_args="start"
     cmd="${command} ${kdr_args}"
     su -m ${kdr_user} -c "${cmd}"
+    exit 0
 }
 
 
