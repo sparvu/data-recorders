@@ -1632,7 +1632,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.4.0, 2020-12-1 1344
+sender: 1.4.0, 2020-12-01 1715
 END
     exit 0;
 }
