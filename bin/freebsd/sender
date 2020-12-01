@@ -75,7 +75,7 @@ my @files;
 my $hostid;
 my ( $baselog, $curlog, $slog );
 my @dbs;
-my %platform;
+my %fabric;
 
 local $| = 1;
 
@@ -104,12 +104,12 @@ $slog = $baselog . "/sender.log";
 # datafile
 @dbs = get_datafile($cdata);
 
-# platform destination
-%platform = get_platform($cdata);
+# fabric destination
+%fabric = get_fabric($cdata);
 
-print "platform hash: " . keys(%platform) . ".\n";
-for my $key ( keys %platform ) {
-    my $value = $platform{$key};
+print "fabric hash: " . keys(%fabric) . ".\n";
+for my $key ( keys %fabric ) {
+    my $value = $fabric{$key};
     print "$key => $value\n";
 }
 
@@ -261,9 +261,9 @@ while (1) {
         elsif ( $_->{"input"} =~ /amd_qml201_hmp155rec/  ) { $amd_qml201_hmp155rec_on = 1; }
         elsif ( $_->{"input"} =~ /wcd_qml201_bh2qwrec/   ) { $wcd_qml201_bh2qwrec_on   = 1; }
 
-            # each platform
-            for my $key ( keys %platform ) {
-                my $value = $platform{$key};
+            # each fabric
+            for my $key ( keys %fabric ) {
+                my $value = $fabric{$key};
 
                 ## value format
                 # cpd:hostname2:443:00000000000000000000000000000000
@@ -1115,7 +1115,7 @@ sub reload_config {
     @dbs = get_datafile($cdata);
 
     ## destination
-    %platform = get_platform($cdata);
+    %fabric = get_fabric($cdata);
 
     return;
 }
@@ -1211,9 +1211,9 @@ sub make_hdsid {
     # get all sids and generate dsid for each
     # dsid must be unique per sid
 
-    my @kplt = @{ $data->{'transport'}->{'platform'} };
+    my @kplt = @{ $data->{'transport'}->{'fabric'} };
 
-    # populate dsid for each platform and lmo
+    # populate dsid for each fabric and lmo
     foreach my $plt (@kplt) {
         my ($sid, $tid, $dsid);
 
@@ -1282,15 +1282,15 @@ sub make_wdsid {
 }
 
 
-# get k analytics platform information
-sub get_platform {
+# get k analytics fabric information
+sub get_fabric {
 
     my ($data) = @_;
     my %kplt;
 
     my @lmo = ('amd', 'cpd', 'dpd', 'epd', 'spd', 'aqd', 'iaqd', 'wcd', 'wpd');
 
-    my @temp = @{ $data->{'transport'}->{'platform'} };
+    my @temp = @{ $data->{'transport'}->{'fabric'} };
 
     foreach my $f (@temp) {
         my ($sid, $tid, $dsid);
@@ -1632,7 +1632,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.3.12, 2020-10-20 1725
+sender: 1.4.0, 2020-12-1 1344
 END
     exit 0;
 }
