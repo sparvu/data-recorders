@@ -15,6 +15,10 @@ Defect Management System
 
 Releases
 
+  1.6.3 December 2020 Release
+    Libcurl 7.74.0 update
+    OpenSSL 1.1.1i update
+  
   1.6.1 October 2020 Release
     changelog fixes
     certrec bug fixes 
