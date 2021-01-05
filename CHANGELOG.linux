@@ -15,7 +15,8 @@ Defect Management System
 
 Releases
 
-  1.6.3 December 2020 Release
+  1.6.4 January 2021 Release
+    OAuth1,2 support
     Libcurl 7.74.0 update
     OpenSSL 1.1.1i update
   
