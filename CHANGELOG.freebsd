@@ -11,11 +11,14 @@ Defect Management System
 Releases
 
   1.6.4 December 2020 Release
-    add support for dynamic sample rate (interval)
-    experimental sockrec data recorder
-    FreeBSD pkg installation improvements
+    Add support for dynamic sample rate (interval)
+    Experimental sockrec data recorder
     Data Fabric rebranding
+    OAuth1,2 support
+    FreeBSD pkg installation improvements
     Net::Curl 4.48 update
+    Libcurl 7.74.0 update
+    OpenSSL 1.1.1i update
 
   1.6.1 October 2020 Release
     changelog fixes
