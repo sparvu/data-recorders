@@ -2,9 +2,21 @@
 Kronometrix Data Recording
 
 Platforms
-    MacOS Mojave
+    MacOS BigSur 11.x M1
 
 Defect Management System
   https://gitlab.com/kronometrix/recording/issues 
 
 Releases
+
+  1.6.4 January 2021 Release
+    Add support for dynamic sample rate (interval)
+    Data Fabric rebranding
+    OAuth1,2 support
+    MacOS pkg installation improvements
+    Net::Curl 4.48 update
+    IO::Socket::SSL 2.068 update
+    Libcurl 7.74.0 update
+    OpenSSL 1.1.1i update
+    CPAN Jan 2021 update
+    Apple M1 Silicon support
