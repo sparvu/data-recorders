@@ -41,23 +41,43 @@ BASEDIR="/opt/kronometrix/etc"
 KRMX_SVC="${BASEDIR}/rec"
 KRMX_USER="krmx"
 
+# Root function, will put all data recorders to run as root
+# 0 - default, no root function active, recorders will run as krmx user
+# 1 - root function active, recorders will run as root superuser
+ROOT=0
+
 # basedir test
 test -d ${BASEDIR} || exit 0
 test -f ${KRMX_SVC} || exit 0
 
 
 start() {
-    su - $KRMX_USER -c "${KRMX_SVC} start"
+
+    if [ $ROOT -eq 1 ]; then
+        "${KRMX_SVC} start"
+    else
+        su - $KRMX_USER -c "${KRMX_SVC} start"
+    fi
 }
 
 
 stop() {
-    su - $KRMX_USER -c "${KRMX_SVC} stop"
+
+    if [ $ROOT -eq 1 ]; then
+        "${KRMX_SVC} stop"
+    else
+        su - $KRMX_USER -c "${KRMX_SVC} stop"
+    fi   
 }
 
 
 status() {
-    su - $KRMX_USER -c "${KRMX_SVC} status"
+
+    if [ $ROOT -eq 1 ]; then
+        "${KRMX_SVC} status"
+    else
+        su - $KRMX_USER -c "${KRMX_SVC} status"
+    fi   
 }
 
 case "$1" in
