@@ -16,7 +16,6 @@ Defect Management System
 Releases
 
   1.6.4 January 2021 Release
-    Add support for dynamic sample rate (interval)
     Data Fabric rebranding
     OAuth1,2 support
     Net::Curl 4.48 update
