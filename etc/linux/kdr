@@ -44,7 +44,7 @@ KRMX_USER="krmx"
 # Root function, will put all data recorders to run as root
 # 0 - default, no root function active, recorders will run as krmx user
 # 1 - root function active, recorders will run as root superuser
-ROOT=1
+ROOT=0
 
 # basedir test
 test -d ${BASEDIR} || exit 0
