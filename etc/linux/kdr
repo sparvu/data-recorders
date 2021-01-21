@@ -44,7 +44,7 @@ KRMX_USER="krmx"
 # Root function, will put all data recorders to run as root
 # 0 - default, no root function active, recorders will run as krmx user
 # 1 - root function active, recorders will run as root superuser
-ROOT=0
+ROOT=1
 
 # basedir test
 test -d ${BASEDIR} || exit 0
@@ -54,7 +54,7 @@ test -f ${KRMX_SVC} || exit 0
 start() {
 
     if [ $ROOT -eq 1 ]; then
-        "${KRMX_SVC} start"
+        ${KRMX_SVC} start
     else
         su - $KRMX_USER -c "${KRMX_SVC} start"
     fi
@@ -64,7 +64,7 @@ start() {
 stop() {
 
     if [ $ROOT -eq 1 ]; then
-        "${KRMX_SVC} stop"
+        ${KRMX_SVC} stop
     else
         su - $KRMX_USER -c "${KRMX_SVC} stop"
     fi   
@@ -74,7 +74,7 @@ stop() {
 status() {
 
     if [ $ROOT -eq 1 ]; then
-        "${KRMX_SVC} status"
+        ${KRMX_SVC} status
     else
         su - $KRMX_USER -c "${KRMX_SVC} status"
     fi   
