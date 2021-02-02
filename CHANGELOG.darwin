@@ -9,8 +9,7 @@ Defect Management System
 
 Releases
 
-  1.6.4 January 2021 Release
-    Add support for dynamic sample rate (interval)
+  1.6.6 February 2021 Release
     Data Fabric rebranding
     OAuth1,2 support
     MacOS pkg installation improvements
