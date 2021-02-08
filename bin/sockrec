@@ -1,0 +1,75 @@
+#!/opt/kronometrix/perl/bin/perl -w
+
+use IO::Async::Listener;
+ 
+use IO::Async::Loop;
+my $loop = IO::Async::Loop->new;
+
+my $record = "";
+ 
+my $listener = IO::Async::Listener->new(
+   on_stream => sub {
+      my ( undef, $stream ) = @_;
+ 
+      $stream->configure(
+         on_read => sub {
+            my ( $self, $buffref, $eof ) = @_;
+            $self->write( $$buffref );
+
+            # store the record
+            print "$$buffref";
+
+            $$buffref = "";
+            return 0;
+         },
+      );
+ 
+      $loop->add( $stream );
+   },
+);
+ 
+$loop->add( $listener );
+
+$listener->listen(
+   addr => {
+      family   => "inet",
+      socktype => "stream",
+      port     => 44420,
+      ip       => "10.10.1.42",
+   }
+)->get;
+
+$loop->run;
+
+
+# usage - print usage and exit
+#
+sub usage {
+    print STDERR <<END;
+USAGE: sockrec [-hlvV] | [interval]
+ e.g. sockrec 60     listen to data, for 60 seconds, then exit
+      sockrec        listen to incoming data, print it to STDOUT, continuously
+      sockrec -l     listen and save incoming data to raw datafile(s), continuously
+      sockrec -V     print recorder revision information
+
+OPTIONS:
+  -h        : help information
+  -l        : log raw data to krd file, no STDOUT
+  -v        : verbose information
+  -V        : release version
+  interval  : maximum number of seconds between samples
+END
+    exit 0;
+}
+
+# revision - print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+Socket communication data recorder for TCP
+ICT, Industrial IoT, Weather and Environment
+sockrec: 1.0.1, 2021-01-18 1214
+END
+    exit 0;
+}
+
