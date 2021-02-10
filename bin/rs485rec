@@ -27,7 +27,7 @@ use Time::HiRes qw(time sleep alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Tie::IxHash;
 use List::Util 'first';
-use Benchmark ':hireswallclock';
+#use Benchmark ':hireswallclock';
 #use Data::Dumper;
 
 ###  Process command line args
@@ -149,6 +149,15 @@ while (1) {
 
         if ($proto eq 'ascii-polled') {
 
+            if (defined $client_mrtu) {
+
+                $client_mrtu->disconnect;
+
+            } elsif (defined $client_mascii) {
+
+                $client_mascii->disconnect;
+            }
+
             eval {
 
                 if (! defined $client_apoll) {
@@ -158,11 +167,24 @@ while (1) {
                 exec_apoll($client_apoll, $rawfile, $devname, $devid, 
                            $port, $baudrate, $parity, $stopbits, $databits, 
                            $timeout, $cmd, $crc, $som, $sor, $rsp, $eor, $eom, @values);
+            
+                sleep 0.2;
 
-                sleep 0.1;
             };
 
         } elsif ($proto eq 'modbus-rtu') {
+
+
+            if (defined $client_apoll) {
+                #$client_apoll->purge_all;
+                $client_apoll->close;
+                sleep 0.2;
+
+            } elsif (defined $client_mascii) {
+
+                $client_mascii->disconnect;
+                sleep 0.2;
+            }
 
             eval {
 
@@ -171,9 +193,23 @@ while (1) {
                 }
 
                 exec_modbus($client_mrtu, $rawfile, $devname, $devid, $func, $arange, @values);
+
             };
 
+
         } elsif ($proto eq 'modbus-ascii') {
+
+            if (defined $client_apoll) { 
+                #$client_apoll->purge_all;
+                #undef $client_apoll;
+                $client_apoll->close;
+                sleep 0.2;
+
+            } elsif (defined $client_mrtu) {
+
+                $client_mrtu->disconnect;
+                sleep 0.2;
+            }
 
             eval {
 
@@ -182,7 +218,9 @@ while (1) {
                 }
 
                 exec_modbus($client_mascii, $rawfile, $devname, $devid, $func, $arange, @values);
+
             };
+
         }
 
         if ($@) {
@@ -194,20 +232,6 @@ while (1) {
         }
     }
 
-    if (defined $client_apoll) {
-
-        $client_apoll->purge_all;
-        $client_apoll->close;
-        #undef $client_apoll;
-
-    } elsif (defined $client_mrtu) {
-
-        $client_mrtu->disconnect;
-
-    } elsif (defined $client_mascii) {
-
-        $client_mascii->disconnect;
-    }
  
     ### Check for end
     last if ++$loop == $loop_max;
@@ -1506,7 +1530,7 @@ sub revision {
     print STDERR <<END;
 Serial communication data recorder for RS232, RS422, RS485
 Industrial IoT, Weather and Environment
-rs485rec: 1.4.0, 2019-06-22 1752
+rs485rec: 1.4.1, 2021-02-10 0006
 END
     exit 0;
 }
