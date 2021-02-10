@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  Copyright (c) 2020 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2021 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -45,7 +45,7 @@ kdr_transport_start() {
     local cmd
     kdr_transport_args="start"
     cmd="${command} ${kdr_transport_args}"
-    su -m ${kdr_user} -c "${cmd}" 
+    su -m ${kdr_user} -c "${cmd}"
 }
 
 

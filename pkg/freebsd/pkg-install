@@ -3,6 +3,7 @@
 RC_CONF=/etc/rc.conf
 
 if [ "X$2" == "XPRE-INSTALL" ]; then
+
     if ! /usr/sbin/pw groupshow krmx >/dev/null 2>&1; then
         /usr/sbin/pw groupadd krmx -g 5000
     fi
@@ -14,21 +15,6 @@ if [ "X$2" == "XPRE-INSTALL" ]; then
 fi
 
 if [ "X$2" == "XPOST-INSTALL" ]; then
-
-    # setup crontabs
-    if ! grep krmx /var/cron/allow >/dev/null 2>&1; then
-        echo "krmx" >> /var/cron/allow
-    fi
-
-    if [ ! -f /var/cron/tabs/krmx ]; then
-        echo "59 23 * * *  /bin/sleep 55 && /opt/kronometrix/bin/raw2day -n && /usr/sbin/newsyslog -rf /etc/newsyslog.conf.d/kronometrix" >> /var/cron/tabs/krmx
-        echo "00 00 * * *  /bin/sleep 15 && /opt/kronometrix/bin/raw2day -c" >> /var/cron/tabs/krmx
-    fi
-
-    # newsyslog kronometrix log rotation job
-    if [ ! -f /etc/newsyslog.conf.d/kronometrix ]; then
-        cp /opt/kronometrix/etc/kronometrix.newsyslog /etc/newsyslog.conf.d/kronometrix
-    fi
 
     # restore config
     if [ -f /opt/kronometrix/backup/kronometrix.json ]; then
@@ -59,7 +45,31 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
         fi
     fi
 
+    # start and link the service
+    if [ ! -L /etc/rc.d/kdr ]; then
+        ln -s /opt/kronometrix/etc/rc/kdr /etc/rc.d/kdr
+    fi
+
+    if [ ! -L /etc/rc.d/kdr_transport ]; then
+        ln -s /opt/kronometrix/etc/rc/kdr_transport /etc/rc.d/kdr_transport
+    fi
+
     chown -R krmx:krmx /opt/kronometrix
+
+    # setup crontabs
+    if ! grep krmx /var/cron/allow >/dev/null 2>&1; then
+        echo "krmx" >> /var/cron/allow
+    fi
+
+    if [ ! -f /var/cron/tabs/krmx ]; then
+        echo "59 23 * * *  /bin/sleep 55 && /opt/kronometrix/bin/raw2day -n && /usr/sbin/newsyslog -rf /etc/newsyslog.conf.d/kronometrix" >> /var/cron/tabs/krmx
+        echo "00 00 * * *  /bin/sleep 15 && /opt/kronometrix/bin/raw2day -c" >> /var/cron/tabs/krmx
+    fi
+
+    # newsyslog kronometrix log rotation job
+    if [ ! -f /etc/newsyslog.conf.d/kronometrix ]; then
+        cp /opt/kronometrix/etc/kronometrix.newsyslog /etc/newsyslog.conf.d/kronometrix
+    fi
 
     # install kronometrix service
     grep "^kdr_enable" ${RC_CONF} >/dev/null 2>&1
@@ -92,16 +102,4 @@ if [ "X$2" == "XPOST-INSTALL" ]; then
             exit 1
         fi
     fi
-
-    # start and link the service
-    if [ ! -L /etc/rc.d/kdr ]; then
-        ln -s /opt/kronometrix/etc/rc/kdr /etc/rc.d/kdr
-    fi
-
-    if [ ! -L /etc/rc.d/kdr_transport ]; then
-        ln -s /opt/kronometrix/etc/rc/kdr_transport /etc/rc.d/kdr_transport
-    fi
-
-    /etc/rc.d/kdr onestart >/dev/null
-    /etc/rc.d/kdr_transport onestart >/dev/null
 fi

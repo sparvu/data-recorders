@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  Copyright (c) 2020 Stefan Parvu (www.kronometrix.org).
+#  Copyright (c) 2021 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -46,7 +46,7 @@ kdr_start() {
     local cmd
     kdr_args="start"
     cmd="${command} ${kdr_args}"
-    su -m ${kdr_user} -c "${cmd}" 
+    su -m ${kdr_user} -c "${cmd}"
 }
 
 
@@ -54,7 +54,7 @@ kdr_stop() {
     local cmd
     kdr_args="stop"
     cmd="${command} ${kdr_args}"
-    su -m ${kdr_user} -c "${cmd}" 
+    su -m ${kdr_user} -c "${cmd}"
 }
 
 
@@ -62,8 +62,7 @@ kdr_status() {
     local cmd
     kdr_args="status"
     cmd="${command} ${kdr_args}"
-    su -m ${kdr_user} -c "${cmd}" 
+    su -m ${kdr_user} -c "${cmd}"
 }
-
 
 run_rc_command "$1"
