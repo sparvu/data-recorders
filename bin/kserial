@@ -1,0 +1,413 @@
+#!/opt/kronometrix/perl/bin/perl
+
+#  Copyright (c) 2021 Stefan Parvu (www.kronometrix.org).
+#  Initial Author: Stefan Parvu
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use strict;
+use warnings;
+use JSON;
+use Getopt::Std;
+use Time::HiRes qw(time sleep alarm setitimer ITIMER_REAL);
+use POSIX qw(pause);
+use Tie::IxHash;
+use List::Util 'first';
+use Device::SerialPort;
+#use Benchmark ':hireswallclock';
+#use Data::Dumper;
+
+###  Process command line args
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('hvV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# verbose flag
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+# sensor command
+my $cmd;
+
+# process [interval [count]],
+if ( defined $ARGV[0] ) {
+    $cmd = "$ARGV[0]";
+    usage() if length($cmd) == 0;
+}
+else {
+    usage(); 
+}
+
+
+###  Variables
+$main::opt_h  = 0;                  # help option
+$main::opt_V  = 0;                  # revision option
+
+my $port = "/dev/cuaU0";
+my $baudrate = 9600;
+my $parity = "even";
+my $stopbits = 1;
+my $databits = 7;
+my $timeout = 10;
+#$cmd = "2XWUCRLF";
+my $unit = 2;
+my $crc = "yes";
+my $som = "2R0";
+my $sor = "";
+my $rsp = ",";
+my $eor = "CRLF";
+my $eom = "CRLF";
+my $devname = "";
+my $devid = "";
+my $tp        = 0;                  # time precision
+my $char_time = 0;                  # serial char timeout
+my $client_apoll;
+
+local $| = 1;
+
+### MAIN BODY #
+
+
+eval {
+
+    if (! defined $client_apoll) {
+        $client_apoll = init_apoll($port, $baudrate, $parity, $stopbits, $databits);
+    }
+
+    exec_apoll($client_apoll, $devname, $devid, $port, $baudrate, $parity, $stopbits, $databits, 
+               $timeout, $cmd, $crc, $som, $sor, $rsp, $eor, $eom);
+
+    sleep 0.2;
+
+};
+
+
+# SUBROUTINES
+
+
+# init ascii-polled devices
+#
+sub init_apoll {
+
+    my ($port, $baudrate, $parity, $stopbits, $databits) = @_;
+    my $c;
+
+    use Device::SerialPort;
+
+    if (defined $databits) {
+
+        $c = new Device::SerialPort($port);
+
+        $c->databits($databits);
+        $c->baudrate($baudrate);
+        $c->parity($parity);
+        $c->stopbits($stopbits);
+        $c->handshake('none');
+        #$c->stty_onlcr(1);
+
+        $char_time = 
+            1000*($c->databits+$c->stopbits+1)/$c->baudrate;
+
+        $c->read_char_time($char_time);
+        if ($c->baudrate < 19200) { 
+            $c->read_const_time(3.5 * $char_time);
+        } else {
+            $c->read_const_time(1.75);
+        }
+
+        $c->write_settings;
+
+    } else {
+        $c = new Device::SerialPort($port);
+
+        $c->baudrate($baudrate);
+        $c->parity($parity);
+        $c->stopbits($stopbits);
+        $c->handshake('none');
+        #$c->stty_onlcr(1);
+
+        $char_time =
+            1000*($c->databits+$c->stopbits+1)/$c->baudrate;
+
+        $c->read_char_time($char_time);
+        if ($c->baudrate < 19200) {
+            $c->read_const_time(3.5 * $char_time);
+        } else {
+            $c->read_const_time(1.75);
+        }
+
+        $c->write_settings;
+    }
+
+    # return client
+    return $c;
+}
+
+
+sub getserial {
+
+    my ($client, $command, $endrecord, $tout) = @_;
+
+    my $rec;
+    #my $c    = 0;
+    my $data = "";
+
+    $client->purge_all;
+    # send command to device
+    $client->write($command);
+
+    my $buffer  = '';
+    my $bytes   = 0;
+    my $timeout = 1000 * $tout; # Turn to milliseconds
+    do {
+        my $read;
+        ($bytes, $read) = $client->read(255);
+        $data  .= $read;
+        $timeout -= $client->read_const_time + 255 * $char_time;
+    } until ($timeout <= 0 || ($bytes == 0 && length($data) > 0) || ($data =~ /$endrecord/));
+
+    if ($timeout <= 0) {
+        print "Error processing command:$command, read timeout\n";
+    }
+
+    $data =~ s/[\n\r]//g;
+
+    return $data;
+}
+
+
+# fetches values using ascii polled
+#
+sub getdata_apoll {
+
+    my ( $client, $model, $timeout, $cmd, $crc,
+         $som, $sor, $rsp, $eor, $eom ) = @_;
+
+    my $record    = "";
+    my $rvalue    = 'NA';
+    my $endrec    = '\n';
+    my $msg_cksum = 'NA';
+
+    my ($dev_model, $dev_id) = split( /_/, $model );
+
+    # analyse end of record for CRLF
+       if ($eor eq 'CRLF') { $endrec = '\r\n'; }
+    elsif ( $eor eq 'CR' ) { $endrec = '\r';   }
+    elsif ( $eor eq 'LF' ) { $endrec = '\n';   }
+
+    # Analyse command for CRLF, CR, LF
+    if ( $cmd =~ /CRLF/ ) {
+        my $ecmd = substr($cmd, -4);
+        if ( $ecmd eq 'CRLF' ) {
+            my $ncmd = substr($cmd, 0, -4);
+            $cmd = $ncmd . "\r\n";
+        } elsif ( $ecmd eq 'CR' ) {
+            my $ncmd = substr($cmd, 0, -2);
+            $cmd = $ncmd . "\r";
+        } elsif ( $ecmd eq 'LF' ) {
+            my $ncmd = substr($cmd, 0, -2);
+            $cmd = $ncmd . "\n";
+        }
+    }
+
+    $record = getserial ($client, $cmd, $endrec, $timeout);
+
+    if ($verbose) {
+        print " raw data-> $record\n";
+    }
+
+    $rvalue = $record;
+
+    # return all values as single record
+    return $rvalue;
+}
+
+
+# format ascii-polled data
+#
+sub fmtdata_apoll {
+
+    my ( $dname, $dtype, $idx, @buf ) = @_;
+    my $rvalue ;
+    
+    if ( $dtype eq 'string' ) {
+
+        # device type: metric=value (WXT520)
+        if ( grep( /=/, @buf ) ) {
+
+            # match metrix name
+            my $match = first { /$dname/i } @buf;
+
+            # fetch the value
+            $rvalue = $match =~ s/^.*=//gr;
+
+            # handle unit value
+            my $tr = $rvalue;
+            my $lchar = chop($tr);
+            if ($lchar ne '#') {
+
+                $rvalue = substr($rvalue, 0, -1);
+               
+            } else { 
+
+                $rvalue = 'NA';
+            }
+
+        # device type: value (HMP, QML201)
+        } else {
+
+            # we will use rbuf index
+            $rvalue = $buf[$idx];
+        }
+
+    } elsif ( $dtype eq 'unixtime' ) {
+
+        # we will use rbuf index
+        $rvalue = $buf[$idx];
+
+    } else {
+
+        $rvalue = 'NA';
+    }
+
+    return $rvalue;
+}
+
+
+
+# execute ASCII POLLED communication
+#
+sub exec_apoll {
+
+    my ( $dclient, $dname, $did, 
+         $dport, $dbaudrate, $dparity, $dstopbits, $ddatabits,
+         $dtimeout, $dcmd, $dcrc, $dsom, $dsor, $drsp, $deor, $deom) = @_;
+
+    tie my %metrix, "Tie::IxHash";
+
+    my $val;
+    my $fval;
+
+    if ($verbose) {
+        print "\nData message\n";
+        print " port: $dport\n";
+        print " baudrate:$dbaudrate databits:$ddatabits parity:$dparity stopbits:$dstopbits\n";
+        print " dev:'$dname' id:'$did'\n cmd:'$dcmd' checksum:'$dcrc'\n";
+        print " som:'$dsom' sor:'$dsor' sep:'$drsp' eor:'$deor' eom:'$deom'\n";
+    }
+
+
+    my $rval = getdata_apoll($dclient, $dname, $dtimeout, $dcmd,
+                             $dcrc, $dsom, $dsor, $drsp, 
+                             $deor, $deom );
+
+    print "$rval\n";
+
+}
+
+
+
+# Changes from unsigned int to signed int
+# used to convert different MODBUS values to signed int
+#
+sub uint16_int16 {
+  my $v = shift;
+  return ($v & 0x8000) ? -((~$v & 0xffff) + 1) : $v;
+}
+
+
+# Vaisala WXT520 transmitter
+# Message Check Verification
+#
+sub wxt520_msgck {
+  
+    my $data = "@_";
+    my $rdata = 0;
+
+    my $m = substr($data, -3);
+    my $t = substr($data, 0, -3);
+    my $n = wxt520_crc16($t);
+
+    if ( $m eq $n ) {
+    
+        $rdata = 1;
+    
+    } else {
+ 
+        $rdata = 0;
+    }       
+
+    return $rdata;
+}
+
+
+# Vaisala WXT520 transmitter
+# CRC16
+#
+sub wxt520_crc16 {
+    my ($string) = @_;
+
+    my $crc = 0;
+    for my $c (split //, $string) {
+        $crc = $crc ^ ord($c);
+        for(my $i=0; $i < 8; $i++) {
+            if($crc & 1) {
+                $crc = $crc >> 1;
+                $crc = $crc ^ hex '0xA001';
+            } else {
+                $crc = $crc >> 1;
+            }
+        }
+    }
+
+    my $c1 = hex '0x40' | ($crc >> 12);
+    my $c2 = hex '0x40' | (($crc >> 6) & hex '0x3F');
+    my $c3 = hex '0x40' | ($crc & hex '0x3f');
+    my $result = chr($c1) . chr($c2) . chr($c3);
+
+    return $result;
+}
+
+
+# usage - print usage and exit
+#
+sub usage {
+    print STDERR <<END;
+USAGE: kserial [-hvV] command
+ e.g. kserial 2XWUCRLF     will send '2XWUCRLF' command to sensor, via serial
+      kserial 2ROCRLF      will send '2ROCRLF' command to sensor, via serial
+      kserial -v 2XWUCRLF  run in verbose mode
+      kserial -V           print revision information
+
+OPTIONS:
+  -h        : help information
+  -v        : verbose information
+  -V        : release version
+END
+    exit 0;
+}
+
+# revision - print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+Kronometrix Serial Command Line Utility
+Industrial IoT, Weather and Environment
+kserial: 1.0.1 2021-02-11 1650
+END
+    exit 0;
+}
