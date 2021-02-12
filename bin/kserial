@@ -405,9 +405,9 @@ END
 #
 sub revision {
     print STDERR <<END;
-Kronometrix Serial Command Line Utility
+Kronometrix Serial Line Command Utility
 Industrial IoT, Weather and Environment
-kserial: 1.0.1 2021-02-11 1650
+kserial: 1.0.2 2021-02-12 1426
 END
     exit 0;
 }
