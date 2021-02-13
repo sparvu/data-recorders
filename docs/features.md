@@ -23,6 +23,7 @@
 | Raw data | **yes** | **yes** | no | **yes** | no | Datadog aggregates raw data every 10 seconds |  
 | Low latency | **yes** | | | | | Kronometrix recorders have a low memory and CPU footprint, designed  to monitor individual system resources, offered as a open-source software based on Perl 5 for easy customisatio |
 | Observability and Troubleshooting | **yes** | | | | | Designed to be used interactive and continuous mode |
+| Serial Command Communication | **yes** | | | | | Manage & control serial attached sensors and devices |
 | Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity management |
 | Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
@@ -37,6 +38,6 @@
 | Epidemiology | coming soon | | | | | Kronometrix roadmap 2021 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | | |
-| Based on | Perl | C/Perl/Shell | Python | C | Java | |
+| Based on | Perl5 | C/Perl/Shell | Python | C | Java | |
 
 Go back [main page](https://gitlab.com/kronometrix/recording/)
