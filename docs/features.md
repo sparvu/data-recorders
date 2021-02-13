@@ -33,7 +33,7 @@
 | X.509 Security Certificates | **yes** | | | | | |
 | RS232/485 | **yes** | | | | | Serial RS232/RS485 support |
 | MODBUS | **yes** | | | | | MODBUS RTU, ASCII, TCP support |
-| IoT Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2021 |
+| Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2021 |
 | BACnet | coming soon | | | | | Kronometrix roadmap 2021 |
 | Epidemiology | coming soon | | | | | Kronometrix roadmap 2021 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
