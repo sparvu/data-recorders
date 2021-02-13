@@ -10,7 +10,14 @@ Defect Management System
 
 Releases
 
-  1.6.6 January 2021 Release
+  1.6.8 February 2021 Release
+    Spreadsheet support for Excel, Libre/OpenOffice data files
+    New Serial Communication Management Utility - kserial
+    New Epidemiological data recorder - epidmrec
+    libcurl 7.75.0 update
+    CPAN Feb 2021 update
+
+  1.6.6 February 2021 Release
     Data Fabric rebranding
     OAuth1,2 support
     FreeBSD pkg installation improvements
@@ -19,6 +26,7 @@ Releases
     Libcurl 7.74.0 update
     OpenSSL 1.1.1i update
     CPAN Jan 2021 update
+    Perl 5.32.1 update
 
   1.6.1 October 2020 Release
     changelog fixes
