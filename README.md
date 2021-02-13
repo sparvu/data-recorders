@@ -74,9 +74,9 @@ A simple and efficient set of data recorders and transport utilities for ICT, we
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * wsrec - General weather station recorder RS-232/USB
 
-### Preventive Healthcare and Epidemiology
+### Epidemiology and Preventive Healthcare  
 
- * epirec - Epidemiology data recorder
+ * epidmrec - Epidemiology data recorder
 
 ## Commercial products
 
