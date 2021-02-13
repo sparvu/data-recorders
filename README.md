@@ -9,8 +9,7 @@
 
 ## Overview
 
-A simple and efficient set of data recorders and transport utilities for ICT, environmental monitoring, meteorology and industrial IoT, designed to record top essential 
-performance metrics, save raw data and send it for further analysis.
+A simple and efficient set of data recorders and transport utilities for ICT, weather and environment, industrial IoT, preventive healthcare, designed to record top essential performance metrics, save raw data and send it for further analysis.
 
 * [Design](docs/design.md)
 * [Main Features](docs/features.md)
@@ -74,6 +73,10 @@ performance metrics, save raw data and send it for further analysis.
  * blrec - Bluetooth Low Energy data recorder
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * wsrec - General weather station recorder RS-232/USB
+
+### Preventive Healthcare and Epidemiology
+
+ * medirec - Epidemiology data recorder
 
 ## Commercial products
 
