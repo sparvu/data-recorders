@@ -26,14 +26,15 @@
 | Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity management |
 | Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
-| Network equipment (SNMP) | coming soon | **yes** | **yes** | **yes** | **yes** | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
-| Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q3 2020 J2EE, DB monitoring |
+| Network equipment (SNMP) | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
+| Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q2 2021 J2EE, DB monitoring |
 | Internet Entreprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | X.509 Security Certificates | **yes** | | | | | |
 | RS232/485 | **yes** | | | | | Serial RS232/RS485 support |
 | MODBUS | **yes** | | | | | MODBUS RTU, ASCII, TCP support |
-| IoT Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2020 |
-| BACnet | coming soon | | | | | Kronometrix roadmap 2020 |
+| IoT Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2021 |
+| BACnet | coming soon | | | | | Kronometrix roadmap 2021 |
+| Epidemiology | coming soon | | | | | Kronometrix roadmap 2021 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | | |
 | Based on | Perl | C/Perl/Shell | Python | C | Java | |
