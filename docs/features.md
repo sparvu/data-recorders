@@ -28,7 +28,7 @@
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | Network equipment (SNMP) | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q2 2021 J2EE, DB monitoring |
-| Internet Entreprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
+| Internet Enterprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | X.509 Security Certificates | **yes** | | | | | |
 | RS232/485 | **yes** | | | | | Serial RS232/RS485 support |
 | MODBUS | **yes** | | | | | MODBUS RTU, ASCII, TCP support |
