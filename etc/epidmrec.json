@@ -1,0 +1,86 @@
+{
+  "providers" : [
+    {
+      "name" : "a2test",
+      "description" : "apache2 http server",
+      "proxy" : {
+        "hostname" : "",
+        "port" : 80,
+        "username" : "",
+        "password" : ""
+      },
+      "instance" : [
+        {
+          "id" : 1,
+          "name" : "apache",
+          "host" : "localhost",
+          "port" : 443,
+          "message" : [
+            {
+              "name": "a2stat",
+              "scheme" : "https",
+              "method" : "GET",
+              "path" : "/server-status",
+              "trace" : "on",
+              "description": "apache2 statistics",
+              "data": [ ]
+            }
+          ]
+        },
+        {
+          "id" : 2,
+          "name" : "apache",
+          "host" : "localhost",
+          "port" : 80,
+          "message" : [
+            {
+              "name": "a2stat",
+              "scheme" : "https",
+              "method" : "GET",
+              "path" : "/server-status",
+              "trace" : "off",
+              "description": "apache2 statistics",
+              "data": [ ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "sales",
+      "description" : "nginx http server",
+      "proxy" : {
+        "hostname" : "",
+        "port" : 7000,
+        "username" : "",
+        "password" : ""
+      },
+      "instance" : [
+        {
+          "id" : "1",
+          "name" : "nginx",
+          "host" : "localhost",
+          "port" : 8888,
+          "message" : [
+            {
+              "name": "ngxstat",
+              "scheme" : "http",
+              "method" : "GET",
+              "path" : "/",
+              "description": "nginx statistics",
+              "data": [ ]
+            },
+            {
+              "name": "ngxinv",
+              "scheme" : "http",
+              "method" : "GET",
+              "path" : "/",
+              "description": "nginx inventory",
+              "data": [ ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
