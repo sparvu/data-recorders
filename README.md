@@ -18,7 +18,7 @@ A simple and efficient set of data recorders and transport utilities for ICT, we
 
 ## Requirements
 
-* CPU: x64, ARMv8
+* CPU: x64, ARMv8, Apple M1
 * Memory: min 32 MB RAM
 * Storage: 128 MB, 750KB per day / data source
 * Protocols: SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), BLE, BACnet, HTTP(S)
