@@ -76,7 +76,7 @@ A simple and efficient set of data recorders and transport utilities for ICT, we
 
 ### Preventive Healthcare and Epidemiology
 
- * medirec - Epidemiology data recorder
+ * epirec - Epidemiology data recorder
 
 ## Commercial products
 
