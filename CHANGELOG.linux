@@ -15,6 +15,12 @@ Defect Management System
 
 Releases
 
+  1.6.8 February 2021 Release
+    Serial CLI utility support
+    Spreadsheet Excel, OpenOffice, LibreOffice support
+    Libcurl 7.75.0 update
+    CPAN Feb 2021 update
+
   1.6.6 February 2021 Release
     Data Fabric rebranding
     OAuth1,2 support
