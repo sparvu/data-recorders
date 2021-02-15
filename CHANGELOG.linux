@@ -16,9 +16,9 @@ Defect Management System
 Releases
 
   1.6.8 February 2021 Release
-    Spreadsheet support for Excel, OpenOffice, LibreOffice data files
-    New Serial Communication Management Utility - kserial
-    New Epidemiological & Preventive Healthcare data recorder - epidmrec
+    Spreadsheet data files support
+    New Serial Communication Management Utility
+    New Epidemiological data recorder
     libcurl 7.75.0 update
     CPAN Feb 2021 update
 
