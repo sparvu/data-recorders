@@ -1,21 +1,15 @@
-KDR BUILD.ME 
-============
+***BUILD.ME***
 
-How to build Kronometrix Data Recording Module
+How to build Kronometrix Data Recording Module on FreeBSD, Linux (Debian, Ubuntu, CentOS, RHEL) or MacOS. 
 
 
 Step 1. Builder utilities
 
-KDR, Kronometrix Data Recording, requires builder and its
-utility friends to build all data recorders, the transporter
-and the documentation.
+KDR, Kronometrix Data Recording, requires ***builder*** and its utility friends to build all data recorders, the transporter and the documentation. The module, does not integrate within the operating system utilities, standard installation paths (/usr/local) and does not require 3rd parties operating systems libraries to be installed.   
 
-The simplest way to download builder is to clone the builder
-repository: https://gitlab.com/kronometrix/builder and bootstrap
-it's installation:
+The simplest way to download builder is to clone the builderrepository: https://gitlab.com/kronometrix/builder and bootstrap it's installation:
 
-  * Create a Kronometrix user and group account
-    name=krmx, uid=5000, gid=5000
+  * Create a Kronometrix user and group account, example: name=krmx, uid=5000, gid=5000
 
   * As superuser:
 
@@ -34,13 +28,10 @@ it's installation:
 
 Step 2: The workspace
 
-Change user to krmx and create your workspace, a place where you can clone
-or keep your repository data. Kronometrix Data Recording uses git. Under this
-place you will maintain config specs what builder will use to build and install 
-the software. 
+Change user to krmx and create your workspace, a place where you can clone or keep your repository data. Kronometrix Data Recording uses git. Under this
+place you will maintain config specs what builder will use to build and install the software. 
 
-For example create here the config spec for building, the latest version 
-KDR 1.3.20 release:
+For example create here the config spec for building, the latest version, KDR 1.6.0 release:
 
    % mkdir -p workspace/kronometrix
    % git clone https://gitlab.com/kronometrix/recording
@@ -50,7 +41,7 @@ KDR 1.3.20 release:
 Step 3: Building process
 
    % setenv WORKSPACE_PREFIX /home/krmx/workspace
-   % /opt/build/bin/builder recording 1.3.20
+   % /opt/build/bin/builder recording 1.6.0
 
 A complete building phase will look like this:
 

@@ -7,24 +7,24 @@
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
 
-## Overview
+# Overview
 
-A simple and efficient set of data recorders and transport utilities for ICT, weather and environment, industrial IoT, preventive healthcare, designed to record top essential performance metrics, save raw data and send it for further analysis.
+A simple and efficient set of data recorders and transport utilities for multi-industry: ICT, weather and environment, industrial IoT and preventive healthcare, designed to record top essential performance metrics, save raw data and send it for further analysis.
 
 * [Design](docs/design.md)
 * [Main Features](docs/features.md)
 * [Getting started](docs/start.md)
 * [Contributing and support](docs/contributing.md)
 
-## Requirements
+# Requirements
 
-* CPU: x64, ARMv8, Apple M1
-* Memory: min 32 MB RAM
+* Processor: x64, ARMv8, Apple M1
+* Memory: 32 MB RAM
 * Storage: 128 MB, 750KB per day / data source
 * Protocols: SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), BLE, BACnet, HTTP(S)
 * SBC: Raspberry PI 3B, 3B+
 
-## Features
+# Features
 
 * Support for raw data
 * Industrial IoT readiness
@@ -35,9 +35,9 @@ A simple and efficient set of data recorders and transport utilities for ICT, we
 * Full control with no complicated licenses for further developments
 * [See more](docs/features.md)
 
-## Supported Industries
+# Supported Industries
 
-### Information and Communications Technology
+## Information and Communications Technology
 
  * sysrec - Overall system performance data recorder
  * cpurec - Per CPU statistics data recorder
@@ -60,13 +60,13 @@ A simple and efficient set of data recorders and transport utilities for ICT, we
  * webrec - web application performance,availability data recorder
  * wprec - Wordpress security, performance and availability data recorder
 
-### Public Cloud Providers
+## Public Cloud Providers
 
  * awsrec - Amazon Web Services data recorder
  * azurec - Microsoft Azure data recorder
  * gcprec - Google Computing Platform data recorder
 
-### Industrial IoT, Weather and Environment
+## Industrial IoT, Weather and Environment
 
  * axisrec - AXIS security and video surveillance data recorder
  * bacrec - Building management BACnet data recorder
@@ -74,15 +74,15 @@ A simple and efficient set of data recorders and transport utilities for ICT, we
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * wsrec - General weather station recorder RS-232/USB
 
-### Epidemiology and Preventive Healthcare  
+## Epidemiology and Preventive Healthcare  
 
  * epidmrec - Epidemiology data recorder
 
-## Commercial products
+# Commercial products
 
 [Kronometrix K<sub>1</sub> Industrial IoT Gateway](https://www.kronometrix.com/k1)
 
-## Resources
+# Resources
 
 [www.kronometrix.com][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3]
 
