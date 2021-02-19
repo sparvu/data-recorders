@@ -1,6 +1,6 @@
 <img src="/docs/img/k-logo.png" align="left" height="35" width="275" />
 <img src="/docs/img/perl_logo.png" align="right" height="100" width="100" />
-<br/><br/>
+<br/>
 <br/>
 
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.6.6&color=success)](docs/start.md)
