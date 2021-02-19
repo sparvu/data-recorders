@@ -9,7 +9,7 @@
 
 # Overview
 
-A simple and efficient set of data recorders and transport utilities for ICT, weather and environment, industrial IoT, preventive healthcare, designed to record top essential performance metrics, save raw data and send it for further analysis.
+A simple and efficient set of data recorders and transport utilities for multi-industry: ICT, weather and environment, industrial IoT and preventive healthcare, designed to record top essential performance metrics, save raw data and send it for further analysis.
 
 * [Design](docs/design.md)
 * [Main Features](docs/features.md)
@@ -18,8 +18,8 @@ A simple and efficient set of data recorders and transport utilities for ICT, we
 
 # Requirements
 
-* CPU: x64, ARMv8, Apple M1
-* Memory: min 32 MB RAM
+* Processor: x64, ARMv8, Apple M1
+* Memory: 32 MB RAM
 * Storage: 128 MB, 750KB per day / data source
 * Protocols: SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), BLE, BACnet, HTTP(S)
 * SBC: Raspberry PI 3B, 3B+
