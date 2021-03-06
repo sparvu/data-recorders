@@ -38,6 +38,6 @@
 | Epidemiology | coming soon | | | | | Kronometrix roadmap 2021 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | | |
-| Based on | Perl5 | C/Perl/Shell | Python | C | Java | |
+| Based on | Perl5 | C/Perl/Shell | Python | C | C/Java | |
 
 Go back [main page](https://gitlab.com/kronometrix/recording/)
