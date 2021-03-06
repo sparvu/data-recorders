@@ -19,7 +19,7 @@
 
 || Kronometrix | Nagios Xi | Datadog | Paessler | Dynatrace | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
-| Built-in recorders | **yes** |  | **yes** | | **yes** | Own or 3rd party recorders. Datadog uses StatsD. Dynatrace uses Java Compuware agent for Linux, Windows, AIX |
+| Built-in recorders | **yes** |  | **yes** | | **yes** | Own or 3rd party recorders. Datadog uses StatsD. Dynatrace uses native binaries and Java Compuware agent for Linux, Windows, AIX |
 | Raw data | **yes** | **yes** | no | **yes** | no | Datadog aggregates raw data every 10 seconds |  
 | Low latency | **yes** | | | | | Kronometrix recorders have a low memory and CPU footprint, designed  to monitor individual system resources, offered as a open-source software based on Perl 5 for easy customisatio |
 | Observability and Troubleshooting | **yes** | | | | | Designed to be used interactive and continuous mode |
