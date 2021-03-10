@@ -15,17 +15,21 @@ Defect Management System
 
 Releases
 
+ 1.8.0 March 2021 Release
+    OpenSSL 1.1.1j update
+
   1.6.8 February 2021 Release
     Spreadsheet data files support
     New Serial Communication Management Utility
     New Epidemiological data recorder
+    Crypt-OpenSSL-X509-1.902 update
     libcurl 7.75.0 update
     CPAN Feb 2021 update
 
   1.6.6 February 2021 Release
     Data Fabric rebranding
     OAuth1,2 support
-    Net::Curl 4.48 update
+    Net::Curl 0.48 update
     IO::Socket::SSL 2.068 update
     Libcurl 7.74.0 update
     OpenSSL 1.1.1i update
