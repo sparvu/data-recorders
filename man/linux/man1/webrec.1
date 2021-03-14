@@ -1,0 +1,277 @@
+.TH webrec 1  "$Date: 2021-03-14 #$" "USER COMMANDS"
+.SH NAME
+webrec \- Web Data Recorder. Uses perl
+.SH SYNOPSIS
+.B webrec
+[-dlhvV] [-s secs] [-a [-g concurrent]] | [interval [count]]
+
+.SH DESCRIPTION
+webrec reports TTFB (time to first byte) for one or many HTTP workloads,
+applications, as an indication of the responsiveness. TTFB measures the
+duration from the virtual user making an HTTP request to the first byte
+of the page being received by the browser. This time is made up of the
+socket connection time, the time taken to send the HTTP request, and the
+time taken to get the first byte of the page.
+
+.PP
+The recorder uses Net::Curl to fetch all web page response time statistics. 
+The raw data is already prepared and formatted for the analysis process. 
+The recorder runs continuously.
+
+
+.SH OS
+Linux 2.6+
+
+.SH OPTIONS
+.SS
+\-a
+perform requests asynchronously
+
+.SS
+\-g
+the number of concurrent requests. Default is 25.
+
+.SS
+\-s
+sleep delay between transactions, default 0.1
+
+.SS
+\-l 
+log raw data to krd file, no STDOUT
+
+.SS
+\-h
+print help information
+
+.SS
+\-d
+debug mode
+
+.SS
+\-V
+print revision information
+
+.SS
+interval
+interval in seconds between each sample
+
+.SS
+count
+number of samples
+
+.PP
+.SH EXAMPLES
+
+.SS webrec 5
+executes every 5 seconds 
+
+.SS webrec 5 10
+executes 10 times sampled every 5 seconds
+
+.SS webrec .5
+executes every 0.5 seconds
+
+.PP
+.SH FIELDS
+webrec outputs utilization and specific metrics 
+character \: separated.
+
+.TP
+#1 timestamp
+the time in seconds since Epoch. If interval is
+less than a second the time will be expressed in
+milliseconds since Epoch.
+
+.TP
+#2 cpupct
+cpu utilization, across all cpus, percentage, gauge
+
+.TP
+#03 sumpct
+sum of all cpus utilization, percentage, gauge
+
+.TP
+#04 headpct
+headroom cpu available, all cpus, percentage, gauge
+
+.TP
+#05 userpct
+cpu utilization user space in percent, gauge
+
+.TP
+#06 nicepct
+cpu utilization user space with nice priority, gauge
+
+.TP
+#07 sysct
+cpu utilization system space, gauge
+
+.TP
+#08 idlepct
+cpu utilization idle state, gauge
+
+.TP
+#09 iowaitcpt
+cpu percentage in idle state because an I/O operation is waiting 
+to complete, gauge
+
+.TP
+#10 irqpct
+cpu percentage servicing interrupts, gauge
+
+.TP
+#11 softirqpct
+cpu percentage servicing softirqs, gauge
+
+.TP
+#12 stealpct
+cpu percentage of time spent in other operating systems when running in a virtualized environment, gauge
+
+.TP
+#13 runqsz
+run queue length, number of tasks waiting for run time
+
+.TP
+#14 plistsz
+number of tasks in the task list
+
+.TP
+#15 memusedper
+Total size of used memory in percent
+
+.TP
+#16 memused
+Total size of used memory in kilobytes
+
+.TP
+#17 memfree
+Total size of free memory in kilobytes
+
+.TP
+#18 memtotal
+Total size of memory in kilobytes
+
+.TP
+#19 buffers
+Total size of buffers used from memory in kilobytes
+
+.TP
+#20 cached
+Total size of cached memory in kilobytes
+
+.TP
+#21 realfree
+Total size of memory is real free, (memfree + buffers + cached)
+
+.TP
+#22 realfreeper
+Total size of memory is real free in percent of total memory
+ 
+.TP
+#23 swapusedper
+Total size of used swap space in percent
+
+.TP
+#24 swapused
+Total size of swap space is used is kilobytes
+
+.TP
+#25 swapfree
+Total size of swap space is free in kilobytes
+
+.TP
+#26 swaptotal
+Total size of swap space in kilobytes
+
+.TP
+#27 swapcached
+Memory that once was swapped out, is swapped back in but still also is in the swapfile
+
+.TP
+#28 readReq
+Total disk read requests across all disks, counter
+
+.TP
+#29 writeReq
+Total disk write requests, counter
+
+.TP
+#30 totReq
+Total disk read+write requests, counter
+
+.TP
+#31 readByt
+Total read bytes / sec across all disks, in KB
+
+.TP
+#32 writeByt
+Total write bytes / sec across all disks, in KB
+
+.TP
+#33 totByt
+Total read+write bytes / sec across all disks, in KB
+
+.TP
+#34 rxByt
+Total network received bytes /sec across all NICs, in KB
+
+.TP
+#35 txByt
+Total network transmitted bytes /sec across all NICs, in KB
+
+.TP
+#36 ntByt
+Total network received + transmitted bytes /sec across all NICs, in KB
+
+.TP
+#37 rxerr 
+Number of errors that happend while received packets/second
+
+.TP
+#38 txerr 
+Number of errors that happend while transmitting packets/second
+
+.TP
+#39 rxdrp
+Number of rx packets that were dropped per second
+
+.TP
+#40 txdrp
+Number of tx packets that were dropped per second
+
+.TP
+#41 avg_1
+LA of the last minute
+
+.TP
+#42 avg_5
+LA of the last 5 minutes
+
+.TP
+#43 avg_15
+LA of the last 15 minutes
+
+.PP
+.SH NOTES
+This recorder supports interval values lower than second ! 
+Running the recorder with values lower than second for long
+periods of time will add an overhead in terms of cpu utilization.
+The lower the interval value the higher the cpu utilization. We do
+not recommend using values lower than second for long historical
+recordings !
+
+.PP
+webrec records up to 43 metrics under Linux OS x64 and x86 platforms.
+
+.PP
+.SH DOCUMENTATION
+See Kronometrix documentation for more details.
+
+.SH EXIT
+webrec will run continuously until is stopped by the master script 
+or manually stopped.
+ 
+.SH AUTHOR
+Stefan Parvu
+.SH SEE ALSO
+perl(1)
