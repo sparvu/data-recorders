@@ -1,4 +1,4 @@
-#! /opt/kronometrix/perl/bin/perl
+#! /usr/bin/env perl
 
 use lib './lib';
 use Kronometrix::Webrec::Queue;
@@ -10,8 +10,8 @@ use strict;
 use warnings;
 use feature ':5.20';
 
-our $VERSION = '1.2.7';
-our $LASTREV = '2017-09-20';
+our $VERSION = '1.2.8';
+our $LASTREV = '2021-03-14';
 
 ### Configuration variables
 
@@ -84,6 +84,10 @@ else {
     $loop_max = 1;
 }
 
+my $failsafe = 1;
+$failsafe = $loop_max 
+    if $failsafe > 0 && $failsafe > $loop_max;
+
 ### Parse config file
 my $queue = Kronometrix::Webrec::Queue->new(
     config_file             => $cfile,
@@ -94,6 +98,7 @@ my $queue = Kronometrix::Webrec::Queue->new(
     nap_time                => $nap_time,
     verbose                 => $verbose,
     debug                   => $debug,
+    failsafe                => $failsafe,
 );
 
 $queue->write_verbose("INFO: Interval: $interval - Iterations: $loop_max - "
@@ -107,13 +112,19 @@ local $SIG{ALRM} = sub {};
 local $| = 1;
 setitimer(ITIMER_REAL, $interval, $interval);
 
-while ($loop_max) {
-    $queue->process;
+my $fs_ok = 1;
+while ($loop_max && $fs_ok) {
+    $fs_ok = $queue->process;
     pause;
     $loop_max--;
     $queue->write_verbose("INFO: Remaining iterations: $loop_max");
 }
-$queue->write_log("INFO: Iterations finished");
+
+$queue->write_log("INFO: Iterations finished")
+    if not $loop_max;
+
+$queue->write_log("ERROR: Some requests failed during first cycle")
+    if not $fs_ok;
 
 ### Auxiliary subroutines
 
@@ -174,3 +185,4 @@ END
 sub VERSION_MESSAGE {
     print STDERR "$recname: $VERSION, $LASTREV\n";
 }
+
