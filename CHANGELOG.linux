@@ -16,6 +16,8 @@ Defect Management System
 Releases
 
  1.8.0 March 2021 Release
+    Net::SSLeay 1.90 update
+    IO::Socket::SSL 2.070 update
     OpenSSL 1.1.1j update
 
   1.6.8 February 2021 Release
