@@ -16,7 +16,7 @@ no warnings 'experimental::postderef';
 
 use parent 'Kronometrix';
 
-our $VERSION = 0.10;
+our $VERSION = 0.12;
 
 sub new {
     my ($class, @args) = @_;
@@ -33,6 +33,8 @@ sub new {
         index                   => 0,
         num_reqs                => 0,
         cert_location           => '/etc/ssl/certs/ca-certificates.crt',
+        failsafe                => 1,
+        failed                  => {},
         @args
     );
 
@@ -72,6 +74,22 @@ sub build_requests {
 
     # For each workload...
     foreach my $f (@temp) {
+        # Minimal input verification
+        my @required = qw(keepalive name description zone requests delay proxy);
+        my @possible = qw();
+        foreach my $field (@required) {
+            croak "Field $field is required for workloads"
+                unless exists $f->{$field};
+        }
+
+        my %is_expected;
+        $is_expected{$_}++ foreach (@required, @possible);
+        foreach my $field (keys $f->%*) {
+            croak "Field $field was found in workload but it was not expected"
+                unless exists $is_expected{$field};
+        }
+        
+
         # Get its parameters
         my ($ka, $wname, $desc, $delay, $proxy) = map { $f->{$_} }
             qw(keepalive name description delay proxy);
@@ -88,6 +106,11 @@ sub build_requests {
                 $post = $req->{'post'};
             }
 
+            my $headers = exists $req->{headers}
+                ? $req->{headers}
+                : []
+                ;
+
             # Build a request object and save it in the queue
             my $r = Kronometrix::Webrec::Request->new(
                 keepalive    => $ka,
@@ -101,6 +124,7 @@ sub build_requests {
                 host         => $hst,
                 port         => $prt,
                 path         => $pth,
+                headers      => $headers,
                 post         => $post,
                 precision    => $self->{precision},
                 timeout      => $self->{timeout},
@@ -232,6 +256,26 @@ sub process {
     else {
         $self->process_sync;
     }
+    my $res = $self->process_failsafe();
+    $self->write_verbose("Finished request cycle");
+    return $res;
+}
+
+# Failsafe can run for a number of cycles. If any sites fail, this will
+# return 0.
+sub process_failsafe {
+    my $self = shift;
+    my $s = 1;
+    if ($self->{failsafe} == 1) {
+        if ($self->{failed}->%*) {
+            $s = 0;
+            foreach my $r (keys $self->{failed}->%*) {
+                $self->write_log("Failsafe $r failed");
+            }
+        }
+    }
+    $self->{failsafe}-- if $self->{failsafe} > 0;
+    return $s;
 }
 
 sub process_sync {
@@ -247,6 +291,7 @@ sub process_sync {
         };
         if ($@) {
             if (ref $@ eq 'Net::Curl::Easy::Code') {
+                $req->mark_failsafe();
                 $self->write_log("Error while processing request for <"
                     . $req->{initial_url}
                     . "> - Error code: " . (0+$@)
@@ -270,7 +315,6 @@ sub process_sync {
         sleep $self->{nap_time} if $self->{nap_time};
 
     }
-    $self->write_verbose("Finished request cycle");
 }
 
 
@@ -315,6 +359,7 @@ sub process_async {
                 );
             }
             else {
+                $req->mark_failsafe();
                 $self->write_log("Error with response: <"
                     . $req->{initial_url}
                     . "> - Error code: " . (0+$r)
@@ -329,7 +374,6 @@ sub process_async {
 
     # Clean after Net::Curl::Multi to avoid memory leaks
     $self->{multi} = undef;
-    $self->write_verbose("Finished request cycle");
 }
 
 1;

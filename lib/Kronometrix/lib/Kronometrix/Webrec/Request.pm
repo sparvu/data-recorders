@@ -117,10 +117,16 @@ sub init {
         $self->setopt('FRESH_CONNECT', 1);
     }
 
+    # Add HTTP headers: Headers are given in an array ref of strings
     my @myheaders;
     $myheaders[0] = "User-Agent: " . $self->{agent_name};
-
+    if (exists $self->{headers} && ref($self->{headers})) {
+        foreach my $header ($self->{headers}->@*) {
+            push @myheaders, $header;
+        }
+    }
     $self->setopt('HTTPHEADER', \@myheaders);      # Sets headers
+
     $self->setopt('COOKIEJAR',  "cookies.txt");    # Sets a cookie jar
 
     if ($self->{scheme} eq 'https') {
@@ -128,9 +134,25 @@ sub init {
         $self->setopt('SSL_VERIFYHOST', 0);        # Skip verification
     }
 
-    if ($self->{method} eq 'POST') {                       # Add post data
-        my $post = $self->{post} ? $self->{post} : '';
-        $self->setopt('POST',       1);
+    # Add post data: Data is either a ready-made string or a hash ref
+    # that will be url-encoded
+    if ($self->{method} eq 'POST') {
+        my $post;
+        if (exists $self->{post} && ref($self->{post})) {
+            my @fields;
+            while (my ($name, $value) = each $self->{post}->%*) {
+                my $pair =
+                    join '=',
+                    map { $self->{handle}->escape($_) }
+                    $name, $value;
+                push @fields, $pair;
+            }
+            $post = join '&', @fields;
+        }
+        else {
+            $post = exists $self->{post} ? $self->{post} : '';
+        }
+        $self->setopt('POST', 1);
         $self->setopt('POSTFIELDS', $post);
     }
 
@@ -149,7 +171,7 @@ sub init {
         $self->setopt('VERBOSE', 1);
     }
 
-    unless ($self->{method} eq 'POST' || $self->{method} eq 'GET' || $self->{method} eq 'HEAD') {
+    unless ($self->{method} eq 'POST' || $self->{method} eq 'GET') {
         $self->{webrec_queue}->write_log("error: not supported method "
               . $self->{method} . " for "
               . $self->{initial_url});
@@ -175,8 +197,27 @@ sub write_report {
     # First packet time: starttransfer_time - namelookup_time
     $report[-2] -= $report[5];
 
+    $self->check_failsafe($report[-1]);
+
     $self->putraw(@report);
-};
+}
+
+# HTTP code is for failure and running in failsafe mode
+sub check_failsafe {
+    my ($self, $code) = @_;
+    $self->mark_failsafe()
+        if $code >= 400;
+}
+
+# If running in failsafe mode, signal the failure
+sub mark_failsafe {
+    my $self = shift;
+    my $name = join '_', map { $self->{$_} } qw(workload request_name);
+    $self->{webrec_queue}->write_log("Failed request for $name");
+    if ($self->{webrec_queue}{failsafe}) {
+        $self->{webrec_queue}{failed}{$name}++
+    }
+}
 
 sub clear_easy {
     my $self = shift;
@@ -228,7 +269,7 @@ my %opt_for;
 my @options = qw(URL WRITEHEADER WRITEDATA
     DNS_CACHE_TIMEOUT NOPROGRESS FOLLOWLOCATION NOSIGNAL TIMEOUT
     FORBID_REUSE FRESH_CONNECT HTTPHEADER COOKIEJAR SSL_VERIFYPEER
-    SSL_VERIFYHOST POST POST_FIELDS PROXY PROXYUSERPWD VERBOSE CAINFO); 
+    SSL_VERIFYHOST POST POSTFIELDS PROXY PROXYUSERPWD VERBOSE CAINFO); 
 $opt_for{$_} = eval "CURLOPT_$_" foreach @options; 
 
 sub getinfo {
