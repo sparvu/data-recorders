@@ -48,7 +48,7 @@ sub new {
 
     my $self = bless \%args_hash, $class;
 
-    $self->write_log("Info: Started");
+    $self->write_log("INFO: Started");
     $self->write_verbose("cURL version: " . Net::Curl::version());
     $self->build_requests;
 
@@ -76,7 +76,7 @@ sub build_requests {
     foreach my $f (@temp) {
         # Minimal input verification
         my @required = qw(keepalive name description zone requests delay proxy);
-        my @possible = qw();
+        my @possible = qw(use_cookies follow_redir authenticated);
         foreach my $field (@required) {
             croak "Field $field is required for workloads"
                 unless exists $f->{$field};
@@ -88,7 +88,6 @@ sub build_requests {
             croak "Field $field was found in workload but it was not expected"
                 unless exists $is_expected{$field};
         }
-        
 
         # Get its parameters
         my ($ka, $wname, $desc, $delay, $proxy) = map { $f->{$_} }
@@ -101,15 +100,42 @@ sub build_requests {
                 qw(id method scheme host port path);
             $hst =~ s{/$}{};
 
+            my $headers = exists $req->{headers}
+                ? $req->{headers}
+                : []
+                ;
+
             my $post = '';
             if ( $met eq 'POST' && $req->{post}) {
                 $post = $req->{'post'};
             }
 
-            my $headers = exists $req->{headers}
-                ? $req->{headers}
-                : []
-                ;
+            my $put = '';
+            if ( $met eq 'PUT' && $req->{put}) {
+                $put = $req->{'put'};
+            }
+
+            # Authenticated workloads require cookies and deactivate
+            # following redirections
+            my $use_cookies  = 0; 
+            my $follow_redir = 1;
+
+            if (exists $f->{authenticated} && $f->{authenticated}) {
+                $use_cookies  = 1;
+                $follow_redir = 0;
+            }
+
+            $use_cookies = $f->{use_cookies}
+                if exists $f->{use_cookies};
+
+            $follow_redir = $f->{follow_redir}
+                if exists $f->{follow_redir};
+
+            $use_cookies = $req->{use_cookies}
+                if exists $req->{use_cookies};
+
+            $follow_redir = $req->{follow_redir}
+                if exists $req->{follow_redir};
 
             # Build a request object and save it in the queue
             my $r = Kronometrix::Webrec::Request->new(
@@ -126,6 +152,9 @@ sub build_requests {
                 path         => $pth,
                 headers      => $headers,
                 post         => $post,
+                put          => $put,
+                use_cookies  => $use_cookies,
+                follow_redir => $follow_redir,
                 precision    => $self->{precision},
                 timeout      => $self->{timeout},
                 agent_name   => $self->{agent_name},
@@ -270,7 +299,7 @@ sub process_failsafe {
         if ($self->{failed}->%*) {
             $s = 0;
             foreach my $r (keys $self->{failed}->%*) {
-                $self->write_log("Failsafe $r failed");
+                $self->write_log("FAILSAFE: Failsafe $r failed");
             }
         }
     }
@@ -292,7 +321,7 @@ sub process_sync {
         if ($@) {
             if (ref $@ eq 'Net::Curl::Easy::Code') {
                 $req->mark_failsafe();
-                $self->write_log("Error while processing request for <"
+                $self->write_log("ERROR: Error while processing request for <"
                     . $req->{initial_url}
                     . "> - Error code: " . (0+$@)
                     . " - Error message: $@");
@@ -339,7 +368,7 @@ sub process_async {
         };
         if ($@) {
             if (ref $@ eq 'Net::Curl::Multi::Code') {
-                $self->write_log("Error while processing requests"
+                $self->write_log("ERROR: Error while processing requests"
                     . " - Error code: " . (0+$@)
                     . " - Error message: $@");
             }
@@ -360,7 +389,7 @@ sub process_async {
             }
             else {
                 $req->mark_failsafe();
-                $self->write_log("Error with response: <"
+                $self->write_log("ERROR: Error with response: <"
                     . $req->{initial_url}
                     . "> - Error code: " . (0+$r)
                     . " - Error message: $r"

@@ -97,7 +97,11 @@ sub init {
     $self->setopt('NOPROGRESS', 1);
 
     # Follow http redirects. Defaults to 0. Set maxredirs?
-    $self->setopt('FOLLOWLOCATION', 1);
+    my $follow = 0;
+    if ($self->{follow_redir}) {
+        $follow = 1;
+    }
+    $self->setopt('FOLLOWLOCATION', $follow);
 
     # Path to the ca bundle -- Not needed since we never verify peers
     # $self->setopt('CAINFO', $self->webrec_queue->cert_location);
@@ -127,7 +131,10 @@ sub init {
     }
     $self->setopt('HTTPHEADER', \@myheaders);      # Sets headers
 
-    $self->setopt('COOKIEJAR',  "cookies.txt");    # Sets a cookie jar
+    if ($self->{use_cookies}) {
+        $self->setopt('COOKIEJAR',  "cookies.txt");    # Sets a cookie jar
+        $self->setopt('COOKIEFILE', "cookies.txt");    # File to read cookies from
+    }
 
     if ($self->{scheme} eq 'https') {
         $self->setopt('SSL_VERIFYPEER', 0);        # Skip verification
@@ -156,14 +163,27 @@ sub init {
         $self->setopt('POSTFIELDS', $post);
     }
 
+    if ($self->{method} eq 'PUT') {
+        my $str = $self->{put}
+            ? $self->{put}
+            : 'Default data sent using PUT';
+        my $cb  = sub { my $a = $_[2]; return \$a };
+        $self->setopt('UPLOAD', 1);
+        $self->setopt('INFILESIZE', length($str));
+        $self->setopt('READDATA', $str);
+        $self->setopt('READFUNCTION', $cb);
+    }
+
 
     if ($self->{proxy}) {
-        $self->{webrec_queue}->write_log("Proxy: " . $self->{proxy});
+        $self->{webrec_queue}->write_log("INFO: Proxy: " . $self->{proxy});
         $self->setopt('PROXY', $self->{proxy});
     }
 
     if ($self->{proxy_userpwd}) {
-        $self->{webrec_queue}->write_log("Proxy user: " . $self->{proxy_userpwd});
+        $self->{webrec_queue}->write_log(
+            "INFO: Proxy user: " 
+            . $self->{proxy_userpwd});
         $self->setopt('PROXYUSERPWD', $self->{proxy_userpwd});
     }
 
@@ -171,8 +191,10 @@ sub init {
         $self->setopt('VERBOSE', 1);
     }
 
-    unless ($self->{method} eq 'POST' || $self->{method} eq 'GET') {
-        $self->{webrec_queue}->write_log("error: not supported method "
+    my %is_supported;
+    $is_supported{$_}++ foreach qw(GET POST PUT);
+    unless ($is_supported{$self->{method}}) {
+        $self->{webrec_queue}->write_log("ERROR: not supported method "
               . $self->{method} . " for "
               . $self->{initial_url});
     }
@@ -213,7 +235,7 @@ sub check_failsafe {
 sub mark_failsafe {
     my $self = shift;
     my $name = join '_', map { $self->{$_} } qw(workload request_name);
-    $self->{webrec_queue}->write_log("Failed request for $name");
+    $self->{webrec_queue}->write_log("FAILSAFE: Failed request for $name");
     if ($self->{webrec_queue}{failsafe}) {
         $self->{webrec_queue}{failed}{$name}++
     }
@@ -269,7 +291,8 @@ my %opt_for;
 my @options = qw(URL WRITEHEADER WRITEDATA
     DNS_CACHE_TIMEOUT NOPROGRESS FOLLOWLOCATION NOSIGNAL TIMEOUT
     FORBID_REUSE FRESH_CONNECT HTTPHEADER COOKIEJAR SSL_VERIFYPEER
-    SSL_VERIFYHOST POST POSTFIELDS PROXY PROXYUSERPWD VERBOSE CAINFO); 
+    SSL_VERIFYHOST POST POSTFIELDS PROXY PROXYUSERPWD VERBOSE CAINFO
+    UPLOAD READFUNCTION READDATA INFILESIZE COOKIEFILE); 
 $opt_for{$_} = eval "CURLOPT_$_" foreach @options; 
 
 sub getinfo {
