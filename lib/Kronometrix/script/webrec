@@ -1,4 +1,4 @@
-#! /usr/bin/env perl
+#! /opt/kronometrix/perl/bin/perl
 
 use lib './lib';
 use Kronometrix::Webrec::Queue;
