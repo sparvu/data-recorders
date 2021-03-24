@@ -12,13 +12,14 @@ More information: www.kronometrix.com/k1
 
   We support the following Linux based operating systems:
 
+
     CentOS 7.9+ x86_64
     CloudLinux 7+ x86_64
     Debian 9+ x86_64
     Ubuntu Server Edition 18+ x86_64
     Raspbian GNU/Linux 8+ armv8
 
-  Note: 64bit only, min kernel 3.10 (x86_64). IoT, weather and environment
+  Note: 64bit only, min kernel 3.10.x (RPM) and 4.9 (DEB). IoT, weather and environment
   data recorders are supported for Raspberry PI 3B/3B+/4B SBC ARM64 only.
 
 
