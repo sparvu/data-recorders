@@ -11,8 +11,7 @@ More information: www.kronometrix.com/k1
 1.Supported Operating Systems
 
   We support the following FreeBSD based operating systems:
-    FreeBSD 11 amd64
-    FreeBSD 12 amd64, aarch64
+    FreeBSD 12+ amd64, aarch64
 
   Note: 64bit only. IoT, weather and environment data recorders are supported 
   for Raspberry PI 3B/3B+/4B SBC ARM64 only.

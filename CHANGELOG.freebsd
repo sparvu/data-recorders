@@ -2,18 +2,24 @@
 Kronometrix Data Recording
 
 Supported Platforms
-    FreeBSD 11.4 amd64
-    FreeBSD 12.0,12.1,12.2 amd64
+    FreeBSD 12+ amd64
 
 Defect Management System
   https://gitlab.com/kronometrix/recording/issues 
 
 Releases
 
+ 1.8.1 March 2021 Release
+    Webrec HTTP Authentication fixes
+    Net::SSLeay 1.90 update
+    IO::Socket::SSL 2.070 update
+    OpenSSL 1.1.1j update
+
   1.6.8 February 2021 Release
-    Spreadsheet support for Excel, Libre/OpenOffice data files
-    New Serial Communication Management Utility - kserial
-    New Epidemiological data recorder - epidmrec
+    Spreadsheet data files support
+    New Serial Communication Management Utility
+    New Epidemiological data recorder
+    Crypt-OpenSSL-X509-1.902 update
     libcurl 7.75.0 update
     CPAN Feb 2021 update
 
