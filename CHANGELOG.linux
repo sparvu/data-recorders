@@ -2,13 +2,14 @@
 Kronometrix Data Recording
 
 Platforms
-    CentOS 6,7,8 (Final) x86_64
-    CloudLinux 6,7 x86_64
-    Debian 8,9,10 x86_64
-    Ubuntu Server Edition 16,18 x86_64
-    Raspbian GNU/Linux 7,8 armv8
 
-  Note: 64bit only, min kernel 2.6.32 (x86_64)
+    CentOS 7.9+ x86_64
+    CloudLinux 7+ x86_64
+    Debian 9+ x86_64
+    Ubuntu Server Edition 18+ x86_64
+    Raspbian GNU/Linux 8+ armv8
+
+  Note: 64bit only, min kernel 3.10.x (x86_64)
 
 Defect Management System
   https://gitlab.com/kronometrix/recording/issues 
