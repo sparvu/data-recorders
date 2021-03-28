@@ -20,7 +20,7 @@ Releases
     Webrec HTTP Authentication fixes
     Net::SSLeay 1.90 update
     IO::Socket::SSL 2.070 update
-    OpenSSL 1.1.1j update
+    OpenSSL 1.1.1k update
 
   1.6.8 February 2021 Release
     Spreadsheet data files support
