@@ -2,12 +2,12 @@
   "server" : [
     {
       "name" : "kronometrix.org cert",
-      "description" : "IMAPS, SMTPS kronometrix.org",
+      "description" : "SMTPS kronometrix.org",
       "certificates" : [
         {
           "id" : "smtps",
           "type" : "ssl",
-          "host" : "kronometrix.org",
+          "host" : "mail.kronometrix.org",
           "port" : 465
         }
       ]
