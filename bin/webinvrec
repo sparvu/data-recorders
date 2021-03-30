@@ -312,6 +312,8 @@ sub get_workload {
 
             $sites{$keyapp} = $hvalue;
         }
+
+        $k=0;
     }
 
     return %sites;
@@ -424,7 +426,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-webinvrec: 1.1.7, 2017-01-25 1441
+webinvrec: 1.2.0, 2021-03-30 1450
 END
     exit 0;
 }
