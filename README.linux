@@ -52,6 +52,13 @@ More information: www.kronometrix.com/k1
       * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
       * wsrec - Weather data recorder
 
+      Auxiliaries
+
+      * kserial - Serial Command Line Utility
+      * speedtest - Network speed and latency of an Internet connection
+      * fio - Storage Flexible I/O tester
+
+
     - transport: sender utility
 
     - all needed libraries: openssl, libcurl, perl
