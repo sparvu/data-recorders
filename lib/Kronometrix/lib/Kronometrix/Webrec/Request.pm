@@ -219,16 +219,20 @@ sub write_report {
     # First packet time: starttransfer_time - namelookup_time
     $report[-2] -= $report[5];
 
-    $self->check_failsafe($report[-1]);
+    $self->check_http_code($report[-1]);
 
     $self->putraw(@report);
 }
 
 # HTTP code is for failure and running in failsafe mode
-sub check_failsafe {
+sub check_http_code {
     my ($self, $code) = @_;
-    $self->mark_failsafe()
-        if $code >= 400;
+    if ($code >= 400) {
+        $self->mark_failsafe();
+    }
+    elsif ($self->{expected} && $code != $self->{expected}) {
+        $self->mark_error();
+    }
 }
 
 # If running in failsafe mode, signal the failure
@@ -239,6 +243,13 @@ sub mark_failsafe {
     if ($self->{webrec_queue}{failsafe}) {
         $self->{webrec_queue}{failed}{$name}++
     }
+}
+
+# If http is not as expected, signal the failure
+sub mark_error {
+    my $self = shift;
+    my $name = join '_', map { $self->{$_} } qw(workload request_name);
+    $self->{webrec_queue}->write_log("ERROR: Request $name returned an unexpected HTTP code");
 }
 
 sub clear_easy {

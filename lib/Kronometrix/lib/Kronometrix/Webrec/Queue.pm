@@ -137,6 +137,9 @@ sub build_requests {
             $follow_redir = $req->{follow_redir}
                 if exists $req->{follow_redir};
 
+            my $expected = $req->{expected}
+                if exists $req->{expected};
+
             # Build a request object and save it in the queue
             my $r = Kronometrix::Webrec::Request->new(
                 keepalive    => $ka,
@@ -153,6 +156,7 @@ sub build_requests {
                 headers      => $headers,
                 post         => $post,
                 put          => $put,
+                expected     => $expected,
                 use_cookies  => $use_cookies,
                 follow_redir => $follow_redir,
                 precision    => $self->{precision},
