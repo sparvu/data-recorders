@@ -10,17 +10,18 @@ More information: www.kronometrix.com/k1
 
 1.Supported Operating Systems
 
-  We support the following Linux based operating systems:
+  We support the following 64bit Linux based operating systems:
 
-
-    CentOS 7.9+ x86_64
-    CloudLinux 7+ x86_64
-    Debian 9+ x86_64
-    Ubuntu Server Edition 18+ x86_64
+    CentOS 7.9 x86_64
+    Debian 9.13 amd64
+    CloudLinux 7 x86_64
+    Ubuntu Server Edition 18 amd64
     Raspbian GNU/Linux 8+ armv8
 
-  Note: 64bit only, min kernel 3.10.x (RPM) and 4.9 (DEB). IoT, weather and environment
-  data recorders are supported for Raspberry PI 3B/3B+/4B SBC ARM64 only.
+  For Debian based distributions (DEB), we support, latest Debian 9.13 operating system
+  using kernel version 4.9. For RedHat based distributions (RPM), we support latest
+  CentOS 7.9 operating system, kernel version 3.10. IoT, weather and environment data
+  recorders are available for ARM based distributions, using Raspberry PI 3B/3B+/4B SBC.
 
 
 2.Package Content
@@ -52,7 +53,7 @@ More information: www.kronometrix.com/k1
       * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
       * wsrec - Weather data recorder
 
-      Auxiliaries
+      Data Utilities 
 
       * kserial - Serial Command Line Utility
       * speedtest - Network speed and latency of an Internet connection
