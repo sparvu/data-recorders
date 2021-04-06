@@ -16,7 +16,7 @@ Defect Management System
 
 Releases
 
- 1.8.1 March 2021 Release
+ 1.8.2 March 2021 Release
     Webrec HTTP Authentication fixes
     Net::SSLeay 1.90 update
     IO::Socket::SSL 2.070 update
