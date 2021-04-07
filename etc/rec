@@ -39,7 +39,7 @@ test -f ${KRMX_ETC}/webinvrec.start || exit 0
 
 
 start() {
-    echo "Starting Kronometrix recorders"
+    echo "Starting Kronometrix recorders..."
 
     for rec in $RECORDERS
     do
@@ -74,7 +74,7 @@ start() {
 
 
 stop() {
-    echo "Stopping Kronometrix recorders"
+    echo "Stopping Kronometrix recorders..."
 
     for rec in $RECORDERS
     do
@@ -105,7 +105,7 @@ stop() {
 }
 
 status() {
-    echo "Status Kronometrix recorders"
+    echo "Status Kronometrix recorders..."
 
     for rec in $RECORDERS
     do
