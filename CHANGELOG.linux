@@ -16,11 +16,13 @@ Defect Management System
 
 Releases
 
- 1.8.2 March 2021 Release
+ 1.8.2 April 2021 Release
     Webrec HTTP Authentication fixes
     Net::SSLeay 1.90 update
     IO::Socket::SSL 2.070 update
+    libcurl 7.76.0 update
     OpenSSL 1.1.1k update
+    CPAN April 2021 update
 
   1.6.8 February 2021 Release
     Spreadsheet data files support
