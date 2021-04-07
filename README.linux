@@ -52,7 +52,7 @@ More information: www.kronometrix.com/k1
 
       * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
       * wsrec - Weather data recorder
-      * axisrec - AXIS Communications Network Video Recorder
+      * axisrec - AXIS Communications network video data recorder
 
       Data Utilities 
 
