@@ -52,12 +52,13 @@ More information: www.kronometrix.com/k1
 
       * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
       * wsrec - Weather data recorder
+      * axisrec - AXIS Communications Network Video Recorder
 
       Data Utilities 
 
       * kserial - Serial Command Line Utility
       * speedtest - Network speed and latency of an Internet connection
-      * fio - Storage Flexible I/O tester
+      * fio - Storage Flexible I/O performance tester
 
 
     - transport: sender utility
