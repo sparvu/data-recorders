@@ -40,13 +40,13 @@ More information: www.kronometrix.com/k1
       * diskrec - per DISK statistics
       * hdwrec - hardware and software data inventory
       * jvmrec - Java VM statistics
-      * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
+      * httprec - HTTP server statistics: NGINX, Apache, PFP-FPM
       * certrec - X.509 security certificate statistics
-      * svcrec - service performance, availability: TCP, UDP services
+      * svcrec - TCP, UDP service performance and availability
       * direc - filesystem directory statistics
       * ntprec - NTP server statistics
       * procrec - process statistics
-      * webrec - web application performance, availability
+      * webrec - web application performance and availability
 
       IoT, Weather and Environment
 
