@@ -1,0 +1,12 @@
+[global]
+rw=randrw
+thread
+size=25m
+directory=/opt/kronometrix/log
+blocksize=4k
+nrfiles=5
+runtime=60
+time_based
+
+[job1]
+directory=/opt/kronometrix/log
