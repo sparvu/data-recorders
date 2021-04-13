@@ -89,7 +89,7 @@ my $dname = basename($0);
 
 # osname
 my $osname = "$^O";
-my $agent = "kdr/1.6.0 sender $osname";
+my $agent = "kdr/1.8.x sender $osname";
 
 # read configuration
 $cdata = open_config($cfile);
@@ -1630,7 +1630,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.4.0, 2020-12-01 1715
+sender: 1.4.1, 2021-04-13 2230
 END
     exit 0;
 }
