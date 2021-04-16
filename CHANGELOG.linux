@@ -19,6 +19,7 @@ Releases
  1.8.3 May 2021 Release
     HTTP Transport Improvements
     sockrec Improvements
+    libcurl 7.76.1 update
 
  1.8.2 April 2021 Release
     Webrec HTTP Authentication fixes
