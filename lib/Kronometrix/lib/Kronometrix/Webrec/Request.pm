@@ -2,6 +2,8 @@ package Kronometrix::Webrec::Request;
 
 use Time::HiRes qw(time);
 use Net::Curl::Easy qw(:constants);
+use HTML::TokeParser;
+use List::Util qw(all);
 use Scalar::Util qw(weaken);
 use Carp;
 use strict;
@@ -85,10 +87,13 @@ sub init {
     # Set url
     $self->setopt('URL', $self->{initial_url});
 
-    # Just discard headers and body
+    # Headers and body are saved in these variables
     my ($head, $body);
-    $self->setopt('WRITEHEADER', \$head);
+    $self->setopt('HEADERDATA', \$head);
     $self->setopt('WRITEDATA', \$body);
+    if ($self->{parse_form}) {
+        $self->{webrec_queue}{doc_body} = \$body;
+    }
 
     # Disable DNS caching
     $self->setopt('DNS_CACHE_TIMEOUT', 0);
@@ -146,15 +151,24 @@ sub init {
     if ($self->{method} eq 'POST') {
         my $post;
         if (exists $self->{post} && ref($self->{post})) {
-            my @fields;
+            my %fields;
             while (my ($name, $value) = each $self->{post}->%*) {
-                my $pair =
-                    join '=',
-                    map { $self->{handle}->escape($_) }
-                    $name, $value;
-                push @fields, $pair;
+                $fields{$name} = $self->{handle}->escape($value); 
             }
-            $post = join '&', @fields;
+
+            # Parse forms in a previously saved document
+            if ($self->{process_form}) {
+               my $parsed_fields = $self->parse_form();
+               %fields = (%$parsed_fields, %fields)
+                   if defined $parsed_fields; 
+            }
+
+            # Assemble the post string
+            my @field_pairs;
+            while (my ($name, $value) = each %fields) {
+                push @field_pairs, join '=', $name, $value;
+            }
+            $post = join '&', @field_pairs;
         }
         else {
             $post = exists $self->{post} ? $self->{post} : '';
@@ -203,6 +217,49 @@ sub init {
 
     return $self->{handle};
 };
+
+# Parses the HTML document saved in the webrec object and extracts
+# all the available forms. Then, it looks for a form that contains the
+# fields to post.
+# Returns a hash ref of fields
+sub parse_form {
+    my $self = shift;
+    my $wl = $self->{workload};
+    my $name = $self->{request_name};
+
+    unless (exists $self->{webrec_queue}{doc_body}) {
+        $self->{webrec_queue}->write_log(
+            "ERROR: No HTML to parse for forms"
+            . " ($name request in $wl)");
+        return undef;
+    }
+    my $html_ref = $self->{webrec_queue}{doc_body};
+    
+    # Get all forms
+    my @forms;
+    my $p = HTML::TokeParser->new($html_ref);
+    while (my $tag = $p->get_tag('form')) {
+        my %form;
+        while (my $tag2 = $p->get_tag('input')) {
+            my $attr = $tag2->[1];
+            $form{$attr->{name}} = $attr->{value};
+        }
+        push @forms, \%form;
+    }
+
+    # Get the first form that contains the fields that we want to post
+    my $form;
+    foreach my $f (@forms) {
+        $form = $f;
+        last if all { exists $f->{$_} } keys $self->{post}->%*;
+        $form = undef;
+    }
+    $self->{webrec_queue}->write_log(
+        "ERROR: Did not find forms with the given fields"
+        . " ($name request in $wl)")
+        unless defined $form;
+    return $form;
+}
 
 sub write_report {
     my $self = shift;
@@ -299,7 +356,7 @@ my %code_for = (
 );
 
 my %opt_for;
-my @options = qw(URL WRITEHEADER WRITEDATA
+my @options = qw(URL HEADERDATA WRITEDATA
     DNS_CACHE_TIMEOUT NOPROGRESS FOLLOWLOCATION NOSIGNAL TIMEOUT
     FORBID_REUSE FRESH_CONNECT HTTPHEADER COOKIEJAR SSL_VERIFYPEER
     SSL_VERIFYHOST POST POSTFIELDS PROXY PROXYUSERPWD VERBOSE CAINFO

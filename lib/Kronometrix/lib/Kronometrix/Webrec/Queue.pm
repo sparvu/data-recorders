@@ -115,8 +115,8 @@ sub build_requests {
                 $put = $req->{'put'};
             }
 
-            # Authenticated workloads require cookies and deactivate
-            # following redirections
+            # Authenticated workloads require cookies
+            # but deactivate redirections
             my $use_cookies  = 0; 
             my $follow_redir = 1;
 
@@ -137,8 +137,19 @@ sub build_requests {
             $follow_redir = $req->{follow_redir}
                 if exists $req->{follow_redir};
 
+            # Compares the HTTP return code and fails if different
             my $expected = $req->{expected}
                 if exists $req->{expected};
+
+            # Parse forms in the returned HTML document
+            my $parse_form = 0;
+            $parse_form = $req->{parse_form}
+                if exists $req->{parse_form};
+
+            # Use parsed forms to complete POST fields
+            my $process_form = 0;
+            $process_form = $req->{process_form}
+                if exists $req->{process_form};
 
             # Build a request object and save it in the queue
             my $r = Kronometrix::Webrec::Request->new(
@@ -159,6 +170,8 @@ sub build_requests {
                 expected     => $expected,
                 use_cookies  => $use_cookies,
                 follow_redir => $follow_redir,
+                parse_form   => $parse_form,
+                process_form => $process_form,
                 precision    => $self->{precision},
                 timeout      => $self->{timeout},
                 agent_name   => $self->{agent_name},
