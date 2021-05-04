@@ -11,7 +11,7 @@ use warnings;
 use feature ':5.20';
 
 our $VERSION = '2.0.0';
-our $LASTREV = '2021-03-14';
+our $LASTREV = '2021-05-01';
 
 ### Configuration variables
 
