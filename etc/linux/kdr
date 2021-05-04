@@ -67,7 +67,7 @@ stop() {
         ${KRMX_SVC} stop
     else
         su - $KRMX_USER -c "${KRMX_SVC} stop"
-    fi   
+    fi
 }
 
 
@@ -77,7 +77,7 @@ status() {
         ${KRMX_SVC} status
     else
         su - $KRMX_USER -c "${KRMX_SVC} status"
-    fi   
+    fi
 }
 
 case "$1" in
