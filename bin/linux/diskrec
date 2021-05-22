@@ -257,9 +257,9 @@ while ( 1 ) {
                     $mntfs  = $1;
                 }
 
-                $d .= $mntfs;
- 
                 last if ($mntfs =~ /tmp/);
+
+                $d .= $mntfs;
             } 
         }
 
@@ -535,7 +535,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.2.0, 2019-10-24 2237
+diskrec: 1.2.1, 2021-05-21 2021
 END
     exit 0;
 }
