@@ -27,8 +27,8 @@
 | Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Data Ontology | **yes** | no| no | no | no | Kronometrix Data Recording has groupped and classified all recorded metrics, for a very efficient data analysis process |
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
-| Full Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
-| OS Virtualization | yes | yes | **yes** | **yes** | **yes** | Kronometrix Data Recording supports FreeBSD jails, Solaris zones and Docker |
+| Platform Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
+| OS Virtualization | yes | yes | **yes** | **yes** | **yes** | Kronometrix Data Recording supports Linux containers, FreeBSD jails, Solaris zones and Docker |
 | Kubernets | no | | **yes** | **yes** | **yes** | Kronometrix roadmap 2022 |
 | Network equipment (SNMP) | beta | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 J2EE, DB monitoring |
