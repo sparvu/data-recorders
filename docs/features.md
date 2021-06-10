@@ -41,5 +41,5 @@
 | ARM compatible | **yes** | | | | **yes** | |
 | Based on | Perl5/Lua | C/Perl/Shell | Python3 | C | C/Java | |
 
-Read more about Kronometrix Data Recording [features] (https://www.kronometrix.com/fabric/recorders/) 
+Read more about Kronometrix Data Recording [features](https://www.kronometrix.com/fabric/recorders/) 
 Go back [main page](https://gitlab.com/kronometrix/recording/)
