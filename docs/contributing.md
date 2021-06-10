@@ -12,10 +12,6 @@ the subject as security vulnerability.
 
 
 ### Commercial Support
-For any other questions or assistance we are offering commercial support.
-[K1](https://www.kronometrix.com/k1) is a commercial product built on top 
-Kronometrix Data Recording. Please contact us +358 50 483 9978 or email us at: 
-sales@kronometrix.com for more information.
-
+For any other questions or assistance we are offering commercial support. [Kronometrix IoT Gateway](https://www.kronometrix.com/iotgateway) is a commercial product built on top Kronometrix Data Recording. Please contact us for more information.
 
 Go back [main page](https://gitlab.com/kronometrix/recording/)
