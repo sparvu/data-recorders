@@ -29,7 +29,7 @@
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | Platform Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | OS Virtualization | yes | yes | **yes** | **yes** | **yes** | Kronometrix Data Recording supports Linux containers, FreeBSD jails, Solaris zones and Docker |
-| Kubernets | no | | **yes** | **yes** | **yes** | Kronometrix roadmap 2022 |
+| Kubernets | no | no | **yes** | | | Kronometrix roadmap 2022 |
 | Network equipment (SNMP) | beta | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 J2EE, DB monitoring |
 | Internet Enterprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
