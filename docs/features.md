@@ -21,7 +21,7 @@
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
 | Built-in recorders | **yes** |  | **yes** | | **yes** | Own or 3rd party recorders. Datadog uses StatsD. Dynatrace uses native binaries and Java Compuware agent for Linux, Windows, AIX |
 | Raw data | **yes** | **yes** | no | **yes** | no | DataDog Agent7 takes 750MB disk space, no original raw data available  |  
-| Low latency | **yes** | | | no | no | Datadog aggregates all collected data, using different summary statistics functions. This means no possibility to retrieve the original raw data, will consume more system CPU resources (because it needs to calculate all sort of aggregate functions). Kronometrix data recorders will not compute, or aggregate data, will offer access to the oroginal raw data, and are very efficient, having a low memory and CPU footprint |
+| Low latency | **yes** | no | no | no | no | Datadog aggregates all collected data, using different summary statistics functions. This means no possibility to retrieve the original raw data, higher consumption of system CPU resources (it needs to calculate all sort of aggregate functions). Kronometrix data recorders will not aggregate raw datadata, to always offer access to the original raw data, being very efficient, with a low memory and CPU footprint |
 | Observability and Troubleshooting | **yes** | | | | no | Kronometrix data recorders can ve used for long term performance analysis or observability and troublshooting, running interactively or continuous mode |
 | Serial Command Communication | **yes** | | | | | Can connect to serial devices. Manage & control serial attached sensors and devices |
 | Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity management |
