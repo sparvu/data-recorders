@@ -18,10 +18,10 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 
 # Requirements
 
-* Processor: x64, ARMv8, Apple M1
+* Processor: Intel/AMD x64, Apple M1, ARMv8
 * Memory: 32 MB RAM
 * Disk space: 140MB, Raw data: 500-750KB per day / data source
-* Protocols: SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), BLE, BACnet, HTTP(S)
+* Protocols: HTTP(S), SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), MQTT, BLE, BACnet
 * SBC: Raspberry PI 3B, 3B+
 
 # Features
@@ -31,8 +31,8 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 * Conservative in CPU and memory usage on different architectures 
 * Easy to change or add new data recorders to collect new data 
 * Runs without human intervention, easy to detect data transmission problems
-* Fetch data from any system, device, sensor with support for multi-industry
-* Full control with no complicated licenses for further developments
+* Fetch data from any system, device, sensor with support for different industries
+* Full control with no complicated licenses for further development
 * [See more](docs/features.md)
 
 # Supported Industries
