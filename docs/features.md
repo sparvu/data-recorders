@@ -27,6 +27,9 @@
 | Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Data Ontology | **yes** | no| no | no | no | Kronometrix Data Recording has groupped and classified all recorded metrics, for a very efficient data analysis process |
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
+| Full Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
+| OS Virtualization | yes | yes | **yes** | **yes** | **yes** | Kronometrix Data Recording supports FreeBSD jails, Solaris zones and Docker |
+| Kubernets | no | | **yes** | **yes** | **yes** | Kronometrix roadmap 2022 |
 | Network equipment (SNMP) | beta | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 J2EE, DB monitoring |
 | Internet Enterprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
@@ -36,8 +39,8 @@
 | MODBUS | **yes** | | no | no | no | MODBUS RTU, ASCII, TCP support |
 | MQTT | beta | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q4 2021 |
 | Bluetooth Low Energy | comming soon | | | | | Kronometrix roadmap 2022 |
-| BACnet | Beta | | | | | Kronometrix roadmap 2022 |
-| Healthcare | comming soon | | | | | Kronometrix roadmap 2023 |
+| BACnet | Beta | no | no | no | no | Kronometrix roadmap 2022 |
+| Healthcare | comming soon | no | no | no | no | Kronometrix roadmap 2023 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | **yes** | |
 | Based on | Perl5/Lua | C/Perl/Shell | Python3 | C | C/Java | |
