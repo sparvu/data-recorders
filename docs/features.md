@@ -20,10 +20,10 @@
 || Kronometrix | Nagios Xi | Datadog | Paessler | Dynatrace | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
 | Built-in recorders | **yes** |  | **yes** | | **yes** | Own or 3rd party recorders. Datadog uses StatsD. Dynatrace uses native binaries and Java Compuware agent for Linux, Windows, AIX |
-| Raw data | **yes** | **yes** | no | **yes** | no | Agent 7 750MB disk space  needed. No raw data. Datadog aggregates raw data every 10 seconds |  
-| Low latency | **yes** | | | | | Kronometrix recorders have a low memory and CPU footprint, designed  to monitor individual system resources, offered as a open-source software |
-| Observability and Troubleshooting | **yes** | | | | | Designed to be used interactive and continuous mode |
-| Serial Command Communication | **yes** | | | | | Manage & control serial attached sensors and devices |
+| Raw data | **yes** | **yes** | no | **yes** | no | DataDog Agent7 takes 750MB disk space, no raw data |  
+| Low latency | **yes** | | | no | no | Datadog aggregates raw data, using different summary statistics functions, using computing resources. This should happen on the backedn processing, not on the targets. Kronometrix recorders have a low memory and CPU footprint, designed  to monitor individual system resources, without consuming lot of computing resources |
+| Observability and Troubleshooting | **yes** | | | | no | Kronometrix data recorders can ve used for long term performance analysis or observability and troublshooting, running interactively or continuous mode |
+| Serial Command Communication | **yes** | | | | | Can connect to serial devices. Manage & control serial attached sensors and devices |
 | Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity management |
 | Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Data Ontology | **yes** | no| no | no | no | Kronometrix Data Recording has groupped and classified all recorded metrics, for a very efficient data analysis process |
@@ -34,6 +34,7 @@
 | X.509 Security Certificates | **yes** | | | | | |
 | RS232/485 | **yes** | | | | | Serial RS232/RS485 support |
 | MODBUS | **yes** | | | | | MODBUS RTU, ASCII, TCP support |
+| MQTT | beta | no | no | no | no | MQTT 3 and 5 support. Kronometrix improvements Q4 2021 |
 | Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2022 |
 | BACnet | coming soon | | | | | Kronometrix roadmap 2022 |
 | Epidemiology | coming soon | | | | | Kronometrix roadmap 2023 |
@@ -42,4 +43,5 @@
 | Based on | Perl5/Lua | C/Perl/Shell | Python3 | C | C/Java | |
 
 Read more about Kronometrix Data Recording [features](https://www.kronometrix.com/fabric/recorders/) 
+<br/>
 Go back [main page](https://gitlab.com/kronometrix/recording/)
