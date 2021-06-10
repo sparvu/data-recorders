@@ -20,7 +20,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 
 * Processor: x64, ARMv8, Apple M1
 * Memory: 32 MB RAM
-* Storage: 128 MB, 750KB per day / data source
+* Disk space: 140MB, Raw data: 500-750KB per day / data source
 * Protocols: SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), BLE, BACnet, HTTP(S)
 * SBC: Raspberry PI 3B, 3B+
 
