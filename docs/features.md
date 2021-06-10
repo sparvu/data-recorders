@@ -23,21 +23,21 @@
 | Raw data | **yes** | **yes** | no | **yes** | no | DataDog Agent7 takes 750MB disk space, no original raw data available  |  
 | Low latency | **yes** | no | no | no | no | Datadog aggregates all collected data, using different summary statistics functions. This means no possibility to retrieve the original raw data, higher consumption of system CPU resources (it needs to calculate all sort of aggregate functions). Kronometrix data recorders will not aggregate raw datadata, to always offer access to the original raw data, being very efficient, with a low memory and CPU footprint |
 | Observability and Troubleshooting | **yes** | | | | no | Kronometrix data recorders can be used interactively for observability, troubleshooting and debug operations or continously for performance analysis and capapcity planning |
-| Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity management |
+| Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity planning & management |
 | Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Data Ontology | **yes** | no| no | no | no | Kronometrix Data Recording has groupped and classified all recorded metrics, for a very efficient data analysis process |
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | Network equipment (SNMP) | beta | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 J2EE, DB monitoring |
 | Internet Enterprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
-| X.509 Security Certificates | **yes** | | | | | |
-| Serial Command Communication | **yes** | | | | | Can connect to manage and control serial devices |
-| RS232/485 | **yes** | | | | | Serial RS232/RS485 support |
-| MODBUS | **yes** | | | | | MODBUS RTU, ASCII, TCP support |
-| MQTT | beta | no | no | no | no | MQTT 3 and 5 support. Kronometrix improvements Q4 2021 |
-| Bluetooth Low Energy | coming soon | | | | | Kronometrix roadmap 2022 |
-| BACnet | coming soon | | | | | Kronometrix roadmap 2022 |
-| Epidemiology | coming soon | | | | | Kronometrix roadmap 2023 |
+| X.509 Security Certificates | **yes** | no | no | no | | |
+| Serial Command Communication | **yes** | no | no | no | no | Can connect to manage and control serial devices |
+| RS232/485 | **yes** | | no | no | no | Serial RS232/RS485 support |
+| MODBUS | **yes** | | no | no | no | MODBUS RTU, ASCII, TCP support |
+| MQTT | beta | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q4 2021 |
+| Bluetooth Low Energy | comming soon | | | | | Kronometrix roadmap 2022 |
+| BACnet | Beta | | | | | Kronometrix roadmap 2022 |
+| Healthcare | comming soon | | | | | Kronometrix roadmap 2023 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | **yes** | |
 | Based on | Perl5/Lua | C/Perl/Shell | Python3 | C | C/Java | |
