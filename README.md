@@ -1,5 +1,5 @@
 <img src="/docs/img/k-logo.png" align="left" height="35" width="275" />
-<img src="/docs/img/KDR.gif" align="right" height="100" width="100" />
+<img src="/docs/img/KDR.gif" align="right" height="75" width="75" />
 <br/><br/>
 <br/>
 
