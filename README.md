@@ -1,4 +1,4 @@
-<img src="/docs/img/KDR-Text.png" align="left" height="30%" width="30%" />
+<img src="/docs/img/KDR-Text.png" align="left" height="50%" width="50%" />
 <img src="/docs/img/KDR.gif" align="right" height="75" width="75" />
 <br/><br/>
 <br/>
