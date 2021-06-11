@@ -1,7 +1,7 @@
-<img src="/docs/img/KDR-Text.png" align="left" height="81" width="325" />
+<img src="/docs/img/KDR-Text.png" align="left" height="74" width="325" />
 <img src="/docs/img/KDR.gif" align="right" height="75" width="75" />
 <br/><br/>
-<br/><br/>
+<br/>
 
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.8.3&color=success)](docs/start.md)
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
