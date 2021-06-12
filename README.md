@@ -88,5 +88,5 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 
 
 [1]: https://www.kronometrix.com/
-[2]: https://twitter.com/KronometrixHelp
+[2]: https://twitter.com/KronometrixDDF
 [3]: https://www.facebook.com/kronometrix
