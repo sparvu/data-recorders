@@ -44,39 +44,39 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * nicrec - Per NIC statistics data recorder
  * diskrec - Per disk statistics data recorder
  * hdwrec - System inventory data recorder
- * faultrec - Fault Management data recorder (beta)
+ * faultrec - Fault Management data recorder **(alpha)**
  * jvmrec - Java VM statistics data recorder
- * snmprec - Ethernet and SAN Switch, SNMP data recorder (beta)
+ * snmprec - Ethernet and SAN Switch, SNMP data recorder **(beta)**
  * netrec - TCP, UDP data recorder
  * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
- * dbrec - database data recorder: MariaDB, MySQL, PostgreSQL (beta)
+ * dbrec - database data recorder: MariaDB, MySQL, PostgreSQL **(beta)**
  * certrec - X.509 security certificate statistics data recorder
- * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP(Any)
+ * svcrec - service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * direc - filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
- * smtprec - SMTP server data recorder (beta)
- * imaprec - IMAP/POP server data recorder (beta)
+ * smtprec - SMTP server data recorder **(beta)**
+ * imaprec - IMAP/POP server data recorder **(beta)**
  * procrec - process statistics data recorder
  * webrec - web application performance,availability data recorder
- * wprec - Wordpress security, performance and availability data recorder (beta)
+ * wprec - Wordpress security, performance and availability data recorder **(alpha)**
 
 ## Public Cloud Providers
 
- * awsrec - Amazon Web Services data recorder (beta)
- * azurec - Microsoft Azure data recorder (beta)
- * gcprec - Google Computing Platform data recorder (beta)
+ * awsrec - Amazon Web Services data recorder **(alpha)**
+ * azurec - Microsoft Azure data recorder **(alpha)**
+ * gcprec - Google Computing Platform data recorder **(alpha)**
 
 ## Industrial IoT, Weather and Environment
 
  * axisrec - AXIS security and video surveillance data recorder
- * bacrec - Building management BACnet data recorder (beta)
- * blrec - Bluetooth Low Energy data recorder (alpha)
+ * bacrec - Building management BACnet data recorder **(beta)**
+ * blrec - Bluetooth Low Energy data recorder **(alpha)**
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * wsrec - General weather station recorder RS-232/USB
 
 ## Epidemiology and Preventive Healthcare  
 
- * epidmrec - Epidemiology data recorder (alpha)
+ * epidmrec - Epidemiology data recorder **(alpha)**
 
 # Commercial products
 
