@@ -80,7 +80,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 
 # Commercial products
 
-[Kronometrix K<sub>1</sub> Industrial IoT Gateway](https://www.kronometrix.com/k1)
+[Kronometrix Industrial IoT Gateway](https://www.kronometrix.com/products/iotgateway/)
 
 # Resources
 
