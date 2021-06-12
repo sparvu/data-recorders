@@ -51,12 +51,12 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
  * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(beta)**
  * certrec - X.509 security certificate statistics data recorder
- * svcrec - Service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * direc - Filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
  * smtprec - SMTP server data recorder **(alpha)**
  * imaprec - IMAP/POP server data recorder **(alpha)**
  * sockrec - Network IO Socket data recorder **(beta)**
+ * svcrec - Service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * procrec - Process statistics data recorder
  * webrec - Web application performance,availability data recorder
  * wprec - Wordpress security, performance and availability data recorder **(alpha)**
