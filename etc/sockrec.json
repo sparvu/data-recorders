@@ -1,0 +1,1044 @@
+{
+  "tcp" : [
+    {
+      "port" : "/dev/cuaU0",
+      "baudrate" : 9600,
+      "parity" : "even",
+      "stopbits" : 1,
+      "databits" : 7,
+      "timeout" : 10,
+      "amd" : [
+        {
+          "unit": 1,
+          "vendor": "vaisala",
+          "model": "qml201-hmp155",
+          "description": "Vaisala QML201 Logger Data message",
+          "checksum": "yes",
+          "command": "data",
+          "message_start": "",
+          "record_start": "",
+          "record_sep": ":",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "sname",
+              "description": "station name",
+              "type": "string"
+            },
+            {
+              "name": "curtime",
+              "description": "current logger time",
+              "type": "unixtime"
+            },
+            {
+              "name": "logtime",
+              "description": "logger data measurements time",
+              "type": "unixtime"
+            },
+            {
+              "name": "ta",
+              "description": "air temperature",
+              "type": "string"
+            },
+            {
+              "name": "rh",
+              "description": "relative humidity",
+              "type": "string"
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "description": "status",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "unit": 2,
+          "vendor": "vaisala",
+          "model": "qml201",
+          "description": "Vaisala QML201 Logger Inventory message",
+          "checksum": "yes",
+          "command": "info",
+          "message_start": "",
+          "record_start": "",
+          "record_sep": ":",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "sname",
+              "description": "station name",
+              "type": "string"
+            },
+            {
+              "name": "curtime",
+              "description": "current logger time",
+              "type": "unixtime"
+            },
+            {
+              "name": "extdc",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "voltage",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "temp",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "sastate",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "pwrstate",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "warning",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "error",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "availog",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "freemem",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "minmem",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "reset",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "uptime",
+              "description": "",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "wcd" : [
+        {
+          "unit": 1,
+          "vendor": "vaisala",
+          "model": "qml201_bh2qw",
+          "description": "Vaisala QML201 BM01, HMP155, QMS101, QMR101, WMS302",
+          "checksum": "yes",
+          "command": "data",
+          "message_start": "",
+          "record_start": "",
+          "record_sep": ":",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "sname",
+              "description": "station name",
+              "type": "string"
+            },
+            {
+              "name": "curtime",
+              "description": "current logger time",
+              "type": "unixtime"
+            },
+            {
+              "name": "logtime",
+              "description": "logger data measurements time",
+              "type": "unixtime"
+            },
+            {
+              "name": "dd",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ff",
+              "description": "",
+              "type": "string"
+            },
+
+            {
+              "name": "dd10min",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "dd10max",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ff10min",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ff10max",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "rff10min",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ta",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "tamin6",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "tamax6",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "rh",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "string"
+            },
+            {
+              "name": "p",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "qff",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "a",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "ppp",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "r10min",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "r1h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "r1h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "r3h",
+              "description": "",
+              "type": "string"
+            },            
+            {
+              "name": "r6h",
+              "description": "",
+              "type": "string"
+            },            
+            {
+              "name": "r24h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "rg1h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "sss1h",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "windstat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "tastat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "rhstat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "pastat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "prstat",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "srstat",
+              "description": "",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "unit": 2,
+          "vendor": "vaisala",
+          "model": "qml201",
+          "description": "Vaisala QML201 Logger Inventory message",
+          "checksum": "yes",
+          "command": "info",
+          "message_start": "",
+          "record_start": "",
+          "record_sep": ":",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "sname",
+              "description": "station name",
+              "type": "string"
+            },
+            {
+              "name": "curtime",
+              "description": "current logger time",
+              "type": "unixtime"
+            },
+            {
+              "name": "extdc",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "voltage",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "temp",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "sastate",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "pwrstate",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "warning",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "error",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "availog",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "freemem",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "minmem",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "reset",
+              "description": "",
+              "type": "string"
+            },
+            {
+              "name": "uptime",
+              "description": "",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "aq" : [
+        {
+          "unit": 2,
+          "vendor": "vaisala",
+          "model": "wxt520",
+          "description": "Vaisala WXT520 Series",
+          "crc": "yes",
+          "command": "2R0CRLF",
+          "message_start": "2R0",
+          "record_start": "",
+          "record_sep": ",",
+          "record_end": "CRLF",
+          "message_end": "CRLF",
+          "data": [
+            {
+              "name": "dn",
+              "description": "wind direction min",
+              "type": "string"
+            },
+            {
+              "name": "dm",
+              "description": "wind direction avg",
+              "type": "string"
+            },
+            {
+              "name": "dx",
+              "description": "wind direction max",
+              "type": "string"
+            },
+            {
+              "name": "sn",
+              "description": "wind speed min",
+              "type": "string"
+            },
+            {
+              "name": "sm",
+              "description": "wind speed avg",
+              "type": "string"
+            },
+            {
+              "name": "sx",
+              "description": "wind speed max",
+              "type": "string"
+            },
+            {
+              "name": "ta",
+              "description": "air temperature",
+              "type": "string"
+            },
+            {
+              "name": "ua",
+              "description": "relative humidity",
+              "type": "string"
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "ua" ]
+            },
+            {
+              "name": "pa",
+              "description": "air pressure",
+              "type": "string"
+            },
+            {
+              "name": "rc",
+              "description": "rain accumulation",
+              "type": "string"
+            },
+            {
+              "name": "rd",
+              "description": "rain duration",
+              "type": "string"
+            },
+            {
+              "name": "ri",
+              "description": "rain intensity",
+              "type": "string"
+            },
+            {
+              "name": "hc",
+              "description": "hail accumulation",
+              "type": "string"
+            },
+            {
+              "name": "hd",
+              "description": "hail duration",
+              "type": "string"
+            },
+            {
+              "name": "hi",
+              "description": "hail intensity",
+              "type": "string"
+            },
+            {
+              "name": "rp",
+              "description": "rain peak intensity",
+              "type": "string"
+            },
+            {
+              "name": "hp",
+              "description": "hail peak intensity",
+              "type": "string"
+            },
+            {
+              "name": "th",
+              "description": "heating temperature",
+              "type": "string"
+            },
+            {
+              "name": "vh",
+              "description": "heating voltage",
+              "type": "string"
+            },
+            {
+              "name": "vs",
+              "description": "supply voltage",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "modbus-ascii" : [
+    {
+      "port" : "/dev/cuaU0",
+      "baudrate" : 9600,
+      "parity" : "even",
+      "stopbits" : 1,
+      "databits" : 7,
+      "timeout" : 10,
+      "aq" : [
+        {
+          "unit": 1,
+          "vendor": "vaisala",
+          "model": "aqt420",
+          "description": "Vaisala AQT Series",
+          "function": 3,
+          "range": {
+            "register": 0,
+            "length":43 
+          },
+          "data": [
+            {
+              "name": "no2",
+              "description": "nitrogen dioxide",
+              "type": "int16",
+              "register": 0,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "so2",
+              "description": "sulfur dioxide",
+              "type": "int16",
+              "register": 1,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "co",
+              "description": "carbon monoxide",
+              "type": "uint16",
+              "register": 2,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "extra",
+              "type": "uint16",
+              "register": 3,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "h2s",
+              "description": "hydrogen sulfide",
+              "type": "uint16",
+              "register": 4,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "o3",
+              "description": "ozone",
+              "type": "int16",
+              "register": 5,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "no",
+              "description": "nitrogen oxide",
+              "type": "uint16",
+              "register": 6,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "voc",
+              "description": "volatile organic compounds",
+              "type": "uint16",
+              "register": 7,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "pm25",
+              "description": "particulates",
+              "type": "uint16",
+              "register": 8,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "pm10",
+              "description": "particulates",
+              "type": "uint16",
+              "register": 9,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "ta",
+              "description": "air temperature",
+              "type": "int16",
+              "register": 10,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "rh",
+              "description": "relative humidity",
+              "type": "uint16",
+              "register": 11,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "rh" ]
+            },
+            {
+              "name": "lcl",
+              "description": "lifting condensation level",
+              "type": "virtual",
+              "id": "lcl",
+              "args": [ "ta", "rh" ]
+            },
+            {
+              "name": "p",
+              "description": "air pressure",
+              "type": "uint16",
+              "register": 12,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "msval",
+              "description": "measurement validity",
+              "type": "uint16",
+              "register": 27,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "health",
+              "description": "device health",
+              "type": "uint16",
+              "register": 31,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "aqi",
+              "description": "air quality index",
+              "type": "uint16",
+              "register": 41,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "aqic",
+              "description": "air quality index criteria",
+              "type": "uint16",
+              "register": 42,
+              "length": 1,
+              "factor": 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "modbus-rtu" : [
+    {
+      "port" : "/dev/cuaU0",
+      "baudrate" : 19200,
+      "parity" : "none",
+      "stopbits" : 1,
+      "timeout" : 10,
+      "iaqd" : [
+        {
+          "unit": 1,
+          "vendor": "tongdy",
+          "model": "g01",
+          "description": "Kronometrix IAQ Series",
+          "function": 4,
+          "range": {
+            "register": 8,
+            "length": 4
+          },
+          "data": [
+            {
+              "name": "ta",
+              "description": "air temperature",
+              "type": "int16",
+              "register": 10,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "rh",
+              "description": "relative humidity",
+              "type": "uint16",
+              "register": 11,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "rh" ]
+            },
+            {
+              "name": "co2",
+              "description": "carbon dioxide",
+              "type": "uint16",
+              "register": 8,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "voc",
+              "description": "volatile organic compounds",
+              "type": "uint16",
+              "register": 9,
+              "length": 1,
+              "factor": 0.1
+            }
+          ]
+        },
+        {
+          "unit": 2,
+          "vendor": "tongdy",
+          "model": "msd1618",
+          "description": "Kronometrix IAQ Series",
+          "function": 4,
+          "data": [
+            {
+              "name": "ta",
+              "description": "air temperature",
+              "type": "floatinv",
+              "register": 16,
+              "length": 2,
+              "factor": "NA"
+            },
+            {
+              "name": "rh",
+              "description": "relative humidity",
+              "type": "floatinv",
+              "register": 18,
+              "length": 2,
+              "factor": "NA"
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "virtual",
+              "id": "dewpoint",
+              "args": [ "ta", "rh" ]
+            },
+            {
+              "name": "co2",
+              "description": "carbon dioxide",
+              "type": "floatinv",
+              "register": 20,
+              "length": 2,
+              "factor": "NA"
+            },
+            {
+              "name": "voc",
+              "description": "volatile organic compounds",
+              "type": "floatinv",
+              "register": 22,
+              "length": 2,
+              "factor": "NA"
+            },
+            {
+              "name": "pm25",
+              "description": "particulates",
+              "type": "floatinv",
+              "register": 12,
+              "length": 2,
+              "factor": "NA"
+            },
+            {
+              "name": "pm10",
+              "description": "particulates",
+              "type": "floatinv",
+              "register": 14,
+              "length": 2,
+              "factor": "NA"
+            }
+          ]
+        },
+        {
+          "unit": 3,
+          "vendor": "vaisala",
+          "model": "gmw90",
+          "description": "Vaisala GMW90 Series",
+          "function": 3,
+          "range": {
+            "register": 256,
+            "length": 4
+          },
+          "data": [
+            {
+              "name": "ta",
+              "description": "air temperature",
+              "type": "int16",
+              "register": 258,
+              "length": 1,
+              "factor": 0.01
+            },
+            {
+              "name": "rh",
+              "description": "relative humidity",
+              "type": "uint16",
+              "register": 257,
+              "length": 1,
+              "factor": 0.01
+            },
+            {
+              "name": "td",
+              "description": "dewpoint",
+              "type": "int16",
+              "register": 259,
+              "length": 1,
+              "factor": 0.01
+            },
+            {
+              "name": "co2",
+              "description": "carbon dioxide",
+              "type": "uint16",
+              "register": 256,
+              "length": 1,
+              "factor": 1
+            }
+          ]
+        }
+      ],
+      "aq": [
+        {
+          "unit": 192,
+          "vendor": "QUINT",
+          "model": "qups242410x",
+          "description": "Phoenix Contact QUINT-UPS/24DC/24DC/10",
+          "function": 4,
+          "data": [
+            {
+              "name": "BatteryMode",
+              "description": "",
+              "type": "uint16",
+              "register": 29697,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "ShutdownEvent",
+              "description": "",
+              "type": "uint16",
+              "register": 29698,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "BatteryCharging",
+              "description": "",
+              "type": "uint16",
+              "register": 29699,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "PowerSourceBoost",
+              "description": "",
+              "type": "uint16",
+              "register": 29702,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "OutputVoltage",
+              "description": "",
+              "type": "uint16",
+              "register": 29745,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "SocStateOfCharge",
+              "description": "",
+              "type": "uint16",
+              "register": 29749,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "SocResidualBackupTimeM",
+              "description": "",
+              "type": "uint16",
+              "register": 29750,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "SohResidualLifeTime",
+              "description": "",
+              "type": "uint16",
+              "register": 29753,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "BatteryVoltage",
+              "description": "",
+              "type": "uint16",
+              "register": 29792,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "BatteryTemperature",
+              "description": "",
+              "type": "uint16",
+              "register": 29793,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "OutputVoltage2",
+              "description": "",
+              "type": "uint16",
+              "register": 29794,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "BatteryChargeCurrent",
+              "description": "",
+              "type": "uint16",
+              "register": 29797,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "BatteryDischaCurrent",
+              "description": "",
+              "type": "uint16",
+              "register": 29798,
+              "length": 1,
+              "factor": 0.001
+            },
+            {
+              "name": "BatteryDetectedUnits",
+              "description": "",
+              "type": "uint16",
+              "register": 29799,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "BatteryNomCapacitymAh",
+              "description": "",
+              "type": "uint16",
+              "register": 29800,
+              "length": 1,
+              "factor": 0.1
+            },
+            {
+              "name": "ActualAlarm",
+              "description": "",
+              "type": "uint16",
+              "register": 29840,
+              "length": 1,
+              "factor": 1
+            },
+            {
+              "name": "ActualWarning",
+              "description": "",
+              "type": "uint16",
+              "register": 29844,
+              "length": 1,
+              "factor": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
