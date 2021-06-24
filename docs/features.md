@@ -10,7 +10,7 @@
 
 || Kronometrix | Nagios Xi | Datadog | Paessler | Dynatrace | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
-| SaaS | **yes** |  | **yes** | **yes** | **yes** | Run it as a service, over Internet |
+| SaaS | **yes** | no | **yes** | **yes** | **yes** | Run it as a service, over Internet |
 | On-premises | **yes** | **yes** | no | **yes** | no | Run it as a product on your private network |  
 | Edge/Fog Computing | **yes** | no | no | no | no | Run it on [Single-Board Computers](https://en.wikipedia.org/wiki/Single-board_computer), like RaspberryPI|
 
