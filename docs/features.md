@@ -5,7 +5,7 @@
 
 # Features
 
-Krnometrix Data Recording main features vs. other similar techonlogies and companies.
+The main features of Kronometrix Data Recording vs. other similar techonlogies. Includes deployment, general options and features of Kronometrix to collect and record data from different industries and applications. 
 
 ## Deployment
 
