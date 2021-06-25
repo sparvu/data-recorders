@@ -5,6 +5,7 @@
 
 # Features
 
+Krnometrix Data Recording main features vs. other similar techonlogies and companies.
 
 ## Deployment
 
