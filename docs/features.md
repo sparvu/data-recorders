@@ -3,10 +3,10 @@
 <br/><br/>
 <br/><br/>
 
-## Main Features
+# Features
 
 
-### Deployment
+## Deployment
 
 || Kronometrix | Nagios Xi | Datadog | Paessler | Dynatrace | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
@@ -15,7 +15,7 @@
 | Edge/Fog Computing | **yes** | no | no | no | no | Run it on [Single-Board Computers](https://en.wikipedia.org/wiki/Single-board_computer), like RaspberryPI|
 
 
-### Data Recording
+## Data Recording
 
 || Kronometrix | Nagios Xi | Datadog | Paessler | Dynatrace | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
