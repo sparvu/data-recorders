@@ -12,7 +12,7 @@
 A simple and efficient set of data recorders and transport utilities for multi-industry: ICT, weather and environment, industrial IoT and preventive healthcare, designed to record top essential performance metrics, save raw data and send it for further analysis.
 
 * [Design](docs/design.md)
-* [Main Features](docs/features.md)
+* [Features](docs/features.md)
 * [Getting started](docs/start.md)
 * [Contributing and support](docs/contributing.md)
 
