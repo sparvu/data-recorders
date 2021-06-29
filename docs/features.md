@@ -29,18 +29,18 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Data Ontology | **yes** | no| no | no | no | Kronometrix Data Recording has groupped and classified all recorded metrics, for a very efficient data analysis process |
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | Platform Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
-| OS Virtualization | yes | yes | **yes** | **yes** | **yes** | Kronometrix Data Recording supports Linux containers, FreeBSD jails, Solaris zones and Docker |
+| OS Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | Kronometrix Data Recording supports Linux containers, FreeBSD jails, Solaris zones and Docker |
 | Kubernets | no | no | **yes** | | | Kronometrix roadmap 2022 |
-| Network equipment (SNMP) | beta | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
+| Network equipment (SNMP) | Q4 2021 | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 J2EE, DB monitoring |
 | Internet Enterprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | X.509 Security Certificates | **yes** | no | no | no | | |
 | Serial Command Communication | **yes** | no | no | no | no | Can connect to manage and control serial devices |
 | RS232/485 | **yes** | | no | no | no | Serial RS232/RS485 support |
 | MODBUS | **yes** | | no | no | no | MODBUS RTU, ASCII, TCP support |
-| MQTT | beta | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q4 2021 |
+| MQTT | Q4 2021 | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q4 2021 |
 | Bluetooth Low Energy | comming soon | | | | | Kronometrix roadmap 2022 |
-| BACnet | Beta | no | no | no | no | Kronometrix roadmap 2022 |
+| BACnet | Q2 2022 | no | no | no | no | Kronometrix roadmap 2022 |
 | Healthcare | comming soon | no | no | no | no | Kronometrix roadmap 2023 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | **yes** | |
