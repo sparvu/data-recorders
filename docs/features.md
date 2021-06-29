@@ -31,7 +31,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | Platform Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | OS Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | Kronometrix Data Recording supports Linux containers, FreeBSD jails, Solaris zones and Docker |
-| Kubernets | no | no | **yes** | | | Kronometrix roadmap 2022 |
+| Kubernets | no | no | **yes** | | **yes** | Kronometrix roadmap 2022 |
 | Network equipment (SNMP) | Q4 2021 | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 J2EE, DB monitoring |
 | Internet Enterprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
