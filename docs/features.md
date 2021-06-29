@@ -21,12 +21,14 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 || Kronometrix | Nagios Xi | Datadog | Paessler | Dynatrace | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
 | Type | recorder | agent | agent | agent | agent | Own or 3rd party recorders. Datadog uses StatsD. Dynatrace uses native binaries and Java Compuware agent for Linux, Windows |
-| Raw data | **yes** | **yes** | no | **yes** | no | DataDog Agent7 takes 750MB disk space, no original raw data available  |  
-| Low latency | **yes** | no | no | no | no | Datadog aggregates all collected data, using different summary statistics functions. This means no possibility to retrieve the original raw data, higher consumption of system CPU resources (it needs to calculate all sort of aggregate functions). Kronometrix data recorders will not aggregate raw datadata, to always offer access to the original raw data, being very efficient, with a low memory and CPU footprint |
-| Observability and Troubleshooting | **yes** | | | | no | Kronometrix data recorders can be used interactively for observability, troubleshooting and debug operations or continously for performance analysis and capapcity planning |
-| Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity planning & management |
-| Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
+| Raw data | **yes** | **yes** | no | **yes** | no | DataDog Agent7 takes 750MB disk space, no original raw data available  |
+| Time-series Compatible | **yes** | no | no | no | no | Data organised as time series |
 | Data Ontology | **yes** | no| no | no | no | Kronometrix Data Recording has groupped and classified all recorded metrics, for a very efficient data analysis process |
+| Low latency | **yes** | no | no | no | no | Datadog aggregates all collected data, using different summary statistics functions. This means no possibility to retrieve the original raw data, higher consumption of system CPU resources (it needs to calculate all sort of aggregate functions). Kronometrix data recorders will not aggregate raw datadata, to always offer access to the original raw data, being very efficient, with a low memory and CPU footprint |
+| Rapid Prototyping | **yes** | no | no | no | no | Easy to build a new data recorder to collect data from a new data source |
+| Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity planning & management |
+| Rapid Prototyping | **yes** | no | no | no | no | Easy to build a new data recorder to collect data from a new data source |
+| Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | Platform Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | OS Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | Kronometrix Data Recording supports Linux containers, FreeBSD jails, Solaris zones and Docker |
