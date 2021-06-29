@@ -5,7 +5,7 @@
 
 # Features
 
-The main features of Kronometrix Data Recording vs. other similar ICT and IoT techonlogies. Includes deployment, general options and features of Kronometrix to collect and record data from different industries and applications and how these align to other solutions. 
+The main features of Kronometrix Data Recording vs. other similar ICT and IoT technologies. Includes deployment, general options and features of Kronometrix to collect and record data from different industries and applications and how these align to other solutions. 
 
 ## Deployment
 
