@@ -20,7 +20,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 
 || Kronometrix | Nagios Xi | Datadog | Paessler | Dynatrace | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
-| Type | recorder | agent | agent | agent | agent | Own or 3rd party recorders. Datadog uses StatsD. Dynatrace uses native binaries and Java Compuware agent for Linux, Windows |
+| Type | recorder | agent | agent | agent | agent | Own or 3rd party data recorders or agents. Datadog uses StatsD. Dynatrace uses native binaries and Java Compuware agent for Linux, Windows |
 | Raw data | **yes** | **yes** | no | **yes** | no | DataDog Agent7 takes 750MB disk space, no original raw data available  |
 | Time-series Compatible | **yes** | no | no | no | no | Data organised as time series |
 | Data Ontology | **yes** | no| no | no | no | Kronometrix Data Recording has groupped and classified all recorded metrics, for a very efficient data analysis process |
