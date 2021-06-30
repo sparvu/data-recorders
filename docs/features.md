@@ -26,7 +26,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Data Ontology | **yes** | no| no | no | no | Kronometrix Data Recording has groupped and classified all recorded metrics, for a very efficient data analysis process |
 | Low latency | **yes** | no | no | no | no | Datadog aggregates all collected data, using different summary statistics functions. This means no possibility to retrieve the original raw data, higher consumption of system CPU resources (it needs to calculate all sort of aggregate functions). Kronometrix data recorders will not aggregate raw datadata, to always offer access to the original raw data, being very efficient, with a low memory and CPU footprint |
 | Rapid Prototyping | **yes** | no | no | no | no | Easy to build a new data recorder to collect data from a new data source |
-| Performance Analysis | **yes** | | | | | Designed for performance analysis and capacity planning & management |
+| Performance Analysis | **yes** | **yes** | **yes** | **yes** | **yes** | Designed for performance analysis and capacity planning & management |
 | Coordinated Universal Time  (UTC) | **yes** | | | | | Kronometrix Data Recording uses UTC by default making easy and simple to share data  |
 | Operating System | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | Platform Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
@@ -40,7 +40,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | RS232/485 | **yes** | | no | no | no | Serial RS232/RS485 support |
 | MODBUS | **yes** | | no | no | no | MODBUS RTU, ASCII, TCP support |
 | MQTT | Q4 2021 | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q4 2021 |
-| Bluetooth Low Energy | 2022 | | | | | Kronometrix roadmap 2022 |
+| Bluetooth Low Energy | 2022 | no| no | no | no | Kronometrix roadmap 2022 |
 | BACnet | Q1 2022 | no | no | no | no | Kronometrix roadmap 2022 |
 | Healthcare | 2022 | no | no | no | no | Kronometrix roadmap 2023 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
