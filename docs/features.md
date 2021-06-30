@@ -35,7 +35,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Network equipment (SNMP) | Q4 2021 | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
 | Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 J2EE, DB monitoring |
 | Internet Enterprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
-| X.509 Security Certificates | **yes** | no | no | no | | |
+| X.509 Security Certificates | **yes** | no | no | no | no | |
 | Serial Command Communication | **yes** | no | no | no | no | Can connect to manage and control serial devices |
 | RS232/485 | **yes** | | no | no | no | Serial RS232/RS485 support |
 | MODBUS | **yes** | | no | no | no | MODBUS RTU, ASCII, TCP support |
