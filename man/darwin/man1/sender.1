@@ -1,0 +1,70 @@
+.\" Kronometrix Data Recording Manual Pages
+.\" See man kronometrix for the short list of Kronometrix
+.Dd June 23, 2019     \" DATE
+.Dt SENDER 1          \" Program name and manual section number
+.Os FreeBSD
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm sender
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd raw data transport utility
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl hvV              \" [-hvV]
+.Op Fl t Ar secs         \" [-a path]
+.Ar [interval]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+Transports Kronometrix raw data files to Kronometrix Data Analytics Platform for
+analysis and visualization. Kronometrix raw datafiles are flat files on disk,
+produced by the Kronometrix data recorders. The transport utility uses HTTP and
+HTTPS communication protocols.
+.Pp
+.Nm
+will look and read kronometrix.json, the main configuration file, where all data
+recorders and platform analytics destinations are defined. The transport utility
+automatically receives data from data recorders and deliveres to one or many data
+analytics platform for analysis. The utility will output all its messages and
+errors under its own log file, called sender.log.
+.Pp                      \" Inserts a space
+The following options are available:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl h                 \"-a flag as a list item
+help information
+.It Fl v
+verbose mode
+.It Fl t Ar sec
+timeout in seconds
+.It Fl V
+revision information
+.It interval sampling interval, in seconds. default to 60
+.El                      \" Ends the list
+.Sh FILES       \" May not be needed
+.Bl -tag -width "/opt/kronometrix/etc/kronometrix.json" -compact
+.It Pa /opt/kronometrix/etc/kronometrix.json
+Kronometrix configuration
+.El
+.Sh EXAMPLES
+.Bl -tag -width -compact
+.It Pa sender 5
+will look for new raw data every 5 seconds
+.It  Pa sender -t5 15
+will look every 15 seconds, forcing a timeout value at every 5 seconds to check
+for raw data updates
+.El                      \" Ends the list
+.Sh DIAGNOSTICS       \" May not be needed
+.Bl -diag
+.It Buffering data
+Currently the transport utility does not cache or maintain a buffer or queue of
+the raw data changes.
+.El
+.Sh SEE ALSO
+.Xr cpurec 1 ,
+.Xr diskrec 1 ,
+.Xr hdwrec 1 ,
+.Xr kronometrix 1 ,
+.Xr nicrec 1 ,
+.Xr sysrec 1
+.\" .Sh STANDARDS       \" Standards relating to command being described
+.\" .Sh HISTORY         \" Document history if command behaves uniquely
+.Sh AUTHORS
+.An Stefan Parvu, sparvu@kronometrix.org
+.\" .Sh BUGS            \" Document known, unremedied bugs

@@ -1,0 +1,187 @@
+.\" Kronometrix Data Recording Manual Pages
+.\" See man kronometrix for the short list of Kronometrix
+.Dd June 23, 2019     \" DATE
+.Dt SYSREC 1          \" Program name and manual section number
+.Os FreeBSD
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm sysrec
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd computer system performance data recorder
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl lhV              \" [-lhV]
+.Ar | [interval                 \" Underlined argument - use .Ar anywhere to underline
+[count]]                 \" Arguments
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+Reports overall system performance data, across all devices: CPU, memory,
+storage and network utilization and throughput, errors and load averages.
+.Pp
+.Nm
+can run as a command line interface utility, interactive or continuous mode. In
+interactive mode data is displayed to screen, which is useful for troubleshooting
+and debug cases. For capacity planning or long-term trend analysis, continuous
+mode is used, data being saved to disk, as
+.Ar CSV (comma-separated values)
+.Pp                      \" Inserts a space
+The following options are available:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl h                 \"-a flag as a list item
+help information
+.It Fl l
+logging mode
+.It Fl V
+revision information
+.It interval sampling interval, in seconds
+.It count
+number of samples
+.El                      \" Ends the list
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENVVAR1"
+.\" .It Ev ENVVAR1
+.\" Description of ENVVAR1
+.\" .It Ev ENVVAR2
+.\" Description of ENVVAR2
+.\" .El
+.Sh PARAMETERS          \" Section Header - required - don't modify
+.Nm
+saves all recorded data as
+.Ar CSV (comma-separated values),
+all fields separated by the character ':'
+.Bl -tag -width -indent  \" Begins a tagged list
+.It time
+UNIX time. If interval is less than a second the time will be expressed in
+milliseconds since Epoch. (Time)
+.It cpupct
+CPU utilization, across all CPUs, as percentage. (Number)
+.It sumpct
+Sum of all CPUs utilization, as percentage. (Number)
+.It headpct
+Headroom CPU available, all CPUs. (Number)
+.It userpct
+CPU user space utilization, as percentage. (Number)
+.It nicepct
+CPU user space, nice priority utilization, as percentage. (Number)
+.It syspct
+CPU system space utilization, as percentage. (Number)
+.It irqpct
+CPU percentage servicing interrupts. (Number)
+.It idlepct
+CPU idle state utulization, as percentage. (Number)
+.It runqsz
+Run queue length, tasks waiting for run time. (Number)
+.It blocked
+Number of processes blocked for resources. (Number)
+.It pagewait
+Number of processes blocked for paging. (Number)
+.It diskwait
+Number of processes blocked for disk io. (Number)
+.It sleeping
+Number of processes sleeping. (Number)
+.It memusedpct
+Size of used memory as percentage. (Number)
+.It memused
+Size of used memory in kilobytes. (Number)
+.It memavailpct
+Size of available memory as percentage. (Number)
+.It memavail
+Size of available memory in kilobytes. (Number)
+.It memtotal
+Size of memory in kilobytes. (Number)
+.It active
+Size of active memory pages in kilobytes. (Number)
+.It inactive
+Size of inactive memory pages in kilobytes. (Number)
+.It wired
+Size of wired memory pages in kilobytes. (Number)
+.It cache
+Size of memory pages on cache queue in kilobytes. (Number)
+.It free
+Size of free memory pages in kilobytes. (Number)
+.It realfree
+Size of real free memory in kilobytes, (inactive + cache + free). (Number)
+.It realfreepct
+Size of real free memory as percentage, of total memory. (Number)
+.It swapin
+Swap pager pageins. (Number)
+.It swappgsin
+Swap pager pages paged in. (Number)
+.It swapout
+Swap pager pageouts. (Number)
+.It swappgsout
+Swap pager pages paged out. (Number)
+.It reads
+Read requests per second. (Number)
+.It rkbytes
+Read KB per second. (Number)
+.It writes
+Write requests per second. (Number)
+.It wkbytes
+Write KB per second. (Number)
+.It queue
+Number of not yet completed storage transactions. (Number)
+.It service
+Service time per storage transaction in miliseconds. (Number)
+.It diskutil
+Percentage of time the device had one or more transactions outstanding. (Number)
+.It iops
+Disk read+write requests per second. (Number)
+.It rwkbytes
+Read+write in KB per second. (Number)
+.It rxpkt
+Network rx packets per second. (Number)
+.It rxkbytes
+Network rx KB per second. (Number)
+.It rxerr
+Network rx packets containing errors. (Number)
+.It rxdrop
+Network rx drop packets per second. (Number)
+.It txpkt
+Network tx packets per second. (Number)
+.It txkbytes
+Network tx KB per second. (Number)
+.It txerr
+Network tx packets containing errors. (Number)
+.It cols
+Number of network collisions. (Number)
+.It drops
+Number of network dropped packets per second. (Number)
+.It rxtxpkt
+Network rx+tx packets per second. (Number)
+.It rxtxkbytes
+Network rx+tx KB per second. (Number)
+.It avg1
+LA of the last minute. (Number)
+.It avg5
+LA of the last 5 minutes (Number)
+.It avg15
+LA of the last 15 minutes (Number)
+.El
+.Sh EXAMPLES
+.Bl -tag -width -compact
+.It Pa sysrec 5
+print system performance data, every 5 seconds
+.It  Pa sysrec 5 10
+print 10 times, every 5 seconds interactively to screen
+.It  Pa sysrec -l 60
+print continuously, every 60 seconds to raw datafile
+.El                      \" Ends the list
+.Sh DIAGNOSTICS       \" May not be needed
+.Bl -diag
+.It Sampling interval
+This recorder supports sub second interval values. Running the recorder with
+values lower than second for long periods of time will add an overhead in terms
+of cpu utilization. The lower the interval value the higher the cpu utilization.
+We do not recommend using values lower than 60 seconds (60s) for capacity
+planning, performance analysis or other type of long historical data analysis.
+.El
+.Sh SEE ALSO
+.Xr cpurec 1 ,
+.Xr diskrec 1 ,
+.Xr hdwrec 1 ,
+.Xr kronometrix 1 ,
+.Xr nicrec 1
+.\" .Sh STANDARDS       \" Standards relating to command being described
+.\" .Sh HISTORY         \" Document history if command behaves uniquely
+.Sh AUTHORS
+.An Stefan Parvu, sparvu@kronometrix.org
+.\" .Sh BUGS            \" Document known, unremedied bugs

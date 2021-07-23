@@ -1,0 +1,124 @@
+.\" Kronometrix Data Recording Manual Pages
+.\" See man kronometrix for the short list of Kronometrix
+.Dd June 23, 2019     \" DATE
+.Dt XENREC 1          \" Program name and manual section number
+.Os FreeBSD
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm xenrec
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd computer system Xen hypervisor data recorder
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl lhV              \" [-lhV]
+.Op Fl d Ar domain,...              \" [-lhV]
+.Ar | [interval                 \" Underlined argument - use .Ar anywhere to underline
+[count]]                 \" Arguments
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+Reports per Xen domain statistics: domain state, cpu usage in seconds, cpu usage
+in percentage, current memory, current memory in percentage, maximum domain
+memory stats, in KB and many others. The recorder uses xentop utility to fetch
+all metrics. A system running Xen Hypervisor should have by default xentop
+installed. If the utility is not found xenrec will not run.
+.Pp
+.Nm
+can run as a command line interface utility, interactive or continuous mode. In
+interactive mode data is displayed to screen, which is useful for troubleshooting
+and debug cases. For capacity planning or long-term trend analysis, continuous
+mode is used, data being saved to disk, as
+.Ar CSV (comma-separated values)
+.Pp                      \" Inserts a space
+The following options are available:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl h                 \"-a flag as a list item
+help information
+.It Fl l
+logging mode
+.It Fl d Ar domain
+Xen domain name
+.It Fl V
+revision information
+.It interval sampling interval, in seconds
+.It count
+number of samples
+.El                      \" Ends the list
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENVVAR1"
+.\" .It Ev ENVVAR1
+.\" Description of ENVVAR1
+.\" .It Ev ENVVAR2
+.\" Description of ENVVAR2
+.\" .El
+.Sh PARAMETERS          \" Section Header - required - don't modify
+.Nm
+saves all recorded data as
+.Ar CSV (comma-separated values),
+all fields separated by the character ':'
+.Bl -tag -width -indent  \" Begins a tagged list
+.It time
+UNIX time. If interval is less than a second the time will be expressed in
+milliseconds since Epoch. (Time)
+.It name
+domain name, the guest domU name. (String)
+.It state
+domain state: blocked (b), dying (d), shutdown (s) crashed (c), paused (p), running (r). (Number)
+.It cputime
+cpu usage in seconds (Number)
+.It cpupct
+cpu usage in percentage. (Number)
+.It mem
+current memory. (Number)
+.It mempct
+current memory in percentage. (Number)
+.It maxmem
+maximum domain memory stats, in KB. (Number)
+.It maxmempct
+memory stats in percentage, ratio of current domain memory to total node memory. (Number)
+.It vpus
+number of virtual processing units, vCPUs. (Number)
+.It nets
+number of virtual networks. (Number)
+.It nettx
+data transmission rate in KB. (Number)
+.It netrx
+data receiving rate in KB. (Number)
+.It vbds
+total number of virtual block devices in the domain. (Number)
+.It vbdoo
+total number of VBD OO requests. (Number)
+.It vbdrd
+VBD read rate. (Number)
+.It vbdwr
+VBD write rate. (Number)
+.It vbdrsect
+VBD read sectors rate. (Number)
+.It vbdwsect
+VBD write sectors rate. (Number)
+.It ssid
+domain security id. (Number)
+.El
+.Sh EXAMPLES
+.Bl -tag -width -compact
+.It Pa xenrec 60
+print system performance data, every 60 seconds
+.It  Pa xenrec 60 10
+print 10 times, every 60 seconds interactively to screen
+.It  Pa xenrec -l 60
+print continuously, every 60 seconds to raw datafile
+.El                      \" Ends the list
+.Sh DIAGNOSTICS       \" May not be needed
+.Bl -diag
+.It Sampling interval
+This recorder does not support interval values lower than 2 seconds!
+.El
+.Sh SEE ALSO
+.Xr cpurec 1 ,
+.Xr diskrec 1 ,
+.Xr hdwrec 1 ,
+.Xr kronometrix 1 ,
+.Xr nicrec 1 ,
+.Xr sysrec 1
+.\" .Sh STANDARDS       \" Standards relating to command being described
+.\" .Sh HISTORY         \" Document history if command behaves uniquely
+.Sh AUTHORS
+.An Stefan Parvu, sparvu@kronometrix.org
+.\" .Sh BUGS            \" Document known, unremedied bugs

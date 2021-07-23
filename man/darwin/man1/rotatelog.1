@@ -1,0 +1,601 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH ROTATELOG 1 "perl 5.005, patch 03" "27/May/2001" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+rotatelog \- rotates files when they reach a certain trigger size.
+.SH "SYNOPSIS"
+rotatelog [\-cdht]
+.SH "DESCRIPTION"
+This is a program to rotate log files.  It can rotate any file listed in
+its configuration file.  The file does not necessarily need to be log
+file.  This program imitates the \f(CWlogrotate\fR and \f(CWnewsyslog\fR programs
+found on Linux and FreeBSD respectively.  I originally wrote this to
+make life easier in Solaris.
+.SH "OPTIONS"
+.Ip "\fB\-c\fR" 5
+Specify the location of the configuration file.  Multiple configuration
+files can be separated by commas with no spaces.
+.Ip "\fB\-d\fR" 5
+Turn on debug output.  This is verbose output that shows most of what
+\f(CWrotatelog\fR does.
+.Ip "\fB\-h\fR" 5
+Print the help information.
+.Ip "\fB\-t\fR" 5
+Turn on the test flag.  This causes \f(CWrotatelog\fR to run as if all files
+need rotation, but disallows the actual rotation.  This is most useful
+in combination with the \fB\-d\fR flag.
+.SH "ERRORS"
+This program will exit if it cannot open its configuration \fIfile\fR\|(s) and if
+any of the system calls fail.  This program will also exit if the there
+are any syntax errors in the actions section.  Any other configuration
+file errors are ignored and a warning is issued.  All error messages are
+printed to \f(CWSTDERR\fR.  This program is meant to be run as a cron job so
+error messages such as these will be mailed to the owner of the cron
+job.  Many times \f(CWrotatelog\fR is run in the \f(CWroot\fR crontab.
+.SH "FILES"
+The \f(CWrotatelog\fR program depends upon its configuration file for
+information concerning what files to rotate and when to rotate them.
+The \f(CWrotatelog.conf\fR file is located in the \f(CW/usr/local/etc\fR directory
+by default.  This location is set in the configuration section of the
+source code along with the paths to certain system utility functions.
+It is possible to specify a new configuration file via the \f(CW-c\fR command
+line option, and it is also possible to specify multiple configuration
+files in this manner as well using the form \f(CW-c file1,file2,file3\fR.
+Note that configuration files that appear later in a multiple
+configuration specification can override settings in previous
+configuration files.  When installing this program it will be necessary
+to check this section of the source code.  Along with specifying the the
+files to rotate there is also the ability to specify ownership and mode
+of the files after rotation, the number of rotated files to keep, the
+compression used or not used on the rotated files, and an auxiliary
+action in the form of a shell command to take place when certain files
+are rotated.  The \f(CWrotatelog\fR program is normally run as \f(CWroot\fR.  It
+is important that the config file is only writable by \f(CWroot\fR due to the
+ability to execute shell commands!
+.PP
+There are three sections in the configuration file.  They can appear in
+any order.  Each section is identified by a keyword.  Configuration
+information follows the keyword and extends until the next keyword.
+Keywords can come in any order and repeat, but it would be best to
+follow a simple format such as:
+.PP
+.Vb 1
+\& FILES:
+.Ve
+.Vb 2
+\& # File  Trigger  Owner:Group  Mode  Compress  Archive_Limit
+\& # =========================================================
+.Ve
+.Vb 4
+\& /var/log/wtmp      1M   root:wheel  664  none  4
+\& /var/log/wtmpx     4M   root:wheel  644  none  4
+\& /var/log/messages  74K  root:wheel  664  Z     5
+\& /var/log/maillog   60K  root:wheel  664  gz    7
+.Ve
+.Vb 1
+\& ACTIONS:
+.Ve
+.Vb 2
+\& # Shell Command :file1,file2,file3 ... fileN
+\& # ==========================================
+.Ve
+.Vb 2
+\& rotate1                             : /var/log/wtmp,/var/log/wtmpx
+\& kill -HUP `cat /var/run/syslog.pid` : /var/log/messages,/var/log/maillog
+.Ve
+.Vb 1
+\& NOTIFY:
+.Ve
+.Vb 2
+\& # Person to email rotation notification
+\& # =====================================
+.Ve
+.Vb 1
+\& root@localhost
+.Ve
+Comment lines must contain a pound sign at the start of the line.  These
+comment lines are ignored along with blank lines and lines containing
+only whitespace.  In general there can be no leading whitespace on
+configuration lines while there can be any amount of whitespace between
+elements.
+.Sh "Files"
+The files section specifies which files are to be rotated, when they are
+to be rotated, what their ownership and modes are to be post rotation,
+how many rotated copies are to be retained, and the compression used on
+the files once rotated.  The beginning of the files section is noted by
+the occurrence of the \f(CWFILES:\fR keyword.
+.PP
+This information must adhere to the following syntax:
+.PP
+.Vb 1
+\& File  Trigger  Owner:Group  Mode  Compress  Archive_Limit
+.Ve
+For example:
+.PP
+.Vb 4
+\& /var/log/wtmp      1M   root:wheel  664  none  4
+\& /var/log/wtmpx     4M   root:wheel  644  none  4
+\& /var/log/messages  74K  root:wheel  664  Z     5
+\& /var/log/maillog   60K  root:wheel  664  gz    7
+.Ve
+The fields above can be separated by any amount of whitespace.  The
+first field is the full path to the file that requires rotation.  The
+second field is the \f(CWtrigger\fR.  The \f(CWtrigger\fR specifies when rotation
+is to occur.  The \f(CWtrigger\fR is the maximum size of a file in bytes,
+kilobytes, or megabytes.  Bytes can be specified with B or b, kilobytes
+with K or k, or megabytes can be specified with M or m.  If a file
+listed is found to be larger than the \f(CWtrigger\fR it is rotated.  The
+\f(CWowner:group\fR field specifies who is to own the file once it is
+rotated.  The \f(CWmode\fR is the file permission mode in octal notation of
+the rotated file as specified in the \fIchmod\fR\|(1) manual page.  The mode
+does not include the optional first digit of the four digit \fIchmod\fR\|(1)
+octal mode.  The mode is only the simple three digit format shown above.
+The \f(CWcompression\fR field specifies the type of compression to use on the
+rotated file.  A file can be compressed with \f(CWgzip\fR (gz), \f(CWcompress\fR
+(Z), or not at all (none).  The \f(CWarchive limit\fR field specifies how
+many copies of a rotated file to keep.  This number is the highest count
+in the rotation scheme.  The rotation count starts at 0 so this is
+actually one higher then the total number of files kept.  If the
+\f(CWarchive limit\fR were set to 4 for the file \f(CW/var/log/wtmp\fR the maximum
+number of archived \f(CWwtmp\fR files would be 5.  The files would appear in
+the \f(CW/var/log/\fR directory as:
+.PP
+.Vb 6
+\& wtmp    <-- the current wtmp file.
+\& wtmp.0  <-- the first archive of wtmp.
+\& .
+\& .
+\& .
+\& wtmp.4  <-- the last archive of wtmp.
+.Ve
+If the last file of an archive exists, wtmp.4 in the above example, it
+is removed during the rotation and the previous archive file wtmp.3 is
+renamed accordingly.  All other files are rotated in the same manner
+until the current file is reached and rotated.
+.Sh "Actions"
+The actions section specifies if any actions are to occur for any of the
+rotated files.  The actions section is denoted by the \f(CWACTIONS:\fR
+keyword.  Sometimes a process must be notified that it must close its
+file descriptors and open new ones due to something like a file
+rotation.  Many processes will handle this action when the receive a
+\f(CWSIGHUP\fR signal.  Most of the time a \f(CWkill -HUP\fR on the process will
+accomplish this.  One example is \f(CWsyslogd\fR.  We can see that \f(CWsyslogd\fR
+has certain files open all of the time by using \f(CWlsof\fR to inquire about
+the status of one of its log files:
+.PP
+.Vb 3
+\& [rowland@darkstar rowland]$ sudo lsof /var/log/messages
+\& COMMAND PID USER   FD   TYPE   DEVICE SIZE/OFF NODE NAME
+\& syslogd  99 root    8w  VREG 4,131076     3119  232 /var/log/messages
+.Ve
+It is not enough to just move the current file into the archive and
+touch a new one for writing.  The \f(CWsyslogd\fR process must be told that a
+new file exists and that it is to close the current file descriptor and
+open a new one on the same file name (not to keep writing to the file
+pointed to by the current file descriptor).  This is what the actions
+section does.  The actions section has the following syntax:
+.PP
+.Vb 3
+\& Shell Command : file1, file2, file3, ... fileN
+\& - or -
+\& Shell Command : rotate1, rotate2, ... rotateN
+.Ve
+For example:
+.PP
+.Vb 5
+\& rotate1                             : /var/log/wtwp, /var/log/wtmpx
+\& - or -
+\& kill -HUP `cat /var/run/syslog.pid` : rotate1
+\& - or -
+\& kill -HUP `cat /var/run/syslog.pid` : /var/log/messages,/var/log/maillog
+.Ve
+You are free to add whitespace around the \f(CW:\fR and \f(CW,\fR characters.
+This extra whitespace will be ignored.  When the \f(CW/var/log/messages\fR
+file is to be rotated it is first moved to a new name, but not
+compressed.  The \f(CWsyslogd\fR program will still be writing to this file
+even though the name has changed because its file descriptor points to
+this location on the filesystem and the file descriptor is still open at
+this point.  A new file is touched and its permissions and ownership are
+set to the values specified in the files section.  Then the \f(CWSIGHUP\fR
+signal is the sent to \f(CWsyslogd\fR, and it closes the rotated file and
+opens the new file that replaces it.  After this is done it is safe to
+compress the old file if compression was specified in the files section.
+.PP
+There is also a special action called \f(CWrotate\fR which allows you to bind
+multiple files together for rotation.  All of the files must be present
+in the files section so that \f(CWrotatelog\fR knows how to rotate them.
+When one file is rotated then the other files bound with it are rotated
+immediately.  The format of \f(CWrotate\fR is:
+.PP
+.Vb 1
+\& rotateN : file1, file2, ... fileN
+.Ve
+The \f(CWrotate\fR command must be followed by an integer.  This allows for
+more than one binding but only for different groups of files.  You may
+not leave the integer off.  The \f(CWwtmp\fR file is a good candidate for
+this type of rotation.  When the \f(CWwtmp\fR file is rotated it is a good
+idea to also rotate the \f(CWwtmpx\fR file.  A binding of:
+.PP
+.Vb 1
+\& rotate1 : /var/adm/wtmp, /var/adm/wtmpx
+.Ve
+will rotate both files whenever one of them needs rotation.  When
+binding files for rotation in this manner, there is only one way to
+associate another action (a normal shell command) to the rotation of the
+bound files.  Using the \f(CWrotate\fR action indicates that all files are to
+be rotated at the same time.  If an action is also to occur, we must be
+certain that all of the files have begun rotation before executing that
+action.  An action on the group of bound files in the \f(CWrotate\fR group is
+specified by using that \f(CWrotate\fR action as the bound file for the
+normal shell command action.  The \f(CWsyslogd\fR example is perfect for
+this.  In the \f(CWsyslogd\fR case one would probably want to send \f(CWsyslogd\fR
+a \f(CWSIGHUP\fR signal once all \f(CWsyslogd\fR files have been rotated.  This is
+how that is accomplished:
+.PP
+.Vb 2
+\& rotate2                             : /var/log/messages,/var/log/maillog
+\& kill -HUP `cat /var/run/syslog.pid` : rotate2
+.Ve
+This ensures the following steps occur during file rotation:
+.PP
+.Vb 5
+\& 1.  Begin rotation on a file.
+\&          - Figure out the archive count of the current file.
+\&          - Rotate old logs up one count, removing the last if necessary.
+\&          - Rotate the current file up one count.
+\&          - Touch a new version of the file.
+.Ve
+.Vb 16
+\& 2.  Perform any actions on the file.
+\&          - Check rotateN bound files.
+\&                 [if file is in a rotateN group]
+\&                 - Begin any file rotation on the other files in the
+\&                   rotateN bound group.  All other files are put
+\&                   through step #1 at this point.
+\&                 - Perform any normal shell command action associated
+\&                   with this group of rotateN bound files.
+\&                 - Finish rotation of all other files bound in the
+\&                   rotateN group.  This is step #3.
+\&                 - Return.  This causes the original file that triggered
+\&                   this recursion to finish its rotation.
+\&          - Check normal shell command actions.
+\&                 [in this case the file was not in a rotateN group]
+\&                 - Perform the shell command action.
+\&                 - Return.  This moves the file into step #3.
+.Ve
+.Vb 4
+\& 3.  Finish rotating a file.
+\&          - Compress the previous log file if the file has been specified
+\&            for compression in the files section.
+\&          - Add the file to the list of files which have been rotated.
+.Ve
+This process ensures that any files bound together are in the beginning
+of file rotation before any shell commands are executed as a result of
+this rotation.  Once the shell command action occurs, if there is one,
+all of the files finish their rotation.  Due to this flexibility in file
+rotation actions, the following rules apply to the actions section:
+.PP
+.Vb 1
+\& 1.  A file may appear in only one rotateN group.
+.Ve
+.Vb 1
+\& 2.  A file may appear in only one normal shell command group.
+.Ve
+.Vb 2
+\& 3.  A file may not appear in both a rotateN group and a normal shell
+\&     command action.
+.Ve
+.Vb 2
+\& 4.  A normal shell command may be bound explicitly to a file that is
+\&     not in a rotateN group.
+.Ve
+.Vb 3
+\& 5.  A normal shell command cannot be bound to a file in a rotateN
+\&     group explicitly.  To bind a shell command to files in a rotateN
+\&     group one must implicitly bind the command to the rotateN action.
+.Ve
+If there are no actions to perform when any of the files are rotated
+this section may be omitted from the configuration file.  If you rotate
+log files written to by \f(CWsyslogd\fR then you will most certainly require
+one of the examples above with the appropriate path to your
+\f(CWsyslogd.pid\fR file.  If you leave out this step and rotate \f(CWsyslogd\fR
+files, \f(CWsyslogd\fR will most certainly \s-1NOT\s0 be your friend.  If you choose
+to bind \f(CWsyslogd\fR files together in a rotateN group, all of the files
+will be rotated when one file is rotated.  If you want to define the
+action for each file, only when that file is rotated, do not use the
+rotateN form of the action.  It all depends on what you wish to do.
+.Sh "Notify"
+The notify section specifies who is to receive notification in the event
+that any files are rotated.  The notify section is started with the
+\f(CWNOTIFY:\fR keyword.  The notification is sent out via email to the full
+email address specified in this section.  This is the simplest section.
+The email address is simply listed as in the following example:
+.PP
+.Vb 2
+\& # Person to receive email rotation notification
+\& # =============================================
+.Ve
+.Vb 1
+\& root@localhost
+.Ve
+If there is to be no notification this section may be omitted or a value
+of \*(L"none\*(R" may be used.  There can only be one email address in this
+section.
+.SH "RESTRICTIONS"
+There can be no leading whitespace on config file lines.  Someday I may
+fix that.  The files must be specified with their full paths in all
+sections.  This is true in the actions section where you can list an
+action for multiple files.  If there are any syntax errors in the
+configuration file those lines will be ignored and a warning will be
+printed to \f(CWSTDERR\fR.  If this program is run as a cron job this will
+result in an email message to the owner of the cron job.  In most cases
+this will be \f(CWroot\fR.
+.SH "AUTHOR"
+This piece of code was written by Shaun Rowland (rowland@interhack.net)
+mostly during the early hours of the morning.  In my world that is
+considered \*(L"day\*(R" while afternoon is considered \*(L"night\*(R".  Go figure.
+.PP
+Copyright 1999, 2000, 2001 Interhack Corporation.  All rights reserved.
+.SH "HISTORY"
+$Log: rotatelog,v $
+Revision 1.7  2001/05/27 18:21:21  rowland
+Added hostname information.
+.PP
+Revision 1.6  2001/05/23 15:10:48  rowland
+Removed history stuff that killed pod2latex.
+.PP
+Revision 1.5  2001/05/23 15:04:47  rowland
+Fixed a bug where extra whitespace at the end of an ACTIONS line would cause
+the file eq check file at the end of do \fIaction()\fR to fail.  Doh!  Now we
+are good to go.
+.PP
+Revision 1.4  2001/05/19 21:23:32  rowland
+Updated the following in logrotate 1.3:
+.PP
+.Vb 4
+\&        * Added the -c and -h command line options.
+\&        * Added the B and b trigger size specification.
+\&        * Changed the release Makefile to create installation directories if
+\&          they do not already exist.
+.Ve
+Revision 1.3  2001/04/22 23:01:36  rowland
+Updated perldoc and config file to better reflect reality in rotating
+syslogd files.  You wouldn not normally put these files in a rotateN group
+and then define an action for that group because this would cause all of
+the files to be rotated when just one of them is rotated.  You could do
+this if you wanted, but it makes a perfect example.  Better examples will
+follow later, but the examples here should better reflect reality.
+.PP
+Revision 1.2  2001/04/22 22:45:25  rowland
+Added more actions section error checking and cleaned up the default settings.
+.PP
+Revision 1.1.1.1  2001/04/22 21:58:26  rowland
+The rotatelog program was designed to rotate files and perform actions on
+those files once rotated if desired.  This program began its life as
+logrotate.  I changed the name so it would not be confused with the GNU
+logrotate program.  This version includes improved code for handling
+rotateN bound files and actions on those bound files (in other words it
+now works properly).
+
+.rn }` ''
+.IX Title "ROTATELOG 1"
+.IX Name "rotatelog - rotates files when they reach a certain trigger size."
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "OPTIONS"
+
+.IX Item "\fB\-c\fR"
+
+.IX Item "\fB\-d\fR"
+
+.IX Item "\fB\-h\fR"
+
+.IX Item "\fB\-t\fR"
+
+.IX Header "ERRORS"
+
+.IX Header "FILES"
+
+.IX Subsection "Files"
+
+.IX Subsection "Actions"
+
+.IX Subsection "Notify"
+
+.IX Header "RESTRICTIONS"
+
+.IX Header "AUTHOR"
+
+.IX Header "HISTORY"
+
