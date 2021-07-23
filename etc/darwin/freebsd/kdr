@@ -1,0 +1,68 @@
+#!/bin/sh
+
+#  Copyright (c) 2021 Stefan Parvu (www.kronometrix.org).
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+#
+# Add the following lines to /etc/rc.conf to enable Kronometrix
+#
+# kdr_enable="YES"
+# kdr_user="krmx"
+
+. /etc/rc.subr
+
+name=kdr
+rcvar=kdr_enable
+
+load_rc_config ${name}
+
+command=/opt/kronometrix/etc/rec
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+status_cmd="${name}_status"
+
+: ${kdr_enable="YES"}
+: ${kdr_user="krmx"}
+: ${kdr_flags=""}
+: ${kdr_args=""}
+
+kdr_start() {
+    unset "${rc_arg}_cmd"
+    local cmd
+    kdr_args="start"
+    cmd="${command} ${kdr_args}"
+    su -m ${kdr_user} -c "${cmd}"
+}
+
+
+kdr_stop() {
+    local cmd
+    kdr_args="stop"
+    cmd="${command} ${kdr_args}"
+    su -m ${kdr_user} -c "${cmd}"
+}
+
+
+kdr_status() {
+    local cmd
+    kdr_args="status"
+    cmd="${command} ${kdr_args}"
+    su -m ${kdr_user} -c "${cmd}"
+}
+
+run_rc_command "$1"
