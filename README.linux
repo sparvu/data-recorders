@@ -13,9 +13,12 @@ More information: www.kronometrix.com/k1
   We support the following 64bit Linux based operating systems:
 
     CentOS 7.9 x86_64
+    RHEL 8 x86_64
     Debian 9.13 amd64
     CloudLinux 7 x86_64
     Ubuntu Server Edition 18 amd64
+    SLES 15 x86_64
+    OpenSuse Leap 15 x86_64
     Raspbian GNU/Linux 8+ armv8
 
   For Debian based distributions (DEB), we support, latest Debian 9.13 operating system
