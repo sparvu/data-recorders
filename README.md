@@ -35,6 +35,27 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 * Full control with no complicated licenses for further development
 * [See more](docs/features.md)
 
+# Supported Systems
+
+* CentOS 7.9 x86_64
+* RHEL 8 x86_64
+* Debian 9.13 amd64
+* CloudLinux 7 x86_64
+* Ubuntu Server Edition 18 amd64
+* SLES 15 x86_64
+* OpenSuse Leap 15 x86_64
+* Raspbian GNU/Linux 8+ armv8
+* Solaris 11 (Ask support)
+* FreeBSD
+* MacOS (Q4 2021)
+* Windows 7
+* Windows 8
+* Windows 10
+* Windows 11 (TBD)
+* Windows 2008 R2 Server x64
+* Windows 2012 R2 Server x64
+* Windows 2016 R2 Server x64
+
 # Supported Industries
 
 ## Information and Communications Technology
@@ -44,40 +65,40 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * nicrec - Per NIC statistics data recorder
  * diskrec - Per disk statistics data recorder
  * hdwrec - System inventory data recorder
- * faultrec - Fault Management data recorder **(alpha)**
+ * faultrec - Fault Management data recorder **(Q1 2022)**
  * jvmrec - Java VM statistics data recorder
- * snmprec - Ethernet and SAN Switch, SNMP data recorder **(beta)**
+ * snmprec - Ethernet and SAN Switch, SNMP data recorder **(Q4 2021)**
  * netrec - TCP, UDP data recorder
  * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
- * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(beta)**
+ * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(Q1 2022)**
  * certrec - X.509 security certificate statistics data recorder
  * direc - Filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
- * smtprec - SMTP server data recorder **(alpha)**
- * imaprec - IMAP/POP server data recorder **(alpha)**
- * sockrec - Network IO Socket data recorder **(beta)**
+ * smtprec - SMTP server data recorder **(Q1 2022)**
+ * imaprec - IMAP/POP server data recorder **(Q1 2022)**
+ * sockrec - Network IO Socket data recorder **(Q4 2021)**
  * svcrec - Service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * procrec - Process statistics data recorder
  * webrec - Web application performance,availability data recorder
- * wprec - Wordpress security, performance and availability data recorder **(alpha)**
+ * wprec - Wordpress security, performance and availability data recorder **(Q1 2022)**
 
 ## Public Cloud Providers
 
- * awsrec - Amazon Web Services data recorder **(alpha)**
- * azurec - Microsoft Azure data recorder **(alpha)**
- * gcprec - Google Computing Platform data recorder **(alpha)**
+ * awsrec - Amazon Web Services data recorder **(2022)**
+ * azurec - Microsoft Azure data recorder **(2022)**
+ * gcprec - Google Computing Platform data recorder **(2022)**
 
 ## Industrial IoT, Weather and Environment
 
  * axisrec - AXIS security and video surveillance data recorder
- * bacrec - Building management BACnet data recorder **(beta)**
- * blrec - Bluetooth Low Energy data recorder **(alpha)**
+ * bacrec - Building management BACnet data recorder **(Q2 2022)**
+ * blrec - Bluetooth Low Energy data recorder **(Q1 2021)**
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * wsrec - General weather station recorder RS-232/USB
 
 ## Epidemiology and Preventive Healthcare  
 
- * epidmrec - Epidemiology data recorder **(alpha)**
+ * epidmrec - Epidemiology data recorder **(2022)**
 
 # Commercial products
 
