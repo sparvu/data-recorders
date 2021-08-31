@@ -56,7 +56,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 * Windows 2012 R2 Server x64
 * Windows 2016 R2 Server x64
 
-# Supported Industries
+# Industries
 
 ## Information and Communications Technology
 
