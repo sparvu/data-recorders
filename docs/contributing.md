@@ -5,10 +5,7 @@
 
 ### Contributing
 
-If you have any technical problems, questions or new ideas, please
-contact us by opening a [new change request](https://gitlab.com/kronometrix/recording/issues). For any security vulnerabilities found please open a new
-[change request](https://gitlab.com/kronometrix/recording/issues) marking
-the subject as security vulnerability.
+If you have any technical problems, questions or new ideas, please talk to us. You can join our [Discord server](https://discord.gg/PF7wqeuCFV) or contact us by opening a [new change request](https://gitlab.com/kronometrix/recording/issues). For any security vulnerabilities found please open a new [change request](https://gitlab.com/kronometrix/recording/issues) marking the subject as security vulnerability.
 
 
 ### Commercial Support
