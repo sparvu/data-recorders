@@ -1,0 +1,125 @@
+#! /opt/kronometrix/perl/bin/perl
+
+use lib './lib';
+use Kronometrix;
+use Kronometrix::Snmprec;
+use POSIX qw(pause);
+use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
+use Getopt::Std;
+use File::Basename;
+use strict;
+use warnings;
+use v5.32;
+
+our $VERSION = '0.0.1';
+my  $LASTREV = '2021-08-08';
+
+### Configuration variables
+
+my $cfile   = 'snmprec.json';          # configuration file
+my $kfile   = 'kronometrix.json';      # general configuration file
+my $recname = basename($0);
+
+### Process command line args
+
+my %opts;
+
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+
+getopts('ahlvVdg:t', \%opts) or HELP_MESSAGE();
+if ($opts{h}) {
+    HELP_MESSAGE();
+}
+if ($opts{V}) {
+    VERSION_MESSAGE();
+    exit 0;
+}
+
+# verbose and debug flags
+my $verbose  = exists $opts{v} || exists $opts{d} || 0;
+my $debug    = exists $opts{d} || 0;
+my $timeout = exists $opts{t} ? $opts{t} : 5;
+
+# Maximum number of concurrent requests
+my $num_concurrent_reqs = exists $opts{g} ? $opts{g} : 25;
+$num_concurrent_reqs    = 1 unless exists $opts{a};
+
+# logging option
+Kronometrix->log_to_file($kfile, $0) if $opts{l};
+
+# process [interval [count]]
+my ( $interval, $loop_max );
+if ( defined $ARGV[0] ) {
+    $interval  = $ARGV[0];
+    $loop_max  = defined $ARGV[1] ? $ARGV[1] : 2**32;
+    HELP_MESSAGE() if $interval == 0;
+}
+else {
+    $interval = 1;
+    $loop_max = 1;
+}
+
+### Parse config file
+
+my $snmprec = Kronometrix::Snmprec->new(
+    max_concurrent_requests => $num_concurrent_reqs,
+    timeout                 => $timeout,
+    verbose                 => $verbose,
+    debug                   => $debug,
+    config_file             => $cfile,
+);
+
+$snmprec->warnings_to_log;
+
+$snmprec->write_verbose(
+      "INFO: Interval: $interval - Iterations: $loop_max "
+    . "- Num of concurrent requests: $num_concurrent_reqs "
+    . "- Total workload requests: " . $snmprec->{queue}->@*
+);
+
+### Main loop
+
+# Set timer between queue executions
+local $SIG{ALRM} = sub {};
+
+local $| = 1;
+setitimer(ITIMER_REAL, $interval, $interval);
+
+while ($loop_max) {
+    $snmprec->process;
+    $loop_max--;
+    $snmprec->write_verbose("INFO: Remaining iterations: $loop_max");
+    pause if $loop_max;
+}
+Kronometrix->write_log("INFO: Iterations finished");
+
+### Auxiliary subroutines
+
+# Usage - print usage and exit.
+sub HELP_MESSAGE {
+    print STDERR <<END;
+USAGE: svcrec [-dhlvV] [-t secs] [-a [-g concurrent]] [interval [count]]
+OPTIONS:
+  -a        : perform requests asynchronously
+  -g        : the number of concurrent requests. Default is 25.
+  -t        : timeout, 5 seconds by default
+  -l        : log raw data to krd file, no STDOUT
+  -h        : help information
+  -v        : verbose information
+  -d        : debug information
+  -V        : release version
+  interval  : maximum number of seconds between samples
+  count     : number of times to repeat the request cycle. Defaults to 2**32
+
+  See perldoc Kronometrix::Snmprec for the definition of the configuration file.
+
+END
+
+    exit 0;
+}
+
+# Revision - print revision and exit
+sub VERSION_MESSAGE {
+    print STDERR "$recname: $VERSION, $LASTREV\n";
+}
+
