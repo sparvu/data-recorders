@@ -66,7 +66,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * hdwrec - System inventory data recorder
  * faultrec - Fault Management data recorder **(Q1 2022)**
  * jvmrec - Java VM statistics data recorder
- * snmprec - Ethernet and SAN Switch, SNMP data recorder **(Q4 2021)**
+ * snmprec - SNMP equipment data recorder
  * netrec - TCP, UDP data recorder
  * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
  * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(Q1 2022)**
@@ -95,7 +95,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * wsrec - General weather station recorder RS-232/USB
 
-## Epidemiology and Preventive Healthcare  
+## Preventive Healthcare  
 
  * epidmrec - Epidemiology data recorder **(2022)**
 
