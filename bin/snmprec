@@ -11,8 +11,8 @@ use strict;
 use warnings;
 use v5.32;
 
-our $VERSION = '0.0.1';
-my  $LASTREV = '2021-08-08';
+our $VERSION = '0.0.2';
+my  $LASTREV = '2021-09-30';
 
 ### Configuration variables
 
@@ -26,7 +26,7 @@ my %opts;
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
-getopts('ahlvVdg:t', \%opts) or HELP_MESSAGE();
+getopts('ahlvVdtg:s:', \%opts) or HELP_MESSAGE();
 if ($opts{h}) {
     HELP_MESSAGE();
 }
@@ -36,9 +36,10 @@ if ($opts{V}) {
 }
 
 # verbose and debug flags
-my $verbose  = exists $opts{v} || exists $opts{d} || 0;
-my $debug    = exists $opts{d} || 0;
-my $timeout = exists $opts{t} ? $opts{t} : 5;
+my $verbose   = exists $opts{v} || exists $opts{d} || 0;
+my $debug     = exists $opts{d} || 0;
+my $timeout   = exists $opts{t} ? $opts{t} : 5;
+my $separator = exists $opts{s} ? $opts{s} : undef;
 
 # Maximum number of concurrent requests
 my $num_concurrent_reqs = exists $opts{g} ? $opts{g} : 25;
@@ -67,6 +68,7 @@ my $snmprec = Kronometrix::Snmprec->new(
     verbose                 => $verbose,
     debug                   => $debug,
     config_file             => $cfile,
+    separator               => $separator,
 );
 
 $snmprec->warnings_to_log;
@@ -91,14 +93,14 @@ while ($loop_max) {
     $snmprec->write_verbose("INFO: Remaining iterations: $loop_max");
     pause if $loop_max;
 }
-Kronometrix->write_log("INFO: Iterations finished");
+$snmprec->write_verbose("INFO: Iterations finished");
 
 ### Auxiliary subroutines
 
 # Usage - print usage and exit.
 sub HELP_MESSAGE {
     print STDERR <<END;
-USAGE: svcrec [-dhlvV] [-t secs] [-a [-g concurrent]] [interval [count]]
+USAGE: snmprec [-dhlvV] [-t secs] [-s sep] [-a [-g concurrent]] [interval [count]]
 OPTIONS:
   -a        : perform requests asynchronously
   -g        : the number of concurrent requests. Default is 25.
@@ -108,6 +110,7 @@ OPTIONS:
   -v        : verbose information
   -d        : debug information
   -V        : release version
+  -s        : separator for the output report. Defaults to ':'
   interval  : maximum number of seconds between samples
   count     : number of times to repeat the request cycle. Defaults to 2**32
 
