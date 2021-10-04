@@ -18,6 +18,9 @@
 #
 #  (http://www.gnu.org/copyleft/gpl.html)
 
+# PROVIDE: kdr
+# REQUIRE: FILESYSTEMS kdr_transport
+
 #
 # Add the following lines to /etc/rc.conf to enable Kronometrix
 #
