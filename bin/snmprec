@@ -1,7 +1,8 @@
 #!/opt/kronometrix/perl/bin/perl
 
+#  Copyright (c) 2021 Julio Fraire
 #  Copyright (c) 2021 Stefan Parvu (gitlab.com/sparvu)
-#  Initial Author: Stefan Parvu
+#  Initial Author: Julio Fraire
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
