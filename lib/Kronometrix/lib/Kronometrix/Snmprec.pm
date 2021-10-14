@@ -8,7 +8,7 @@ use strict;
 use warnings;
 use feature ':5.32';
 
-our $VERSION = 0.01;
+our $VERSION = 0.03;
 
 sub new {
     my ($class, @args) = @_;
@@ -19,6 +19,9 @@ sub new {
         debug                   => 0,
         config_file             => 'snmprec.json',
         queue                   => [],
+        previous                => {},
+        first_run               => 1,
+        skip                    => 0,
         @args
     );
     my $self = bless \%args_hash, $class;
@@ -91,12 +94,13 @@ sub build_request_structure {
     my %g;
     $g{method} = $method;
 
+    # oids is an even list of descriptions and hash refs
     croak "Fatal: Required argument 'oids' is missing from a request for $section"
         unless exists $conf->{oids} && defined $conf->{oids};
-    my @oids_with_descr = $conf->{oids}->@*;
+    my @oids_from_conf = $conf->{oids}->@*;
     my @oids;
-    for (my $i = 1; $i < @oids_with_descr; $i+= 2) {
-        push @oids, $oids_with_descr[$i];
+    for (my $i = 1; $i < @oids_from_conf; $i+= 2) {
+        push @oids, $oids_from_conf[$i];
     }
     $g{oids} = \@oids;
 
@@ -108,7 +112,8 @@ sub build_request_structure {
         get_table   => '-baseoid',
         get_entries => '-columns',
     );
-    $request{$oid_for{$method}} = \@oids;
+    my @actual_oids = map { $_->{value} } @oids;
+    $request{$oid_for{$method}} = \@actual_oids; 
 
     $g{request} = \%request;
 
@@ -184,13 +189,11 @@ sub parse_config {
 
     $self->write_debug('DEBUG: Parsing service definition file');
     
-    if (!defined $self->{separator}) {
-        if (exists $conf->{separator}) {
-            $self->{separator} = $conf->{separator};
-        }
-        else {
-            $self->{separator} = ':';
-        }
+    if (exists $conf->{separator}) {
+        $self->{separator} = $conf->{separator};
+    }
+    else {
+        $self->{separator} = ':';
     }
 
     my $n = 1;
@@ -234,6 +237,13 @@ sub parse_config {
                 $section, $common, $hconf);
             $host{requests} = \@requests;
             push $self->{queue}->@*, \%host; 
+
+            # Previous and data type of oid, to later report deltas
+            foreach my $rs (@requests) {
+                foreach my $r ($rs->{oids}->@*) {
+                    $self->{previous}{$hconf->{hostname}}{$r->{value}} = 0;
+                }
+            }
         }
     }
 
@@ -266,10 +276,12 @@ sub process {
         if ($i % $creq == 0) {
             $self->write_debug("DEBUG: Executing requests");
             $self->execute_requests();
-            $self->write_report(\@full_output);
+            $self->write_report(\@full_output)
+                unless $self->{first_run} && $self->{skip};
             @full_output = ();
         }
     }
+    $self->{first_run} = undef;
 }
 
 sub build_session {
@@ -332,15 +344,37 @@ sub write_report {
     }
 }
 
+sub add_result {
+    my ($self, $host, $oid_hash, $result) = @_;
+    my $r;
+    my $oid = $oid_hash->{value};
+    if ($oid_hash->{type} eq 'Counter32') {
+        my $cur = $result->{$oid};
+        $cur += 2**32-1 if $cur < $self->{previous}{$host}{$oid};
+        $r = $cur - $self->{previous}{$host}{$oid};
+    }
+    elsif ($oid_hash->{type} eq 'Counter64') {
+        my $cur = $result->{$oid};
+        $cur += 2**64-1 if $cur < $self->{previous}{$host}{$oid};
+        $r = $cur - $self->{previous}{$host}{$oid};
+    }
+    else {
+        $r = $result->{$oid};
+    }
+    $self->{previous}{$host}{$oid} = $result->{$oid};
+    return $r;
+}
+
 sub get_request_callback {
     my ($session, $snmprec, $oids, $output) = @_;
     my $host   = $session->hostname();
     my $result = $session->var_bind_list();
     if (defined $result) {
         # Puts the results for every OID in the output, respecting their order
-        foreach my $oid (@$oids) {
+        foreach my $oid_hash (@$oids) {
+            my $oid = $oid_hash->{value};
             if (exists $result->{$oid}) {
-                push @$output, $result->{$oid};
+                push @$output, $snmprec->add_result($host, $oid_hash, $result); 
             }
             else {
                 $snmprec->write_log("ERROR: No response for $oid from $host");

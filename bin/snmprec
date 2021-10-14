@@ -1,24 +1,4 @@
-#!/opt/kronometrix/perl/bin/perl
-
-#  Copyright (c) 2021 Julio Fraire
-#  Copyright (c) 2021 Stefan Parvu (gitlab.com/sparvu)
-#  Initial Author: Julio Fraire
-#
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-#
-#  (http://www.gnu.org/copyleft/gpl.html)
+#! /opt/kronometrix/perl/bin/perl
 
 use lib './lib';
 use Kronometrix;
@@ -31,8 +11,8 @@ use strict;
 use warnings;
 use v5.32;
 
-our $VERSION = '0.0.2';
-my  $LASTREV = '2021-09-30';
+our $VERSION = '0.0.3';
+my  $LASTREV = '2021-10-14';
 
 ### Configuration variables
 
@@ -46,7 +26,7 @@ my %opts;
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
-getopts('ahlvVdtg:s:', \%opts) or HELP_MESSAGE();
+getopts('ahlvVdtsg:', \%opts) or HELP_MESSAGE();
 if ($opts{h}) {
     HELP_MESSAGE();
 }
@@ -59,7 +39,9 @@ if ($opts{V}) {
 my $verbose   = exists $opts{v} || exists $opts{d} || 0;
 my $debug     = exists $opts{d} || 0;
 my $timeout   = exists $opts{t} ? $opts{t} : 5;
-my $separator = exists $opts{s} ? $opts{s} : undef;
+
+# Skip the first iteration
+my $skip = exists $opts{s} || 0;
 
 # Maximum number of concurrent requests
 my $num_concurrent_reqs = exists $opts{g} ? $opts{g} : 25;
@@ -88,7 +70,7 @@ my $snmprec = Kronometrix::Snmprec->new(
     verbose                 => $verbose,
     debug                   => $debug,
     config_file             => $cfile,
-    separator               => $separator,
+    skip                    => $skip,
 );
 
 $snmprec->warnings_to_log;
@@ -107,6 +89,8 @@ local $SIG{ALRM} = sub {};
 local $| = 1;
 setitimer(ITIMER_REAL, $interval, $interval);
 
+# Add one loop to get initial values
+$loop_max++ if $skip;
 while ($loop_max) {
     $snmprec->process;
     $loop_max--;
@@ -120,7 +104,7 @@ $snmprec->write_verbose("INFO: Iterations finished");
 # Usage - print usage and exit.
 sub HELP_MESSAGE {
     print STDERR <<END;
-USAGE: snmprec [-dhlvV] [-t secs] [-s sep] [-a [-g concurrent]] [interval [count]]
+USAGE: svcrec [-dhlvVs] [-t secs] [-a [-g concurrent]] [interval [count]]
 OPTIONS:
   -a        : perform requests asynchronously
   -g        : the number of concurrent requests. Default is 25.
@@ -130,7 +114,7 @@ OPTIONS:
   -v        : verbose information
   -d        : debug information
   -V        : release version
-  -s        : separator for the output report. Defaults to ':'
+  -s        : skip results from first iteration
   interval  : maximum number of seconds between samples
   count     : number of times to repeat the request cycle. Defaults to 2**32
 
