@@ -350,12 +350,18 @@ sub add_result {
     my $oid = $oid_hash->{value};
     if ($oid_hash->{type} eq 'Counter32') {
         my $cur = $result->{$oid};
-        $cur += 2**32-1 if $cur < $self->{previous}{$host}{$oid};
+        if ($cur < $self->{previous}{$host}{$oid}) {
+            $cur += 2**32-1;
+            $self->write_error("INFO: Counter32 for $oid, $host has rewound");
+        }
         $r = $cur - $self->{previous}{$host}{$oid};
     }
     elsif ($oid_hash->{type} eq 'Counter64') {
         my $cur = $result->{$oid};
-        $cur += 2**64-1 if $cur < $self->{previous}{$host}{$oid};
+        if ($cur < $self->{previous}{$host}{$oid}) {
+            $cur += 2**64-1;
+            $self->write_error("INFO: Counter64 for $oid, $host has rewound");
+        }
         $r = $cur - $self->{previous}{$host}{$oid};
     }
     else {
