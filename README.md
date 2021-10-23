@@ -64,7 +64,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * nicrec - Per NIC statistics data recorder
  * diskrec - Per disk statistics data recorder
  * hdwrec - System inventory data recorder
- * faultrec - Fault Management data recorder **(Q1 2022)**
+ * faultrec - Fault Management data recorder **(Q4 2022)**
  * jvmrec - Java VM statistics data recorder
  * snmprec - SNMP equipment data recorder
  * netrec - TCP, UDP data recorder
@@ -75,7 +75,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * ntprec - NTP server statistics data recorder
  * smtprec - SMTP server data recorder **(Q1 2022)**
  * imaprec - IMAP/POP server data recorder **(Q1 2022)**
- * sockrec - Network IO Socket data recorder **(Q4 2021)**
+ * sockrec - Network IO Socket data recorder
  * svcrec - Service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * procrec - Process statistics data recorder
  * webrec - Web application performance,availability data recorder
@@ -83,21 +83,21 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 
 ## Public Cloud Providers
 
- * awsrec - Amazon Web Services data recorder **(2022)**
- * azurec - Microsoft Azure data recorder **(2022)**
- * gcprec - Google Computing Platform data recorder **(2022)**
+ * awsrec - Amazon Web Services data recorder **(Q2 2022)**
+ * azurec - Microsoft Azure data recorder **(Q2 2022)**
+ * gcprec - Google Computing Platform data recorder **(Q2 2021)**
 
 ## Industrial IoT, Weather and Environment
 
  * axisrec - AXIS security and video surveillance data recorder
- * bacrec - Building management BACnet data recorder **(Q2 2022)**
- * blrec - Bluetooth Low Energy data recorder **(Q1 2021)**
+ * bacrec - Building management BACnet data recorder **(Q4 2022)**
+ * blrec - Bluetooth Low Energy data recorder **(Q4 2021)**
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * wsrec - General weather station recorder RS-232/USB
 
 ## Preventive Healthcare  
 
- * epidmrec - Epidemiology data recorder **(2022)**
+ * epidmrec - Epidemiology data recorder **(TBD)**
 
 # Commercial products
 
