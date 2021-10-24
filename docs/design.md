@@ -3,7 +3,11 @@
 <br/><br/>
 <br/><br/>
 
-## General
+[![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.8.3&color=success)](docs/start.md)
+[![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
+
+# Design
 
 Kronometrix has been designed to _reduce_ the number of metrics collected from ICT, environment or meteorology to
 IoT equipment by conducting a _carefully_ selection and analysis of what is required and how these metrics and parameters should be used. We are working closely with experts from each industry we support, to analyse these aspects from data collection, to summary statistics and visualization. Thats why we call our technology _deep domain expertise_ software.
