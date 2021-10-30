@@ -87,7 +87,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * bacrec - Building management BACnet data recorder **(Q4 2022)**
  * blrec - Bluetooth Low Energy data recorder **(Q4 2021)**
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
- * sockrec - Network IO Socket data recorder (Q4 2021)
+ * sockrec - Network IO Socket data recorder **(Q4 2021)**
  * wsrec - General weather station recorder RS-232/USB
 
 ## Preventive Healthcare  
