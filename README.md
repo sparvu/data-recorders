@@ -21,7 +21,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 * Processor: Intel/AMD x64, Apple M1, ARMv8
 * Memory: 32 MB RAM
 * Disk space: 140MB, Raw data: 500-750KB per day / data source
-* Protocols: HTTP(S), SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), MQTT, BLE, BACnet
+* Protocols: SERIAL COMMUNICATION, SNMP, MODBUS(RTU,TCP,ASCII), MQTT, HTTP, BLE, BACnet
 * SBC: Raspberry PI 3B, 3B+
 
 # Features
@@ -47,7 +47,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 * Raspbian GNU/Linux 8+ armv8
 * Solaris 11 (Ask support)
 * FreeBSD
-* MacOS (Q4 2021)
+* MacOS (Q1 2022)
 * Windows 7
 * Windows 8
 * Windows 10
