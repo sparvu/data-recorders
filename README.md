@@ -98,11 +98,10 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 
 [Kronometrix Industrial IoT Gateway](https://www.kronometrix.com/products/iotgateway/)
 
-# Resources
+# Find out more
 
-[www.kronometrix.com][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3]
+[www.kronometrix.com][1] | [support.kronometrix.com][2]
 
 
-[1]: https://www.kronometrix.com/
-[2]: https://twitter.com/KronometrixDDF
-[3]: https://www.facebook.com/kronometrix
+[1]: https://www.kronometrix.com/data-fabric/recorders
+[2]: https://support.kronometrix.com
