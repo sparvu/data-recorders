@@ -33,7 +33,7 @@ Each data recorder will save all collected metrics and parameters under one or m
 
 **Based on a high-level programming language**
 
-Recorders are light software probes, which can extract data from different sources, being able to run interactively or continuous mode. Developed using a dynamic programming language, are very conservative in system resources usage.
+Recorders are light software probes, which can extract data from different sources, being able to run interactively or continuous mode. Developed using a dynamic programming language, are very simple to change or build.
 
 **Conservative in system resources**
 
@@ -44,7 +44,9 @@ Designed as single threaded applications, the data recorders are conservative in
 
 <img src="/docs/img/KDR_Arch.png" align="right" />
 
-A data recorder requires a runtime engine to operate and execute, like Perl5 or Lua, for example. There can be more than one data recorder, designed for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. The data recorders work independently one of each other, having their own execution path and state. They do not interfere with other data recorders input and output execution.  
+A data recorder requires a runtime engine to operate and execute, like Perl5 or Lua, for example. There can be more than one data recorder, designed for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. The data recorders work independently one of each other, having their own execution path and state. They do not interfere with other data recorders input and output execution.
+
+<img src="/docs/img/KDR_Stack.png" align="right" />
 
 The recorder can operate in two modes: 
 
@@ -52,19 +54,6 @@ The recorder can operate in two modes:
   
   * automatic mode: you can continuously record data, without any manual interaction, for long periods of time 
 
-
-## Data Source
-A data source, is described as any system connected to a public or private network with a valid IPv4 or IPv6 address. 
-Example: a server, a logger, a graphic workstation, an iPad or an IoT sensor capable to send and receive data. 
-There can be many types of data sources, each having one or many of data messages:
-
- * Computer system: overall cpu utilization, disk and network IO, per device metrics (Linux, FreeBSD, Windows)
- 
- * HTTP server: throughput and utilization along with its inventory data (Nginx, Apache, Tomcat)
- 
- * Enterprise service: response time performance and availability (SMTPS, IMAP, HTTP, LDAP, NTP, AD)
- 
- * Automatic weather station: air temperature and pressure, humidity, wind speed and direction 
 
 ## Recorders vs Others
 
