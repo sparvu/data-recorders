@@ -15,7 +15,6 @@ To really understand how your world and business works, you need to have data. T
 
 A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, some web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP or SNMP, MODBUS. A data recorder requires a runtime engine to operate and execute, like Perl5 or Lua, for example. There can be more than one data recorder, designed for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device.
 
-<img src="/docs/img/RecorderVsAgent.png" />
 
 ## How does it work?
 
@@ -57,18 +56,12 @@ There can be many types of data sources, each having one or many of data message
  
  * Automatic weather station: air temperature and pressure, humidity, wind speed and direction 
 
+## Recorders vs Others
 
-## The recorder
-A light probe developed in _Perl5_ language which can extract data from different sources, like an operating system interfaces, 
-a sensor or device, an industrial equipment using _MODBUS_ protocol, or an web based application or database.
-
-The recorder can operate in two modes:
-
-  * interactive: you can manually run the recorders using different samping rate values to analyse raw data
-  
-  * automatic: you can continuously record data, using a default sampling rate of _60 seconds_ or a custom one 
+<img src="/docs/img/RecorderVsAgent.png" />
 
 <img src="/docs/img/recorderplus.png" align="right" /> 
+
 <img src="/docs/img/recorder.png" align="right" /> 
 
 
