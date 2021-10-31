@@ -9,17 +9,29 @@
 
 # Design
 
-Kronometrix has been designed to _reduce_ the number of metrics collected from ICT, environment or meteorology to
-IoT equipment by conducting a _carefully_ selection and analysis of what is required and how these metrics and parameters should be used. We are working closely with experts from each industry we support, to analyse these aspects from data collection, to summary statistics and visualization. Thats why we call our technology _deep domain expertise_ software.
+To really understand how your world and business works, you need to have data. The right kind of data. And for that, you need to be able to capture the correct performance metrics from your systems, devices or applications in real-time, to store and transport it for further analysis, if required. And for that we have developed data recorders.
 
-All collected metrics and parameters are part of the intelligent data object repository, which include [the data neurons](https://gitlab.com/kronometrix/dataneurons).
+## The recorder
 
+A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, some web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP or SNMP, MODBUS. A data recorder requires a runtime engine to operate and execute, like Perl5 or Lua, for example. There can be more than one data recorder, designed for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device.
+
+<img src="/docs/img/RecorderVsAgent.png" />
+
+## How does it work?
+
+<img src="/docs/img/KDR_Arch.png" align="right" />
+
+The data recorders work independently one of each other, having their own execution path and state. They do not interfere with other data recorders input and output execution.  
+
+The recorder can operate in two modes:
+
+  * interactive: you can manually run the recorder, using command line interface to start or stop the recorder
+  
+  * automatic mode: you can continuously record data, without any manual interaction, for long periods of time
 
 ## Raw Data
-All recorded observations are stored as raw data. Raw data is produced by a _recorder_, which fetches data from a 
-system, device or sensor, data which has not been modified, altered or changed in any way. All collected metrics 
-are variable measured sequentially in time, called _time series_. All these observations collected over fixed sampling 
-intervals create a _historical time series_. To easy the access to all this set of data we store the observations 
+
+All recorded observations are stored as raw data. Raw data is produced by a _recorder_, which fetches data from a system, device or sensor, data which has not been modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called _time series_. All these observations collected over fixed sampling intervals create a _historical time series_. To easy the access to all this set of data we store the observations 
 on commodity disk drives, compressed, in text format, like CSV format.
 
 _Time series let us understand what has happened in past and look in the future, using various statistical models_
