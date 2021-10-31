@@ -20,11 +20,11 @@ There can be many data recorders, executing on top of a runtime engine, for exam
 
 # What is a data recorder?
 
-A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder will not offer data transport capabilities, like for example a software agent. See below the main features of a data recorder: 
+A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a software agent. Please check the main features of a data recorder: 
 
 **Time series**
 
-All recorded observations and metrics are stored as raw data. Raw data is a simple text file, produced by a recorder, which fetches data from a system, device or sensor, which has not been modified or changed in any way.
+All recorded observations and metrics are stored as raw data. Raw data is a [simple text file](docs/rawdata.md), produced by a recorder, which fetches data from a system, device or sensor, which has not been modified or changed in any way.
 
 **Data ontology**
 
