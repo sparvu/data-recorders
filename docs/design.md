@@ -9,38 +9,48 @@
 
 # Design
 
-To really understand how your world and business works, you need to have data. The right kind of data. And for that, you need to be able to capture the correct performance metrics from your systems, devices or applications in real-time, to store and transport it for further analysis, if required. And for that we have developed data recorders.
+To really understand how your world works, you need to have data. The right kind of data. And for that, you need to be able to capture the correct performance metrics from your systems, devices or applications in real-time. To be able to do all of these, we have developed data recorders. The data recorder has built-in capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. 
 
-## The recorder
+# What is a data recorder?
 
-A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, some web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP or SNMP, MODBUS. A data recorder requires a runtime engine to operate and execute, like Perl5 or Lua, for example. There can be more than one data recorder, designed for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device.
+A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder will not offer data transport capabilities, like for example a software agent. See below the main features of a data recorder: 
+
+**Time series**
+
+All recorded observations and metrics are stored as raw data. Raw data is a simple text file, produced by a recorder, which fetches data from a system, device or sensor, which has not been modified or changed in any way.
+
+**Data ontology**
+
+To help you, we have carefully selected and analyzed, for each industry, the most needed metrics for different business cases, by grouping and classifying these metrics, to build a very efficient data analysis process. The recorder has built-in support for grouping and data classification.
+
+**Supports different industries**
+
+A data recorder supports one or many communication protocols to fetch data from different sources and technologies: industrial equipment, ICT enterprise, weather or environment sensors, being able to collect different parameters and metrics.
+
+**Raw data compatible**
+
+Each data recorder will save all collected metrics and parameters under one or many text files on disk. These files are simple, regular CSV text files, universal compatible with any software or system. If you want to know more about raw data, please check this.
+
+**Based on a high-level programming language**
+
+Recorders are light software probes, which can extract data from different sources, being able to run interactively or continuous mode. Developed using a dynamic programming language, are very conservative in system resources usage.
+
+**Conservative in system resources**
+
+Designed as single threaded applications, the data recorders are conservative in CPU and memory consumption across many system architectures, like X86, ARM or SPARC. 
 
 
 ## How does it work?
 
 <img src="/docs/img/KDR_Arch.png" align="right" />
 
-The data recorders work independently one of each other, having their own execution path and state. They do not interfere with other data recorders input and output execution.  
+A data recorder requires a runtime engine to operate and execute, like Perl5 or Lua, for example. There can be more than one data recorder, designed for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. The data recorders work independently one of each other, having their own execution path and state. They do not interfere with other data recorders input and output execution.  
 
-The recorder can operate in two modes:
+The recorder can operate in two modes: 
 
-  * interactive: you can manually run the recorder, using command line interface to start or stop the recorder
+  * interactively: you can manually run the recorder, using command line interface to start or stop the recorder 
   
-  * automatic mode: you can continuously record data, without any manual interaction, for long periods of time
-
-## Raw Data
-
-All recorded observations are stored as raw data. Raw data is produced by a _recorder_, which fetches data from a system, device or sensor, data which has not been modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called _time series_. All these observations collected over fixed sampling intervals create a _historical time series_. To easy the access to all this set of data we store the observations 
-on commodity disk drives, compressed, in text format, like CSV format.
-
-_Time series let us understand what has happened in past and look in the future, using various statistical models_
-
-
-## Data Message
-All collected metrics over time are combined as a data message. There can be many types of 
-data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data 
-from a meteorological station, or water cubic meters per hour from an water pump. A data message is in 
-direct relation to a data source. All these data messages are part of, [the data neurons repository](https://gitlab.com/kronometrix/dataneurons).
+  * automatic mode: you can continuously record data, without any manual interaction, for long periods of time 
 
 
 ## Data Source
