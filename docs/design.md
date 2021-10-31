@@ -29,7 +29,7 @@ A data recorder supports one or many communication protocols to fetch data from 
 
 **Raw data compatible**
 
-Each data recorder will save all collected metrics and parameters under one or many text files on disk. These files are simple, regular CSV text files, universal compatible with any software or system. If you want to know more about raw data, please check this.
+Each data recorder will save all collected metrics and parameters under one or many text files on disk. These files are simple, regular CSV text files, universal compatible with any software or system. If you want to know more about raw data, [please check this](docs/rawdata.md).
 
 **Based on a high-level programming language**
 
