@@ -46,7 +46,7 @@ Designed as single threaded applications, the data recorders are conservative in
 
 A data recorder requires a runtime engine to operate and execute, like Perl5 or Lua, for example. There can be more than one data recorder, designed for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. The data recorders work independently one of each other, having their own execution path and state. They do not interfere with other data recorders input and output execution.
 
-<img src="/docs/img/KDR_Stack.png" align="right" />
+<img src="/docs/img/KDR_Stack.jpg" align="center" height="300" width="300" />
 
 The recorder can operate in two modes: 
 
