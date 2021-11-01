@@ -21,7 +21,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 * Processor: Intel/AMD x64, Apple M1, ARMv8
 * Memory: 32 MB RAM
 * Disk space: 140MB, Raw data: 500-750KB per day / data source
-* Protocols: HTTP(S), SERIAL COMMUNICATION, MODBUS(RTU,TCP,ASCII), MQTT, BLE, BACnet
+* Protocols: SERIAL COMMUNICATION, SNMP, MODBUS(RTU,TCP,ASCII), MQTT, HTTP, BLE, BACnet
 * SBC: Raspberry PI 3B, 3B+
 
 # Features
@@ -47,7 +47,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 * Raspbian GNU/Linux 8+ armv8
 * Solaris 11 (Ask support)
 * FreeBSD
-* MacOS (Q4 2021)
+* MacOS (Q1 2022)
 * Windows 7
 * Windows 8
 * Windows 10
@@ -65,35 +65,29 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * nicrec - Per NIC statistics data recorder
  * diskrec - Per disk statistics data recorder
  * hdwrec - System inventory data recorder
- * faultrec - Fault Management data recorder **(Q4 2022)**
+ * faultrec - Fault Management data recorder **(Q2 2022)**
  * jvmrec - Java VM statistics data recorder
  * snmprec - SNMP equipment data recorder
  * netrec - TCP, UDP data recorder
  * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
- * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(Q1 2022)**
+ * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(Q2 2022)**
  * certrec - X.509 security certificate statistics data recorder
  * direc - Filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
  * smtprec - SMTP server data recorder **(Q1 2022)**
  * imaprec - IMAP/POP server data recorder **(Q1 2022)**
- * sockrec - Network IO Socket data recorder
  * svcrec - Service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * procrec - Process statistics data recorder
  * webrec - Web application performance,availability data recorder
- * wprec - Wordpress security, performance and availability data recorder **(Q1 2022)**
-
-## Public Cloud Providers
-
- * awsrec - Amazon Web Services data recorder **(Q2 2022)**
- * azurec - Microsoft Azure data recorder **(Q2 2022)**
- * gcprec - Google Computing Platform data recorder **(Q2 2021)**
+ * wprec - Wordpress security, performance and availability data recorder **(Q2 2022)**
 
 ## Industrial IoT, Weather and Environment
 
  * axisrec - AXIS security and video surveillance data recorder
  * bacrec - Building management BACnet data recorder **(Q4 2022)**
- * blrec - Bluetooth Low Energy data recorder **(Q4 2021)**
+ * blrec - Bluetooth Low Energy data recorder **(Q4 2022)**
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
+ * sockrec - Network IO Socket data recorder **(Q4 2021)**
  * wsrec - General weather station recorder RS-232/USB
 
 ## Preventive Healthcare  
@@ -104,11 +98,10 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 
 [Kronometrix Industrial IoT Gateway](https://www.kronometrix.com/products/iotgateway/)
 
-# Resources
+# Find out more
 
-[www.kronometrix.com][1] | [@KronometrixHelp][2] | [www.facebook.com/kronometrix][3]
+[www.kronometrix.com][1] | [support.kronometrix.com][2]
 
 
-[1]: https://www.kronometrix.com/
-[2]: https://twitter.com/KronometrixDDF
-[3]: https://www.facebook.com/kronometrix
+[1]: https://www.kronometrix.com/data-fabric/recorders
+[2]: https://support.kronometrix.com
