@@ -20,6 +20,7 @@
 #  (http://www.gnu.org/copyleft/gpl.html)
 
 use JSON;
+use Tie::IxHash;
 use File::Basename;
 use IO::Async::Listener;
 use IO::Async::Socket;
@@ -85,8 +86,19 @@ my $rawfile;
 
 # read config
 # we need all info
-# read sockrec.json configuration
-# $cdata = open_config($cfile);
+$cdata = open_config($cfile);
+
+# workloads
+tie my %listeners, "Tie::IxHash";
+%listeners = get_listeners($cdata);
+
+if ($verbose) {
+    # print "Total listeners: " . keys(%listeners) . ".\n";
+    for my $key (keys %listeners) {
+        my $value = $listeners{$key};
+        print "$key => $value\n";
+    }
+}
 
 my $log;
 
@@ -122,14 +134,19 @@ if ($logging) {
 #}
 
 
+# Startup listeners
 my $ioloop = IO::Async::Loop->new;
+for my $key (keys %listeners) {
 
-set_tcp_listener($ioloop, "44420", "10.10.1.90");
-set_tcp_listener($ioloop, "44421", "10.10.1.90");
-set_udp_listener($ioloop, "44430");
+    my $value = $listeners{$key};
+    my ($proto, $port, $ipaddress) = split(":",  $key);
+
+    if ( $proto =~ /tcp/ ) { start_tcp($ioloop, $port, $ipaddress); }
+ elsif ( $proto =~ /udp/ ) { start_udp($ioloop, $port, $ipaddress); }
+
+}
 
 $ioloop->run;
-
 
 
 ### Subroutines
@@ -156,7 +173,7 @@ sub daemonize {
     if ($@) {
         die "error: cannot start daemon: $@";
     } else {
-        write_buffer("info: daemon $sockrecd initialized");
+        write_msgbuf("info: daemon $sockrecd initialized");
     }
    
     # If already running, then exit
@@ -174,7 +191,7 @@ sub daemonize {
 
 # Setup a TCP listener
 #
-sub set_tcp_listener {
+sub start_tcp {
 
     # input parameters
     my ( $lp, $port, $address ) = @_;
@@ -191,7 +208,7 @@ sub set_tcp_listener {
         if ($logging) {
             write_log ("Receiving data to $myaddr from: $peeraddr");
         } else {
-            write_buffer ("Receiving data to $myaddr from: $peeraddr\n");
+            write_msgbuf ("Receiving data to $myaddr from: $peeraddr\n");
         }
  
         $stream->configure(
@@ -203,7 +220,7 @@ sub set_tcp_listener {
             if ($logging) {
                 write_rawdata ("$$buffref");
             } else {
-                write_buffer ("$$buffref\n");
+                write_msgbuf ("$$buffref\n");
             }
 
             $$buffref = '';
@@ -249,7 +266,7 @@ sub set_tcp_listener {
 
 # Setup a UDP listener
 #
-sub set_udp_listener {
+sub start_udp {
 
     my ( $lp, $port ) = @_;
 
@@ -265,7 +282,7 @@ sub set_udp_listener {
         if ($logging) {
             write_rawdata ("$dgram");
         } else {
-            write_buffer ("$dgram\n");
+            write_msgbuf ("$dgram\n");
         }
 
         #print "udp(44430) $dgram\n",
@@ -388,7 +405,7 @@ sub open_config {
 #
 sub reload_config {
 
-    write_buffer("info: signal HUP received, reload armed...");
+    write_msgbuf("info: signal HUP received, reload armed...");
 
     #$cdata = open_config($cfile);
 
@@ -403,6 +420,72 @@ sub reload_config {
 
     return;
 }
+
+
+# get listener configuration
+sub get_listeners {
+
+    my ($data) = @_;
+    tie my %listsvc, "Tie::IxHash";
+
+    my @temp = @{ $data->{'listener'} };
+
+    foreach my $f (@temp) {
+
+        my $name     = $f->{'name'};
+        my $desc     = $f->{'description'};
+        my $protocol = $f->{'protocol'};
+        my $port     = $f->{'port'};
+        my $address  = "localhost";
+
+        if ($f->{'address'}) {
+            $address  = $f->{'address'};
+        }
+
+        # industry domain hook 
+        # aq  - outdoor air quality 
+        # iaq - indoor air quality 
+        # wcd - general meteorology
+
+        #my @inss  = @{ $f->{'instance'} };
+
+        #foreach my $inst (@inss) {
+        #    my $iid   = $inst -> {'id'};
+        ##    my $iname = $inst -> {'name'};
+        #    my $ihost = $inst -> {'host'};
+        #    my $iport = $inst -> {'port'};
+
+        #    my @msg  = @{ $inst->{'message'} };
+        #    my $trace = 'NA';
+ 
+        #    foreach my $mesg (@msg) {
+
+        #        my $imname = $mesg -> {'name'};
+        #        my $ims    = $mesg -> {'scheme'};
+        #        my $imm    = $mesg -> {'method'};
+        #        my $imp    = $mesg -> {'path'};
+        #        $trace  = $mesg -> {'trace'} if ($mesg -> {'trace'});
+
+        #        if ( $trace ne 'on' ) { $trace = 'NA'; }
+
+        #        # print "$name:$iid:$iname:$imname => $ims:$imm:$ihost:$iport:$imp\n";
+        #        my $keyapp = $name . ":" . $iid . ":" . $iname . ":" . $imname;
+        #        my $hvalue = $ims . ":" . $imm . ":" . $ihost . ":" . $iport . ":" . $imp . ":" . $trace;
+        #        $listsvc{$keyapp} = $hvalue;
+        #    }
+        #}
+
+        my $keyapp = $protocol . ":" . $port . ":" . $address;
+        my $hvalue = $name . ":" . $desc;
+        $listsvc{$keyapp} = $hvalue;
+    }
+
+    return %listsvc;
+}
+
+
+
+
 
 
 # write buffer to a log file
@@ -426,9 +509,9 @@ sub write_log {
 }
 
 
-# write buffer to stdout or stderr
+# write message to STDOUT
 #
-sub write_buffer {
+sub write_msgbuf {
 
     my ($logbuf) = @_;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
@@ -452,14 +535,119 @@ sub write_rawdata {
     # set krd raw file
     # $rawfile = $curlog . "/" . $rawfile . ".krd";
 
-    print $log (" rawfile=$rawfile\n") if ($verbose);
+    if ($logging) {
 
-    my $rawkrd = open_file($rawfile);
-    printf $rawkrd "%.${tp}f:%s\n", time, $rawdata;
-    close ($rawkrd);
+        print $log (" rawfile=$rawfile\n") if ($verbose);
+
+        my $rawkrd = open_file($rawfile);
+        printf $rawkrd "%.${tp}f:%s\n", time, $rawdata;
+        close ($rawkrd);
+
+    }
 
     return;
 }
+
+
+# Vaisala QML201 data logger
+# Message Check Verification
+#
+sub qml201_msgck {
+
+    my $data = "@_";
+    my $rdata = 0;
+
+    my $m = substr($data, -4);
+    my $t = substr($data, 0, -4);
+    my $n = qml201_crc16($t);
+
+    if ( $m eq $n ) {
+
+        $rdata = 1;
+
+    } else {
+
+        $rdata = 0;
+    }
+
+    return $rdata;
+}
+
+
+# Vaisala QML201 data logger
+# CRC16 CRC-CCITT (XModem)
+#
+sub qml201_crc16 {
+    my ($string) = @_;
+    my $poly = 0x1021;
+    my $crc = 0;
+    for my $c ( unpack 'C*', $string ) {
+        $crc ^= ( $c << 8 );
+        for ( 0 .. 7 ) {
+            my $carry = $crc & 0x8000;
+            $crc <<= 1;
+            $crc ^= $poly if $carry;
+        }
+    }
+    $crc &= 0xffff;
+    return sprintf("%04X", $crc);
+}
+
+
+# Vaisala WXT5xx transmitter
+# Message Check Verification
+#
+sub wxt5xx_msgck {
+  
+    my $data = "@_";
+    my $rdata = 0;
+
+    my $m = substr($data, -3);
+    my $t = substr($data, 0, -3);
+    my $n = wxt520_crc16($t);
+
+    if ( $m eq $n ) {
+    
+        $rdata = 1;
+    
+    } else {
+ 
+        $rdata = 0;
+    }       
+
+    return $rdata;
+}
+
+# Vaisala WXT5xx transmitter
+# CRC16
+#
+sub wxt5xx_crc16 {
+    my ($string) = @_;
+
+    my $crc = 0;
+    for my $c (split //, $string) {
+        $crc = $crc ^ ord($c);
+        for(my $i=0; $i < 8; $i++) {
+            if($crc & 1) {
+                $crc = $crc >> 1;
+                $crc = $crc ^ hex '0xA001';
+            } else {
+                $crc = $crc >> 1;
+            }
+        }
+    }
+
+    my $c1 = hex '0x40' | ($crc >> 12);
+    my $c2 = hex '0x40' | (($crc >> 6) & hex '0x3F');
+    my $c3 = hex '0x40' | ($crc & hex '0x3f');
+    my $result = chr($c1) . chr($c2) . chr($c3);
+
+    return $result;
+}
+
+
+
+
 
 
 # print usage and exit
@@ -490,7 +678,7 @@ sub revision {
     print STDERR <<END;
 Socket Communication Data Recorder for TCP, UDP
 ICT, Industrial IoT, Weather and Environment
-sockrec: 1.0.4, 2021-10-20 1533
+sockrec: 1.0.6, 2021-11-16 1114
 END
     exit 0;
 }

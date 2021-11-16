@@ -1,25 +1,24 @@
 {
   "listener" : [
     {
-      "name" : "starckrom-44420",
-      "description" : "Starckrom IoT Provider TCP 44420",
-      "protocol" : "tcp",
-      "port" : 44420,
+      "name" : "starckrom-udp",
+      "description" : "Starckrom IoT Provider UDP 44430",
+      "protocol" : "udp",
+      "port" : 44430,
+      "address": "10.10.1.90",
       "writeback" : {
-        "enabled" : true,
-        "data" : {
-          "type" : “string",
-          “value” : “ok"
+        "enabled" : "true",
+        "payload" : {
+          "type": "string",
+          "value": "ok"
         }
       },
-      "aq" : [
+      "aqd" : [
         {
-          "unit": 1,
           "vendor": "vaisala",
-          "model": "wxt520",
+          "model": "wxt5xx",
           "description": "Vaisala WXT530 Series",
-          "crc": "yes",
-          "command": "2R0CRLF",
+          "error_detection": "wxtcrc16",
           "message_start": "2R0",
           "record_start": "",
           "record_sep": ",",
@@ -138,18 +137,19 @@
       ]
     },
     {
-      "name" : "starckrom-44421",
-      "description" : "Starckrom IoT Provider TCP 44421",
+      "name" : "starckrom-tcp",
+      "description" : "Starckrom IoT TCP 44429",
       "protocol" : "tcp",
-      "port" : 44421,
+      "port" : 44429,
+      "address": "10.10.1.90",
       "writeback" : {
-        "enabled" : true,
-        "data" : {
-          "type" : “function",
-          “value” : { “random_string” : [ “32" ] }
+        "enabled" : "false",
+        "payload" : {
+          "type": "function",
+          "value": { "RANDSTR" : 32 }
         }
       },
-      "aq" : [
+      "aqd" : [
         {
           "unit": 1,
           "vendor": "vaisala",
