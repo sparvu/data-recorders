@@ -12,13 +12,14 @@ Releases
  1.8.5 December 2021 Release
     HTTP transport improvements
     webrec HTTP authentication fixes
-    diskrec CloudLinux improvements 
+    diskrec CloudLinux improvements
+    snmprec integration
     sockrec improvements
     libcurl 7.80.0 update
     openssl 1.1.1l update
-    Fio 3.27 update
+    Fio 3.28 update
     LuaJIT 2.1.0 update
-    CPAN June 2021 update
+    CPAN November 2021 update
     Perl 5.34.0 update
 
  1.8.2 April 2021 Release
