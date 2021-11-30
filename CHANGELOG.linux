@@ -20,8 +20,9 @@ Releases
     HTTP transport improvements
     webrec HTTP authentication fixes
     diskrec CloudLinux improvements 
-    sockrec new configuration and improvements
-    libcurl 7.77.0 update
+    sockrec improvements
+    libcurl 7.80.0 update
+    openssl 1.1.1l update
     Fio 3.27 update
     LuaJIT 2.1.0 update
     CPAN June 2021 update
