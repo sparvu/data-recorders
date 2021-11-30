@@ -19,7 +19,8 @@ Releases
  1.8.5 December 2021 Release
     HTTP transport improvements
     webrec HTTP authentication fixes
-    diskrec CloudLinux improvements 
+    diskrec CloudLinux improvements
+    snmprec integration
     sockrec improvements
     libcurl 7.80.0 update
     openssl 1.1.1l update
