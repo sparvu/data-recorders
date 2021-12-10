@@ -16,7 +16,7 @@ Defect Management System
 
 Releases
 
- 1.8.5 December 2021 Release
+ 1.10 December 2021 Release
     HTTP transport improvements
     webrec HTTP authentication fixes
     diskrec CloudLinux improvements
@@ -26,7 +26,7 @@ Releases
     openssl 1.1.1l update
     Fio 3.28 update
     LuaJIT 2.1.0 update
-    CPAN November 2021 update
+    CPAN December 2021 update
     Perl 5.34.0 update
 
  1.8.2 April 2021 Release
