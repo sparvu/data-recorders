@@ -5,7 +5,7 @@
       "description" : "Starckrom IoT Provider UDP 44430",
       "protocol" : "udp",
       "port" : 44430,
-      "address": "10.10.1.90",
+      "address": "0.0.0.0",
       "writeback" : {
         "enabled" : "true",
         "payload" : {
@@ -141,7 +141,7 @@
       "description" : "Starckrom IoT TCP 44429",
       "protocol" : "tcp",
       "port" : 44429,
-      "address": "10.10.1.90",
+      "address": "localhost",
       "writeback" : {
         "enabled" : "false",
         "payload" : {
