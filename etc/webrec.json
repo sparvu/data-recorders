@@ -27,7 +27,7 @@
           "scheme" : "https",
           "host" : "www.kronometrix.com",
           "port" : 443,
-          "path" : "/fabric"
+          "path" : "/data-fabric"
         }
       ]
     },

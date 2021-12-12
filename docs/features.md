@@ -1,6 +1,11 @@
 <img src="/docs/img/KDR-Text.png" align="left" height="74" width="325" />
+<img src="/docs/img/KDR.png" align="right" height="100" width="100" />
 <br/><br/>
 <br/><br/>
+
+[![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.8.3&color=success)](docs/start.md)
+[![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
 
 # Features
 
@@ -31,8 +36,8 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Platform Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | OS Virtualization | **yes** | **yes** | **yes** | **yes** | **yes** | Kronometrix Data Recording supports Linux containers, FreeBSD jails, Solaris zones and Docker |
 | Kubernets | no | no | **yes** | | **yes** | Kronometrix roadmap 2022 |
-| Network equipment (SNMP) | **yes** | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 |
-| Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q4 2021 J2EE, DB monitoring |
+| Network equipment (SNMP) | **yes** | **yes** | **yes** | **yes** | **yes** | |
+| Application Monitoring | yes | **yes** | **yes** | **yes** | **yes** | Kronometrix improvements Q1 2022 J2EE, DB monitoring |
 | Internet Enterprise Services | **yes** | **yes** | **yes** | **yes** | **yes** | |
 | X.509 Security Certificates | **yes** | no | no | no | no | |
 | Serial Command Communication | **yes** | no | no | no | no | Can connect to manage and control serial devices |
