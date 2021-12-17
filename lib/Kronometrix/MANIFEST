@@ -13,6 +13,8 @@ MANIFEST
 META.json			Module JSON meta-data (added by MakeMaker)
 META.yml			Module YAML meta-data (added by MakeMaker)
 README
+script/snmprec
+script/sockrec
 script/svcrec
 script/webrec
 t/etc/conf1.json
