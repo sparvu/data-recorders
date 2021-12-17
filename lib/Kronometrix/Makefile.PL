@@ -9,8 +9,8 @@ my %config = (
     VERSION_FROM      => 'lib/Kronometrix.pm', 
     PREREQ_PM         => {
 		'JSON'         => 4.03,
-        'List::Util'   => 1.50,
-        'Scalar::Util' => 1.50,
+        'List::Util'   => 1.55,
+        'Scalar::Util' => 1.55,
     },
     PM                => {},
     ABSTRACT_FROM     => 'lib/Kronometrix.pm',
