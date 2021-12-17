@@ -1,10 +1,17 @@
 Changes
+config.pl
 lib/Kronometrix.pm
+lib/Kronometrix/Snmprec.pm
 lib/Kronometrix/Svcrec.pm
+lib/Kronometrix/Svcrec/Probe.pm
+lib/Kronometrix/Svcrec/Probe/DHCP.pm
+lib/Kronometrix/Svcrec/Probe/NTP.pm
 lib/Kronometrix/Webrec/Queue.pm
 lib/Kronometrix/Webrec/Request.pm
 Makefile.PL
 MANIFEST
+META.json			Module JSON meta-data (added by MakeMaker)
+META.yml			Module YAML meta-data (added by MakeMaker)
 README
 script/svcrec
 script/webrec
@@ -30,5 +37,3 @@ t/webrec-simple-error-sync.t
 t/webrec-simple-error.t
 t/webrec-simple-queue.t
 t/webrec-simple-single.t
-META.yml                                 Module YAML meta-data (added by MakeMaker)
-META.json                                Module JSON meta-data (added by MakeMaker)
