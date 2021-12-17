@@ -7,7 +7,6 @@ Makefile.PL
 MANIFEST
 README
 script/svcrec
-script/svcrec.orig
 script/webrec
 t/etc/conf1.json
 t/etc/kronometrix.json
