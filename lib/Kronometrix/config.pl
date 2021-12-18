@@ -1,8 +1,7 @@
 $include = {
-    all     => 1,
-    webrec  => 0,
-    svcrec  => 0,
+    all     => 0,
+    webrec  => 1,
+    svcrec  => 1,
     snmprec => 0,
     sockrec => 0
-};
-
+}
