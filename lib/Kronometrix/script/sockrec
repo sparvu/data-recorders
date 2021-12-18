@@ -1,0 +1,684 @@
+#!/opt/kronometrix/perl/bin/perl -w
+
+#  Copyright (c) 2021 Stefan Parvu (gitlab.com/sparvu)
+#  Initial Author: Stefan Parvu
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#  (http://www.gnu.org/copyleft/gpl.html)
+
+use JSON;
+use Tie::IxHash;
+use File::Basename;
+use IO::Async::Listener;
+use IO::Async::Socket;
+use IO::Async::Loop;
+use Socket qw( unpack_sockaddr_in );
+use Proc::Daemon;
+use Proc::PID::File;
+use Getopt::Std;
+
+###  Process command line args
+usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
+getopts('t:lhvV') or usage();
+usage()    if defined $main::opt_h;
+revision() if defined $main::opt_V;
+
+# verbose flag
+my $verbose = defined $main::opt_v ? $main::opt_v : 0;
+
+# logging flag
+my $logging = defined $main::opt_l ? $main::opt_l : 0;
+
+# timeout
+my $timeout = defined $main::opt_t ? $main::opt_t : 25;
+
+# process [interval]
+my $interval;
+
+if ( defined $ARGV[0] ) {
+    $interval = $ARGV[0];
+    usage() if $interval == 0;
+}
+else {
+    $interval = 60;
+}
+
+###  Variables
+$main::opt_h  = 0;                  # help option
+$main::opt_V  = 0;                  # revision option
+$main::opt_l  = 0;                  # logging option
+my $cfile     = 'sockrec.json';     # configuration file
+my $kfile     = 'kronometrix.json'; # configuration file
+my $tp        = 0;                  # time precision
+my $tcpka     = 0;                  # transport TCP keepalive settings
+my $sid       = "";                 # subscription id
+my $token     = "NA";               # token id
+my $cdata;                          # configuration data
+my @files;
+
+## configuration
+my $hostid;
+my ( $baselog, $curlog, $slog );
+my @dbs;
+my %fabric;
+
+local $| = 1;
+
+
+### MAIN BODY #
+
+# daemon name
+my $sockrecd = basename($0);
+my $rawfile;
+
+# read config
+# we need all info
+$cdata = open_config($cfile);
+
+# workloads
+tie my %listeners, "Tie::IxHash";
+%listeners = get_listeners($cdata);
+
+if ($verbose) {
+    # print "Total listeners: " . keys(%listeners) . ".\n";
+    for my $key (keys %listeners) {
+        my $value = $listeners{$key};
+        print "$key => $value\n";
+    }
+}
+
+my $log;
+
+# logging option
+if ($logging) {
+
+    # kronometrix.json config file
+    $kdata = open_config($kfile);
+
+    ## logs
+    ( $baselog, $curlog ) = get_log($kdata);
+    $rawfile = $curlog . '/' . 'sockrec' . '.krd';
+
+    $rlog = $baselog . "/sockrec.log";
+    $log = open_file($rlog);
+
+    # save STDERR to log file
+    *STDERR = $log;
+
+    write_log ("info: started");
+}
+
+
+# verbose check
+#if($verbose) {
+#    if ($logging) {
+#        my $ndev = keys %devices;
+#        print $log "Total devices: $ndev";
+#    } else {
+#        my $ndev = keys %devices;
+#        print "Total devices: $ndev";
+#    }
+#}
+
+
+# Startup listeners
+my $ioloop = IO::Async::Loop->new;
+for my $key (keys %listeners) {
+
+    my $value = $listeners{$key};
+    my ($proto, $port, $ipaddress) = split(":",  $key);
+
+    if ( $proto =~ /tcp/ ) { start_tcp($ioloop, $port, $ipaddress); }
+ elsif ( $proto =~ /udp/ ) { start_udp($ioloop, $port, $ipaddress); }
+
+}
+
+$ioloop->run;
+
+
+### Subroutines
+
+# set the process as a daemon
+#
+sub daemonize {
+
+    my $slog = "/tmp/sender.log";
+
+    # SIGHUP handler
+    $SIG{HUP} = \&reload_config;
+            
+    # Daemonize
+    eval {
+        Proc::Daemon::Init(
+            {
+                child_STDOUT => "+>>$slog",
+                child_STDERR => "+>>$slog"
+            }
+        );
+    };
+   
+    if ($@) {
+        die "error: cannot start daemon: $@";
+    } else {
+        write_msgbuf("info: daemon $sockrecd initialized");
+    }
+   
+    # If already running, then exit
+    if ( Proc::PID::File->running( { dir => "/tmp/" } ) ) {
+        exit 0;
+    }
+    
+    # cd krd raw data directory
+    chdir("/opt/kronometrix/log/current")
+      or die "error: cannot open raw data directory, $!\n";
+   
+    return;
+}
+
+
+# Setup a TCP listener
+#
+sub start_tcp {
+
+    # input parameters
+    my ( $lp, $port, $address ) = @_;
+
+    my $record = "";
+
+    my $listener = IO::Async::Listener->new( on_stream => sub {
+        my ( undef, $stream ) = @_;
+
+        my $socket = $stream->read_handle;
+        my $peeraddr = $socket->peerhost . ":" . $socket->peerport;
+        my $myaddr = $socket->sockhost . ":" . $socket->sockport;
+
+        if ($logging) {
+            write_log ("Receiving data to $myaddr from: $peeraddr");
+        } else {
+            write_msgbuf ("Receiving data to $myaddr from: $peeraddr\n");
+        }
+ 
+        $stream->configure(
+         on_read => sub {
+            my ( $self, $buffref, $eof ) = @_;
+            #$self->write( $$buffref );
+
+            # raw data
+            if ($logging) {
+                write_rawdata ("$$buffref");
+            } else {
+                write_msgbuf ("$$buffref\n");
+            }
+
+            $$buffref = '';
+            return 0;
+         },
+        );
+
+        $lp->add( $stream );
+    },
+    );
+
+    $lp->add( $listener );
+
+
+    $listener->listen( 
+        addr => {
+            family   => "inet",
+            socktype => "stream",
+            port     => $port,
+            ip       => $address,
+        }
+    )->on_done( sub {
+       my ( $l ) = @_;
+       my $s = $l->read_handle;
+
+       if ($logging) {
+
+           my $listen_host = sprintf ("%s", $s->sockhost);
+
+           my $listen_port = sprintf ("%d", $s->sockport);
+
+           write_log ("Listening on $listen_host:$listen_port");
+
+       } else {
+           printf STDERR "Listening on %s:%d\n", $s->sockhost, $s->sockport;
+       }
+
+    })->get;
+
+    return;
+}
+
+
+# Setup a UDP listener
+#
+sub start_udp {
+
+    my ( $lp, $port ) = @_;
+
+    my $listener3 = IO::Async::Socket->new(
+     on_recv => sub {
+        my ( $self, $dgram, $addr ) = @_;
+        #my $v = unpack_sockaddr_in $addr->read_handle->peername ;
+
+        # chomp raw data
+        chomp ($dgram);
+
+        # raw data
+        if ($logging) {
+            write_rawdata ("$dgram");
+        } else {
+            write_msgbuf ("$dgram\n");
+        }
+
+        #print "udp(44430) $dgram\n",
+        #$loop->stop;
+     },
+     on_recv_error => sub {
+        my ( $self, $errno ) = @_;
+        die "Cannot recv - $errno\n";
+     },
+    );
+
+    $lp->add( $listener3 );
+
+    $listener3->bind(
+        family   => 'inet',
+        service  => $port,
+        socktype => 'dgram',
+    )->on_done( sub {
+
+    my ( $l ) = @_;
+    my $s = $l->read_handle;
+
+    if ($logging) {
+
+        my $listen_host = sprintf ("%s", $s->sockhost);
+        my $listen_port = sprintf ("%d", $s->sockport);
+
+        write_log ("Listening on $listen_host:$listen_port");
+
+    } else {
+        printf STDERR "Listening on %s:%d\n", $s->sockhost, $s->sockport;
+    }
+
+    })->get;
+
+    return;
+}
+
+
+# get log information
+#
+sub get_log {
+    my ($data) = @_;
+
+    my $bpath = $data->{'log'}->{'base_path'};
+    my $cpath = $data->{'log'}->{'current_path'};
+
+    return ( $bpath, $cpath );
+}
+
+
+# open_data - open data file
+#
+sub open_file {
+
+    my ($file) = @_;
+    my $fh;
+
+    if (-f $file) {
+        open $fh, "+>>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        seek $fh, 0, 2;
+        select ((select ($fh), $| = 1)[0]);
+
+    } else {
+        open $fh, "+>", "$file" or 
+          die "error: open_file - cannot open $file $!";
+        select ((select ($fh), $| = 1)[0]);
+
+    }
+
+    return $fh;
+}
+
+
+# open JSON configuration file
+#
+sub open_config {
+
+    my ($conf) = @_;
+
+    my $json_data;
+
+    {
+        local $/;
+
+        # we will parse now the file
+        if ( defined $ENV{'KRMX_PREFIX'} ) {
+            if ( -e "$ENV{'KRMX_PREFIX'}/etc/$conf" ) {
+                open my $fh, "<", "$ENV{'KRMX_PREFIX'}/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: cannot open config $! $ENV{'KRMX_PREFIX'}/etc/$conf \n";
+                usage();
+            }
+        }
+        else {
+            if ( -e "/opt/kronometrix/etc/$conf" ) {
+                open my $fh, "<", "/opt/kronometrix/etc/$conf";
+                $json_data = <$fh>;
+                close $fh;
+            }
+            else {
+                print "error: cannot open config $! /opt/kronometrix/etc/$conf \n";
+                usage();
+            }
+        }
+    }
+
+    my $perl_data = JSON->new->utf8->decode($json_data);
+
+    return $perl_data;
+}
+
+
+
+# reload configuration
+#
+sub reload_config {
+
+    write_msgbuf("info: signal HUP received, reload armed...");
+
+    #$cdata = open_config($cfile);
+
+    ## hostid
+    #$hostid = get_hostid($cdata);
+
+    ## datafile
+    #@dbs = get_datafile($cdata);
+
+    ## destination
+    #%fabric = get_fabric($cdata);
+
+    return;
+}
+
+
+# get listener configuration
+sub get_listeners {
+
+    my ($data) = @_;
+    tie my %listsvc, "Tie::IxHash";
+
+    my @temp = @{ $data->{'listener'} };
+
+    foreach my $f (@temp) {
+
+        my $name     = $f->{'name'};
+        my $desc     = $f->{'description'};
+        my $protocol = $f->{'protocol'};
+        my $port     = $f->{'port'};
+        my $address  = "localhost";
+
+        if ($f->{'address'}) {
+            $address  = $f->{'address'};
+        }
+
+        # industry domain hook 
+        # aq  - outdoor air quality 
+        # iaq - indoor air quality 
+        # wcd - general meteorology
+
+        #my @inss  = @{ $f->{'instance'} };
+
+        #foreach my $inst (@inss) {
+        #    my $iid   = $inst -> {'id'};
+        ##    my $iname = $inst -> {'name'};
+        #    my $ihost = $inst -> {'host'};
+        #    my $iport = $inst -> {'port'};
+
+        #    my @msg  = @{ $inst->{'message'} };
+        #    my $trace = 'NA';
+ 
+        #    foreach my $mesg (@msg) {
+
+        #        my $imname = $mesg -> {'name'};
+        #        my $ims    = $mesg -> {'scheme'};
+        #        my $imm    = $mesg -> {'method'};
+        #        my $imp    = $mesg -> {'path'};
+        #        $trace  = $mesg -> {'trace'} if ($mesg -> {'trace'});
+
+        #        if ( $trace ne 'on' ) { $trace = 'NA'; }
+
+        #        # print "$name:$iid:$iname:$imname => $ims:$imm:$ihost:$iport:$imp\n";
+        #        my $keyapp = $name . ":" . $iid . ":" . $iname . ":" . $imname;
+        #        my $hvalue = $ims . ":" . $imm . ":" . $ihost . ":" . $iport . ":" . $imp . ":" . $trace;
+        #        $listsvc{$keyapp} = $hvalue;
+        #    }
+        #}
+
+        my $keyapp = $protocol . ":" . $port . ":" . $address;
+        my $hvalue = $name . ":" . $desc;
+        $listsvc{$keyapp} = $hvalue;
+    }
+
+    return %listsvc;
+}
+
+
+
+
+
+
+# write buffer to a log file
+#
+sub write_log {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+    localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+                $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    if (eof $log) {
+        print $log "$dt $logbuf\n";
+    } else {
+        print $log "\n$dt $logbuf";
+    }
+
+    return;
+}
+
+
+# write message to STDOUT
+#
+sub write_msgbuf {
+
+    my ($logbuf) = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+      localtime(time);
+
+    my $dt = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+
+    print "$dt $logbuf";
+
+    return;
+}
+
+
+# write buffer to stdout
+#
+sub write_rawdata {
+
+    my ($rawdata) = @_;
+
+    # set krd raw file
+    # $rawfile = $curlog . "/" . $rawfile . ".krd";
+
+    if ($logging) {
+
+        print $log (" rawfile=$rawfile\n") if ($verbose);
+
+        my $rawkrd = open_file($rawfile);
+        printf $rawkrd "%.${tp}f:%s\n", time, $rawdata;
+        close ($rawkrd);
+
+    }
+
+    return;
+}
+
+
+# Vaisala QML201 data logger
+# Message Check Verification
+#
+sub qml201_msgck {
+
+    my $data = "@_";
+    my $rdata = 0;
+
+    my $m = substr($data, -4);
+    my $t = substr($data, 0, -4);
+    my $n = qml201_crc16($t);
+
+    if ( $m eq $n ) {
+
+        $rdata = 1;
+
+    } else {
+
+        $rdata = 0;
+    }
+
+    return $rdata;
+}
+
+
+# Vaisala QML201 data logger
+# CRC16 CRC-CCITT (XModem)
+#
+sub qml201_crc16 {
+    my ($string) = @_;
+    my $poly = 0x1021;
+    my $crc = 0;
+    for my $c ( unpack 'C*', $string ) {
+        $crc ^= ( $c << 8 );
+        for ( 0 .. 7 ) {
+            my $carry = $crc & 0x8000;
+            $crc <<= 1;
+            $crc ^= $poly if $carry;
+        }
+    }
+    $crc &= 0xffff;
+    return sprintf("%04X", $crc);
+}
+
+
+# Vaisala WXT5xx transmitter
+# Message Check Verification
+#
+sub wxt5xx_msgck {
+  
+    my $data = "@_";
+    my $rdata = 0;
+
+    my $m = substr($data, -3);
+    my $t = substr($data, 0, -3);
+    my $n = wxt520_crc16($t);
+
+    if ( $m eq $n ) {
+    
+        $rdata = 1;
+    
+    } else {
+ 
+        $rdata = 0;
+    }       
+
+    return $rdata;
+}
+
+# Vaisala WXT5xx transmitter
+# CRC16
+#
+sub wxt5xx_crc16 {
+    my ($string) = @_;
+
+    my $crc = 0;
+    for my $c (split //, $string) {
+        $crc = $crc ^ ord($c);
+        for(my $i=0; $i < 8; $i++) {
+            if($crc & 1) {
+                $crc = $crc >> 1;
+                $crc = $crc ^ hex '0xA001';
+            } else {
+                $crc = $crc >> 1;
+            }
+        }
+    }
+
+    my $c1 = hex '0x40' | ($crc >> 12);
+    my $c2 = hex '0x40' | (($crc >> 6) & hex '0x3F');
+    my $c3 = hex '0x40' | ($crc & hex '0x3f');
+    my $result = chr($c1) . chr($c2) . chr($c3);
+
+    return $result;
+}
+
+
+
+
+
+
+# print usage and exit
+#
+sub usage {
+    print STDERR <<END;
+USAGE: sockrec [-hlvV] | [interval]
+ e.g. sockrec 60     listen to data, for 60 seconds, then exit
+      sockrec        listen to incoming data, print it to STDOUT, continuously
+      sockrec -l     listen and save incoming data to raw datafile(s), continuously
+      sockrec -V     print recorder revision information
+
+OPTIONS:
+  -h        : help information
+  -l        : log raw data to krd file, no STDOUT
+  -t        : timeout in seconds
+  -v        : verbose information
+  -V        : release version
+  interval  : maximum number of seconds to execute
+END
+    exit 0;
+}
+
+
+# print revision and exit
+#
+sub revision {
+    print STDERR <<END;
+Socket Communication Data Recorder for TCP, UDP
+ICT, Industrial IoT, Weather and Environment
+sockrec: 1.0.6, 2021-11-16 1114
+END
+    exit 0;
+}
