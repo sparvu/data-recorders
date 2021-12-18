@@ -40,7 +40,7 @@ if ($include->{all} || $include->{svcrec}) {
 
 if ($include->{all} || $include->{snmprec}) {
     push @pm_files, 
-        'lib/Kronometrix/Snmprec.pm',
+        'lib/Kronometrix/Snmprec.pm';
     $config{PREREQ_PM}{'Net::SNMP'} = 6.0.1;
 };
 
