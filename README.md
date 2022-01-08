@@ -92,7 +92,7 @@ A simple and efficient set of data recorders and transport utilities for multi-i
 
 ## Preventive Healthcare  
 
- * epidmrec - Epidemiology data recorder **(TBD)**
+ * epirec - Epidemiology data recorder Q1 2022
 
 # Commercial products
 
