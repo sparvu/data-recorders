@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
 
-#  Copyright (c) 2021 Stefan Parvu (gitlab.com/sparvu)
+#  Copyright (c) 2022 Stefan Parvu (gitlab.com/sparvu)
 #  Initial Author: Stefan Parvu
 #
 #  This program is free software; you can redistribute it and/or
@@ -723,7 +723,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-epidmrec: 1.0.0, 2021-02-13 1832
+epidmrec: 1.0.1, 2022-01-08 1414
 END
     exit 0;
 }
