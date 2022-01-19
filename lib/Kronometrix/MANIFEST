@@ -1,5 +1,14 @@
+all_configs/snmprec.json
+all_configs/sockrec.json
+all_configs/svcrec.json
+all_configs/webrec.json
+all_scripts/snmprec
+all_scripts/sockrec
+all_scripts/svcrec
+all_scripts/webrec
 Changes
 config.pl
+configs/
 lib/Kronometrix.pm
 lib/Kronometrix/Snmprec.pm
 lib/Kronometrix/Svcrec.pm
@@ -10,13 +19,8 @@ lib/Kronometrix/Webrec/Queue.pm
 lib/Kronometrix/Webrec/Request.pm
 Makefile.PL
 MANIFEST
-META.json			Module JSON meta-data (added by MakeMaker)
-META.yml			Module YAML meta-data (added by MakeMaker)
 README
-script/snmprec
-script/sockrec
-script/svcrec
-script/webrec
+scripts/
 t/etc/conf1.json
 t/etc/kronometrix.json
 t/etc/multiple.json
