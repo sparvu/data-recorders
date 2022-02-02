@@ -1,6 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl -w
 
-#  Copyright (c) 2021 Stefan Parvu (gitlab.com/sparvu)
+#  Copyright (c) 2022 Stefan Parvu (gitlab.com/sparvu)
 #  Initial Author: Stefan Parvu
 #
 #  This program is free software; you can redistribute it and/or
@@ -29,6 +29,7 @@ use Socket qw( unpack_sockaddr_in );
 use Proc::Daemon;
 use Proc::PID::File;
 use Getopt::Std;
+use Data::Dumper;
 
 ###  Process command line args
 usage() if defined $ARGV[0] and $ARGV[0] eq "--help";
@@ -442,22 +443,61 @@ sub get_listeners {
             $address  = $f->{'address'};
         }
 
-        # industry domain hook 
+        # industry domains
         # aq  - outdoor air quality 
         # iaq - indoor air quality 
         # wcd - general meteorology
 
-        #my @inss  = @{ $f->{'instance'} };
+        my @industries = ('iaqd', 'aqd', 'amd', 'wcd');
 
-        #foreach my $inst (@inss) {
-        #    my $iid   = $inst -> {'id'};
-        ##    my $iname = $inst -> {'name'};
-        #    my $ihost = $inst -> {'host'};
-        #    my $iport = $inst -> {'port'};
+        for my $industry (@industries) {
 
-        #    my @msg  = @{ $inst->{'message'} };
-        #    my $trace = 'NA';
- 
+            next if (! defined $f->{$industry});
+
+            my @lts = @{ $f->{$industry} };
+
+            # check all devices per industry
+            for my $dev (@lts) {
+
+                my $som  = 'NA';
+                my $sor  = 'NA';
+                my $rsp  = 'NA';
+                my $eor  = 'NA';
+                my $eom  = 'NA';
+                my $errd = 'NA';
+
+                my $vendor     = $dev -> {'vendor'};
+                my $model      = $dev -> {'model'};
+
+                # we check error detection
+                if (defined $dev->{'error_detection'}) {
+                    $errd = $dev->{'checksum'};
+                }
+
+                if ($dev->{'message_start'}) { 
+                    $som = $dev->{'message_start'};
+                }
+
+                if ($dev->{'record_start'}) { 
+                    $sor = $dev->{'record_start'};
+                }
+
+                if ($dev->{'record_sep'}) { 
+                    $rsp = $dev->{'record_sep'};
+                }
+
+                if ($dev->{'record_end'}) { 
+                    $eor = $dev->{'record_end'};
+                }
+
+                if ($dev->{'message_end'}) { 
+                    $eom = $dev->{'message_end'};
+                }
+
+                print "$dev->{'model'}\n";
+            }
+        }
+
         #    foreach my $mesg (@msg) {
 
         #        my $imname = $mesg -> {'name'};
