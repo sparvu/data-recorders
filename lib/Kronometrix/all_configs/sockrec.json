@@ -2,7 +2,7 @@
   "listener" : [
     {
       "name" : "starckrom-udp",
-      "description" : "Starckrom IoT UDP 44430",
+      "description" : "Starckrom IoT Provider UDP 44430",
       "protocol" : "udp",
       "port" : 44430,
       "address": "0.0.0.0",
@@ -18,18 +18,13 @@
           "vendor": "vaisala",
           "model": "wxt5xx",
           "description": "Vaisala WXT530 Series",
-          "error_detection": "wxt-crc16",
+          "error_detection": "wxtcrc16",
           "message_start": "2R0",
           "record_start": "",
           "record_sep": ",",
           "record_end": "CRLF",
           "message_end": "CRLF",
           "data": [
-            {
-              "name": "cmd",
-              "description": "device command",
-              "type": "string"
-            },
             {
               "name": "dn",
               "description": "wind direction min",
@@ -156,21 +151,18 @@
       },
       "aqd" : [
         {
+          "unit": 1,
           "vendor": "vaisala",
-          "model": "wxt5xx",
+          "model": "wxt520",
           "description": "Vaisala WXT530 Series",
-          "error_detection": "wxt-crc16",
+          "crc": "yes",
+          "command": "2R0CRLF",
           "message_start": "2R0",
           "record_start": "",
           "record_sep": ",",
           "record_end": "CRLF",
           "message_end": "CRLF",
           "data": [
-            {
-              "name": "cmd",
-              "description": "device command",
-              "type": "string"
-            },
             {
               "name": "dn",
               "description": "wind direction min",

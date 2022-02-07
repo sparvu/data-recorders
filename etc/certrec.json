@@ -1,18 +1,6 @@
 {
   "server" : [
     {
-      "name" : "kronometrix.org cert",
-      "description" : "SMTPS kronometrix.org",
-      "certificates" : [
-        {
-          "id" : "smtps",
-          "type" : "ssl",
-          "host" : "mail.kronometrix.org",
-          "port" : 465
-        }
-      ]
-    },
-    {
       "name" : "kronometrix.com cert",
       "description" : "IMAP, SMTPS kronometrix.com",
       "certificates" : [

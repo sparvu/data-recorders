@@ -9,14 +9,16 @@ Defect Management System
 
 Releases
 
- 1.8.4 July 2021 Release
+ 1.10 December 2021 Release
     HTTP transport improvements
     webrec HTTP authentication fixes
-    diskrec CloudLinux improvements 
-    sockrec new configuration and improvements
-    libcurl 7.77.0 update
+    snmprec integration
+    sockrec improvements
+    libcurl 7.80.0 update
+    openssl 1.1.1m update
+    Fio 3.28 update
     LuaJIT 2.1.0 update
-    CPAN June 2021 update
+    CPAN December 2021 update
     Perl 5.34.0 update
 
  1.8.2 April 2021 Release
