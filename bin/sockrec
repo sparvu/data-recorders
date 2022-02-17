@@ -3,21 +3,21 @@
 # Copyright (c) 2009-2022 Stefan Parvu (gitlab.com/sparvu)
 # Initial Author: Stefan Parvu
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
-# (http://www.gnu.org/copyleft/gpl.html)
+#  (http://www.gnu.org/copyleft/gpl.html)
 
 use JSON;
 use Tie::IxHash;
@@ -61,8 +61,8 @@ else {
 $main::opt_h  = 0;                  # help option
 $main::opt_V  = 0;                  # revision option
 $main::opt_l  = 0;                  # logging option
-my $cfile     = 'sockrec.json';     # configuration file
-my $kfile     = 'kronometrix.json'; # configuration file
+my $cfile     = 'sockrec.json';     # recorder configuration file
+my $kfile     = 'kronometrix.json'; # log files and data messages
 my $tp        = 0;                  # time precision
 my $tcpka     = 0;                  # transport TCP keepalive settings
 my $sid       = "";                 # subscription id
@@ -94,10 +94,42 @@ tie my %listeners, "Tie::IxHash";
 %listeners = get_listeners($cdata);
 
 if ($verbose) {
-    # print "Total listeners: " . keys(%listeners) . ".\n";
+    my $lsnr = 1;
+    print "Total listeners: " . keys(%listeners) . "\n\n";
     for my $key (keys %listeners) {
+
         my $value = $listeners{$key};
-        print "$key => $value\n";
+
+        print "Listener$lsnr $key\n";
+
+        my ($proto, $port, $ip) = split(':', $key);
+
+        print " protocol: $proto\n";
+        print " port: $port\n";
+        print " address: $ip\n";
+
+        my @metrics;
+
+        foreach $varray (@$value) {
+            #print "varray=$varray\n";
+            #my $vr2 = split('\^', $varray);
+            push (@metrics, split('\^', $varray));
+        }
+
+        my $p = $#metrics - 2;
+
+        print "Data messsage\n";
+        print " krd: $metrics[1]\n";
+        print " device: $metrics[0]\n";
+        print " parameters: $p\n";
+        print "Parameters\n";
+
+        for (my $i = 2; $i < $#metrics; $i++){
+            print " $metrics[$i]\n";  
+        }
+
+        $lsnr++;
+        print "\n";
     }
 }
 
@@ -135,15 +167,16 @@ if ($logging) {
 #}
 
 
-# Startup listeners
+# start listeners
+#
 my $ioloop = IO::Async::Loop->new;
 for my $key (keys %listeners) {
 
     my $value = $listeners{$key};
-    my ($proto, $port, $ipaddress) = split(":",  $key);
+    my ($proto, $port, $ipaddress) = split(':',  $key);
 
     if ( $proto =~ /tcp/ ) { start_tcp($ioloop, $port, $ipaddress); }
- elsif ( $proto =~ /udp/ ) { start_udp($ioloop, $port, $ipaddress); }
+ elsif ( $proto =~ /udp/ ) { start_udp($ioloop, $port); }
 
 }
 
@@ -186,6 +219,119 @@ sub daemonize {
     chdir("/opt/kronometrix/log/current")
       or die "error: cannot open raw data directory, $!\n";
    
+    return;
+}
+
+
+# format wxt ascii data
+#
+sub wxt_fmtdata {
+
+    my ( $dname, $dtype, $idx, @buf ) = @_;
+    my $rvalue ;
+    
+    if ( $dtype eq 'string' ) {
+
+        # device type: metric=value (WXT520)
+        if ( grep( /=/, @buf ) ) {
+
+            # match metrix name
+            my $match = first { /$dname/i } @buf;
+
+            # fetch the value
+            $rvalue = $match =~ s/^.*=//gr;
+
+            # handle unit value
+            my $tr = $rvalue;
+            my $lchar = chop($tr);
+            if ($lchar ne '#') {
+
+                $rvalue = substr($rvalue, 0, -1);
+               
+            } else { 
+
+                $rvalue = 'NA';
+            }
+
+        # device type: value (HMP, QML201)
+        } else {
+
+            # we will use rbuf index
+            $rvalue = $buf[$idx];
+        }
+
+    } elsif ( $dtype eq 'unixtime' ) {
+
+        # we will use rbuf index
+        $rvalue = $buf[$idx];
+
+    } else {
+
+        $rvalue = 'NA';
+    }
+
+    return $rvalue;
+}
+
+
+
+# Process Listener Data
+#
+sub process_data {
+ 
+    # input parameters
+    my ( $proto, $port, $host, $data ) = @_;
+    my @mxs;
+
+    # listener id
+    # proto:port:ipaddress
+    # udp:44430:10.10.1.90
+    # udp:44430:0.0.0.0
+
+    #print "Proto: $proto\n";
+    #print "Port: $port\n";
+    #print "Host: $host\n";
+
+    #if ( $host =~ /0.0.0.0/ ) { print "host 0"; }
+
+    # build the lookup key
+    my $hkey = $proto . ':' . $port . ':' . $host;
+
+    # we receive from realtime data
+    #print "key=$hkey\n";
+    #print "data=$data\n";
+ 
+    # check listener table, find data
+    if (defined $listeners{$hkey}) {
+
+        for my $key (keys %listeners) {
+
+            my $value = $listeners{$key};
+
+            foreach $varray (@$value) {
+                push (@mxs, split('\^', $varray));
+            }
+        }
+    }
+
+    # process data based on device
+    # we check to see this is a wxt
+    if ($mxs[0] =~ /vwxt/) {
+
+        my @rdata;
+        my $dt;
+
+        if ($data =~ /^2[rR]0/) {
+
+            $dt = substr($data, 4);
+
+            push (@rdata, split(',', $dt));
+        }
+
+        print "@mxs\n";
+        print "@rdata\n";
+    }
+
     return;
 }
 
@@ -271,23 +417,29 @@ sub start_udp {
 
     my ( $lp, $port ) = @_;
 
+    my $listen_host;
+    my $listen_port;
+
     my $listener3 = IO::Async::Socket->new(
      on_recv => sub {
+
         my ( $self, $dgram, $addr ) = @_;
         #my $v = unpack_sockaddr_in $addr->read_handle->peername ;
 
         # chomp raw data
         chomp ($dgram);
 
-        # raw data
-        if ($logging) {
-            write_rawdata ("$dgram");
-        } else {
-            write_msgbuf ("$dgram\n");
-        }
+        # we have data to feed
+        print "listening port: $listen_port\n";
+        process_data ('udp', $listen_port, $listen_host, $dgram);
 
-        #print "udp(44430) $dgram\n",
-        #$loop->stop;
+        # raw data
+        #if ($logging) {
+        #    write_rawdata ("$dgram");
+        #} else {
+        #    write_msgbuf ("$dgram\n");
+        #}
+
      },
      on_recv_error => sub {
         my ( $self, $errno ) = @_;
@@ -306,15 +458,16 @@ sub start_udp {
     my ( $l ) = @_;
     my $s = $l->read_handle;
 
-    if ($logging) {
+    $listen_host = sprintf ("%s", $s->sockhost);
+    $listen_port = sprintf ("%d", $s->sockport);
 
-        my $listen_host = sprintf ("%s", $s->sockhost);
-        my $listen_port = sprintf ("%d", $s->sockport);
+    if ($logging) {
 
         write_log ("Listening on $listen_host:$listen_port");
 
     } else {
-        printf STDERR "Listening on %s:%d\n", $s->sockhost, $s->sockport;
+
+        printf STDERR "Listening on %s:%d\n", $listen_host, $listen_port;
     }
 
     })->get;
@@ -443,88 +596,118 @@ sub get_listeners {
             $address  = $f->{'address'};
         }
 
-        # industry domains
-        # aq  - outdoor air quality 
-        # iaq - indoor air quality 
-        # wcd - general meteorology
+        # INDUSTRIES
+        # aqd  - Environment / Outdoor Air Quality
+        # iaqd - Environment / Indoor Air Quality
+        # wcd  - Weather / General Meteorology
+        # amd  - Weather / Aviation Meteorology
+        # cpd  - ICT / Computer Performance
+        # dpd  - ICT / DataCentre Performance
+        # spd  - ICT / Application Service Performance
+       
+        my $keyapp = $protocol . ':' . $port . ':' . $address;
+        my @valapp;
+ 
+        my @lmoids = ('iaqd', 'aqd', 'amd', 'wcd', 'cpd', 'dpd', 'spd');
 
-        my @industries = ('iaqd', 'aqd', 'amd', 'wcd');
+        for my $lmoid (@lmoids) {
+            next if (! defined $f->{$lmoid});
+            my @reqs = @{ $f->{$lmoid} };
 
-        for my $industry (@industries) {
+            #print Dumper @reqs;
 
-            next if (! defined $f->{$industry});
+            for my $dev (@reqs) {
 
-            my @lts = @{ $f->{$industry} };
+                my $rng_register;
+                my $rng_length;
+                my $mf  = 'NA';
+                my $crc = 'NA';
+                my $cmd = 'NA';
+                my $som = 'NA';
+                my $sor = 'NA';
+                my $rsp = 'NA';
+                my $eor = 'NA';
+                my $eom = 'NA';
 
-            # check all devices per industry
-            for my $dev (@lts) {
+                my $vendor  = $dev -> {'vendor'};
+                my $model   = $dev -> {'model'};
 
-                my $som  = 'NA';
-                my $sor  = 'NA';
-                my $rsp  = 'NA';
-                my $eor  = 'NA';
-                my $eom  = 'NA';
-                my $errd = 'NA';
+                # check for modbus parameters
+                #if (defined $dev->{'function'}) {
+                #    $mf = $dev->{'function'};
+                #}
 
-                my $vendor     = $dev -> {'vendor'};
-                my $model      = $dev -> {'model'};
+                # check for modbus range filter
+                #if (defined $dev->{'range'}) {
+                #    $rng_register = $dev->{'range'}->{'register'};
+                #    $rng_length = $dev->{'range'}->{'length'};
+                #    $range = $rng_register . '-' . $rng_length;
+                #}
 
-                # we check error detection
-                if (defined $dev->{'error_detection'}) {
-                    $errd = $dev->{'checksum'};
+                my $k=0;
+                my $params;
+
+                my @metrix = @{ $dev->{'data'} };
+                for my $dt (@metrix) {
+                    my ($dname, $dtype);
+                    my $dreg; my $dlen; my $dcor='NA'; my $dfct;
+
+                    if ( $dt -> {'type'} eq 'uint16'   or
+                         $dt -> {'type'} eq 'int16'    or
+                         $dt -> {'type'} eq 'floatinv' or
+                         $dt -> {'type'} eq 'string'   or 
+                         $dt -> {'type'} eq 'unixtime' ) {
+
+                        $dname = $dt -> {'name'};
+                        $dtype = $dt -> {'type'};
+
+                        $dname .=  '_' . $dtype;
+
+                    } elsif ( $dt -> {'type'} eq 'virtual' ) {
+
+                        $dname = $dt -> {'name'};
+                        $dtype = $dt -> {'type'};
+                        my $did = $dt -> {'id'};
+                        my @args = @{ $dt->{'args'} };
+                        $dname .=  '_' . $dtype . '_' . $did . '_'  . join("_", @args);
+
+                    } elsif ( $dt -> {'type'} eq 'NA' ) {
+
+                        $dname = $dt -> {'name'};
+                        $dtype = $dt -> {'type'};
+                        $dname .=  '_' . $dtype;
+ 
+                    } else { next; }
+    
+                        if ($k > 0) {
+                            $params .= '^' . $dname;
+                        } else {
+                            $params .= $dname;
+                    }
+    
+                    $k++;
                 }
 
-                if ($dev->{'message_start'}) { 
-                    $som = $dev->{'message_start'};
-                }
+                my $rfile = $lmoid . '_' . $model . 'rec';
+                #my $keyapp = $protocol . '^' . $port . '^' . $address . '^' . $rfile . '^' . $vendor;
+                #my $hvalue = $params;
+                my $hvalue = $model . '^' . $rfile . '^' . $params;
 
-                if ($dev->{'record_start'}) { 
-                    $sor = $dev->{'record_start'};
-                }
+                push (@valapp, $hvalue);
 
-                if ($dev->{'record_sep'}) { 
-                    $rsp = $dev->{'record_sep'};
-                }
-
-                if ($dev->{'record_end'}) { 
-                    $eor = $dev->{'record_end'};
-                }
-
-                if ($dev->{'message_end'}) { 
-                    $eom = $dev->{'message_end'};
-                }
-
-                print "$dev->{'model'}\n";
+                $listsvc{$keyapp} = \@valapp;
             }
-        }
 
-        #    foreach my $mesg (@msg) {
+        } # iaqd, aqd, amd, wcd
 
-        #        my $imname = $mesg -> {'name'};
-        #        my $ims    = $mesg -> {'scheme'};
-        #        my $imm    = $mesg -> {'method'};
-        #        my $imp    = $mesg -> {'path'};
-        #        $trace  = $mesg -> {'trace'} if ($mesg -> {'trace'});
-
-        #        if ( $trace ne 'on' ) { $trace = 'NA'; }
-
-        #        # print "$name:$iid:$iname:$imname => $ims:$imm:$ihost:$iport:$imp\n";
-        #        my $keyapp = $name . ":" . $iid . ":" . $iname . ":" . $imname;
-        #        my $hvalue = $ims . ":" . $imm . ":" . $ihost . ":" . $iport . ":" . $imp . ":" . $trace;
-        #        $listsvc{$keyapp} = $hvalue;
-        #    }
-        #}
-
-        my $keyapp = $protocol . ":" . $port . ":" . $address;
-        my $hvalue = $name . ":" . $desc;
-        $listsvc{$keyapp} = $hvalue;
+        #print "Key $keyapp\n";
+        #print "Value: @valapp\n";
     }
+
+    # print Dumper \%listsvc;
 
     return %listsvc;
 }
-
-
-
 
 
 
@@ -716,9 +899,9 @@ END
 #
 sub revision {
     print STDERR <<END;
-Socket Communication Data Recorder for TCP, UDP
+Network Socket Communication Data Recorder
 ICT, Industrial IoT, Weather and Environment
-sockrec: 1.0.6, 2021-11-16 1114
+sockrec: 1.11.0, 2022-02-17 1534
 END
     exit 0;
 }
