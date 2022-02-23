@@ -37,7 +37,7 @@ getopts('t:lhvV') or usage();
 usage()    if defined $main::opt_h;
 revision() if defined $main::opt_V;
 
-# verbose flag
+#verbose flag
 my $verbose = defined $main::opt_v ? $main::opt_v : 0;
 
 # logging flag
@@ -274,7 +274,6 @@ sub wxt_fmtdata {
 }
 
 
-
 # Process Listener Data
 #
 sub process_data {
@@ -282,15 +281,12 @@ sub process_data {
     # input parameters
     my ( $proto, $port, $host, $data ) = @_;
     my @mxs;
+    my $record;
 
     # listener id
     # proto:port:ipaddress
     # udp:44430:10.10.1.90
     # udp:44430:0.0.0.0
-
-    #print "Proto: $proto\n";
-    #print "Port: $port\n";
-    #print "Host: $host\n";
 
     #if ( $host =~ /0.0.0.0/ ) { print "host 0"; }
 
@@ -298,8 +294,17 @@ sub process_data {
     my $hkey = $proto . ':' . $port . ':' . $host;
 
     # we receive from realtime data
-    #print "key=$hkey\n";
-    #print "data=$data\n";
+    # print "key=$hkey\n";
+    # print "data=$data\n";
+
+    if($verbose) {
+
+        print "process data function\n";
+        print " protocol: $proto\n";
+        print " port: $port\n";
+        print " host: $host\n";
+        print " realtime data=$data\n";
+    }
  
     # check listener table, find data
     if (defined $listeners{$hkey}) {
@@ -312,24 +317,145 @@ sub process_data {
                 push (@mxs, split('\^', $varray));
             }
         }
-    }
 
-    # process data based on device
-    # we check to see this is a wxt
-    if ($mxs[0] =~ /vwxt/) {
+        #mxs0 - device name
+        #mxs1 - krd file
+        #mxs2 - rest of data types
 
-        my @rdata;
-        my $dt;
+        my $rvalue;
 
-        if ($data =~ /^2[rR]0/) {
+        # process data based on device
 
-            $dt = substr($data, 4);
+        # WXT DEVICES
+        if ($mxs[0] =~ /vwxt/) {
 
-            push (@rdata, split(',', $dt));
+            # check message CRC
+            my $vck = vwxt_msgck($data);
+
+            if ( $vck == 1 ) {
+
+                # we still have CR at the end
+                $rvalue = substr($data, 0, -4);
+
+            } else {
+
+                if ($logging) {
+
+                    write_log ("Data message checksum error, retrying...");
+
+                } else {
+
+                    print "Data message checksum error, retrying...\n";
+
+                }
+
+                return;
+            }
+
+            my @rdata;
+            if ($rvalue =~ /^[0-9][rR]0/) {
+
+                my $dt = substr($rvalue, 4);
+                push (@rdata, split(',', $dt));
+            }
+
+            my @mxtypes = @mxs[2..$#mxs];
+
+            # process all fields
+            for (my $cnt=0; $cnt <= $#mxtypes; $cnt++) {
+ 
+                if ( $mxtypes[$cnt] =~ /virtual/ ) {
+
+                    # we check for virtual fields
+                    my @virtmx = split ('_', $mxtypes[$cnt]); 
+                    
+                    # VIRTMX ARRAY STRUCTURE
+                    # td_virtual_dewpoint_ta_ua
+                    # 0 variable name
+                    # 1 type (virtual)
+                    # 2 function name
+                    # 3 parameter
+                    # 4 parameter
+                    # ...
+                    # n parameter
+
+                    my @fname_args = @virtmx[3..$#virtmx];
+
+                    my ($temp, $humidity) = 'NA';
+
+                    for my $fa (@fname_args) {
+ 
+                        if ( $fa eq 'ta' ) {
+
+                            # extract TA
+                            foreach my $fmx (@rdata) {
+                                if ( $fmx =~ /$fa/i ) {
+                                    my $match = $fmx =~ s/^.*=//gr;
+                                    chop($match);
+                                    if ($match ne '#') {
+                                        $temp = $match;
+                                    }
+                                }
+                            }
+
+                        } elsif ($fa eq 'rh' or $fa eq 'ua') {
+
+                            # extract Rh
+                            foreach my $fmx (@rdata) {
+                                if ( $fmx =~ /$fa/i ) {
+                                    my $match = $fmx =~ s/^.*=//gr;
+                                    chop($match);
+                                    if ($match ne '#' ) {
+                                        $humidity = $match;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    my $val;
+                    # virtual function list: dewpoint, dewpoint_wmo
+                    if ($virtmx[2] eq 'dewpoint' ) {
+
+                        if ($temp ne 'NA' or $humidity ne 'NA') {
+                            $val = sprintf ("%.2f", dewpoint_wmo($temp, $humidity) );
+
+                        } else {
+
+                            $val='NA';
+                        }
+
+                    } else { next; }
+
+                    # we make the new metric
+                    my $nmx =  $virtmx[0] . '=' . $val . 'C';
+              
+                    # we have to add the virtual field into raw data vector
+                    splice @rdata, $cnt, 0, $nmx;
+                }
+            }
+
+            # format the output
+            # print "@rdata\n"; #my $lrdata=$#rdata+1; print "L(RDATA)=$lrdata\n";
+
+            my $krmx = 0;
+
+            foreach my $rmx (@rdata) {
+
+                my $match = $rmx =~ s/^.*=//gr;
+                chop($match);
+
+                if ($krmx < $#rdata) {
+                    $record .= $match . ':';
+                } else {
+                    $record .= $match;
+                }
+
+                $krmx++;
+            }
         }
 
-        print "@mxs\n";
-        print "@rdata\n";
+        print "Record=$record\n";
     }
 
     return;
@@ -430,7 +556,7 @@ sub start_udp {
         chomp ($dgram);
 
         # we have data to feed
-        print "listening port: $listen_port\n";
+        #print "listening port: $listen_port\n";
         process_data ('udp', $listen_port, $listen_host, $dgram);
 
         # raw data
@@ -820,14 +946,17 @@ sub qml201_crc16 {
 # Vaisala WXT5xx transmitter
 # Message Check Verification
 #
-sub wxt5xx_msgck {
+sub vwxt_msgck {
   
-    my $data = "@_";
+    my $record = "@_";
     my $rdata = 0;
 
-    my $m = substr($data, -3);
-    my $t = substr($data, 0, -3);
-    my $n = wxt520_crc16($t);
+    $record =~ s/\r$//;
+    
+    my $m = substr($record, -3);
+    my $t = substr($record, 0, -3);
+   
+    my $n = vwxt_crc16($t);
 
     if ( $m eq $n ) {
     
@@ -844,7 +973,7 @@ sub wxt5xx_msgck {
 # Vaisala WXT5xx transmitter
 # CRC16
 #
-sub wxt5xx_crc16 {
+sub vwxt_crc16 {
     my ($string) = @_;
 
     my $crc = 0;
@@ -869,8 +998,18 @@ sub wxt5xx_crc16 {
 }
 
 
-
-
+# Returns dewpoint (Td) according with CIMO Guide-7th_Edition-2008
+# based on temperature and humidity 
+#
+sub dewpoint_wmo {
+    my $temp = shift;
+    my $humidity = shift;
+    my $c1 = 243.12;
+    my $c2 = 17.62;
+    my $g1 = $humidity * exp(($c2 * $temp) / ($c1 + $temp));
+    my $gamma = log($g1 / 100);
+    return ($c1 * $gamma) / ($c2 - $gamma);
+}
 
 
 # print usage and exit
@@ -901,7 +1040,7 @@ sub revision {
     print STDERR <<END;
 Network Socket Communication Data Recorder
 ICT, Industrial IoT, Weather and Environment
-sockrec: 1.11.0, 2022-02-17 1534
+sockrec: 1.11.1, 2022-02-18 2027
 END
     exit 0;
 }
