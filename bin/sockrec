@@ -64,7 +64,6 @@ $main::opt_l  = 0;                  # logging option
 my $cfile     = 'sockrec.json';     # recorder configuration file
 my $kfile     = 'kronometrix.json'; # log files and data messages
 my $tp        = 0;                  # time precision
-my $tcpka     = 0;                  # transport TCP keepalive settings
 my $sid       = "";                 # subscription id
 my $token     = "NA";               # token id
 my $cdata;                          # configuration data
@@ -143,7 +142,7 @@ if ($logging) {
 
     ## logs
     ( $baselog, $curlog ) = get_log($kdata);
-    $rawfile = $curlog . '/' . 'sockrec' . '.krd';
+    # $rawfile = $curlog . '/' . 'sockrec' . '.krd';
 
     $rlog = $baselog . "/sockrec.log";
     $log = open_file($rlog);
@@ -326,6 +325,7 @@ sub process_data {
 
         # process data based on device
 
+        # process data based on device
         # WXT DEVICES
         if ($mxs[0] =~ /vwxt/) {
 
@@ -455,7 +455,22 @@ sub process_data {
             }
         }
 
-        print "Record=$record\n";
+        if ($logging) {
+
+            # set krd raw file
+            $rawfile = $curlog . "/" . $mxs[1] . ".krd";
+
+            print $log (" rawfile=$rawfile\n") if ($verbose);
+
+            my $rawkrd = open_file($rawfile);
+            printf $rawkrd "%.${tp}f:%s:%s\n", time, $mxs[0], $record;
+            close ($rawkrd);
+
+        } else {
+
+            printf "%.${tp}f:%s:%s\n", time, $mxs[0], $record;
+        }
+
     }
 
     return;
@@ -1040,7 +1055,7 @@ sub revision {
     print STDERR <<END;
 Network Socket Communication Data Recorder
 ICT, Industrial IoT, Weather and Environment
-sockrec: 1.11.1, 2022-02-18 2027
+sockrec: 1.12.0, 2022-02-24 2136
 END
     exit 0;
 }
