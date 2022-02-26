@@ -13,10 +13,10 @@
           "value": "ok"
         }
       },
-      "aqd" : [
+      "wcd" : [
         {
           "vendor": "vaisala",
-          "model": "wxt5xx",
+          "model": "vwxt530",
           "description": "Vaisala WXT530 Series",
           "error_detection": "wxtcrc16",
           "message_start": "2R0",
@@ -69,145 +69,7 @@
               "name": "td",
               "description": "dewpoint",
               "type": "virtual",
-              "id": "dewpoint",
-              "args": [ "ta", "ua" ]
-            },
-            {
-              "name": "pa",
-              "description": "air pressure",
-              "type": "string"
-            },
-            {
-              "name": "rc",
-              "description": "rain accumulation",
-              "type": "string"
-            },
-            {
-              "name": "rd",
-              "description": "rain duration",
-              "type": "string"
-            },
-            {
-              "name": "ri",
-              "description": "rain intensity",
-              "type": "string"
-            },
-            {
-              "name": "hc",
-              "description": "hail accumulation",
-              "type": "string"
-            },
-            {
-              "name": "hd",
-              "description": "hail duration",
-              "type": "string"
-            },
-            {
-              "name": "hi",
-              "description": "hail intensity",
-              "type": "string"
-            },
-            {
-              "name": "rp",
-              "description": "rain peak intensity",
-              "type": "string"
-            },
-            {
-              "name": "hp",
-              "description": "hail peak intensity",
-              "type": "string"
-            },
-            {
-              "name": "th",
-              "description": "heating temperature",
-              "type": "string"
-            },
-            {
-              "name": "vh",
-              "description": "heating voltage",
-              "type": "string"
-            },
-            {
-              "name": "vs",
-              "description": "supply voltage",
-              "type": "string"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name" : "starckrom-tcp",
-      "description" : "Starckrom IoT TCP 44429",
-      "protocol" : "tcp",
-      "port" : 44429,
-      "address": "localhost",
-      "writeback" : {
-        "enabled" : "false",
-        "payload" : {
-          "type": "function",
-          "value": { "RANDSTR" : 32 }
-        }
-      },
-      "aqd" : [
-        {
-          "unit": 1,
-          "vendor": "vaisala",
-          "model": "wxt520",
-          "description": "Vaisala WXT530 Series",
-          "crc": "yes",
-          "command": "2R0CRLF",
-          "message_start": "2R0",
-          "record_start": "",
-          "record_sep": ",",
-          "record_end": "CRLF",
-          "message_end": "CRLF",
-          "data": [
-            {
-              "name": "dn",
-              "description": "wind direction min",
-              "type": "string"
-            },
-            {
-              "name": "dm",
-              "description": "wind direction avg",
-              "type": "string"
-            },
-            {
-              "name": "dx",
-              "description": "wind direction max",
-              "type": "string"
-            },
-            {
-              "name": "sn",
-              "description": "wind speed min",
-              "type": "string"
-            },
-            {
-              "name": "sm",
-              "description": "wind speed avg",
-              "type": "string"
-            },
-            {
-              "name": "sx",
-              "description": "wind speed max",
-              "type": "string"
-            },
-            {
-              "name": "ta",
-              "description": "air temperature",
-              "type": "string"
-            },
-            {
-              "name": "ua",
-              "description": "relative humidity",
-              "type": "string"
-            },
-            {
-              "name": "td",
-              "description": "dewpoint",
-              "type": "virtual",
-              "id": "dewpoint",
+              "id": "dewpoint_wmo",
               "args": [ "ta", "ua" ]
             },
             {
