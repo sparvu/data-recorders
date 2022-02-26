@@ -258,10 +258,10 @@ while ( 1 ) {
                     $mntfs  = $1;
                 }
 
-                last if ($mntfs =~ /tmp/);
-
                 $d .= $mntfs;
-            } 
+
+                last if ($mntfs =~ /tmp/);
+            }
         }
 
         # remove '-'
