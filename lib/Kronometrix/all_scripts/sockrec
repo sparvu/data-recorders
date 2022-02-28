@@ -298,17 +298,23 @@ sub process_data {
 
     if($verbose) {
 
-        print "process data function\n";
+        print "process_data function\n";
         print " protocol: $proto\n";
         print " port: $port\n";
         print " host: $host\n";
         print " realtime data=$data\n";
     }
+
+    my $devid = 0;
  
     # check listener table, find data
     if (defined $listeners{$hkey}) {
 
         for my $key (keys %listeners) {
+
+            next if ($key ne $hkey);
+
+            print " listener: $key\n" if ($verbose);
 
             my $value = $listeners{$key};
 
@@ -335,7 +341,7 @@ sub process_data {
             if ( $vck == 1 ) {
 
                 # we still have CR at the end
-                $rvalue = substr($data, 0, -4);
+	        $rvalue = substr($data, 0, -4);
 
             } else {
 
@@ -353,8 +359,10 @@ sub process_data {
             }
 
             my @rdata;
+            
             if ($rvalue =~ /^[0-9][rR]0/) {
-
+ 
+                $devid = substr($rvalue, 0, 1);
                 my $dt = substr($rvalue, 4);
                 push (@rdata, split(',', $dt));
             }
@@ -454,6 +462,9 @@ sub process_data {
                 $krmx++;
             }
         }
+  
+        my $lid = $proto . $port;
+        my $dev = $mxs[0] . "_" . $devid;
 
         if ($logging) {
 
@@ -463,12 +474,12 @@ sub process_data {
             print $log (" rawfile=$rawfile\n") if ($verbose);
 
             my $rawkrd = open_file($rawfile);
-            printf $rawkrd "%.${tp}f:%s:%s\n", time, $mxs[0], $record;
+            printf $rawkrd "%.${tp}f:%s:%s:%s\n", time, $lid, $dev, $record;
             close ($rawkrd);
 
         } else {
 
-            printf "%.${tp}f:%s:%s\n", time, $mxs[0], $record;
+            printf "%.${tp}f:%s:%s:%s\n", time, $lid, $dev, $record;
         }
 
     }
@@ -1055,7 +1066,7 @@ sub revision {
     print STDERR <<END;
 Network Socket Communication Data Recorder
 ICT, Industrial IoT, Weather and Environment
-sockrec: 1.12.0, 2022-02-24 2136
+sockrec: 1.12.1, 2022-02-26 1216
 END
     exit 0;
 }
