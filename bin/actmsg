@@ -1,7 +1,6 @@
 #!/opt/kronometrix/perl/bin/perl
-
-#  Copyright (c) 2009-2022 Stefan Parvu (gitlab.com/sparvu)
-#  Initial Author: Stefan Parvu
+#
+#  Copyright (c) 2021 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -89,6 +88,7 @@ sub get_datafile {
 
     my ($data)     = @_;
     my $rs485_sem  = 0;
+    my $sock_sem   = 0;
     my $http_sem   = 0;
     my $schilds    = 0;
     my @d;
@@ -105,7 +105,11 @@ sub get_datafile {
 
         next if ($f->{'status'} ne 'active');
 
-        if ($f->{'name'} =~ /aq|iaqd|amd|wcd/) {
+        if ($f->{'name'} =~ /vwxt/) {
+            next if ($sock_sem == 1);
+            push @d, 'sock';
+            $sock_sem=1;
+        } elsif ($f->{'name'} =~ /aq|iaqd|amd|wcd/) {
             next if ($rs485_sem == 1);
             push @d, 'rs485';
             $rs485_sem=1; 

@@ -1,7 +1,6 @@
 #!/bin/sh
 #
-#  Copyright (c) 2006-2022 Stefan Parvu (gitlab.com/sparvu)
-#  Initial Author: Stefan Parvu
+#  Copyright (c) 2021 Stefan Parvu (www.kronometrix.org).
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -72,6 +71,7 @@ NTPREC_LOG=${KRMX_LOG}/ntprec.log
 JVMREC_LOG=${KRMX_LOG}/jvmrec.log
 HDWREC_LOG=${KRMX_LOG}/hdwrec.log
 HTTPREC_LOG=${KRMX_LOG}/httprec.log
+SOCKREC_LOG=${KRMX_LOG}/sockrec.log
 RS485REC_LOG=${KRMX_LOG}/rs485rec.log
 PROCREC_LOG=${KRMX_LOG}/procrec.log
 XENREC_LOG=${KRMX_LOG}/xenrec.log
