@@ -43,10 +43,10 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Serial Command Communication | **yes** | no | no | no | no | Can connect to manage and control serial devices |
 | RS232/485 | **yes** | | no | no | no | Serial RS232/RS485 support |
 | MODBUS | **yes** | | no | no | no | MODBUS RTU, ASCII, TCP support |
-| MQTT | Q4 2021 | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q3 2022 |
+| MQTT | Q3 2022 | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q3 2022 |
 | Bluetooth Low Energy | 2022 | no| no | no | no | Kronometrix roadmap 2022 |
-| BACnet | Q1 2022 | no | no | no | no | Kronometrix roadmap 2023 |
-| Healthcare | 2022 | no | no | no | no | Kronometrix roadmap 2023 |
+| BACnet | 2023 | no | no | no | no | Kronometrix roadmap 2023 |
+| Healthcare | 2023 | no | no | no | no | Kronometrix roadmap 2023 |
 | Open Source | **yes** | **yes** | **yes** | | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | **yes** | | | | **yes** | |
 | Based on | Perl5/Lua | C/Perl/Shell | Python3 | C | C/Java | |
