@@ -9,7 +9,7 @@
 
 # Overview
 
-A simple and efficient set of data recorders and transport utilities for multi-industry: ICT, weather and environment, industrial IoT and preventive healthcare, designed to record top essential performance metrics, save raw data and send it for further analysis.
+A simple and efficient set of data recorders and transport utilities for different industries: ICT enterprise, weather and environment, industrial IoT, designed to record top essential performance metrics, save original raw data and send it for data visualization and analysis.
 
 * [Design](docs/design.md)
 * [Features](docs/features.md)
@@ -89,10 +89,6 @@ A simple and efficient set of data recorders and transport utilities for multi-i
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * sockrec - Network IO Socket data recorder **(Q4 2021)**
  * wsrec - General weather station recorder RS-232/USB
-
-## Preventive Healthcare  
-
- * epirec - Epidemiology data recorder Q1 2022
 
 # Commercial products
 
