@@ -9,10 +9,9 @@ Defect Management System
 
 Releases
 
- 1.11 February 2022 Release
+ 1.12 March 2022 Release
     HTTP transport improvements
     webrec HTTP authentication fixes
-    diskrec CloudLinux improvements
     snmprec integration
     sockrec improvements
     libcurl 7.81.0 update
