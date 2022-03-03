@@ -22,7 +22,7 @@ A simple and efficient set of data recorders and transport utilities for differe
 * Memory: 32 MB RAM
 * Disk space: 140MB, Raw data: 500-750KB per day / data source
 * Protocols: SERIAL COMMUNICATION, SNMP, MODBUS(RTU,TCP,ASCII), MQTT, HTTP, BLE, BACnet
-* SBC: Raspberry PI 3B, 3B+
+* SBC: Raspberry PI 3B, 4B
 
 # Features
 
