@@ -222,57 +222,6 @@ sub daemonize {
 }
 
 
-# format wxt ascii data
-#
-sub wxt_fmtdata {
-
-    my ( $dname, $dtype, $idx, @buf ) = @_;
-    my $rvalue ;
-    
-    if ( $dtype eq 'string' ) {
-
-        # device type: metric=value (WXT520)
-        if ( grep( /=/, @buf ) ) {
-
-            # match metrix name
-            my $match = first { /$dname/i } @buf;
-
-            # fetch the value
-            $rvalue = $match =~ s/^.*=//gr;
-
-            # handle unit value
-            my $tr = $rvalue;
-            my $lchar = chop($tr);
-            if ($lchar ne '#') {
-
-                $rvalue = substr($rvalue, 0, -1);
-               
-            } else { 
-
-                $rvalue = 'NA';
-            }
-
-        # device type: value (HMP, QML201)
-        } else {
-
-            # we will use rbuf index
-            $rvalue = $buf[$idx];
-        }
-
-    } elsif ( $dtype eq 'unixtime' ) {
-
-        # we will use rbuf index
-        $rvalue = $buf[$idx];
-
-    } else {
-
-        $rvalue = 'NA';
-    }
-
-    return $rvalue;
-}
-
-
 # Process Listener Data
 #
 sub process_data {
@@ -333,7 +282,7 @@ sub process_data {
 
         # process data based on device
         # WXT DEVICES
-        if ($mxs[0] =~ /vwxt/) {
+        if ($mxs[0] =~ /wxt/) {
 
             # check message CRC
             my $vck = vwxt_msgck($data);
@@ -352,7 +301,6 @@ sub process_data {
                 } else {
 
                     print "Data message checksum error, retrying...\n";
-
                 }
 
                 return;
@@ -451,12 +399,25 @@ sub process_data {
             foreach my $rmx (@rdata) {
 
                 my $match = $rmx =~ s/^.*=//gr;
-                chop($match);
+
+
+                if ($match !~ '#') {
+    
+                    $match = substr($match, 0, -1);
+    
+                } else {
+    
+                    $match = 'NA';
+                }               
 
                 if ($krmx < $#rdata) {
+
                     $record .= $match . ':';
+
                 } else {
+
                     $record .= $match;
+
                 }
 
                 $krmx++;
@@ -480,6 +441,7 @@ sub process_data {
         } else {
 
             printf "%.${tp}f:%s:%s:%s\n", time, $lid, $dev, $record;
+
         }
 
     }
@@ -760,7 +722,7 @@ sub get_listeners {
         my $keyapp = $protocol . ':' . $port . ':' . $address;
         my @valapp;
  
-        my @lmoids = ('iaqd', 'aqd', 'amd', 'wcd', 'cpd', 'dpd', 'spd');
+        my @lmoids = ('iaqd', 'aq', 'amd', 'wcd', 'cpd', 'dpd', 'spd');
 
         for my $lmoid (@lmoids) {
             next if (! defined $f->{$lmoid});
@@ -1066,7 +1028,7 @@ sub revision {
     print STDERR <<END;
 Network Socket Communication Data Recorder
 ICT, Industrial IoT, Weather and Environment
-sockrec: 1.12.1, 2022-02-26 1216
+sockrec: 1.12.1, 2022-03-02 1440
 END
     exit 0;
 }

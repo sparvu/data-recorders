@@ -13,10 +13,10 @@
           "value": "ok"
         }
       },
-      "wcd" : [
+      "aq" : [
         {
           "vendor": "vaisala",
-          "model": "vwxt530",
+          "model": "wxt530",
           "description": "Vaisala WXT530 Series",
           "error_detection": "wxtcrc16",
           "message_start": "2R0",
@@ -149,10 +149,10 @@
           "value": "ok"
         }
       },
-      "wcd" : [
+      "aq" : [
         {
           "vendor": "vaisala",
-          "model": "vwxt530",
+          "model": "wxt530",
           "description": "Vaisala WXT530 Series",
           "error_detection": "wxtcrc16",
           "message_start": "2R0",
