@@ -1,5 +1,4 @@
-.TH webrec 1  "$Date: 2021-03-14 #$" "USER COMMANDS"
-.SH NAME
+.TH webrec 1  "$Date: 2021-03-14 #$" "USER COMMANDS" .SH NAME
 webrec \- Web Data Recorder. Uses perl
 .SH SYNOPSIS
 .B webrec
@@ -14,22 +13,22 @@ socket connection time, the time taken to send the HTTP request, and the
 time taken to get the first byte of the page.
 
 .PP
-The recorder uses Net::Curl to fetch all web page response time statistics. 
-The raw data is already prepared and formatted for the analysis process. 
-The recorder runs continuously.
+The recorder uses libcurl to fetch for one or many web sites HTTP response
+time statistics. The raw data is already prepared and formatted for the 
+analysis process. The recorder can run interactively or continuously.
 
 
 .SH OS
-Linux 2.6+
+Linux 3.2+
 
 .SH OPTIONS
 .SS
 \-a
-perform requests asynchronously
+non-blocking mode, perform requests asynchronously
 
 .SS
 \-g
-the number of concurrent requests. Default is 25.
+group size, the number of concurrent requests. Default 25
 
 .SS
 \-s
@@ -37,7 +36,7 @@ sleep delay between transactions, default 0.1
 
 .SS
 \-l 
-log raw data to krd file, no STDOUT
+logging mode, log raw data to krd file, no STDOUT
 
 .SS
 \-h
@@ -58,6 +57,10 @@ interval in seconds between each sample
 .SS
 count
 number of samples
+
+.PP
+.SH CONFIGURATION
+
 
 .PP
 .SH EXAMPLES
