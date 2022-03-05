@@ -1,12 +1,3 @@
-<img src="/docs/img/KDR-Text.png" align="left" height="74" width="325" />
-<img src="/docs/img/KDR.png" align="right" height="100" width="100" />
-<br/><br/>
-<br/><br/>
-
-[![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.12&color=success)](docs/start.md)
-[![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
-
 # Design
 
 To really understand how your world works, you need to have data. The right kind of data. And for that, you need to be able to capture the correct performance metrics from your systems, devices or applications in real-time. To be able to do all of these, we have developed data recorders. The data recorder has built-in capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. 
