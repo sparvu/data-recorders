@@ -73,24 +73,21 @@ This is the section where users should defined where they want to send data. The
 - port number, the port number default 80, or 443
 - hostname, IP or FQD of the platform 
 - protocol: HTTP or HTTPS
-- subscription type: cpd or amd or wcd. cpd means, computer performance data and describes data belong to IT computer performance. There are many types of data subscriptions, each having its own type, metrics and summary statistics:
-<details><summary>Click to expand</summary>
-cpd - Computer Performance
-epd - End User Performance
-dpd - Datacenter Performance
-spd - Service Provider Performance
-wpd - Web Application Performance
-
-iaqd - Indoor Air Quality
-aqd - Outdoor Air Quality
-wcd - General Meteorology
-amd - Aviation Meteorology
-</details>
-
+- data subscription type:
+  - cpd - Computer Performance
+  - epd - End User Performance
+  - dpd - Datacenter Performance
+  - spd - Service Provider Performance
+  - wpd - Web Application Performance
+  - iaqd - Indoor Air Quality
+  - aqd - Outdoor Air Quality
+  - wcd - General Meteorology
+  - amd - Aviation Meteorology
 - sid: subscription id
 - tid: token id
 - dsid: to be let empty, will be automatically be computed
 
+For example **cpd** means, computer performance data and describes data belong to IT computer performance. There are many types of data subscriptions, each having its own type, metrics and summary statistics.
 
 Each data recorder will have a section with its own settings.
 
