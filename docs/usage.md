@@ -9,7 +9,7 @@
 
 # How to operate data recorders
 
-## What you need to know before operation
+**What you need to know before operation**
 
 You need to have Kronometrix Data Recording module installed for your system. If you dont have Kronometrix Data Recording package installed on your system, please see refer to the article [Getting started](https://gitlab.com/kronometrix/recording/-/blob/master/docs/start.md) how to install data recorder. during installation, a dedicated, non privileged user account is created, krmx which will be the main Kronometrix user account to operate all data recorders. 
 
@@ -22,9 +22,10 @@ Please check and review the system requirements and prerequisites for [Linux](ht
 
 You can run any data recorder via command line interface, by simple calling the recorder, using the absolute path. Example:
 
-```$ /opt/kronometrix/bin/sysrec
+```
+$ /opt/kronometrix/bin/sysrec
 1646484612:0.00:0.00:100.00:0.00:0.00:0.00:100.00:0.00:0.00:0.00:0.00:0:84:88.12:899072:121172:1020244:61740:693284:876196:85.88:1.03:10748:1034752:1045500:996:0:0.00:0:0.00:0:0.00:11:0.72:0:0:0:0.00:0:0:11:0.72:0.00:0.00:0.00
-````
+```
 
 You can provide the number of times the recorder will run, using the interval and count options. For example, to run sysrec data recorder two times, every 10 seconds, you can run:
 
