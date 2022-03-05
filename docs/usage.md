@@ -61,10 +61,40 @@ three main sections:
 
 This is the section defining the base path and the location where all raw data logs will be stored. This can be located on a local disk or a remote LUN storage. Usually, this section, should not be changed or removed.
 
+```
+  "log" : {
+    "current_path" : "/opt/kronometrix/log/current",
+    "base_path" : "/opt/kronometrix/log",
+    "daily_path" : "/opt/kronometrix/log/daily"
+  },
+```
 
 ##### Transport section
 
 Describes all raw data files and their naming convention. Usually, this section, should not be changed or removed.
+
+```
+  "transport" : {
+    "fabric" : [
+      {
+        "port" : 80,
+        "keepalive" : 0,
+        "name" : "Kronometrix Distributed Data Fabric",
+        "host" : "change me",
+        "protocol" : "http",
+        "description" : "Kronometrix Distributed Data Fabric",
+        "cpd" : [
+          {
+            "dsid" : "",
+            "sid"  : "change me",
+            "tid"  : "change me"
+          }
+        ]
+      }
+    ]
+  }
+```
+
 
 ##### Data Fabric section
  
