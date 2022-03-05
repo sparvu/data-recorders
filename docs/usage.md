@@ -54,7 +54,45 @@ A master script, called **rec** is responsible to start all data recorders, conf
 
 #### kronometrix.json
 
-Found under ```/opt/kronometrix/etc``` directory this is the main configuration file for all data recorders. Each data recorder will have a section with its own settings.
+Found under ```/opt/kronometrix/etc``` directory this is the main configuration file for all data recorders. This file contains 
+three main sections:
+
+##### Logging section
+
+This is the section defining the base path and the location where all raw data logs will be stored. This can be located on a local disk or a remote LUN storage. Usually, this section, should not be changed or removed.
+
+
+##### Transport section
+
+Describes all raw data files and their naming convention. Usually, this section, should not be changed or removed.
+
+##### Data Fabric section
+ 
+This is the section where users should defined where they want to send data. The platform section describes the details of one or many data analytics fabrics, each with own settings. All raw data can be transported to one or many platforms at the same time. Under this section we need to define and configure, the following:
+
+- port number, the port number default 80, or 443
+- hostname, IP or FQD of the platform 
+- protocol: HTTP or HTTPS
+- subscription type: cpd or amd or wcd. cpd means, computer performance data and describes data belong to IT computer performance. There are many types of data subscriptions, each having its own type, metrics and summary statistics:
+<details><summary>Click to expand</summary>
+cpd - Computer Performance
+epd - End User Performance
+dpd - Datacenter Performance
+spd - Service Provider Performance
+wpd - Web Application Performance
+
+iaqd - Indoor Air Quality
+aqd - Outdoor Air Quality
+wcd - General Meteorology
+amd - Aviation Meteorology
+</details>
+
+- sid: subscription id
+- tid: token id
+- dsid: to be let empty, will be automatically be computed
+
+
+Each data recorder will have a section with its own settings.
 
 ```
     {
