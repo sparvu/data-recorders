@@ -69,9 +69,64 @@ This is the section defining the base path and the location where all raw data l
   },
 ```
 
-##### Transport section
+##### Message section
 
-Describes all raw data files and their naming convention. Usually, this section, should not be changed or removed.
+Describes for each data recorder, what data message is associated with and the raw data files.
+
+
+```
+  "message" : [
+    {
+        "name" : "sys",
+        "file" : "sysrec.krd",
+      "status" : "active",
+    "interval" : 60,
+      "domain" : [ "cpd", "dpd", "spd", "wpd" ]
+    },
+    {
+        "name" : "cpu",
+        "file" : "cpurec.krd",
+      "status" : "active",
+    "interval" : 60,
+      "domain" : [ "cpd", "dpd", "spd", "wpd" ]
+    },
+    {
+        "name" : "disk",
+        "file" : "diskrec.krd",
+      "status" : "active",
+    "interval" : 60,
+      "domain" : [ "cpd", "dpd", "spd", "wpd" ]
+    },
+    {
+        "name" : "nic",
+        "file" : "nicrec.krd",
+      "status" : "active",
+    "interval" : 60,
+      "domain" : [ "cpd", "dpd", "spd", "wpd" ]
+    },
+...
+```
+
+##### Data Fabric section
+ 
+This is the section where users should defined where they want to send data. The platform section describes the details of one or many data analytics fabrics, each with own settings. All raw data can be transported to one or many platforms at the same time. Under this section we need to define and configure, the following:
+
+- port number, the port number default 80, or 443
+- hostname, IP or FQD of the platform 
+- protocol: HTTP or HTTPS
+- data subscription type:
+  - cpd - Computer Performance
+  - epd - End User Performance
+  - dpd - Datacenter Performance
+  - spd - Service Provider Performance
+  - wpd - Web Application Performance
+  - iaqd - Indoor Air Quality
+  - aqd - Outdoor Air Quality
+  - wcd - General Meteorology
+  - amd - Aviation Meteorology
+- sid: subscription id
+- tid: token id
+- dsid: to be let empty, will be automatically be computed
 
 ```
   "transport" : {
@@ -96,26 +151,6 @@ Describes all raw data files and their naming convention. Usually, this section,
 ```
 
 
-##### Data Fabric section
- 
-This is the section where users should defined where they want to send data. The platform section describes the details of one or many data analytics fabrics, each with own settings. All raw data can be transported to one or many platforms at the same time. Under this section we need to define and configure, the following:
-
-- port number, the port number default 80, or 443
-- hostname, IP or FQD of the platform 
-- protocol: HTTP or HTTPS
-- data subscription type:
-  - cpd - Computer Performance
-  - epd - End User Performance
-  - dpd - Datacenter Performance
-  - spd - Service Provider Performance
-  - wpd - Web Application Performance
-  - iaqd - Indoor Air Quality
-  - aqd - Outdoor Air Quality
-  - wcd - General Meteorology
-  - amd - Aviation Meteorology
-- sid: subscription id
-- tid: token id
-- dsid: to be let empty, will be automatically be computed
 
 For example **cpd** means, computer performance data and describes data belong to IT computer performance. There are many types of data subscriptions, each having its own type, metrics and summary statistics.
 
