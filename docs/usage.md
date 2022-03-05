@@ -4,7 +4,7 @@
 
 You need to have Kronometrix Data Recording module installed for your system. If you dont have Kronometrix Data Recording package installed on your system, please see refer to the article [Getting started](https://gitlab.com/kronometrix/recording/-/blob/master/docs/start.md) how to install data recorder. during installation, a dedicated, non privileged user account is created, krmx which will be the main Kronometrix user account to operate all data recorders.
 
-## Interactive Operation
+## Interactive Mode
 
 Please check and review the system requirements and prerequisites for [Linux](https://gitlab.com/kronometrix/recording/-/blob/master/README.linux) or [FreeBSD](https://gitlab.com/kronometrix/recording/-/blob/master/README.freebsd) operating systems, before operating data recorders.
 
@@ -35,7 +35,7 @@ USAGE: sysrec [-hlV] | [interval [count]]
 ```
 
 
-## Automatic Operation
+## Automatic Mode
 
 In automatic mode, the recorders will save all metrics to a raw data file, no data will be printed on the screen and the run will be silent. This mode is recommeneded for long term data capturing, non interactive installations, where no humans are usually involved.
 
