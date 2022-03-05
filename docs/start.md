@@ -1,12 +1,3 @@
-<img src="/docs/img/KDR-Text.png" align="left" height="74" width="325" />
-<img src="/docs/img/KDR.png" align="right" height="100" width="100" />
-<br/><br/>
-<br/><br/>
-
-[![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.8.3&color=success)](docs/start.md)
-[![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
-
 # Getting started
 
 You can manually install Kronometrix data recording on several 
