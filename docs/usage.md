@@ -50,19 +50,19 @@ In automatic mode, the recorders will save all metrics to a raw data file, no da
 
 ### Configuration files
 
-A master script, called rec is responsible to start all data recorders configured under kronometrix.json file. The kronometrix.json file is the main configuration file for data recording, where all data recorders are configured. For each active data recorder the master rec script will execute and launch the recorder.
+A master script, called **rec** is responsible to start all data recorders, configured under kronometrix.json file. The kronometrix.json file is the main configuration file for data recording, where all data recorders are configured. For each active data recorder the master **rec** script will execute and launch the respective recorder.
 
 #### kronometrix.json
 
-Found under /opt/kronometrix/etc directory this is the main configuration file for all data recorders. Each data recorder will have a section with its own settings.
+Found under ```/opt/kronometrix/etc``` directory this is the main configuration file for all data recorders. Each data recorder will have a section with its own settings.
 
 ```
     {
         "name" : "sys",
         "file" : "sysrec.krd",
-      "status" : "active",
-    "interval" : 60,
-      "domain" : [ "cpd", "dpd", "spd", "wpd" ]
+        "status" : "active",
+        "interval" : 60,
+        "domain" : [ "cpd", "dpd", "spd", "wpd" ]
     },
 ```
 
