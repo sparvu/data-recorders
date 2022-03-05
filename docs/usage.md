@@ -11,8 +11,7 @@
 
 **What you need to know before operation**
 
-You need to have Kronometrix Data Recording module installed for your system. If you dont have Kronometrix Data Recording package installed on your system, please see refer to the article [Getting started](https://gitlab.com/kronometrix/recording/-/blob/master/docs/start.md) how to install data recorder. during installation, a dedicated, non privileged user account is created, krmx which will be the main Kronometrix user account to operate all data recorders. 
-
+You need to have Kronometrix Data Recording module installed for your system. If you dont have Kronometrix Data Recording package installed on your system, please see refer to the article [Getting started](https://gitlab.com/kronometrix/recording/-/blob/master/docs/start.md) how to install data recorder. during installation, a dedicated, non privileged user account is created, krmx which will be the main Kronometrix user account to operate all data recorders.
 
 ## Interactive Operation
 
@@ -49,7 +48,28 @@ USAGE: sysrec [-hlV] | [interval [count]]
 
 In automatic mode, the recorders will save all metrics to a raw data file, no data will be printed on the screen and the run will be silent. This mode is recommeneded for long term data capturing, non interactive installations, where no humans are usually involved.
 
-A master script, called rec is responsible to start all data recorders configured under kronometrix.json file. The kronometrix.json file is the main configuration file for data recording, where all data recorders are configured. For each active data recorder the master rec script will execute and launch the recorder. 
+### Configuration files
+
+A master script, called rec is responsible to start all data recorders configured under kronometrix.json file. The kronometrix.json file is the main configuration file for data recording, where all data recorders are configured. For each active data recorder the master rec script will execute and launch the recorder.
+
+#### kronometrix.json
+
+Found under /opt/kronometrix/etc directory this is the main configuration file for all data recorders. Each data recorder will have a section with its own settings.
+
+```
+    {
+        "name" : "sys",
+        "file" : "sysrec.krd",
+      "status" : "active",
+    "interval" : 60,
+      "domain" : [ "cpd", "dpd", "spd", "wpd" ]
+    },
+```
+
+#### recorder.json 
+
+Same time, different data recorders, might need certain settings outside the main configuration file. These settings can be found under a different JSON file, using the recorder name. Not all data recorder might have such configuration file. For example sysrec data recorder does not have its own settings. On the other hand sockrec data recorder, has its own settings defined under sockrec.json.
+
 
 As krmx user:
 
