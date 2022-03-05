@@ -32,24 +32,28 @@ More information: www.kronometrix.com/k1
       * diskrec - per DISK statistics
       * hdwrec - hardware and software data inventory
       * jvmrec - Java VM statistics
-      * httprec - the HTTP server statistics: NGINX, Apache, PFP-FPM
+      * httprec - HTTP server statistics: NGINX, Apache, PFP-FPM
       * certrec - X.509 security certificate statistics
-      * svcrec - service performance, availability: TCP, UDP services
+      * svcrec - TCP, UDP service performance and availability
       * direc - filesystem directory statistics
       * ntprec - NTP server statistics
       * procrec - process statistics
-      * webrec - web application performance, availability
+      * webrec - web application performance and availability
 
       IoT, Weather and Environment
 
       * rs485rec - Serial, MODBUS (ASCII, RTU, TCP) industrial recorder
+      * snmprec - SNMP data recorder
+      * sockrec - Network IO socket data recorder
       * wsrec - Weather data recorder
+      * axisrec - AXIS Communications network video data recorder
 
-      Auxiliaries
+      Data Utilities
 
       * kserial - Serial Command Line Utility
       * speedtest - Network speed and latency of an Internet connection
-      * fio - Storage Flexible I/O tester
+      * fio - Storage Flexible I/O performance tester
+
 
     - transport: sender utility
 
@@ -137,6 +141,8 @@ More information: www.kronometrix.com/k1
 
     As krmx user:
       $ /opt/kronometrix/etc/rec start
+ 
+    OR
 
     As root:
       # /etc/rc.d/kdr start
@@ -148,6 +154,8 @@ More information: www.kronometrix.com/k1
 
     As krmx user:
       $ /opt/kronometrix/etc/transport start
+
+    OR
 
     As root:
       # /etc/rc.d/kdr_transport start
@@ -163,6 +171,8 @@ More information: www.kronometrix.com/k1
     As krmx user:
       $ /opt/kronometrix/etc/rec stop
 
+    OR
+
     As root:
       # /etc/rc.d/kdr stop
 
@@ -173,6 +183,8 @@ More information: www.kronometrix.com/k1
 
     As krmx user:
       $ /opt/kronometrix/etc/transport stop
+
+    OR
 
     As root:
       # /etc/rc.d/kdr_transport stop
@@ -217,29 +229,43 @@ More information: www.kronometrix.com/k1
     this section, should not be changed or removed.
 
 
-    Platform section
+    Data Fabric section
 
     This is the section where users should defined where they want to
     send data. The platform section describes the details of one or
-    many data analytics platforms, each with own settings.
+    many data analytics fabrics, each with own settings.
 
     All raw data can be transported to one or many platforms at the same
     time. Under this section we need to define and configure, the following:
 
-      o platform port number, the port number default 80
-
-      o platform hostname, IP or FQD of the platform
- 
+      o port number, the port number default 80, or 443
+     
+      o hostname, IP or FQD of the platform 
+  
       o protocol: HTTP or HTTPS
 
-      o lmo id: cpd or amd or wcd. cpd means, computer performance data
-        and describes data belong to IT computer performance.
+      o subscription type: cpd or amd or wcd. cpd means, computer performance data 
+        and describes data belong to IT computer performance. There are many types
+        of data subscriptions, each having its own type, metrics and summary 
+        statistics:
+
+            cpd - Computer Performance
+            epd - End User Performance
+            dpd - Datacenter Performance
+            spd - Service Provider Performance
+            wpd - Web Application Performance
+
+           iaqd - Indoor Air Quality
+            aqd - Outdoor Air Quality
+            wcd - General Meteorology
+            amd - Aviation Meteorology
 
         o sid: subscription id
 
         o tid: token id
 
         o dsid: to be let empty, will be automatically be computed
+
 
   8.2 Log rotation
 
