@@ -47,5 +47,21 @@ USAGE: sysrec [-hlV] | [interval [count]]
 
 ## Automatic Operation
 
+In automatic mode, the recorders will save all metrics to a raw data file, no data will be printed on the screen and the run will be silent. This mode is recommeneded for long term data capturing, non interactive installations, where no humans are usually involved.
+
+A master script, called rec is responsible to start all data recorders configured under kronometrix.json file. The kronometrix.json file is the main configuration file for data recording, where all data recorders are configured. For each active data recorder the master rec script will execute and launch the recorder. 
+
+As krmx user:
+
+```
+      $ /opt/kronometrix/etc/rec start
+````
+or as super-user, root:
+
+```
+      # /etc/rc.d/kdr start
+```
+
+
 
 Go back [main page](https://gitlab.com/kronometrix/recording/)
