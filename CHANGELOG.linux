@@ -16,6 +16,10 @@ Defect Management System
 
 Releases
 
+ 1.14 June 2022 Release
+    dockrec Docker Data Recorder
+    CPAN March 2022 update
+ 
  1.12 March 2022 Release
     HTTP transport improvements
     webrec HTTP authentication fixes
