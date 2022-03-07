@@ -2,7 +2,7 @@
 
 You can manually install Kronometrix data recording on several operating systems, or you can open your free trial account, for 30 days, under http://kronometrix.io/register to automatically provision and visualize your data. 
 
-Kronometrix Data Recording is a free open-source project which can be used to capture and transport data to any 3rd party systems or applications. By default, to visualize and analyse your data, you can subscribe to [Kronometrix SaaS](www.kronometrix.com/getstarted). 
+Kronometrix Data Recording is a free open-source project which can be used to capture and transport data to any 3rd party systems or applications. By default, to visualize and analyse your data, you can subscribe to [Kronometrix SaaS](www.kronometrix.com/get-started). 
 
 ## Linux
 
