@@ -2,7 +2,9 @@
 
 **What you need to know before operation**
 
-You need to have Kronometrix Data Recording module installed for your system. If you dont have Kronometrix Data Recording package installed on your system, please see refer to the article [Getting started](https://gitlab.com/kronometrix/recording/-/blob/master/docs/start.md) how to install data recorder. during installation, a dedicated, non privileged user account is created, krmx which will be the main Kronometrix user account to operate all data recorders.
+You need to have Kronometrix Data Recording module installed for your system. If you dont have Kronometrix Data Recording package installed on your system, please see refer to the article [Getting started](https://gitlab.com/kronometrix/recording/-/blob/master/docs/start.md) how to install data recorder. 
+
+**NOTE:** During installation, a dedicated, non privileged user account is created, called **krmx** which will be the main Kronometrix user account to operate all data recorders. You can use **krmx** account to stop / start or run the data recorders or you can use the super-user root account as well. By default, all data recorders and transport utilities are executed and operated using **krmx** user account.
 
 ## Interactive Mode
 

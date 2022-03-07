@@ -1,9 +1,7 @@
-# Getting started
+# Installation
 
-You can manually install Kronometrix data recording on several 
-operating systems, or you can open your free account, 
-http://kronometrix.io/register to automatically provision and visualize 
-your data. 
+You can manually install Kronometrix data recording on several operating systems, or you can open your free account, 
+http://kronometrix.io/register to automatically provision and visualize your data. 
 
 ## Linux
 
