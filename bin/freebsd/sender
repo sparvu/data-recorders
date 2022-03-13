@@ -218,47 +218,51 @@ while (1) {
             my $iaqd_msd1618rec_on       = 0;
             my $aq_aqt420rec_on          = 0;
             my $aq_wxt520rec_on          = 0;
+            my $aq_wxt530rec_on          = 0;
             my $aq_qups24rec_on          = 0;
             my $aq_qups24ahrec_on        = 0;
             my $aq_qups242410xrec_on     = 0;
             my $aq_q1615emk2_floudrec_on = 0;
             my $amd_qml201rec_on         = 0;
             my $amd_qml201_hmp155rec_on  = 0;
+            my $wcd_vwxt530rec_on        = 0;
             my $wcd_qml201rec_on         = 0;
             my $wcd_qml201_bh2qwrec_on   = 0;
 
-           if ( $_->{"input"} =~ /sysrec/                ) { $sysrec_on               = 1; }
-        elsif ( $_->{"input"} =~ /cpurec/                ) { $cpurec_on               = 1; }
-        elsif ( $_->{"input"} =~ /certrec/               ) { $certrec_on              = 1; }
-        elsif ( $_->{"input"} =~ /diskrec/               ) { $diskrec_on              = 1; }
-        elsif ( $_->{"input"} =~ /nicrec/                ) { $nicrec_on               = 1; }
-        elsif ( $_->{"input"} =~ /netrec/                ) { $netrec_on               = 1; }
-        elsif ( $_->{"input"} =~ /jvmrec/                ) { $jvmrec_on               = 1; }
-        elsif ( $_->{"input"} =~ /procrec/               ) { $procrec_on              = 1; }
-        elsif ( $_->{"input"} =~ /zonerec/               ) { $zonerec_on              = 1; }
-        elsif ( $_->{"input"} =~ /hdwrec/                ) { $hdwrec_on               = 1; }
-        elsif ( $_->{"input"} =~ /xenrec/                ) { $xenrec_on               = 1; }
-        elsif ( $_->{"input"} =~ /wsrec/                 ) { $wsrec_on                = 1; }
-        elsif ( $_->{"input"} =~ /svcrec/                ) { $svcrec_on               = 1; }
-        elsif ( $_->{"input"} =~ /webrec/                ) { $webrec_on               = 1; }
-        elsif ( $_->{"input"} =~ /webinvrec/             ) { $webinvrec_on            = 1; }
-        elsif ( $_->{"input"} =~ /direc/                 ) { $direc_on                = 1; }
-        elsif ( $_->{"input"} =~ /ntrpec/                ) { $ntprec_on               = 1; }
-        elsif ( $_->{"input"} =~ /a2statrec/             ) { $a2statrec_on            = 1; }
-        elsif ( $_->{"input"} =~ /a2invrec/              ) { $a2invrec_on             = 1; }
-        elsif ( $_->{"input"} =~ /a2busrec/              ) { $a2busrec_on             = 1; }
-        elsif ( $_->{"input"} =~ /aq_aqt420rec/          ) { $aq_aqt420rec_on         = 1; }
-        elsif ( $_->{"input"} =~ /aq_wxt520rec/          ) { $aq_wxt520rec_on         = 1; }
-        elsif ( $_->{"input"} =~ /iaqd_g01rec/           ) { $iaqd_g01rec_on          = 1; }
-        elsif ( $_->{"input"} =~ /iaqd_gmw90rec/         ) { $iaqd_gmw90rec_on        = 1; }
-        elsif ( $_->{"input"} =~ /iaqd_msd1618rec/       ) { $iaqd_msd1618rec_on      = 1; }
-        elsif ( $_->{"input"} =~ /aq_qups24rec/          ) { $aq_qups24rec_on         = 1; }
-        elsif ( $_->{"input"} =~ /aq_qups24ahrec/        ) { $aq_qups24ahrec_on       = 1; }
-        elsif ( $_->{"input"} =~ /aq_qups242410xrec/     ) { $aq_qups242410xrec_on    = 1; }
+           if ( $_->{"input"} =~ /sysrec/                ) { $sysrec_on                = 1; }
+        elsif ( $_->{"input"} =~ /cpurec/                ) { $cpurec_on                = 1; }
+        elsif ( $_->{"input"} =~ /certrec/               ) { $certrec_on               = 1; }
+        elsif ( $_->{"input"} =~ /diskrec/               ) { $diskrec_on               = 1; }
+        elsif ( $_->{"input"} =~ /nicrec/                ) { $nicrec_on                = 1; }
+        elsif ( $_->{"input"} =~ /netrec/                ) { $netrec_on                = 1; }
+        elsif ( $_->{"input"} =~ /jvmrec/                ) { $jvmrec_on                = 1; }
+        elsif ( $_->{"input"} =~ /procrec/               ) { $procrec_on               = 1; }
+        elsif ( $_->{"input"} =~ /zonerec/               ) { $zonerec_on               = 1; }
+        elsif ( $_->{"input"} =~ /hdwrec/                ) { $hdwrec_on                = 1; }
+        elsif ( $_->{"input"} =~ /xenrec/                ) { $xenrec_on                = 1; }
+        elsif ( $_->{"input"} =~ /wsrec/                 ) { $wsrec_on                 = 1; }
+        elsif ( $_->{"input"} =~ /svcrec/                ) { $svcrec_on                = 1; }
+        elsif ( $_->{"input"} =~ /webrec/                ) { $webrec_on                = 1; }
+        elsif ( $_->{"input"} =~ /webinvrec/             ) { $webinvrec_on             = 1; }
+        elsif ( $_->{"input"} =~ /direc/                 ) { $direc_on                 = 1; }
+        elsif ( $_->{"input"} =~ /ntrpec/                ) { $ntprec_on                = 1; }
+        elsif ( $_->{"input"} =~ /a2statrec/             ) { $a2statrec_on             = 1; }
+        elsif ( $_->{"input"} =~ /a2invrec/              ) { $a2invrec_on              = 1; }
+        elsif ( $_->{"input"} =~ /a2busrec/              ) { $a2busrec_on              = 1; }
+        elsif ( $_->{"input"} =~ /aq_aqt420rec/          ) { $aq_aqt420rec_on          = 1; }
+        elsif ( $_->{"input"} =~ /aq_wxt520rec/          ) { $aq_wxt520rec_on          = 1; }
+        elsif ( $_->{"input"} =~ /aq_wxt530rec/          ) { $aq_wxt530rec_on          = 1; }
+        elsif ( $_->{"input"} =~ /iaqd_g01rec/           ) { $iaqd_g01rec_on           = 1; }
+        elsif ( $_->{"input"} =~ /iaqd_gmw90rec/         ) { $iaqd_gmw90rec_on         = 1; }
+        elsif ( $_->{"input"} =~ /iaqd_msd1618rec/       ) { $iaqd_msd1618rec_on       = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups24rec/          ) { $aq_qups24rec_on          = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups24ahrec/        ) { $aq_qups24ahrec_on        = 1; }
+        elsif ( $_->{"input"} =~ /aq_qups242410xrec/     ) { $aq_qups242410xrec_on     = 1; }
         elsif ( $_->{"input"} =~ /aq_q1615emk2_floudrec/ ) { $aq_q1615emk2_floudrec_on = 1; }
-        elsif ( $_->{"input"} =~ /amd_qml201rec/         ) { $amd_qml201rec_on        = 1; }
-        elsif ( $_->{"input"} =~ /wcd_qml201rec/         ) { $wcd_qml201rec_on        = 1; }
-        elsif ( $_->{"input"} =~ /amd_qml201_hmp155rec/  ) { $amd_qml201_hmp155rec_on = 1; }
+        elsif ( $_->{"input"} =~ /amd_qml201rec/         ) { $amd_qml201rec_on         = 1; }
+        elsif ( $_->{"input"} =~ /wcd_qml201rec/         ) { $wcd_qml201rec_on         = 1; }
+        elsif ( $_->{"input"} =~ /wcd_vwxt530rec/        ) { $wcd_vwxt530rec_on        = 1; }
+        elsif ( $_->{"input"} =~ /amd_qml201_hmp155rec/  ) { $amd_qml201_hmp155rec_on  = 1; }
         elsif ( $_->{"input"} =~ /wcd_qml201_bh2qwrec/   ) { $wcd_qml201_bh2qwrec_on   = 1; }
 
             # each fabric
@@ -381,6 +385,29 @@ while (1) {
                     # message id
                     if ($lid eq 'amd') { $f=1; $msgid = "amd-qml201-hmp155"; }
 
+                # Vaisala WXT530 Series Sensors Sockrec
+                } elsif ($wcd_vwxt530rec_on) {
+        
+                    # device id
+                    
+                    my $lsid = get_devid(1, $delta);
+                    $devid = get_devid(2, $delta);
+
+                    print "lsid=$lsid\n";
+                    print "devid=$devid\n";
+                    
+                    $delta = change_delta(1,$delta);
+
+                    # we need to make dsid
+                    my $sockey = $lid . $lsid . $sid;
+                    $dsid = make_dsid($sockey);
+ 
+                    print "delta=$delta\n";
+                    print "dsid=$dsid\n";
+ 
+                    # message id
+                    if ($lid eq 'wcd') { $f=1; $msgid = "wcd-vwxt530"; }
+        
                 } elsif ($wcd_qml201rec_on) {
         
                     # device id
@@ -413,6 +440,20 @@ while (1) {
                     # message id
                     if ($lid eq 'aqd') { $f=1; $msgid = "aq_wxt520"; }
 
+                } elsif ($aq_wxt530rec_on) {
+        
+                    # device id
+                    my $lsid = get_devid(1, $delta);
+                    $devid = get_devid(2, $delta);
+                    $delta = change_delta(1,$delta);
+
+                    # we need to make dsid
+                    my $sockey = $lid . $lsid . $sid;
+                    $dsid = make_dsid($sockey);
+
+                    # message id
+                    if ($lid eq 'aqd') { $f=1; $msgid = "aq_wxt520"; }
+       
                 } elsif ($aq_qups24rec_on) {
 
                     # device id
@@ -568,7 +609,7 @@ while (1) {
                             }
                                 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -588,7 +629,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -621,7 +662,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -641,7 +682,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -673,7 +714,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -692,7 +733,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -720,7 +761,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -732,7 +773,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -758,7 +799,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -770,7 +811,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -794,7 +835,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -806,7 +847,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -846,7 +887,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -866,7 +907,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -897,7 +938,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -916,7 +957,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -951,7 +992,7 @@ while (1) {
                         }
 
                         if (! exists($tblk{$kkey})) {
-                            $dsid = make_wdsid($kkey);
+                            $dsid = make_dsid($kkey);
                             $tblk{$kkey} = $dsid;
                         } else {
                             $dsid = $tblk{$kkey};
@@ -976,7 +1017,7 @@ while (1) {
                         }
 
                         if (! exists($tblk{$kkey})) {
-                            $dsid = make_wdsid($kkey);
+                            $dsid = make_dsid($kkey);
                             $tblk{$kkey} = $dsid;
                         } else {
                             $dsid = $tblk{$kkey};
@@ -1138,6 +1179,19 @@ sub get_devid {
     return $device_id;
 }
 
+# change delta raw data
+sub change_delta {
+
+    my ($pos, $krd) = @_;
+    my $newkrd;
+
+    my @krd = split (/:/, $krd);
+    splice @krd,$pos,1;
+    $newkrd = join (':', @krd);
+    
+    return $newkrd;
+}
+
 
 # process host uuid file
 sub process_hid {
@@ -1269,16 +1323,16 @@ sub make_hdsid {
 
 
 # make website data source ids, dsid
-sub make_wdsid {
+sub make_dsid {
 
     my ($name) = @_;
 
-    my $wdsid = create_uuid_as_string(UUID_V5,$name);
-    chomp($wdsid);
+    my $ndsid = create_uuid_as_string(UUID_V5,$name);
+    chomp($ndsid);
 
-    writelog("info: make web dsid name=$name => $wdsid");
+    writelog("info: make dsid name=$name => $ndsid");
 
-    return $wdsid;
+    return $ndsid;
 }
 
 
@@ -1474,7 +1528,7 @@ sub send_data {
     # TTFB                                   - WPD DOMAIN
     # IAQ_G01, IAQ_GMW90, IAQ_MSD            - IAQD DOMAIN
     # CPUREC, DISKREC, NICREC, DIREC, NTPREC - CPD DOMAIN
-    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|a2*|iaqd*|aq*|wpd-.*-ttfb/ ) {
+    } elsif ( $msg_id =~ /cpurec|diskrec|nicrec|direc|ntprec|wcd-vwxt*|a2*|iaqd*|aq*|wpd-.*-ttfb/ ) {
         $hash   = sha256krd("$msg_id:$sid:$dsid:$delta");
         $post   = "$msg_id:$sid:$dsid:$delta:$hash";
 
@@ -1632,7 +1686,7 @@ END
 # revision - print revision and exit
 sub revision {
     print STDERR <<END;
-sender: 1.4.1, 2021-04-13 2232
+sender: 1.4.2, 2022-02-28 1326
 END
     exit 0;
 }
