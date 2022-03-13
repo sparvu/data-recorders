@@ -218,6 +218,7 @@ while (1) {
             my $iaqd_msd1618rec_on       = 0;
             my $aq_aqt420rec_on          = 0;
             my $aq_wxt520rec_on          = 0;
+            my $aq_wxt530rec_on          = 0;
             my $aq_qups24rec_on          = 0;
             my $aq_qups24ahrec_on        = 0;
             my $aq_qups242410xrec_on     = 0;
@@ -249,6 +250,7 @@ while (1) {
         elsif ( $_->{"input"} =~ /a2busrec/              ) { $a2busrec_on             = 1; }
         elsif ( $_->{"input"} =~ /aq_aqt420rec/          ) { $aq_aqt420rec_on         = 1; }
         elsif ( $_->{"input"} =~ /aq_wxt520rec/          ) { $aq_wxt520rec_on         = 1; }
+        elsif ( $_->{"input"} =~ /aq_wxt530rec/          ) { $aq_wxt530rec_on         = 1; }
         elsif ( $_->{"input"} =~ /iaqd_g01rec/           ) { $iaqd_g01rec_on          = 1; }
         elsif ( $_->{"input"} =~ /iaqd_gmw90rec/         ) { $iaqd_gmw90rec_on        = 1; }
         elsif ( $_->{"input"} =~ /iaqd_msd1618rec/       ) { $iaqd_msd1618rec_on      = 1; }
@@ -414,6 +416,20 @@ while (1) {
                     # message id
                     if ($lid eq 'aqd') { $f=1; $msgid = "aq_wxt520"; }
 
+                } elsif ($aq_wxt530rec_on) {
+        
+                    # device id
+                    my $lsid = get_devid(1, $delta);
+                    $devid = get_devid(2, $delta);
+                    $delta = change_delta(1,$delta);
+
+                    # we need to make dsid
+                    my $sockey = $lid . $lsid . $sid;
+                    $dsid = make_dsid($sockey);
+
+                    # message id
+                    if ($lid eq 'aqd') { $f=1; $msgid = "aq_wxt520"; }
+
                 } elsif ($aq_qups24rec_on) {
 
                     # device id
@@ -569,7 +585,7 @@ while (1) {
                             }
  
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -589,7 +605,7 @@ while (1) {
                             }
  
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -621,7 +637,7 @@ while (1) {
                             }
  
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -641,7 +657,7 @@ while (1) {
                             }
  
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -673,7 +689,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -693,7 +709,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -720,7 +736,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -732,7 +748,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -756,7 +772,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -768,7 +784,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -792,7 +808,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -804,7 +820,7 @@ while (1) {
                             # no dsid in the lookup epd table
                             my $kkey = $dsname . $lid . 'cert' . $sid;
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -844,7 +860,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -863,7 +879,7 @@ while (1) {
                             }
  
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -894,7 +910,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -913,7 +929,7 @@ while (1) {
                             }
 
                             if (! exists($tblk{$kkey})) {
-                                $dsid = make_wdsid($kkey);
+                                $dsid = make_dsid($kkey);
                                 $tblk{$kkey} = $dsid;
                             } else {
                                 $dsid = $tblk{$kkey};
@@ -948,7 +964,7 @@ while (1) {
                         }
 
                         if (! exists($tblk{$kkey})) {
-                            $dsid = make_wdsid($kkey);
+                            $dsid = make_dsid($kkey);
                             $tblk{$kkey} = $dsid;
                         } else {
                             $dsid = $tblk{$kkey};
@@ -973,7 +989,7 @@ while (1) {
                         }
 
                         if (! exists($tblk{$kkey})) {
-                            $dsid = make_wdsid($kkey);
+                            $dsid = make_dsid($kkey);
                             $tblk{$kkey} = $dsid;
                         } else {
                             $dsid = $tblk{$kkey};
@@ -1117,6 +1133,7 @@ sub reload_config {
     return;
 }
 
+
 # get_devid, returns device_id
 sub get_devid {
 
@@ -1132,6 +1149,20 @@ sub get_devid {
 
     # device_id
     return $device_id;
+}
+
+
+# change delta raw data
+sub change_delta {
+
+    my ($pos, $krd) = @_;
+    my $newkrd;
+
+    my @krd = split (/:/, $krd);
+    splice @krd,$pos,1;
+    $newkrd = join (':', @krd);
+    
+    return $newkrd;
 }
 
 
@@ -1275,16 +1306,16 @@ sub make_hdsid {
 
 
 # make website data source ids, dsid
-sub make_wdsid {
+sub make_dsid {
 
     my ($name) = @_;
 
-    my $wdsid = create_uuid_as_string(UUID_V5,$name);
-    chomp($wdsid);
+    my $ndsid = create_uuid_as_string(UUID_V5,$name);
+    chomp($ndsid);
 
-    writelog("info: make web dsid name=$name => $wdsid");
+    writelog("info: make dsid name=$name => $ndsid");
 
-    return $wdsid;
+    return $ndsid;
 }
 
 
