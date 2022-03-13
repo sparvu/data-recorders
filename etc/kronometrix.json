@@ -197,7 +197,7 @@
     },
     {
         "name" : "aq_wxt530",
-        "file" : "aq_wxt530rec.krd"
+        "file" : "aq_wxt530rec.krd",
       "status" : "inactive",
     "interval" : 60,
       "domain" : [ "aqd" ]
