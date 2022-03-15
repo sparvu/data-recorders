@@ -48,7 +48,7 @@ A simple and efficient set of data recorders and transport utilities for differe
 * Raspbian GNU/Linux 8+ armv8
 * Solaris 11 (Ask support)
 * FreeBSD
-* MacOS (Q1 2022)
+* MacOS (Q4 2022)
 * Windows 7
 * Windows 8
 * Windows 10
