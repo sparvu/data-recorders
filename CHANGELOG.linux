@@ -16,18 +16,11 @@ Defect Management System
 
 Releases
 
-<<<<<<< HEAD
- 1.14 June 2022 Release
-    dockrec Docker Data Recorder
-    CPAN March 2022 update
- 
-=======
  1.13 March 2022 Release
     sockrec fixes
     libcurl 7.82.0 update
     CPAN March 2022 update
 
->>>>>>> 3ac1fd3 (1.13 fixes)
  1.12 March 2022 Release
     HTTP transport improvements
     webrec HTTP authentication fixes
