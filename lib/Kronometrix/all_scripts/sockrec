@@ -123,7 +123,7 @@ if ($verbose) {
         print " parameters: $p\n";
         print "Parameters\n";
 
-        for (my $i = 2; $i < $#metrics; $i++){
+        for (my $i = 2; $i <= $#metrics; $i++){
             print " $metrics[$i]\n";  
         }
 
@@ -398,8 +398,11 @@ sub process_data {
 
             foreach my $rmx (@rdata) {
 
-                my $match = $rmx =~ s/^.*=//gr;
+                # check for fields
+                my $mv = substr($rmx, 0, 2);
+                next if ! grep {/$mv/i} @mxtypes;
 
+                my $match = $rmx =~ s/^.*=//gr;
 
                 if ($match !~ '#') {
     
@@ -421,6 +424,11 @@ sub process_data {
                 }
 
                 $krmx++;
+            }
+
+            # check for last character 
+            if ($record =~ /:\z/) { 
+                $record = substr ($record, 0, -1);
             }
         }
   
@@ -1028,7 +1036,7 @@ sub revision {
     print STDERR <<END;
 Network Socket Communication Data Recorder
 ICT, Industrial IoT, Weather and Environment
-sockrec: 1.12.1, 2022-03-02 1440
+sockrec: 1.12.2, 2022-03-17 0724
 END
     exit 0;
 }
