@@ -58,7 +58,7 @@ All raw data can be transported to one or many platforms at the same time. Under
 
 #### Recorders
 
-    We can start all data recorders using /opt/kronometrix/etc/rec script utility.
+We can start all data recorders using /opt/kronometrix/etc/rec script utility.
 
     As krmx user:
       $ /opt/kronometrix/etc/rec start
@@ -70,8 +70,7 @@ All raw data can be transported to one or many platforms at the same time. Under
 
 ##### Transport
   
-    We can start the transport service, using /opt/kronometrix/etc/tansport 
-    script utility.
+We can start the transport service, using /opt/kronometrix/etc/tansport script utility.
     
     As krmx user:
       $ /opt/kronometrix/etc/transport start
@@ -85,7 +84,7 @@ All raw data can be transported to one or many platforms at the same time. Under
 
 #### Recorders
 
-    We can stop all data recorders using /opt/kronometrix/etc/rec script utility.
+We can stop all data recorders using /opt/kronometrix/etc/rec script utility.
 
     As krmx user:
       $ /opt/kronometrix/etc/rec stop
@@ -97,8 +96,7 @@ All raw data can be transported to one or many platforms at the same time. Under
 
 ##### Transport
   
-    We can stop the transport service, using /opt/kronometrix/etc/tansport 
-    script utility.
+We can stop the transport service, using /opt/kronometrix/etc/tansport script utility.
     
     As krmx user:
       $ /opt/kronometrix/etc/transport stop
