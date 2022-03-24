@@ -11,15 +11,11 @@ This is the main configuration file. Includes the following sections:
 
 #### Logging section
 
-    This is the section defining the base path and the location where all 
-    raw data logs will be stored. This can be located on a local disk or 
-    a remote LUN storage. Usually, this section, should not be changed or 
-    removed.
+    This is the section defining the base path and the location where all raw data logs will be stored. This can be located on a local disk or a remote LUN storage. Usually, this section, should not be changed or removed.
 
 #### Transport section
 
-    Describes all raw data files and their naming convention. Usually, 
-    this section, should not be changed or removed.
+    Describes all raw data files and their naming convention. Usually, this section, should not be changed or removed.
 
 #### Data Fabric section
  
