@@ -11,11 +11,15 @@ This is the main configuration file. Includes the following sections:
 
 #### Logging section
 
-    This is the section defining the base path and the location where all raw data logs will be stored. This can be located on a local disk or a remote LUN storage. Usually, this section, should not be changed or removed.
+    This is the section defining the base path and the location where all 
+    raw data logs will be stored. This can be located on a local disk or 
+    a remote LUN storage. Usually, this section, should not be changed or 
+    removed.
 
 #### Transport section
 
-    Describes all raw data files and their naming convention. Usually, this section, should not be changed or removed.
+    Describes all raw data files and their naming convention. Usually, 
+    this section, should not be changed or removed.
 
 #### Data Fabric section
  
@@ -58,7 +62,7 @@ All raw data can be transported to one or many platforms at the same time. Under
 
 #### Recorders
 
-We can start all data recorders using /opt/kronometrix/etc/rec script utility.
+    We can start all data recorders using /opt/kronometrix/etc/rec script utility.
 
     As krmx user:
       $ /opt/kronometrix/etc/rec start
@@ -70,7 +74,8 @@ We can start all data recorders using /opt/kronometrix/etc/rec script utility.
 
 ##### Transport
   
-We can start the transport service, using /opt/kronometrix/etc/tansport script utility.
+    We can start the transport service, using /opt/kronometrix/etc/tansport 
+    script utility.
     
     As krmx user:
       $ /opt/kronometrix/etc/transport start
@@ -84,7 +89,7 @@ We can start the transport service, using /opt/kronometrix/etc/tansport script u
 
 #### Recorders
 
-We can stop all data recorders using /opt/kronometrix/etc/rec script utility.
+    We can stop all data recorders using /opt/kronometrix/etc/rec script utility.
 
     As krmx user:
       $ /opt/kronometrix/etc/rec stop
@@ -96,7 +101,8 @@ We can stop all data recorders using /opt/kronometrix/etc/rec script utility.
 
 ##### Transport
   
-We can stop the transport service, using /opt/kronometrix/etc/tansport script utility.
+    We can stop the transport service, using /opt/kronometrix/etc/tansport 
+    script utility.
     
     As krmx user:
       $ /opt/kronometrix/etc/transport stop
