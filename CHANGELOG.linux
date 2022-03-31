@@ -16,6 +16,10 @@ Defect Management System
 
 Releases
 
+ 1.14 April 2022 Release
+    sockrec improvements
+    Perl 5.34.1 update
+
  1.13 March 2022 Release
     sockrec fixes
     libcurl 7.82.0 update
