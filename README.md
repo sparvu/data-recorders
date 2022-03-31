@@ -14,6 +14,7 @@ A simple and efficient set of data recorders and transport utilities for differe
 * [Features](docs/features.md)
 * [Installation](docs/start.md)
 * [Operation](docs/usage.md)
+* [Troublehsooting](docs/troubleshooting.md)
 * [Contributing and support](docs/contributing.md)
 
 # Requirements
