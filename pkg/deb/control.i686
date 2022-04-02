@@ -6,5 +6,6 @@ Version:1.0.0-b10
 Maintainer: support@kronometrix.com
 Homepage: https://www.kronometrix.com/
 Description: Kronometrix Data Recording module
- Kronometrix is an easy-to-use, real-time data analytics platform
- designed for Industrial IoT, ICT, weather and environment.
+ Kronometrix connects to a wide variety of data sources, from IoT, 
+ weather and environment to ICT enterprise, offering high-speed transport 
+ for data consolidation, analysis and visualization in real-time.
