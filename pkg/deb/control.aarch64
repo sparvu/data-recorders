@@ -1,5 +1,5 @@
 Package: kdr
-Architecture: armhf
+Architecture: arm64
 Section: utils
 Priority: extra
 Version:1.0.0-b10
