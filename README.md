@@ -46,7 +46,6 @@ A simple and efficient set of data recorders and transport utilities for differe
 * SLES 15 x86_64
 * OpenSuse Leap 15 x86_64
 * Raspbian GNU/Linux 8+ armv8
-* Solaris 11 (Ask support)
 * FreeBSD
 * MacOS (Q4 2022)
 * Windows 7
