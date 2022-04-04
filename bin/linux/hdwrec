@@ -153,7 +153,27 @@ while (1) {
 
     # CPU model
     my $model     = $nlxs->get_model;
-    $model =~ s/(\s+)/ /g;
+    if ($model) { 
+
+        $model =~ s/(\s+)/ /g;
+
+    } else {
+
+        # we go for firmware
+        if (-e "/sys/firmware/devicetree/base/model") {
+
+            open my $hdwmodel, "<", "/sys/firmware/devicetree/base/model"
+                 or die "error: cannot find /proc/cpuinfo: $!\n";
+
+            while (<$hdwmodel>) {
+                chomp;
+                $model = $_;
+            }
+
+            close $hdwmodel;
+
+        } else { $model = "NA"; } 
+    }
  
     # hyper-threading
     my $ht = 'NA';
@@ -701,7 +721,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-hdwrec: 1.2.1, 2020-08-10 1152
+hdwrec: 1.2.2, 2022-04-04 2308
 END
     exit 0;
 }
