@@ -1,47 +1,16 @@
 # Installation
 
-You can manually install Kronometrix data recording on several operating systems, or you can open your free trial account, for 30 days, under http://kronometrix.io/register to automatically provision and visualize your data. 
+Select your package and install Kronometrix data recording to measure different systems, applications or industrial installations. Open your free 30 days trial account, to Kronometrix SaaS to automatically provision and visualize your data or
+fetch manually the raw data and send it to any type of system for analysis.
+
+<div align="center">
+<img src="/docs/img/KPackages.png" height="80%" width="80%" />
+</div> 
+
+## Free Download 
+
+See our ready [made packages](https://kronometrix.gitlab.io/packages/) 
 
 Kronometrix Data Recording is a free open-source project which can be used to capture and transport data to any 3rd party systems or applications. By default, to visualize and analyse your data, you can subscribe to [Kronometrix SaaS](www.kronometrix.com/get-started). 
-
-## Linux
-
-Please check [README.linux](https://gitlab.com/kronometrix/recording/blob/master/README.linux)
-to verify the system prerequisites, how to install and setup KDR on Linux like operating systems.
-
-### RPM based systems
-
-  * Download latest, stable [x64 package](https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-rhel-x64.rpm)
-        
-  * Install package ```# rpm -ihv kdr-stable-rhel-x64.rpm``` 
-  
-### DEB based systems
-
-  * Download lateast, stable Debian [x64 package](https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-debian-x64.deb) and [armv8 package](https://gitlab.com/kronometrix/k1/blob/master/linux/kdr-stable-raspbian-armv8.deb)
-    
-  * Install package ```# dpkg -i kdr-stable-debian-x64.deb``` 
-
-## UNIX
-
-Please check [README.freebsd](https://gitlab.com/kronometrix/recording/blob/master/README.freebsd)
-to verify the system prerequisites, how to install and setup KDR on FreeBSD UNIX operating systems.
-
-### FreeBSD systems
-
-  * Download packages [x64 package](https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-x64.txz) and [armv8 package](https://gitlab.com/kronometrix/k1/blob/master/freebsd/kdr-stable-freebsd-armv8.txz)
-    
-  * Install package ```# pkg install kdr-stable-freebsd-x64.txz``` 
-
-## Windows
-
-Please check [README.windows](https://gitlab.com/kronometrix/recording/blob/master/README.windows)
-to verify the system prerequisites, how to install and setup KDR on Windows operating systems.
-
-### Windows 2008, 2012, 2016 systems
-
-  * Download [x64 package](https://gitlab.com/kronometrix/k1/blob/master/win/kdr-stable-windows-x64.exe)
-
-  * Execute kdr-stable-windows-x64.exe
- 
 
 Go back [main page](https://gitlab.com/kronometrix/recording/)
