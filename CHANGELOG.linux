@@ -21,6 +21,7 @@ Releases
     hdwrec improvements
     diskrec bug fixes
     sockrec improvements
+    Openssl 1.1.1n update
     Perl 5.34.1 update
 
  1.13 March 2022 Release
@@ -35,7 +36,7 @@ Releases
     snmprec integration
     sockrec improvements
     libcurl 7.81.0 update
-    openssl 1.1.1m update
+    Openssl 1.1.1m update
     Fio 3.28 update
     LuaJIT 2.1.0 update
     CPAN December 2021 update
