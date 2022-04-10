@@ -170,7 +170,7 @@ while ( 1 ) {
 
         next if ( exists $sp{$d} );
 
-        # print "Disk: $d\n";
+        #print "Disk: $d\n";
 
         my $print_time = time();
 
@@ -256,6 +256,15 @@ while ( 1 ) {
 
                 } elsif ( $filesystem =~ m/^.*\/(.*?)$/ ) {
                     $mntfs  = $1;
+
+                }
+
+                # rbpi4
+                if ($d =~ m/^mmcblk0/) {
+                    
+                    if ($d =~ m/^(mmcblk0.*?)\s+.*$/) {
+                        $d = $1;
+                    }
                 }
 
                 $d .= $mntfs;
@@ -266,6 +275,12 @@ while ( 1 ) {
 
         # remove '-'
         $d =~ s/\-//;
+
+
+        # cleanup rbpi4 storage devices
+        if ($d =~ m/^(mmcblk0)\s+.*$/) {
+            $d = $1;
+        }
 
         ### verbose
         if ($verbose) {
@@ -536,7 +551,7 @@ END
 #
 sub revision {
     print STDERR <<END;
-diskrec: 1.2.1, 2021-05-21 2021
+diskrec: 1.2.2, 2022-04-10 1230
 END
     exit 0;
 }
