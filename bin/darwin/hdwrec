@@ -26,7 +26,7 @@ use Time::HiRes qw(time alarm setitimer ITIMER_REAL);
 use POSIX qw(pause);
 use Regexp::Common;
 use Sys::Hostname;
-use BSD::Sysctl qw(sysctl);
+use Mac::OSVersion;
 use Sys::HostIP;
 
 # Debug Only
@@ -74,18 +74,20 @@ local $| = 1;
 # Set a timer for BSD::Sysctl objects
 local $SIG{ALRM} = sub { };
 setitimer( ITIMER_REAL, .1, .1 );
-my $bhdw     = BSD::Sysctl->new( 'hw.machine_arch' );
-my $bdisk    = BSD::Sysctl->new( 'kern.disks' );
-my $bos      = BSD::Sysctl->new( 'kern.ostype' );
-my $brelos   = BSD::Sysctl->new( 'kern.osrelease' );
-my $bnic     = BSD::Sysctl->new( 'net.link.generic.system.ifcount' );
-my $bboot    = BSD::Sysctl->new( 'kern.boottime' );
-my $bguest   = BSD::Sysctl->new( 'kern.vm_guest' );
-my $bkernel  = BSD::Sysctl->new( 'kern.ident' );
-my $bvcpu    = BSD::Sysctl->new( 'hw.ncpu' );
-my $bmodel   = BSD::Sysctl->new( 'hw.model' );
-my $bphysmem = BSD::Sysctl->new( 'hw.physmem' );
-my $bswapmem = BSD::Sysctl->new( 'vm.swap_total' );
+
+
+#my $bhdw     = BSD::Sysctl->new( 'hw.machine_arch' );
+#my $bdisk    = BSD::Sysctl->new( 'kern.disks' );
+#my $bos      = BSD::Sysctl->new( 'kern.ostype' );
+#my $brelos   = BSD::Sysctl->new( 'kern.osrelease' );
+#my $bnic     = BSD::Sysctl->new( 'net.link.generic.system.ifcount' );
+#my $bboot    = BSD::Sysctl->new( 'kern.boottime' );
+#my $bguest   = BSD::Sysctl->new( 'kern.vm_guest' );
+#my $bkernel  = BSD::Sysctl->new( 'kern.ident' );
+#my $bvcpu    = BSD::Sysctl->new( 'hw.ncpu' );
+#my $bmodel   = BSD::Sysctl->new( 'hw.model' );
+#my $bphysmem = BSD::Sysctl->new( 'hw.physmem' );
+##my $bswapmem = BSD::Sysctl->new( 'vm.swap_total' );
 ### 0.1sec sleep using a timer
 pause;
 
@@ -138,35 +140,37 @@ while (1) {
     my $ncores  = 1;
     my $ht      = "NA";
 
+    my $os      = "os";
+    my $kernel  = Mac::OSVersion->kernel;
+    my $relos   = Mac::OSVersion->version;
+    my $disk    = 1;
+    #my $nic    = 1;
+
+
     ## get stats
-    my $arch    = $bhdw->get();
+    my $arch    = "arch";
 
     my $model   = 'NA';
-    if ($bmodel) {
-        $model  = $bmodel->get();
-    } else { $model = $arch; }
+    #if ($bmodel) {
+    #    $model  = $bmodel->get();
+    #} else { $model = $arch; }
 
-    my $os      = lc $bos->get();
-    my $relos   = $brelos->get();
-    my $disk    = $bdisk->get();
-    my $nic     = $bnic->get();
-    my $btime   = sprintf("%d",$bboot->get());
-    my $guest   = $bguest->get();
-    my $kernel  = $bkernel->get();
-    my $vcpu    = $bvcpu->get();
+    my $btime   = "boot time"; #sprintf("%d",$bboot->get());
+    my $guest   = "no guest"; #$bguest->get();
+    my $vcpu    = 1; #$bvcpu->get();
 
-    my $swap = $bswapmem->get();
-    my $smem;
+    my $swap = "no swap"; #$bswapmem->get();
+    my $smem = "memory";
 
-    if ($swap =~ /$RE{num}{real}/) {
-        $smem    = sprintf ("%.2f", $bswapmem->get() / 1048576);
-    } else { 
-        # we call swap by cmdline
-        my $sm = get_swap();
-        $smem = sprintf ("%.2f", $sm / 1048576);
-    }
+    #if ($swap =~ /$RE{num}{real}/) {
+    #    $smem    = sprintf ("%.2f", $bswapmem->get() / 1048576);
+    #} else { 
+    #    # we call swap by cmdline
+    #    my $sm = get_swap();
+    #    $smem = sprintf ("%.2f", $sm / 1048576);
+    #}
 
-    my $pmem    = sprintf ("%.2f", $bphysmem->get() / 1048576);
+    my $pmem    = "phymem"; #sprintf ("%.2f", $bphysmem->get() / 1048576);
 
     my $rawkrd;
     if ($logging) {
@@ -174,53 +178,53 @@ while (1) {
     }
 
     #$model =~ s/[^\S]{2,}//g;
-    $model =~ s/(\s+)/ /g;
-    chop($arch);
-    chop($os);
-    chop($relos);
-    $relos =~ s/\-.*$//;
-    chop($kernel);
+    #$model =~ s/(\s+)/ /g;
+    #chop($arch);
+    #chop($os);
+    #chop($relos);
+    #$relos =~ s/\-.*$//;
+    #chop($kernel);
 
     # hostname# hostname
     my $host = hostname;
     $host =~ s/\..*$// if $host =~ /\./;
 
     # pcpu
-    my @pcpu_stats = get_dmesg();
+    #my @pcpu_stats = get_dmesg();
 
     
-    if (@pcpu_stats) {
+    #if (@pcpu_stats) {
 
-        if ($#pcpu_stats == 2) {
-            $pcpu = $pcpu_stats[0];
-            $ncores = $pcpu_stats[1];
-            $ht = 1;
-        } else {
-            $pcpu = $pcpu_stats[0];
-            $ncores = $pcpu_stats[1];
-            $ht = 0;
-        }
-    } else {
-        $pcpu   = 1;
-        $ncores = 'NA';
-        $ht     = 'NA';
-    }
+    #    if ($#pcpu_stats == 2) {
+    #        $pcpu = $pcpu_stats[0];
+    #        $ncores = $pcpu_stats[1];
+    #        $ht = 1;
+    #    } else {
+    #        $pcpu = $pcpu_stats[0];
+    #        $ncores = $pcpu_stats[1];
+    #        $ht = 0;
+    #    }
+    #} else {
+    #    $pcpu   = 1;
+    #    $ncores = 'NA';
+    #    $ht     = 'NA';
+    #}
 
     # get disks
     my $num_disk = 0;
-    foreach my $i (split / /, $disk ) {
-        $num_disk++ if $i !~ /cd0/;
-    }
+    #foreach my $i (split / /, $disk ) {
+    #    $num_disk++ if $i !~ /cd0/;
+    #}
 
     # diskspace in GB
     my $lsize = 0;
 
     # get NICs
-    my $num_nic = $nic - 1;
+    my $num_nic = 0; #$nic - 1;
 
     # uptime
-    my $u = sprintf("%d", time - $btime);
-    my $uptime = sec2human($u);
+    #my $u = sprintf("%d", time - $btime);
+    my $uptime = "uptime"; #sec2human($u);
     
     # swapmem can be NA or value, defaults to string
     # num_jvm can be NA or value, defaults to string
@@ -232,11 +236,11 @@ while (1) {
     my $hostip     = Sys::HostIP->new;
     my $interfaces = $hostip->interfaces;
 
-    #foreach my $interface ( keys %{$interfaces} ) {
-    #    next if $interface =~ /lo/;
-    #    my $ip = $interfaces->{$interface};
-    #    print "$interface $ip\n";
-    #}
+    foreach my $interface ( keys %{$interfaces} ) {
+        next if $interface =~ /lo/;
+        my $ip = $interfaces->{$interface};
+        print "$interface $ip\n";
+    }
 
     my $ifs;
 
@@ -595,7 +599,7 @@ END
 ## revision - print revision and exit
 sub revision {
     print STDERR <<END;
-hdwrec: 1.2.1, 2018-11-06 1916
+hdwrec: 1.0.0, 2021-07-25 1245
 END
     exit 0;
 }
