@@ -26,6 +26,8 @@ HOSTNAME=`uname -n | sed 's/\..*//'`
 
 if [ "$PL_NAME" = "unknown" ]; then
     PT_NAME=${MH_NAME}
+elif [ "$MH_NAME" = "arm64" ]; then
+    PT_NAME=${MH_NAME}
 elif [ "$MH_NAME" = "arm" ]; then
     PT_NAME=${PL_NAME}
 else
