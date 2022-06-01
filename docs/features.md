@@ -40,7 +40,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | BACnet | 2023 | no | no | no | no | no | Kronometrix roadmap 2023 |
 | Open Source | yes | yes | yes | | | yes | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | yes | yes | | | | yes | |
-| Based on | Perl5/Lua | C/Perl/Python | Python3 | C | C/Java | TypeScript/Go |
+| Based on | Perl5/Lua | C/Python/Php | Python3 | C | C/Java | TypeScript/Go |
 
 Read more about Kronometrix Data Recording [features](https://www.kronometrix.com/fabric/recorders/) 
 <br/>
