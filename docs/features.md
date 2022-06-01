@@ -43,7 +43,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | BACnet | 2024 | no | no | no | no | no | Kronometrix roadmap 2023 |
 | Open Source | yes | yes | yes | | | yes | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | yes | yes | | | | yes | |
-| Public API | no |  |  |  |  |  |  |
+| Public API | yes | yes | no |  | yes | yes | Kronometrix the data analytics module offers API functions to fetch raw data. Nagios is offering NCPA access. DataDog no raw data support. |
 | Based on | Perl5/Lua | C/Python/Php | Python3 | C | C/Java | TypeScript/Go |
 
 ## Analytics & Visualization
@@ -72,7 +72,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Raw Data | yes  |  |  |  |  | yes |  |
 | Dark Mode | yes |  |  |  |  |  |  |
 | Multi-industry support | yes |  |  |  |  |  |  |
-| Public API | yes |  |  |  |  | yes |  |
+| Public API | yes | yes | yes | yes | yes | yes |  |
 | Built-in applications | yes |  |  |  |  |  |  |
 | 3rd parties applications | yes |  |  |  |  |  |  |
 | Requires additional software | no  |  |  |  |  | yes | Kronometrix has all needed components integrated to receive and visualize data. Grafana for example requires InfluxDB or other database to run |
