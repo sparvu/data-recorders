@@ -32,7 +32,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Application Monitoring | partial | yes | yes | yes | yes | yes | Kronometrix improvements 2022-2023: DB monitoring, Application internal monitoring |
 | Internet Enterprise Services | yes | yes | yes | yes | yes | yes | |
 | X.509 Security Certificates | yes | yes | no | no | no | no | |
-| AWS EC2 API | no | yes | yes | yes | yes | yes | Capabilities to fetch AWS specific performance metrics |
+| AWS EC2 API | no | yes | yes | yes* | yes | yes | Capabilities to fetch AWS specific performance metrics. *Paessler uses CloudWatch AWS to fetch the performance metrics. |
 | GCP API | no | yes | yes | yes | yes | yes | Capabilities to fetch GCP specific performance metrics |
 | Azure API | no | yes | yes | yes | yes | yes | Capabilities to fetch Azure specific performance metrics |
 | Serial Command Communication | yes | yes | no | no | no | no | Can connect to manage and control serial devices |
