@@ -40,6 +40,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | BACnet | 2023 | no | no | no | no | no | Kronometrix roadmap 2023 |
 | Open Source | yes | yes | yes | | | yes | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | yes | yes | | | | yes | |
+| Public API | no |  |  |  |  |  |  |
 | Based on | Perl5/Lua | C/Python/Php | Python3 | C | C/Java | TypeScript/Go |
 
 ## Analytics & Visualization
@@ -55,6 +56,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Role-based access control | yes |  |  |  |  |  |  |
 | Calendar | yes |  |  |  |  |  |  |
 | Data Groups | yes |  |  |  |  |  |  |
+| Operational Availability | yes  |  |  |  |  |  |  |
 | Short service interruptions | yes |  |  |  |  |  |  |
 | Smart Alarms | yes |  |  |  |  |  |  |
 | Chart analysis mode | yes |  |  |  |  |  |  |
@@ -62,8 +64,13 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Multi-Aggregate Data | yes |  |  |  |  |  |  |
 | Exploratory raw data analysis | partial |  |  |  |  |  |  |
 | Workload Management System | partial  |  |  |  |  |  |  |
+| Raw Data | yes  |  |  |  |  |  |  |
 | Dark Mode | yes |  |  |  |  |  |  |
 | Multi-industry support | yes |  |  |  |  |  |  |
+| Public API | yes |  |  |  |  |  |  |
+| Built-in applications | yes |  |  |  |  |  |  |
+| 3rd parties applications | yes |  |  |  |  |  |  |
+
 
 
 
