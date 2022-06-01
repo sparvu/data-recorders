@@ -54,6 +54,8 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Multi-user | yes |  |  |  |  |  |  |
 | Multi subscriptions | yes |  |  |  |  |  |  |
 | Role-based access control | yes |  |  |  |  |  |  |
+| Data Integrity | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
+| On-the-fly Compression | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
 | Calendar | yes |  |  |  |  |  |  |
 | Data Groups | yes |  |  |  |  |  |  |
 | Operational Availability | yes  |  |  |  |  |  |  |
@@ -64,8 +66,6 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Multi-Aggregate Data | yes |  |  |  |  | no |  |
 | Exploratory raw data analysis | partial |  |  |  |  |  |  |
 | Workload Management System | partial  |  |  |  |  |  |  |
-| Data Integrity | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
-| Data Compression | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
 | Raw Data | yes  |  |  |  |  | yes |  |
 | Dark Mode | yes |  |  |  |  |  |  |
 | Multi-industry support | yes |  |  |  |  |  |  |
