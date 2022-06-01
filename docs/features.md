@@ -46,22 +46,24 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 
 || Kronometrix | NagiosXi | Datadog | Paessler | Dynatrace |  Grafana | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:| 
-| Real-time |  |  |  |  |  |  |  |
-| Time-series |  |  |  |  |  |  |  |
-| Multi-user |  |  |  |  |  |  |  |
-| Multi subscriptions |  |  |  |  |  |  |  |
-| Role-based access control |  |  |  |  |  |  |  |
-| Calendar |  |  |  |  |  |  |  |
-| Data Groups |  |  |  |  |  |  |  |
-| Short service interruptions |  |  |  |  |  |  |  |
-| Smart Alarms |  |  |  |  |  |  |  |
-| Chart analysis mode |  |  |  |  |  |  |  |
-| Data anomaly detector |  |  |  |  |  |  |  |
-| Multi-Aggregate Data |  |  |  |  |  |  |  |
-| Exploratory raw data analysis |  |  |  |  |  |  |  |
-| Workload Management System |  |  |  |  |  |  |  |
-| Dark Mode |  |  |  |  |  |  |  |
-| Multi-industry support |  |  |  |  |  |  |  |
+| Real-time | yes |  |  |  |  |  |  |
+| Time-series data | yes |  |  |  |  |  |  |
+| Geo-location data | partial |  |  |  |  |  |  |
+| Audio/Video data | partial |  |  |  |  |  |  |
+| Multi-user | yes |  |  |  |  |  |  |
+| Multi subscriptions | yes |  |  |  |  |  |  |
+| Role-based access control | yes |  |  |  |  |  |  |
+| Calendar | yes |  |  |  |  |  |  |
+| Data Groups | yes |  |  |  |  |  |  |
+| Short service interruptions | yes |  |  |  |  |  |  |
+| Smart Alarms | yes |  |  |  |  |  |  |
+| Chart analysis mode | yes |  |  |  |  |  |  |
+| Data anomaly detector | no |  |  |  |  |  |  |
+| Multi-Aggregate Data | yes |  |  |  |  |  |  |
+| Exploratory raw data analysis | partial |  |  |  |  |  |  |
+| Workload Management System | partial  |  |  |  |  |  |  |
+| Dark Mode | yes |  |  |  |  |  |  |
+| Multi-industry support | yes |  |  |  |  |  |  |
 
 
 
