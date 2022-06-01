@@ -42,6 +42,12 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | ARM compatible | yes | yes | | | | yes | |
 | Based on | Perl5/Lua | C/Python/Php | Python3 | C | C/Java | TypeScript/Go |
 
+## Analytics & Visualization
+
+|| Kronometrix | NagiosXi | Datadog | Paessler | Dynatrace |  Grafana | Description |
+|------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:| 
+|  |  |  |  |  |  |  |  |
+
 Read more about Kronometrix Data Recording [features](https://www.kronometrix.com/fabric/recorders/) 
 <br/>
 Go back [main page](https://gitlab.com/kronometrix/recording/)
