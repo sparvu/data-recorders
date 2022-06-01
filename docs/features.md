@@ -61,7 +61,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Smart Alarms | yes |  |  |  |  |  |  |
 | Chart analysis mode | yes |  |  |  |  |  |  |
 | Data anomaly detector | no |  |  |  |  |  |  |
-| Multi-Aggregate Data | yes |  |  |  |  |  | no |
+| Multi-Aggregate Data | yes |  |  |  |  | no |  |
 | Exploratory raw data analysis | partial |  |  |  |  |  |  |
 | Workload Management System | partial  |  |  |  |  |  |  |
 | Data Integrity | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
