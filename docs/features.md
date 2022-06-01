@@ -26,8 +26,8 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Operating System | yes | yes | yes | yes | yes | yes |
 | Platform Virtualization | yes | yes | yes | yes | yes | yes |
 | OS Virtualization | yes | yes | yes | yes | yes | |
-| Docker | no | yes | no | yes | | yes | Kronometrix roadmap 2022 |
-| Kubernets | no | yes | no | yes | | yes | Kronometrix roadmap 2022 |
+| Docker | no | yes | no | yes | | yes | Kronometrix roadmap 2022-2023 |
+| Kubernets | no | yes | no | yes | | yes | Kronometrix roadmap 2022-2023 |
 | Network equipment (SNMP) | yes | yes | yes | yes | yes | yes | |
 | Application Monitoring | yes | yes | yes | yes | yes | yes | Kronometrix improvements Q1 2022 J2EE, DB monitoring |
 | Internet Enterprise Services | yes | yes | yes | yes | yes | yes | |
@@ -35,7 +35,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Serial Command Communication | yes | yes | no | no | no | no | Can connect to manage and control serial devices |
 | RS232/485 | yes | | no | no | no | yes | Serial RS232/RS485 support |
 | MODBUS | yes | no | | no | no | no | MODBUS RTU, ASCII, TCP support |
-| MQTT | 2022 | no | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q3 2022 |
+| MQTT | 2023 | no | no | no | no | no | MQTT 3/5 support. Kronometrix improvements Q3 2022 |
 | Bluetooth Low Energy | 2023 | no | no | no | no | no | Kronometrix roadmap 2023 |
 | BACnet | 2023 | no | no | no | no | no | Kronometrix roadmap 2023 |
 | Open Source | yes | yes | yes | | | yes | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
@@ -46,7 +46,24 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 
 || Kronometrix | NagiosXi | Datadog | Paessler | Dynatrace |  Grafana | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:| 
-|  |  |  |  |  |  |  |  |
+| Real-time |  |  |  |  |  |  |  |
+| Time-series |  |  |  |  |  |  |  |
+| Multi-user |  |  |  |  |  |  |  |
+| Multi subscriptions |  |  |  |  |  |  |  |
+| Role-based access control |  |  |  |  |  |  |  |
+| Calendar |  |  |  |  |  |  |  |
+| Data Groups |  |  |  |  |  |  |  |
+| Short service interruptions |  |  |  |  |  |  |  |
+| Smart Alarms |  |  |  |  |  |  |  |
+| Chart analysis mode |  |  |  |  |  |  |  |
+| Data anomaly detector |  |  |  |  |  |  |  |
+| Multi-Aggregate Data |  |  |  |  |  |  |  |
+| Exploratory raw data analysis |  |  |  |  |  |  |  |
+| Workload Management System |  |  |  |  |  |  |  |
+| Dark Mode |  |  |  |  |  |  |  |
+| Multi-industry support |  |  |  |  |  |  |  |
+
+
 
 Read more about Kronometrix Data Recording [features](https://www.kronometrix.com/fabric/recorders/) 
 <br/>
