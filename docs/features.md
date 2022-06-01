@@ -61,15 +61,18 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Smart Alarms | yes |  |  |  |  |  |  |
 | Chart analysis mode | yes |  |  |  |  |  |  |
 | Data anomaly detector | no |  |  |  |  |  |  |
-| Multi-Aggregate Data | yes |  |  |  |  |  |  |
+| Multi-Aggregate Data | yes |  |  |  |  |  | no |
 | Exploratory raw data analysis | partial |  |  |  |  |  |  |
 | Workload Management System | partial  |  |  |  |  |  |  |
-| Raw Data | yes  |  |  |  |  |  |  |
+| Data Integrity | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
+| Data Compression | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
+| Raw Data | yes  |  |  |  |  | yes |  |
 | Dark Mode | yes |  |  |  |  |  |  |
 | Multi-industry support | yes |  |  |  |  |  |  |
-| Public API | yes |  |  |  |  |  |  |
+| Public API | yes |  |  |  |  | yes |  |
 | Built-in applications | yes |  |  |  |  |  |  |
 | 3rd parties applications | yes |  |  |  |  |  |  |
+| Requires additional software | no  |  |  |  |  | yes | Kronometrix has all needed components integrated to receive and visualize data. Grafana for example requires InfluxDB or other database to run |
 
 
 
