@@ -26,7 +26,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Operating System | yes | yes | yes | yes | yes | yes |
 | Platform Virtualization | yes | yes | yes | yes | yes | yes |
 | OS Virtualization | yes | yes | yes | yes | yes | |
-| Docker | no | yes | no | yes | | yes | Kronometrix roadmap 2022-2023 |
+| Docker | no | yes | no | yes | yes | yes | Kronometrix roadmap 2022-2023 |
 | Kubernets | no | yes | no | yes | | yes | Kronometrix roadmap 2022-2023 |
 | Network equipment (SNMP) | yes | yes | yes | yes | yes | yes | |
 | Application Monitoring | partial | yes | yes | yes | yes | yes | Kronometrix improvements 2022-2023: DB monitoring, Application internal monitoring |
