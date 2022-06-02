@@ -69,7 +69,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Multi-Aggregate Data | yes | no | no | no | yes | no |  |
 | Exploratory raw data analysis | partial |  |  |  |  |  |  |
 | Workload Management System | partial  | no | no | no | no | no |  |
-| Raw Data | yes  | no | no | no | yes | yes |  |
+| Raw Data | yes  | no | no | yes | yes | yes | Paessler has some restrictions when it comes to raw data export (40 days, number of calls / min) |
 | Dark Mode | yes |  |  |  |  |  |  |
 | Multi-industry support | yes | no | no | no | no | no |  |
 | Public API | yes | yes | yes | yes | yes | yes |  |
