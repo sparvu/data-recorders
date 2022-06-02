@@ -50,32 +50,32 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 
 || Kronometrix | NagiosXi | Datadog | Paessler | Dynatrace |  Grafana | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:| 
-| Real-time | yes |  |  |  |  |  |  |
-| Time-series data | yes |  |  |  |  |  |  |
-| Geo-location data | partial |  |  |  |  |  |  |
-| Audio/Video data | partial |  |  |  |  |  |  |
-| Multi-user | yes |  |  |  |  |  |  |
+| Real-time | yes | yes | yes | yes | yes | yes |  |
+| Time-series data | yes | yes | yes | yes | yes | yes |  |
+| Geo-location data | partial | no | no |  |  |  |  |
+| Audio/Video data | partial | no | no | no | no |  |  |
+| Multi-user | yes | yes | yes | yes | yes | yes |  |
 | Multi subscriptions | yes |  |  |  |  |  |  |
-| Role-based access control | yes |  |  |  |  |  |  |
-| Data Integrity | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
-| On-the-fly Compression | yes  |  |  |  |  | no | Kronometrix uses OpenZFS |
-| Calendar | yes |  |  |  |  |  |  |
-| Data Groups | yes |  |  |  |  |  |  |
-| Operational Availability | yes  |  |  |  |  |  |  |
-| Short service interruptions | yes |  |  |  |  |  |  |
+| Role-based access control | yes | no |  |  | yes | no |  |
+| Prevent Silent Data Corruption | yes  | no | no | no | no | no | Kronometrix is built on top of OpenZFS |
+| On-the-fly Compression | yes  |  |  |  |  | no | Kronometrix is built on top of OpenZFS |
+| Calendar | yes | yes | yes | yes | yes | yes | yes |
+| Data Groups | yes | yes | yes | yes | yes | yes |  |
+| [Operational Availability](https://en.wikipedia.org/wiki/Operational_availability) | yes  | no | no | no | no | no |  |
+| Short service interruptions | yes | no | no | no | yes | no |  |
 | Smart Alarms | yes |  |  |  |  |  |  |
-| Chart analysis mode | yes |  |  |  |  |  |  |
-| Data anomaly detector | no |  |  |  |  |  |  |
-| Multi-Aggregate Data | yes |  |  |  |  | no |  |
+| Chart analysis mode | yes | yes | yes | yes | yes | yes |  |
+| Data anomaly detector | no | no | yes | no | yes | no |  |
+| Multi-Aggregate Data | yes | no | no | no | yes | no |  |
 | Exploratory raw data analysis | partial |  |  |  |  |  |  |
-| Workload Management System | partial  |  |  |  |  |  |  |
-| Raw Data | yes  |  |  |  |  | yes |  |
+| Workload Management System | partial  | no | no | no | no | no |  |
+| Raw Data | yes  | no | no | no | yes | yes |  |
 | Dark Mode | yes |  |  |  |  |  |  |
-| Multi-industry support | yes |  |  |  |  |  |  |
+| Multi-industry support | yes | no | no | no | no | no |  |
 | Public API | yes | yes | yes | yes | yes | yes |  |
 | Built-in applications | yes |  |  |  |  |  |  |
-| 3rd parties applications | yes |  |  |  |  |  |  |
-| Requires additional software | no  |  |  |  |  | yes | Kronometrix has all needed components integrated to receive and visualize data. Grafana for example requires InfluxDB or other database to run |
+| 3rd parties applications | yes |  |  |  |  | yes |  |
+| Requires additional software | no  | no | no | no | no | yes | Kronometrix has all needed components integrated to receive and visualize data. Grafana for example requires InfluxDB or other database to run |
 
 
 
