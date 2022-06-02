@@ -52,7 +52,7 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 |------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:| 
 | Real-time | yes | yes | yes | yes | yes | yes |  |
 | Time-series data | yes | yes | yes | yes | yes | yes |  |
-| Geo-location data | partial | no | no |  |  |  |  |
+| Geo-location data | no | yes | yes | yes | yes | yes |  |
 | Audio/Video data | partial | no | no | no | no |  |  |
 | Multi-user | yes | yes | yes | yes | yes | yes |  |
 | Multi subscriptions | yes |  |  |  |  |  |  |
