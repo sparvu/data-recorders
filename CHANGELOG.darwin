@@ -15,8 +15,8 @@ Releases
     diskrec, nicrec new recorders
     sockrec improvements
     Crypt-OpenSSL-X509-1.913 update
-    Openssl 1.1.10 update
-    Perl 5.34.1 update
+    Openssl 1.1.1o update
+    Perl 5.36.0 update
 
   1.6.8 February 2021 Release
     Spreadsheet support for Excel, Libre/OpenOffice data files
