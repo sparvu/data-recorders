@@ -16,14 +16,14 @@ Defect Management System
 
 Releases
 
- 1.14 July 2022 Release
+ 1.14 August 2022 Release
     Raspberry Pi Debian 11 fixes
     hdwrec improvements
     diskrec bug fixes
     sockrec improvements
     Crypt-OpenSSL-X509-1.913 update
-    Openssl 1.1.10 update
-    Perl 5.34.1 update
+    Openssl 1.1.1p update
+    Perl 5.36.0 update
 
  1.13 March 2022 Release
     sockrec fixes
