@@ -22,12 +22,12 @@
           "path" : "/"
         },
         {
-          "id" : "fabric",
+          "id" : "get-started",
           "method" : "GET",
           "scheme" : "https",
           "host" : "www.kronometrix.com",
           "port" : 443,
-          "path" : "/data-fabric"
+          "path" : "/get-started"
         }
       ]
     },
