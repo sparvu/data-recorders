@@ -2,12 +2,23 @@
 Kronometrix Data Recording
 
 Platforms
-    MacOS BigSur 11.x M1
+    MacOS Monterey 12.4 M1+
 
 Defect Management System
   https://gitlab.com/kronometrix/recording/issues 
 
 Releases
+
+ 1.14 August 2022 Release
+    hdwrec improvements
+    sysrec, cpurec new recorders
+    diskrec, nicrec new recorders
+    sockrec improvements
+    Crypt-OpenSSL-X509-1.913 update
+    Openssl 1.1.1q update
+    Libcurl 7.84.0 update
+    Expat 2.4.8 update
+    Perl 5.36.0 update
 
   1.6.8 February 2021 Release
     Spreadsheet support for Excel, Libre/OpenOffice data files

@@ -43,13 +43,6 @@
           "protocol": "udp"
         },
         {
-          "id" : "oceania.pool.ntp.org",
-          "host" : "oceania.pool.ntp.org",
-          "type" : "ntp",
-          "port" : 123,
-          "protocol": "udp"
-        },
-        {
           "id" : "north-america.pool.ntp.org",
           "host" : "north-america.pool.ntp.org",
           "type" : "ntp",
