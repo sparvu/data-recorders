@@ -24,7 +24,17 @@ MH_NAME=`uname -m | tr '[A-Z]' '[a-z]'`
 PL_NAME=`uname -p | tr '[A-Z]' '[a-z]'`
 HOSTNAME=`uname -n | sed 's/\..*//'`
 
+#if [ "$PL_NAME" = "unknown" ]; then
+#    PT_NAME=${MH_NAME}
+#elif [ "$MH_NAME" = "arm" ]; then
+#    PT_NAME=${PL_NAME}
+#else
+#    PT_NAME=${PL_NAME}
+#fi
+
 if [ "$PL_NAME" = "unknown" ]; then
+    PT_NAME=${MH_NAME}
+elif [ "$MH_NAME" = "arm64" ]; then
     PT_NAME=${MH_NAME}
 elif [ "$MH_NAME" = "arm" ]; then
     PT_NAME=${PL_NAME}
