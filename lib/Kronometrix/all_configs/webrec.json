@@ -61,10 +61,10 @@
           "path" : "/"
         },
         {
-          "id" : "www.facebook.com",
+          "id" : "www.freebsd.org",
           "method" : "GET",
           "scheme" : "https",
-          "host" : "www.facebook.com",
+          "host" : "www.freebsd.org",
           "port" : 443,
           "path" : "/"
         },
