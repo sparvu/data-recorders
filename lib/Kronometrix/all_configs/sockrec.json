@@ -19,7 +19,7 @@
           "model": "wxt530",
           "description": "Vaisala WXT530 Series",
           "error_detection": "wxtcrc16",
-          "message_start": "2R0",
+          "message_start": "2r0",
           "record_start": "",
           "record_sep": ",",
           "record_end": "CRLF",
@@ -155,12 +155,17 @@
           "model": "wxt530",
           "description": "Vaisala WXT530 Series",
           "error_detection": "wxtcrc16",
-          "message_start": "2R0",
+          "message_start": "T=",
           "record_start": "",
           "record_sep": ",",
           "record_end": "CRLF",
           "message_end": "CRLF",
           "data": [
+            {
+              "name": "T",
+              "description": "UNIX timestamp",
+              "type": "string"
+            },
             {
               "name": "dn",
               "description": "wind direction min",
