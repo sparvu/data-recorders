@@ -71,6 +71,8 @@ my @files;
 
 ## configuration
 my $hostid;
+my $h;
+my %seen;
 my ( $baselog, $curlog, $slog );
 my @dbs;
 my %fabric;
@@ -104,11 +106,12 @@ if ($verbose) {
 
         print "Listener$lsnr $key\n";
 
-        my ($proto, $port, $ip) = split(':', $key);
+        my ($proto, $port, $ip, $wb) = split(':', $key);
 
         print " protocol: $proto\n";
         print " port: $port\n";
         print " address: $ip\n";
+        print " writeback: $wb\n";
 
         my @metrics;
 
@@ -118,15 +121,17 @@ if ($verbose) {
             push (@metrics, split('\^', $varray));
         }
 
-        my $p = $#metrics - 2;
+        my $p = $#metrics - 3;
 
         print "Data messsage\n";
-        print " krd: $metrics[2]\n";
-        print " device: $metrics[1]\n";
+        print " krd: $metrics[3]\n";
+        print " device: $metrics[2]\n";
+        print " start: $metrics[1]\n";
+        print " filter: $metrics[0]\n";
         print " parameters: $p\n";
         print "Parameters\n";
 
-        for (my $i = 3; $i <= $#metrics; $i++){
+        for (my $i = 4; $i <= $#metrics; $i++){
             print " $metrics[$i]\n";  
         }
 
@@ -163,10 +168,10 @@ my $ioloop = IO::Async::Loop->new;
 for my $key (keys %listeners) {
 
     my $value = $listeners{$key};
-    my ($proto, $port, $ipaddress) = split(':',  $key);
+    my ($proto, $port, $ipaddress, $wb) = split(':',  $key);
 
     if ( $proto =~ /tcp/ ) { start_tcp($ioloop, $port, $ipaddress); }
- elsif ( $proto =~ /udp/ ) { start_udp($ioloop, $port); }
+ elsif ( $proto =~ /udp/ ) { start_udp($ioloop, $port, $wb); }
 
 }
 
@@ -218,7 +223,7 @@ sub daemonize {
 sub process_data {
  
     # input parameters
-    my ( $proto, $port, $host, $data ) = @_;
+    my ( $proto, $port, $host, $wb, $data ) = @_;
     my @mxs;
     my $record;
 
@@ -230,7 +235,7 @@ sub process_data {
     #if ( $host =~ /0.0.0.0/ ) { print "host 0"; }
 
     # build the lookup key
-    my $hkey = $proto . ':' . $port . ':' . $host;
+    my $hkey = $proto . ':' . $port . ':' . $host . ':' . $wb;
 
     # we receive from realtime data
     # print "key=$hkey\n";
@@ -264,41 +269,67 @@ sub process_data {
             }
         }
 
-        #mxs0 - SOM Start of the Message
-        #mxs1 - DEVICE device name
-        #mxs2 - RAWDATA krd filename
-        #mxs3 - FIELD data definition
+        #mxs0 - FILTER Data message filter
+        #mxs1 - SOM Start of the Message
+        #mxs2 - DEVICE device name
+        #mxs3 - RAWDATA krd filename
+        #mxs4 - FIELD data definition
 
         my $rvalue;
 
         # Process data based on device type
 
         # Vaisala WXT DEVICES
-        if ($mxs[1] =~ /wxt/) {
+        if ($mxs[2] =~ /wxt/) {
 
-            # check data message
+            # check SOM start of the data message
+            my $dck = check_message($mxs[1],$data);
+
+            # data message check failed 
+            if ($dck == 0) {
+
+                if ($logging) {
+                    write_log ("Cannot process data message, not allowed");
+                    write_log ("$data");
+
+                } else {
+                    print "Cannot process data message, not allowed\n";
+                    print "$data\n";
+                }
+
+                return;
+            }
+
+            #check filter
             if ($mxs[0] ne 'NA') {
+            
+                if ($mxs[0] eq 'uniq'){
 
-                # check data message
-                my $dck = check_message($mxs[0],$data);
+                    if ( $seen{$data}++ ) {
+       
+                        if ($verbose) {
 
-                # data message check failed 
-                if ($dck == 0) {
+                            if ($logging) {
+                                write_log ("Data already found");
+                                write_log ("$data");
 
-                    if ($logging) {
-                        write_log ("Cannot process data message, not allowed");
-                        write_log ("$data");
-
-                    } else {
-                        print "Cannot process data message, not allowed\n";
-                        print "$data\n";
+                            } else {
+                                print "Data already found\n";
+                                print "$data\n";
+                            }
+                        
+                            return;
+                        }
                     }
 
+                } else {
+
+                    print "no supported filter\n";
                     return;
                 }
             }
 
-            if ($mxs[0] eq 'T=') {
+            if ($mxs[1] eq 'T=') {
 
                 # If the data message starts with T=UNIXTIME
                 # we will save the UNIXTIME and use that 
@@ -327,13 +358,13 @@ sub process_data {
                 if ($logging) {
 
                     write_log ("Data message checksum error, retrying...");
-                    write_log ("Device:$mxs[1]");
+                    write_log ("Device:$mxs[2]");
                     write_log ("Data:$data");
 
                 } else {
 
                     print "Data message checksum error, retrying...\n";
-                    print "Device:$mxs[1]\n";
+                    print "Device:$mxs[2]\n";
                     print "Data:$data\n";
                 }
 
@@ -342,14 +373,18 @@ sub process_data {
 
             my @rdata;
             
-            if ($rvalue =~ /^[0-9][rR]0/) {
+            if ($rvalue =~ /^[0-9a-zA-Z][rR]0/) {
  
                 $devid = substr($rvalue, 0, 1);
                 my $dt = substr($rvalue, 4);
                 push (@rdata, split(',', $dt));
+
+            } else { 
+            
+                return; 
             }
 
-            my @mxtypes = @mxs[3..$#mxs];
+            my @mxtypes = @mxs[4..$#mxs];
 
             # process all fields
             for (my $cnt=0; $cnt <= $#mxtypes; $cnt++) {
@@ -471,13 +506,13 @@ sub process_data {
         # No other devices defined
         } else { return; }
  
-        my $dev = $mxs[1] . "_" . $devid;
+        my $dev = $mxs[2] . "_" . $devid;
         my $lid = $proto . $port;
 
         if ($logging) {
 
             # set krd raw file
-            $rawfile = $curlog . "/" . $mxs[2] . ".krd";
+            $rawfile = $curlog . "/" . $mxs[3] . ".krd";
 
             print $log (" rawfile=$rawfile\n") if ($verbose);
 
@@ -585,7 +620,7 @@ sub start_tcp {
 #
 sub start_udp {
 
-    my ( $lp, $port ) = @_;
+    my ( $lp, $port, $wb ) = @_;
 
     my $listen_host;
     my $listen_port;
@@ -597,8 +632,11 @@ sub start_udp {
 
         my ( $err, $srchost, $srcsvc ) = Socket::getnameinfo( $addr );
         
-        # send back 1 true we have received data
-        $self->send( "1" );
+        # writeback
+        if ($wb ne 'NA') {
+            #printf STDERR "Port: $port Writeback:%s \n", $wb;
+            $self->send( $wb );
+        }
 
         # chomp raw data
         chomp ($dgram);
@@ -606,7 +644,7 @@ sub start_udp {
 
         # we have data to feed
         #print "listening port: $listen_port\n";
-        process_data ('udp', $listen_port, $listen_host, $dgram);
+        process_data ('udp', $listen_port, $listen_host, $wb, $dgram);
 
         # raw data
         #if ($logging) {
@@ -638,11 +676,27 @@ sub start_udp {
 
     if ($logging) {
 
-        write_log ("Listening on $listen_host:$listen_port");
+        if ( $wb ne 'NA' ) {
+
+            write_log ("Listening on $listen_host:$listen_port Writeback:$wb");
+ 
+        } else {
+
+            write_log ("Listening on $listen_host:$listen_port");
+
+        }
 
     } else {
+     
+        if ( $wb ne 'NA' ) {
 
-        printf STDERR "Listening on %s:%d\n", $listen_host, $listen_port;
+            printf STDERR "Listening on %s:%d Writeback:%s\n", $listen_host, $listen_port, $wb;
+
+        } else {
+
+            printf STDERR "Listening on %s:%d\n", $listen_host, $listen_port;
+
+        }
     }
 
     })->get;
@@ -771,6 +825,13 @@ sub get_listeners {
             $address  = $f->{'address'};
         }
 
+        # writeback
+        my $writeback  = 'NA';
+
+        if ($f->{'writeback'}) {
+            $writeback = $f->{'writeback'};
+        }
+
         # INDUSTRIES
         # aqd  - Environment / Outdoor Air Quality
         # iaqd - Environment / Indoor Air Quality
@@ -780,7 +841,7 @@ sub get_listeners {
         # dpd  - ICT / DataCentre Performance
         # spd  - ICT / Application Service Performance
        
-        my $keyapp = $protocol . ':' . $port . ':' . $address;
+        my $keyapp = $protocol . ':' . $port . ':' . $address . ':' . $writeback;
         my @valapp;
  
         my @lmoids = ('iaqd', 'aq', 'amd', 'wcd', 'cpd', 'dpd', 'spd');
@@ -798,6 +859,7 @@ sub get_listeners {
                 my $mf  = 'NA';
                 my $crc = 'NA';
                 my $cmd = 'NA';
+                my $flt = 'NA';
                 my $som = 'NA';
                 my $sor = 'NA';
                 my $rsp = 'NA';
@@ -809,6 +871,10 @@ sub get_listeners {
 
                 if ($dev -> {'message_start'}) {
                     $som = $dev -> {'message_start'};
+                }
+
+                if ($dev -> {'filter'}) {
+                    $flt = $dev -> {'filter'};
                 }
 
                 my $k=0;
@@ -858,7 +924,7 @@ sub get_listeners {
                 my $rfile = $lmoid . '_' . $model . 'rec';
                 #my $keyapp = $protocol . '^' . $port . '^' . $address . '^' . $rfile . '^' . $vendor;
                 #my $hvalue = $params;
-                my $hvalue = $som . '^' . $model . '^' . $rfile . '^' . $params;
+                my $hvalue = $flt . '^' . $som . '^' . $model . '^' . $rfile . '^' . $params;
 
                 push (@valapp, $hvalue);
 
@@ -1099,7 +1165,7 @@ sub revision {
     print STDERR <<END;
 Network Socket Communication Data Recorder
 ICT, Industrial IoT, Weather and Environment
-sockrec: 1.15, 2022-09-06 1908
+sockrec: 1.18, 2022-10-04 0944
 END
     exit 0;
 }

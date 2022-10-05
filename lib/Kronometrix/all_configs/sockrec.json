@@ -6,13 +6,6 @@
       "protocol" : "udp",
       "port" : 44430,
       "address": "0.0.0.0",
-      "writeback" : {
-        "enabled" : "true",
-        "payload" : {
-          "type": "string",
-          "value": "ok"
-        }
-      },
       "aq" : [
         {
           "vendor": "vaisala",
@@ -142,30 +135,20 @@
       "protocol" : "udp",
       "port" : 44431,
       "address": "0.0.0.0",
-      "writeback" : {
-        "enabled" : "true",
-        "payload" : {
-          "type": "string",
-          "value": "ok"
-        }
-      },
+      "writeback" : "1",
       "aq" : [
         {
           "vendor": "vaisala",
           "model": "wxt530",
           "description": "Vaisala WXT530 Series",
           "error_detection": "wxtcrc16",
+          "filter": "uniq",
           "message_start": "T=",
           "record_start": "",
           "record_sep": ",",
           "record_end": "CRLF",
           "message_end": "CRLF",
           "data": [
-            {
-              "name": "T",
-              "description": "UNIX timestamp",
-              "type": "string"
-            },
             {
               "name": "dn",
               "description": "wind direction min",
