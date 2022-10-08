@@ -16,7 +16,7 @@ Defect Management System
 
 Releases
 
- 1.14 September 2022 Release
+ 1.20 November 2022 Release
     Raspberry Pi Debian 11 fixes
     hdwrec improvements
     diskrec bug fixes
@@ -25,7 +25,7 @@ Releases
     Openssl 1.1.1q update
     Libcurl 7.85.0 update
     Expat 2.4.8 update
-    CPAN Aug 2022 update
+    CPAN Oct 2022 update
     Perl 5.36.0 update
 
  1.13 March 2022 Release
