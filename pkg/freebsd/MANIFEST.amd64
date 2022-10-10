@@ -4,7 +4,7 @@ origin: "sysutils/kronometrix"
 comment: "Kronometrix Data Recording"
 arch: "freebsd:*:amd64"
 abi: "freebsd:*:amd64"
-desc: "Kronometrix is an easy-to-use, real-time distributed data fabric designed for Industrial IoT, ICT, weather and environment"
+desc: "Kronometrix is a real-time data analytics platform  designed for Industrial IoT, ICT, weather and environment"
 maintainer: support@kronometrix.com
 www: https://www.kronometrix.com
 prefix: /opt/kronometrix
