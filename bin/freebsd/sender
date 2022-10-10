@@ -1,4 +1,4 @@
-#!/opt/kronometrix/perl/bin/perl
+platform#!/opt/kronometrix/perl/bin/perl
 
 #  Copyright (c) 2009-2022 Stefan Parvu (www.kronometrix.org).
 #
@@ -75,7 +75,7 @@ my @files;
 my $hostid;
 my ( $baselog, $curlog, $slog );
 my @dbs;
-my %fabric;
+my %platform;
 
 local $| = 1;
 
@@ -104,12 +104,12 @@ $slog = $baselog . "/sender.log";
 # datafile
 @dbs = get_datafile($cdata);
 
-# fabric destination
-%fabric = get_fabric($cdata);
+# platform destination
+%platform = get_platform($cdata);
 
-print "fabric hash: " . keys(%fabric) . ".\n";
-for my $key ( keys %fabric ) {
-    my $value = $fabric{$key};
+print "platform hash: " . keys(%platform) . ".\n";
+for my $key ( keys %platform ) {
+    my $value = $platform{$key};
     print "$key => $value\n";
 }
 
@@ -265,9 +265,9 @@ while (1) {
         elsif ( $_->{"input"} =~ /amd_qml201_hmp155rec/  ) { $amd_qml201_hmp155rec_on  = 1; }
         elsif ( $_->{"input"} =~ /wcd_qml201_bh2qwrec/   ) { $wcd_qml201_bh2qwrec_on   = 1; }
 
-            # each fabric
-            for my $key ( keys %fabric ) {
-                my $value = $fabric{$key};
+            # each platform
+            for my $key ( keys %platform ) {
+                my $value = $platform{$key};
 
                 ## value format
                 # cpd:hostname2:443:00000000000000000000000000000000
@@ -1156,7 +1156,7 @@ sub reload_config {
     @dbs = get_datafile($cdata);
 
     ## destination
-    %fabric = get_fabric($cdata);
+    %platform = get_platform($cdata);
 
     return;
 }
@@ -1265,9 +1265,9 @@ sub make_hdsid {
     # get all sids and generate dsid for each
     # dsid must be unique per sid
 
-    my @kplt = @{ $data->{'transport'}->{'fabric'} };
+    my @kplt = @{ $data->{'transport'}->{'platform'} };
 
-    # populate dsid for each fabric and lmo
+    # populate dsid for each platform and lmo
     foreach my $plt (@kplt) {
         my ($sid, $tid, $dsid);
 
@@ -1336,15 +1336,15 @@ sub make_dsid {
 }
 
 
-# get k analytics fabric information
-sub get_fabric {
+# get k analytics platform information
+sub get_platform {
 
     my ($data) = @_;
     my %kplt;
 
     my @lmo = ('amd', 'cpd', 'dpd', 'epd', 'spd', 'aqd', 'iaqd', 'wcd', 'wpd');
 
-    my @temp = @{ $data->{'transport'}->{'fabric'} };
+    my @temp = @{ $data->{'transport'}->{'platform'} };
 
     foreach my $f (@temp) {
         my ($sid, $tid, $dsid);

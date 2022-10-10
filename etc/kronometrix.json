@@ -204,14 +204,14 @@
     }
   ],
   "transport" : {
-    "fabric" : [
+    "platform" : [
       {
         "port" : 80,
         "keepalive" : 0,
-        "name" : "Kronometrix Distributed Data Fabric",
+        "name" : "Kronometrix Data Analytics Platform",
         "host" : "change me",
         "protocol" : "http",
-        "description" : "Kronometrix Distributed Data Fabric",
+        "description" : "Kronometrix Data Analytics Platform",
         "cpd" : [
           {
             "dsid" : "",
