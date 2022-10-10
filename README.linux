@@ -3,9 +3,9 @@ Kronometrix Data Recording
 
 An automatic, simple to use, data collection and transport utility 
 with a low system footprint, supporting raw data, available as 
-open-source software. Kronometrix K1 is a commercial product, based
-on Kronometrix Data Recording, available from Kronometrix Analytics
-More information: www.kronometrix.com/products/iotgateway
+open-source software. Kronometrix IoT Gateway is a commercial product, 
+based on Kronometrix Data Recording, available from Kronometrix Oy
+More information: https://www.kronometrix.com/products/iotgateway/
 
 
 1.Supported Operating Systems
@@ -244,11 +244,11 @@ More information: www.kronometrix.com/products/iotgateway
     this section, should not be changed or removed.
 
 
-    Data Fabric section
+    Data Platform section
  
     This is the section where users should defined where they want to 
     send data. The platform section describes the details of one or
-    many data analytics fabrics, each with own settings.
+    many data analytics platforms, each with own settings.
 
     All raw data can be transported to one or many platforms at the same
     time. Under this section we need to define and configure, the following:
