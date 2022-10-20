@@ -65,28 +65,28 @@ A simple and efficient set of data recorders and transport utilities for differe
  * nicrec - Per NIC statistics data recorder
  * diskrec - Per disk statistics data recorder
  * hdwrec - System inventory data recorder
- * faultrec - Fault Management data recorder **(Q4 2022)**
- * dockrec - Docker Performance data recorder **(Q2 2022)**
+ * faultrec - Fault Management data recorder **(Q2 2023)**
+ * dockrec - Docker Performance data recorder **(Q4 2022)**
  * jvmrec - Java VM statistics data recorder
  * snmprec - SNMP equipment data recorder
  * netrec - TCP, UDP data recorder
  * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
- * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(Q3 2022)**
+ * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(Q2 2023)**
  * certrec - X.509 security certificate statistics data recorder
  * direc - Filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
- * smtprec - SMTP server data recorder **(Q3 2022)**
- * imaprec - IMAP/POP server data recorder **(Q3 2022)**
+ * smtprec - SMTP server data recorder **(Q1 2023)**
+ * imaprec - IMAP/POP server data recorder **(Q1 2023)**
  * svcrec - Service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * procrec - Process statistics data recorder
  * webrec - Web application performance,availability data recorder
- * wprec - Wordpress security, performance and availability data recorder **(Q3 2022)**
+ * wprec - Wordpress security, performance and availability data recorder **(Q4 2023)**
 
 ## Industrial IoT, Weather and Environment
 
  * axisrec - AXIS security and video surveillance data recorder
  * bacrec - Building management BACnet data recorder **(2023)**
- * blrec - Bluetooth Low Energy data recorder **(Q4 2022)**
+ * blrec - Bluetooth Low Energy data recorder **(2023)**
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * sockrec - Network IO Socket data recorder
  * wsrec - General weather station recorder RS-232/USB
