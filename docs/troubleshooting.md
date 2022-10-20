@@ -21,9 +21,9 @@ This is the main configuration file. Includes the following sections:
     Describes all raw data files and their naming convention. Usually, 
     this section, should not be changed or removed.
 
-#### Data Fabric section
+#### Data Platform section
  
-This is the section where users should defined where they want tosend data. The platform section describes the details of one or many data analytics fabrics, each with own settings.
+This is the section where users should defined where they want to send data. The platform section describes the details of one or many data analytics platforms, each with own settings.
 
 All raw data can be transported to one or many platforms at the same time. Under this section we need to define and configure, the following:
 
