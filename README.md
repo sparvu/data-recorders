@@ -100,5 +100,5 @@ A simple and efficient set of data recorders and transport utilities for differe
 [www.kronometrix.com][1] | [support.kronometrix.com][2]
 
 
-[1]: https://www.kronometrix.com/data-fabric/recorders
+[1]: https://www.kronometrix.com/data-analytics-platform/recorders/
 [2]: https://support.kronometrix.com

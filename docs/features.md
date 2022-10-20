@@ -80,6 +80,6 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 
 
 
-Read more about Kronometrix Data Recording [features](https://www.kronometrix.com/fabric/recorders/) 
+Read more about Kronometrix Data Recording [features](https://www.kronometrix.com/data-analytics-platform/recorders/)
 <br/>
 Go back [main page](https://gitlab.com/kronometrix/recording/)

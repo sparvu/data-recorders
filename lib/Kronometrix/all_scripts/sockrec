@@ -75,7 +75,6 @@ my $h;
 my %seen;
 my ( $baselog, $curlog, $slog );
 my @dbs;
-my %fabric;
 
 local $| = 1;
 
@@ -797,9 +796,6 @@ sub reload_config {
 
     ## datafile
     #@dbs = get_datafile($cdata);
-
-    ## destination
-    #%fabric = get_fabric($cdata);
 
     return;
 }
