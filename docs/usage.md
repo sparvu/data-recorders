@@ -100,9 +100,9 @@ Describes for each data recorder, what data message is associated with and the r
 ...
 ```
 
-##### Data Fabric section
+##### Data Platform section
  
-This is the section where users should defined where they want to send data. The platform section describes the details of one or many data analytics fabrics, each with own settings. All raw data can be transported to one or many platforms at the same time. Under this section we need to define and configure, the following:
+This is the section where users should defined where they want to send data. The platform section describes the details of one or many data analytics platforms, each with own settings. All raw data can be transported to one or many platforms at the same time. Under this section we need to define and configure, the following:
 
 - port number, the port number default 80, or 443
 - hostname, IP or FQD of the platform 
@@ -123,14 +123,14 @@ This is the section where users should defined where they want to send data. The
 
 ```
   "transport" : {
-    "fabric" : [
+    "platform" : [
       {
         "port" : 80,
         "keepalive" : 0,
-        "name" : "Kronometrix Distributed Data Fabric",
+        "name" : "Kronometrix Data Analytics Platform",
         "host" : "change me",
         "protocol" : "http",
-        "description" : "Kronometrix Distributed Data Fabric",
+        "description" : "Kronometrix Data Analytics Platform",
         "cpd" : [
           {
             "dsid" : "",
