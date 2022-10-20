@@ -94,11 +94,3 @@ A simple and efficient set of data recorders and transport utilities for differe
 # Commercial products
 
 [Kronometrix Industrial IoT Gateway](https://www.kronometrix.com/products/iotgateway/)
-
-# Find out more
-
-[www.kronometrix.com][1] | [support.kronometrix.com][2]
-
-
-[1]: https://www.kronometrix.com/data-analytics-platform/recorders/
-[2]: https://support.kronometrix.com

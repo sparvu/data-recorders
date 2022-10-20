@@ -78,8 +78,5 @@ The main features of Kronometrix Data Recording vs. other similar ICT and IoT te
 | Requires additional software | no  | no | no | no | no | yes | Kronometrix has all needed components integrated to receive and visualize data. Grafana for example requires InfluxDB or other database to run |
 
 
-
-
-Read more about Kronometrix Data Recording [features](https://www.kronometrix.com/data-analytics-platform/recorders/)
 <br/>
 Go back [main page](https://gitlab.com/kronometrix/recording/)
