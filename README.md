@@ -90,7 +90,3 @@ A simple and efficient set of CLI system utilities designed to record top essent
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * sockrec - Network IO Socket data recorder
  * wsrec - General weather station recorder RS-232/USB
-
-# Commercial products
-
-[Kronometrix Industrial IoT Gateway](https://www.kronometrix.com/products/iotgateway/)
