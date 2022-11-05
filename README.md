@@ -8,7 +8,7 @@
 
 # Overview
 
-A simple and efficient set of CLI system utilities designed to record top essential performance metrics, save original raw data and send it for data visualization and analysis from different industries: ICT enterprise, weather and environment, industrial IoT.
+A simple and efficient set of CLI system utilities designed to record top essential performance metrics, save original raw data and send it for data visualization and analysis. Supports different industries: ICT enterprise, weather and environment, industrial IoT.
 
 * [Design](docs/design.md)
 * [Features](docs/features.md)
