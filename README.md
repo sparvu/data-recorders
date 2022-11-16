@@ -10,10 +10,6 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 * [Design](docs/design.md)
 * [Features](docs/features.md)
-* [Installation](docs/start.md)
-* [Operation](docs/usage.md)
-* [Troublehsooting](docs/troubleshooting.md)
-* [Contributing and support](docs/contributing.md)
 
 # Requirements
 
