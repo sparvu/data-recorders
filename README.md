@@ -17,11 +17,11 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system util
 
 # Requirements
 
-* Processor: Intel/AMD x64, Apple M1, ARMv8
+* Processor: Intel/AMD x64, ARMv8
 * Memory: 32 MB RAM
-* Disk space: 140MB, Raw data: 500-750KB per day / data source
+* Disk space: 64MB, Raw data: 500-750KB per day / data source
 * Protocols: SERIAL COMMUNICATION, SNMP, MODBUS(RTU,TCP,ASCII), MQTT, HTTP, BLE, BACnet
-* SBC: Raspberry PI 3B, 4B
+* SBC: Raspberry PI 3B+, 4B
 
 # Features
 
@@ -38,7 +38,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system util
 
 * CentOS 7.9 x86_64
 * RHEL 8 x86_64
-* Debian 9.13 amd64
+* Debian 9,10,11 amd64
 * CloudLinux 7 x86_64
 * Ubuntu Server Edition 18 amd64
 * SLES 15 x86_64
@@ -64,27 +64,27 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system util
  * diskrec - Per disk statistics data recorder
  * hdwrec - System inventory data recorder
  * faultrec - Fault Management data recorder **(Q2 2023)**
- * dockrec - Docker Performance data recorder **(Q4 2022)**
+ * dockrec - Docker Performance data recorder **(2023)**
  * jvmrec - Java VM statistics data recorder
  * snmprec - SNMP equipment data recorder
  * netrec - TCP, UDP data recorder
  * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
- * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(Q2 2023)**
+ * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(2023)**
  * certrec - X.509 security certificate statistics data recorder
  * direc - Filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
- * smtprec - SMTP server data recorder **(Q1 2023)**
- * imaprec - IMAP/POP server data recorder **(Q1 2023)**
+ * smtprec - SMTP server data recorder **(2024)**
+ * imaprec - IMAP/POP server data recorder **(2024)**
  * svcrec - Service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * procrec - Process statistics data recorder
  * webrec - Web application performance,availability data recorder
- * wprec - Wordpress security, performance and availability data recorder **(Q4 2023)**
+ * wprec - Wordpress security, performance and availability data recorder **(2023)**
 
 ## Industrial IoT, Weather and Environment
 
  * axisrec - AXIS security and video surveillance data recorder
- * bacrec - Building management BACnet data recorder **(2023)**
- * blrec - Bluetooth Low Energy data recorder **(2023)**
+ * bacrec - Building management BACnet data recorder **(2024)**
+ * blrec - Bluetooth Low Energy data recorder **(2024)**
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * sockrec - Network IO Socket data recorder
  * wsrec - General weather station recorder RS-232/USB
