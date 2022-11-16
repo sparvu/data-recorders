@@ -37,4 +37,4 @@ The main features of Data Recorders vs. other similar ICT and IoT technologies.
 
 
 <br/>
-Go back [main page]([https://github.com/sparvu/data-recorders])
+Go back [main page](https://github.com/sparvu/data-recorders)
