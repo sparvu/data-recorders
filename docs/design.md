@@ -59,4 +59,4 @@ The interactive or automatic mode can be enabled via command line interface. The
 <img src="/docs/img/RecorderVsAgent.png" height="80%" width="80%" />
 </div> 
 
-Go back [main page](https://gitlab.com/kronometrix/recording/)
+Go back [main page](/data-recorders/)
