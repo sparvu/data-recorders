@@ -1,6 +1,4 @@
-<img src="/docs/img/KDR-Text.png" align="left" height="74" width="325" />
-<br/><br/>
-<br/><br/>
+# Data Recorders
 
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.19&color=success)](docs/start.md)
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
@@ -8,7 +6,7 @@
 
 # Overview
 
-A simple and efficient set of CLI system utilities designed to record top essential performance metrics, save original raw data and send it for data visualization and analysis. Supports different industries: ICT enterprise, weather and environment, industrial IoT.
+A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system utilities designed to record top essential performance metrics, save original raw data and send it for data visualization and analysis. Supports different industries: ICT enterprise, weather and environment, industrial IoT.
 
 * [Design](docs/design.md)
 * [Features](docs/features.md)
