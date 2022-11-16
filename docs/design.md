@@ -5,7 +5,7 @@ To really understand how your world works, you need to have data. The right kind
 There can be many data recorders, executing on top of a runtime engine, for example Perl5. All data recorders will share the same runtime engine and are designed for different tasks.
 
 <div align="center">
-<img src="/docs/img/KDR_Stack2.png" height="80%" width="80%" />
+<img src="/docs/img/Data-Recorders-2.0.png" height="80%" width="80%" />
 </div> 
 
 
