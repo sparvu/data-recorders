@@ -31,11 +31,11 @@ Each data recorder will save all collected metrics and parameters under one or m
 
 **Based on a high-level programming language**
 
-Recorders are light software probes, which can extract data from different sources, being able to run interactively or continuous mode. Developed using a dynamic programming language, are very simple to change or build.
+Recorders are light software probes, which can extract data from different sources, able to run interactively or continuous mode with a very small system footprint.
 
 **Conservative in system resources**
 
-Designed as single threaded applications, the data recorders are conservative in CPU and memory consumption across many system architectures, like X86, ARM or SPARC. 
+Designed as [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system utilities, the data recorders are conservative in CPU and memory consumption across many system architectures, like X86 or ARM. 
 
 
 ## How does it work?
