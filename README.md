@@ -63,7 +63,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
  * nicrec - Per NIC statistics data recorder
  * diskrec - Per disk statistics data recorder
  * hdwrec - System inventory data recorder
- * faultrec - Fault Management data recorder **(Q2 2023)**
+ * faultrec - Fault Management data recorder **(2023)**
  * dockrec - Docker Performance data recorder **(2023)**
  * jvmrec - Java VM statistics data recorder
  * snmprec - SNMP equipment data recorder
