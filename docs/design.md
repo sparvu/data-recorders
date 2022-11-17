@@ -1,8 +1,8 @@
 # Design
 
-To really understand how your world works, you need to have data. The right kind of data. And for that, you need to be able to capture the correct performance metrics from your systems, devices or applications in real-time. To be able to do all of these, we have developed data recorders. The data recorder has built-in capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. 
+To really understand how your business works, you need to capture the correct performance metrics from your systems, devices or applications in real-time. To be able to do all of these, we have developed data recorders. A data recorder has built-in capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. 
 
-There can be many data recorders, executing on top of a runtime engine, for example Perl5. All data recorders will share the same runtime engine and are designed for different tasks.
+There can be many data recorders, designed for different tasks, available for several computer system architectures, like x64 or ARMv8. 
 
 <div align="center">
 <img src="/docs/img/DS2_HighLevel.png" height="80%" width="80%" />
@@ -31,16 +31,16 @@ Each data recorder will save all collected metrics and parameters under one or m
 
 **Based on a high-level programming language**
 
-Recorders are light software probes, which can extract data from different sources, able to run interactively or continuous mode with a very small system footprint.
+Recorders are light software probes, which can extract data from different sources, able to run interactively or continuous using one or many data communication protocols with a direct system access to various metrics.
 
-**Conservative in system resources**
+**Small system footprint**
 
 Designed as [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system utilities, the data recorders are conservative in CPU and memory consumption across many system architectures, like X86 or ARM. 
 
 
 ## How does it work?
 
-<img src="/docs/img/KDR_Arch.png" align="right" />
+<img src="/docs/img/Arch.png" align="right" />
 
 A data recorder requires a runtime engine to operate and execute, like Perl5 or Lua, for example. There can be more than one data recorder, designed for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. They do not interfere with other data recorders input and output execution. The data recorders work independently one of each other, having their own execution path and state.
 
