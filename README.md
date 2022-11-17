@@ -10,7 +10,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 <div align="center">
 <img src="/docs/img/DR2.png" height="80%" width="80%" />
-</div> 
+</div>
 
 * [Design](docs/design.md)
 * [Features](docs/features.md)
