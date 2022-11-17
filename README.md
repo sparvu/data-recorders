@@ -8,6 +8,10 @@
 
 A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record top essential performance metrics, save original raw data and transport them for visualization and analysis. Supports different industries: ICT enterprise, weather and environment, industrial IoT. Using Rust (This is work in progress to support and re-write all recorders from Perl5 to Rust)
 
+<div align="center">
+<img src="/docs/img/DR2.png" height="80%" width="80%" />
+</div> 
+
 * [Design](docs/design.md)
 * [Features](docs/features.md)
 
