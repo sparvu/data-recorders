@@ -19,7 +19,7 @@ All recorded observations and metrics are stored as raw data. Raw data is a [sim
 
 **Data ontology**
 
-To help you, we have carefully selected and analyzed, for each industry, the most needed metrics for different business cases, by grouping and classifying these metrics, to build a very efficient data analysis process. The recorder has built-in support for grouping and data classification.
+To help you, we have [carefully selected and analyzed](https://github.com/sparvu/smart-objects), for each industry, the most needed metrics for different business cases, by grouping and classifying these metrics, to build a very efficient data analysis process. The recorder has built-in support for grouping and data classification.
 
 **Supports different industries**
 
