@@ -1,4 +1,4 @@
-<img src="/docs/img/data-recorders-title2.png" />
+<img src="/docs/img/data-recorders-title3.png" />
 
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=2.0&color=success)](docs/start.md)
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
