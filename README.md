@@ -1,7 +1,5 @@
 <img src="/docs/img/data-recorders-title.png" />
 
-# Data Recorders
-
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=2.0&color=success)](docs/start.md)
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
