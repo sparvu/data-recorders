@@ -25,10 +25,12 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 # Features
 
+* Utilization metrics
+* Response time, throughput performance metrics
 * Support for raw data
 * Industrial IoT readiness
 * Conservative in CPU and memory usage on different architectures 
-* Easy to change or add new data recorders to collect new data 
+* Easy to configure and add new metrics to capture new data 
 * Runs without human intervention, easy to detect data transmission problems
 * Fetch data from any system, device, sensor with support for different industries
 * Full control with no complicated licenses for further development
@@ -45,7 +47,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * OpenSuse Leap 15 x86_64
 * Raspbian GNU/Linux 8+ armv8
 * FreeBSD
-* MacOS (Q4 2022)
+* MacOS (2023)
 * Windows 7
 * Windows 8
 * Windows 10
