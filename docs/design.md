@@ -1,4 +1,4 @@
-<img src="/docs/img/data-recorders-ver2.0_2.png" />
+<img src="/docs/img/data-recorders-ver2.0_3.png" />
 
 # Design
 
