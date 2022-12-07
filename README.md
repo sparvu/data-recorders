@@ -25,8 +25,11 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 # Features
 
-* Utilization metrics
-* Response time, throughput performance metrics
+* Resource utilization
+* Throughput performance metrics
+* Response time performance metrics
+* Operational availability
+* Power consumption
 * Support for raw data
 * Industrial IoT readiness
 * Conservative in CPU and memory usage on different architectures 
