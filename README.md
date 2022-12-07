@@ -31,11 +31,11 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * Operational availability
 * Power consumption
 * Support for raw data
+* Data classification and grouping
 * Industrial IoT readiness
 * Conservative in CPU and memory usage on different architectures 
 * Easy to configure and add new metrics to capture new data 
 * Runs without human intervention, easy to detect data transmission problems
-* Fetch data from any system, device, sensor with support for different industries
 * Full control with no complicated licenses for further development
 * [See more](docs/features.md)
 
