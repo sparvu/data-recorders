@@ -1,3 +1,5 @@
+<img src="/docs/img/data-recorders-ver2.0.png" />
+
 # Design
 
 To really understand how your business works, you need to capture the correct performance metrics from your systems, devices or applications in real-time. To be able to do all of these, we have developed data recorders. A data recorder has built-in capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. 
