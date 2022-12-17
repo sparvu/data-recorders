@@ -1,4 +1,6 @@
 
+<img src="/docs/img/data-recorders-design.png" />
+
 # Introduction
 
 To really understand how your world works, you need to capture the **correct performance metrics** from your systems or applications, in real-time. Same output format and metrics, no matter of your operating system or your platform used. More the original raw data collected should be simple to access and share with anyone, if required. Last but not least, capturing data could happen automatically, for longer periods of time, without human interventions or interactively for short time.
