@@ -1,5 +1,5 @@
 
-<img src="/docs/img/data-recorders-ver1.0.png" />
+<img src="/docs/img/data-recorders-ver1.0_2.png" />
 
 
 # Version 1
