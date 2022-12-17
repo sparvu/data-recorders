@@ -1,7 +1,9 @@
 
 # Introduction
 
-To really understand how your world works, you need to capture the correct performance metrics from your systems, devices or applications, in real-time. No matter of your operating system or your platform used. Same time you need to have access to the original raw data collected, share it with anyone if you need so, as simple as possible. To achieve all these I started since 2009 to develop a number of light command line utilities, called _data recorders_, which can have capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. 
+To really understand how your world works, you need to capture the **correct performance metrics** from your systems or applications, in real-time. Same output format and metrics, no matter of your operating system or your platform used. More the original raw data collected should be simple to access and share with anyone, if required. Last but not least, capturing data could happen automatically, for longer periods of time, without human interventions or interactively for short time.
+
+To achieve all these I started, since 2009, to develop a number of light command line utilities, called _data recorders_, which can have capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. 
 
 * [Version 1](docs/design_ver1.md)
 * [Version 2](docs/design_ver2.md)
