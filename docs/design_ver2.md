@@ -1,4 +1,4 @@
-<img src="/docs/img/data-recorders-ver2.0_5.png" />
+<img src="/docs/img/data-recorders-ver2.0_9.png" />
 
 # Version 2.0
 
