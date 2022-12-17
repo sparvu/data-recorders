@@ -5,8 +5,8 @@ To really understand how your world works, you need to capture the **correct per
 
 To achieve all these I started, since 2009, to develop a number of light command line utilities, called _data recorders_, which can have capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. 
 
-* [Version 1](docs/design_ver1.md)
-* [Version 2](docs/design_ver2.md)
+* [Version 1](design_ver1.md)
+* [Version 2](design_ver2.md)
 
 # What is a data recorder?
 
