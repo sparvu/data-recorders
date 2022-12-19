@@ -1,6 +1,5 @@
 <img src="/docs/img/data-recorders-features_5.png" />
 
-The main features of Data Recorders vs. other similar ICT and IoT technologies.
 
 || Data Recorders | NagiosXi | Datadog | Paessler | Dynatrace  | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
@@ -36,5 +35,5 @@ The main features of Data Recorders vs. other similar ICT and IoT technologies.
 | Based on | Perl/C | C/Python/Php | Python3 | C | C/Java |
 
 
-<br/>
 Go back [main page](https://github.com/sparvu/data-recorders)
+
