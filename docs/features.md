@@ -32,8 +32,9 @@
 | Open Source | yes | yes | yes | | yes | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | yes | yes | | | yes | |
 | Public API | yes | yes | no |  | yes |  |
-| Based on | Perl/C | C/Python/Php | Python3 | C | C/Java |
+| Based on | C/Perl | C/Python/Php | Python3 | C | C/Java |
 
+The future version of data recorders will be based on Rust programming language. Check [here](https://github.com/sparvu/data-recorders/blob/master/docs/design_ver2.md) for more details.
 
 Go back [main page](https://github.com/sparvu/data-recorders)
 
