@@ -1,14 +1,10 @@
-<img src="/docs/img/data-recorders-ver2.0_9.png" />
+<img src="/docs/img/data-recorders-ver2.0_final.jpg" />
 
-# Version 2.0
-
-To really understand how your world works, you need to capture the correct performance metrics from your systems, devices or applications, in real-time. No matter of your operating system or your platform used. Same time you need to have access to the original raw data collected, share it with anyone if you need so, as simple as possible. To achieve all these I started since 2009 to develop a number of light command line utilities, called data recorders, which can have capabilities to connect or wait for data from various sources and resolves the associated performance metrics in real-time. Enter data-recorders
+Why version 2.0? This document explains the technical considerations to move from version 1 based on Perl/C languages to Rust.
 
 
 
-# Re-Design
-
-
+# Architecture
 
 <div align="center">
 <img src="/docs/img/perl2rust.png" width="75%"/>
