@@ -8,7 +8,7 @@ Why version 2.0? This document explains the technical considerations to move fro
 Since 2009, the main architecture 
 
 <div align="center">
-<img src="/docs/img/perl2rust.png" width="75%"/>
+<img src="/docs/img/cperl2rust.png" width="75%"/>
 </div> 
 
 
