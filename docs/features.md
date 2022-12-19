@@ -1,4 +1,4 @@
-# Features
+<img src="/docs/img/data-recorders-features_4.png" />
 
 The main features of Data Recorders vs. other similar ICT and IoT technologies.
 
