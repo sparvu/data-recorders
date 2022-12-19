@@ -2,7 +2,7 @@
 <img src="/docs/img/data-recorders-ver1.0_3.png" />
 
 
-A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a software agent. 
+These are the technical architecture notes for data recorders version 1.0. Based on Perl5 and C programming languages the data recorders support a number of platforms and operating systems from Intel/AMD X64 to ARM Raspberry PI computers. 
 
 
 # Architecture
