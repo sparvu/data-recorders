@@ -1,5 +1,5 @@
 
-<img src="/docs/img/data-recorders-design_10.png" />
+<img src="/docs/img/data-recorders-design_3.png" />
 
 # Introduction
 
