@@ -1,10 +1,11 @@
 <img src="/docs/img/data-recorders-ver2.0_final.jpg" />
 
-Why version 2.0? This document explains the technical considerations to move from version 1 based on Perl/C languages to Rust.
-
+Why version 2.0? This document explains the technical considerations to move from version 1 based on C/Perl languages to Rust.
 
 
 # Architecture
+
+Since 2009, the main architecture 
 
 <div align="center">
 <img src="/docs/img/perl2rust.png" width="75%"/>
