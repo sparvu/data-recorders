@@ -1,4 +1,4 @@
-<img src="/docs/img/data-recorders-ver2.0_final.jpg" />
+<img src="/docs/img/data-recorders-ver2.0-final.jpg" />
 
 Why version 2.0? This document explains the technical considerations to move from version 1 based on C/Perl languages to Rust.
 
