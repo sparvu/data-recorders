@@ -5,7 +5,7 @@
 
 To really understand how your world works, you need to have the **correct performance metrics** from your systems and applications to analyze. The first thing to do is the capability to capture, in real-time, these performance metrics, and write them out, using the the same output format, no matter of your OS or your platform used. The out data, the original raw data collected, should be simple to access and share with anyone, if required. And last but not least, capturing this data should be done automatically, without human intervention - to help build large data sets for performance analysis and capacity planning or interactively for quick troubleshooting.
 
-To achieve all these gols, I have designed the _data recorders_ . These are light command line utilities, which can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet.
+To achieve all these gols, I have designed the _data recorders_ . These are light command line utilities, which can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a generic agent based software, or can be deployed and operated over the network, without any local presence. See later how a data recorder is different from a generic software agent software. 
 
 The first data recorders were published during 2009, to fetch and collect performance data from various Solaris and Linux computer systems. After that, more recorders were developed to capture HTTP data from various web applications, and TCP/UDP service performance data from various enterprise services, like databases or middleware software. Same time, new recorders were created to connect to various industrial sensors and devices and fetch different data, using for example the MODBUS protocol.
 
@@ -58,7 +58,7 @@ The recorder can operate in two modes:
 The interactive or automatic mode can be enabled via command line interface. The automatic mode (logging option) will allow the recorder to log continuously data without any human intervention.
 
 
-# Recorders vs Others
+# Recorders vs Agent-based Software
 
 <div align="center">
 <img src="/docs/img/RecorderVsAgent.png" height="80%" width="80%" />
