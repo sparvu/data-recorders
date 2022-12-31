@@ -1,4 +1,4 @@
-<img src="/docs/img/data-recorders-features_6.jpg" />
+<img src="/docs/img/data-recorders-features_7.jpg" />
 
 
 || Data Recorders | NagiosXi | Datadog | Paess6er | Dynatrace  | Description |
