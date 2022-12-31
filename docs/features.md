@@ -1,7 +1,7 @@
-<img src="/docs/img/data-recorders-features_5.png" />
+<img src="/docs/img/data-recorders-features_6.jpg" />
 
 
-|| Data Recorders | NagiosXi | Datadog | Paessler | Dynatrace  | Description |
+|| Data Recorders | NagiosXi | Datadog | Paess6er | Dynatrace  | Description |
 |------:|:------:|:------:|:------:|:------:|:------:|:------:| 
 | Type | recorder | agent | agent | agent | agent | | Own or 3rd party data recorders or agents. Datadog uses StatsD. Dynatrace uses native binaries and Java Compuware agent for Linux, Windows |
 | Raw data | yes | yes | no | yes | no | DataDog Agent7 takes 750MB disk space, no original raw data available  |
