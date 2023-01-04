@@ -26,6 +26,9 @@ All recorded observations and metrics are stored as raw data. Raw data is a [sim
 
 To help you, we have [carefully selected and analyzed](https://github.com/sparvu/smart-objects), for each industry, the most needed metrics for different business cases, by grouping and classifying these metrics, to build a very efficient data analysis process. The recorder has built-in support for grouping and data classification.
 
+**Microservice architecture**
+Instead of using a single big monolithic agent based software, the recorders are light, independent software applications which can be deployed in any type of configuration and setup. 
+
 **Supports different industries**
 
 A data recorder supports one or many communication protocols to fetch data from different sources and technologies: industrial equipment, ICT enterprise, weather or environment sensors, being able to collect different parameters and metrics.
@@ -61,6 +64,7 @@ The interactive or automatic mode can be enabled via command line interface. The
 # Recorders vs Agent-based Software
 
 <div align="center">
+<img src="/docs/img/AgentsVsRecorders.jpg" height="80%" width="80%" />
 <img src="/docs/img/RecorderVsAgent.png" height="80%" width="80%" />
 </div> 
 
