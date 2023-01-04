@@ -27,7 +27,8 @@ All recorded observations and metrics are stored as raw data. Raw data is a [sim
 To help you, we have [carefully selected and analyzed](https://github.com/sparvu/smart-objects), for each industry, the most needed metrics for different business cases, by grouping and classifying these metrics, to build a very efficient data analysis process. The recorder has built-in support for grouping and data classification.
 
 **Microservice architecture**
-Instead of using a single big monolithic agent based software, the recorders are light, independent software applications which can be deployed in any type of configuration and setup. 
+
+Data recorders are light, independent software applications which can be deployed in any type of configuration and setup, close to the microservice architecture. Data recorders are not based on the monolithic agent based software architecture, to simplify the operation and maintenance and improve performance.
 
 **Supports different industries**
 
