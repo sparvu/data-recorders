@@ -1,80 +1,8 @@
 
-<img src="/docs/img/data-recorders-design4.png" />
-
-# Introduction
-
-To really understand how your world works, you need to have the **correct performance metrics** to analyze. But how could you know what metrics you really need from your systems or applications? Well, you could try to capture as much data as possible and later start mining whatever you really need. As this sounds promising you will soon find out that storage and data extraction will be expensive. So what choices do you have?
-
-You dont really need a lot of data. You will need the most important metrics, to be able to understand the behaviour and functionality of your systems:
+<img src="/docs/img/data-recorders-benefits.jpg" />
 
 * the overall system and individual component utilization
 * the throghput and saturation
 * and the errors
-
-You have already grouped somehow and clasified your data! Of course some other metrics might be needed in order to better describe and explain the functionality of your system(s). So on top of these you might need to have some aditional metrics which you can enable or disable if needed. So very clear some metrics will be very important and some not. Then you need to capture, in real-time, these performance metrics, and save them, using a simple output format, no matter of your operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics data should be done automatically, without human intervention - to help build large data sets for performance analysis and capacity planning or interactively for quick troubleshooting.
-
-To achieve all these gols, I have designed the _data recorders_ . These are light command line utilities, which can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a generic agent based software, or can be deployed and operated over the network, without any local presence. See later how a data recorder is different from a generic software agent software. 
-
-The first data recorders were published during 2009, to fetch and collect performance data from various Solaris and Linux computer systems. After that, more recorders were developed to capture HTTP data from various web applications, and TCP/UDP service performance data from various enterprise services, like databases or middleware software. Same time, new recorders were created to connect to various industrial sensors and devices and fetch different data, using for example the MODBUS protocol.
-
-There are two main milestones in the evolution of data recorders, described below:
-
-* [Version 1](design_ver1.md)
-* [Version 2](design_ver2.md)
-
-# What is a data recorder?
-
-A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a _software agent_. Please check the main features of a data recorder: 
-
-**Time series**
-
-All recorded observations and metrics are stored as raw data. Raw data is a [simple text file](docs/rawdata.md), produced by a recorder, which fetches data from a system, device or sensor, which has not been modified or changed in any way.
-
-**Data ontology**
-
-To help you, we have [carefully selected and analyzed](https://github.com/sparvu/smart-objects), for each industry, the most needed metrics for different business cases, by grouping and classifying these metrics, to build a very efficient data analysis process. The recorder has built-in support for grouping and data classification.
-
-**Microservice architecture**
-
-Data recorders are light, independent software applications which can be deployed on any type of configuration and setup. Built as self running entities they do not share data between each other, designed to fetch and capture only the right data from various sources of data.
-
-**Supports different industries**
-
-A data recorder supports one or many communication protocols to fetch data from different sources and technologies: industrial equipment, ICT enterprise, weather or environment sensors, being able to collect different parameters and metrics.
-
-**Raw data compatible**
-
-Each data recorder will save all collected metrics and parameters under one or many text files on disk. These files are simple, regular CSV text files, universal compatible with any software or system. If you want to know more about raw data, [please check this](docs/rawdata.md).
-
-**Based on a high-level programming language**
-
-Recorders are light software probes, which can extract data from different sources, able to run interactively or continuous using one or many data communication protocols with a direct system access to various metrics.
-
-**Small system footprint**
-
-Designed as [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system utilities, the data recorders are conservative in CPU and memory consumption across many system architectures, like X86 or ARM. 
-
-
-# How does it work?
-
-<img src="/docs/img/Arch.png" align="right" />
-
-A data recorder can run on different computer system architectures, like X64 or ARMv8. There can be more than one data recorder, for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. They do not interfere with other data recorders input and output execution. The data recorders work independently one of each other, having their own execution path and state.
-
-The recorder can operate in two modes: 
-
-  * interactively: you can manually run the recorder, using command line interface to start or stop the recorder 
-  
-  * automatic mode: you can continuously record data, without any manual interaction, for long periods of time 
-
-The interactive or automatic mode can be enabled via command line interface. The automatic mode (logging option) will allow the recorder to log continuously data without any human intervention.
-
-
-# Recorders vs Agent-based Software
-
-<div align="center">
-<img src="/docs/img/AgentsVsRecorders.jpg" height="80%" width="80%" />
-<img src="/docs/img/RecorderVsAgent.png" height="80%" width="80%" />
-</div> 
 
 Go back [main page](https://github.com/sparvu/data-recorders)
