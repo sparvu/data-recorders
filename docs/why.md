@@ -3,11 +3,13 @@
 
 ### Access to original raw data
 
-### Uniform, small size data output format 
+### Uniform data output format across many technologies  
 
-### Data metrics classification
+### Small size raw data output
 
-### Multi-industry support
+### Data metrics grouping and classification
+
+### Multi-industry support: ICT, Weather and Environment
 
 ### Low latency
 
