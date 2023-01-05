@@ -13,4 +13,4 @@
 
 ### Open-source software
 
-See [design](docs/features.md) for more information or go back to the [main page](https://github.com/sparvu/data-recorders)
+See [design](features.md) for more information or go back to the [main page](https://github.com/sparvu/data-recorders)
