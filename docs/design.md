@@ -7,9 +7,10 @@ To really understand how your world works, you need to have the **correct perfor
 
 You dont really need a lot of data. You will need the most important metrics, to be able to understand the behaviour and functionality of your systems:
 
-* the overall system and individual component utilization
-* the throghput and saturation
-* and the errors
+* overall system utilization and saturation
+* per device or sub component utilization and saturation
+* throughput
+* system or device errors
 
 You have already grouped somehow and clasified your data! Of course some other metrics might be needed in order to better describe and explain the functionality of your system(s). So on top of these you might need to have some aditional metrics which you can enable or disable if needed. So very clear some metrics will be very important and some not. Then you need to capture, in real-time, these performance metrics, and save them, using a simple output format, no matter of your operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics data should be done automatically, without human intervention - to help build large data sets for performance analysis and capacity planning or interactively for quick troubleshooting.
 
