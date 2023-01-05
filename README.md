@@ -14,7 +14,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 * [Design](docs/design.md)
 * [Features](docs/features.md)
-* [Values](docs/values.md)
+* [Why](docs/why.md)
 
 # Requirements
 
