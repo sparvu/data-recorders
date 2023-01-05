@@ -9,7 +9,7 @@
 
 ### Data metrics grouping and classification
 
-### Multi-industry support: ICT, Weather and Environment
+### Multi-industry support: ICT enterprise, Weather and Environment
 
 ### Low latency
 
