@@ -3,7 +3,15 @@
 
 # Introduction
 
-To really understand how your world works, you need to have the **correct performance metrics** from your systems and applications to analyze. The first thing to do is the capability to capture, in real-time, these performance metrics, and write them out, using the the same output format, no matter of your OS or your platform used. The out data, the original raw data collected, should be simple to access and share with anyone, if required. And last but not least, capturing this data should be done automatically, without human intervention - to help build large data sets for performance analysis and capacity planning or interactively for quick troubleshooting.
+To really understand how your world works, you need to have the **correct performance metrics** to analyze. But how could you know what metrics you really need from your systems or applications? Well, you could try to capture as much data as possible and later start mining whatever you really need. As this sounds promising you will soon find out that storage and data extraction will be expensive. So what choices do you have?
+
+You dont really need a lot of data. You will need the most important metrics, to be able to understand the behaviour and functionality of your systems:
+
+* the overall system and individual component utilization
+* the throghput and saturation
+* and the errors
+
+You have already grouped somehow and clasified your data! Of course some other metrics might be needed in order to better describe and explain the functionality of your system(s). So on top of these you might need to have some aditional metrics which you can enable or disable if needed. So very clear some metrics will be very important and some not. Then you need to capture, in real-time, these performance metrics, and save them, using a simple output format, no matter of your operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics data should be done automatically, without human intervention - to help build large data sets for performance analysis and capacity planning or interactively for quick troubleshooting.
 
 To achieve all these gols, I have designed the _data recorders_ . These are light command line utilities, which can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a generic agent based software, or can be deployed and operated over the network, without any local presence. See later how a data recorder is different from a generic software agent software. 
 
@@ -28,7 +36,7 @@ To help you, we have [carefully selected and analyzed](https://github.com/sparvu
 
 **Microservice architecture**
 
-Data recorders are light, independent software applications which can be deployed in any type of configuration and setup, close to the microservice architecture. Data recorders are not based on the monolithic agent based software architecture, to simplify the operation and maintenance and improve performance.
+Data recorders are light, independent software applications which can be deployed on any type of configuration and setup. Built as self running entities they do not share data between each other, designed to fetch and capture only the right data from various sources of data.
 
 **Supports different industries**
 
