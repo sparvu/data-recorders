@@ -37,11 +37,11 @@ To help you, we have [carefully selected and analyzed](https://github.com/sparvu
 
 **Microservice architecture**
 
-Data recorders are light, independent software applications which can be deployed on any type of configuration and setup. Built as self running entities they do not share data between each other, designed to fetch and capture only the right data from various sources of data.
+Data recorders are light, independent running software applications which can be deployed on several computer system configurations. Built as self running entities the data recorders do not share data between each other, and are designed to fetch and capture only the right data from various sources of data.
 
 **Supports different industries**
 
-A data recorder supports one or many communication protocols to fetch data from different sources and technologies: industrial equipment, ICT enterprise, weather or environment sensors, being able to collect different parameters and metrics.
+A data recorder supports one or many communication protocols to fetch data from different sources and technologies: industrial equipment, ICT enterprise, weather or environment sensors, being able to collect different metrics.
 
 **Raw data compatible**
 
