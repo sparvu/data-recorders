@@ -1,5 +1,5 @@
 
-<img src="/docs/img/data-recorders-benefits.jpg" />
+<img src="/docs/img/data-recorders-why.jpg" />
 
 * the overall system and individual component utilization
 * the throghput and saturation
