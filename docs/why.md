@@ -1,8 +1,16 @@
 
 <img src="/docs/img/data-recorders-why.jpg" />
 
-* the overall system and individual component utilization
-* the throghput and saturation
-* and the errors
+### Access to original raw data
 
-Go back [main page](https://github.com/sparvu/data-recorders)
+### Uniform, small size data output format 
+
+### Data metrics classification
+
+### Multi-industry support
+
+### Low latency
+
+### Open-source software
+
+See [design](design.md) for more information or go back to the [main page](https://github.com/sparvu/data-recorders)
