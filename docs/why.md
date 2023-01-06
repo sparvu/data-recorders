@@ -3,17 +3,21 @@
 
 ### Access to original raw data
 
-### Uniform data output format across many technologies  
+### Uniform data format across many technologies  
 
-### Small size raw data output
+### Small size raw data
 
-### Data metrics grouping and classification
+### Metrics grouping and classification
 
-### Multi-industry support: ICT enterprise, Weather and Environment
+### ICT enterprise, Weather and Environment
+
+## #Industrial IoT readiness
 
 ### Low latency
 
 ### Open-source software
+
+Below some ideas and use-cases how and when Data Recorders are useful.
 
 # Use Cases
 
