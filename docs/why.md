@@ -11,7 +11,7 @@
 
 ### ICT enterprise, Weather and Environment
 
-## #Industrial IoT readiness
+### Industrial IoT readiness
 
 ### Low latency
 
