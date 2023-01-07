@@ -1,10 +1,10 @@
 
 <img src="/docs/img/data-recorders-download.jpg" />
 
-Get started by cloning this repository and build the data recorders or download Kronometrix ready made packages. 
+Get started by cloning this repository and build the data recorders or download different ready made packages. 
 
 
-## Clone this repository
+## Clone
 
 Here how to clone and build the data recorders.
 
@@ -15,7 +15,5 @@ There are ready made packages used by Kronometrix Data Analytics Platform. [Kron
 <div align="center">
 <img src="/docs/img/KPackages.png" height="80%" width="80%" />
 </div> 
-
-Select your package and install Kronometrix data recording to measure different systems, applications or industrial installations.
 
 Go back [main page](https://github.com/sparvu/data-recorders)
