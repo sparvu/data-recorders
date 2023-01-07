@@ -20,7 +20,7 @@
 
 # Examples
 
-Check out several real use cases, how and when Data Recorders were used. These are simple examples how anyone can deploy the data recorders to capture the right data from your systems and applications or integrate them to your business.
+Check out several real use cases, how and when Data Recorders were used. These are simple examples how anyone can deploy the data recorders to capture the right data from different systems and applications or integrate them to their own business.
 
 ## ICT
 Simple to capture computer system, web and enteprise performance and inventory data. Centralize different data from various systems and applications. Learn how can you build your defense strategy using all this data.
