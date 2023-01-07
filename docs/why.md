@@ -17,7 +17,7 @@
 
 ### Open-source software
 
-Below some ideas and use-cases how and when Data Recorders are useful.
+How useful are Data Recorders for different companies and businesses? Check out some real use cases, about how and when Data Recorders were used.
 
 # Use Cases
 
