@@ -16,6 +16,6 @@ Here how to clone and build the data recorders.
 
 See our ready [made packages](https://kronometrix.gitlab.io/packages/) 
 
-Select your package and install Kronometrix data recording to measure different systems, applications or industrial installations. Open your free 30 days trial account, to Kronometrix SaaS to automatically provision and visualize your data or fetch manually the raw data and send it to any type of system for analysis.
+Select your package and install Kronometrix data recording to measure different systems, applications or industrial installations. If you want to analyze and visualize your data you can open your free [Kronometrix SaaS](https://support.kronometrix.com/knowledge-base/get-started-with-kronometrix/) account. 
 
 Go back [main page](https://github.com/sparvu/data-recorders)
