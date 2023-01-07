@@ -15,6 +15,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * [Design](docs/design.md)
 * [Features](docs/features.md)
 * [Why use data recorders?](docs/why.md)
+* [Download](docs/download.md)
 
 # Requirements
 
