@@ -1,5 +1,5 @@
 
-<img src="/docs/img/data-recorders-why1.jpg" />
+<img src="/docs/img/data-recorders-why3.jpg" />
 
 ### Access to original raw data
 
