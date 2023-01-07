@@ -10,7 +10,7 @@ Here how to clone and build the data recorders.
 
 ## Ready Packages 
 
-There are ready made packages used by Kronometrix Data Analytics Platform. [Kronometrix Data Recording](https://gitlab.com/kronometrix/recording) is a free open-source project, part of the Kronometrix Data Analytics Platform, using the data recorders, which can be used to capture and transport data for visualization to Kronometrix platform. You can subscribe to [Kronometrix SaaS](www.kronometrix.com/get-started) for your own free account. See our ready [made packages](https://kronometrix.gitlab.io/packages/) 
+There are ready made packages used by Kronometrix. [Kronometrix Data Recording](https://gitlab.com/kronometrix/recording) is a free open-source project, part of the Kronometrix Data Analytics Platform, which is using the data recorders, to capture and transport data for visualization to Kronometrix platform. See our ready [made packages](https://kronometrix.gitlab.io/packages/) and subscribe to [Kronometrix SaaS](www.kronometrix.com/get-started) for your own free account.
 
 <div align="center">
 <img src="/docs/img/KPackages.png" height="80%" width="80%" />
