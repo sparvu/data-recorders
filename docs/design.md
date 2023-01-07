@@ -3,27 +3,32 @@
 
 # Introduction
 
-To really understand how your world works, you need to have the **correct performance metrics** to analyze. But how could you know what metrics you really need from your systems or applications? Well, you could try to capture as much data as possible and later start mining whatever you really need. As this sounds promising you will soon find out that storage and data extraction will be expensive. So what choices do you have?
+To really understand how our world works, we need to have the **correct performance metrics** to analyze. But how could we know what metrics we really need from our systems or applications? Well, we could try to capture as much data as possible and later start mining whatever we need. As this sounds promising we will soon find out that storage and data extraction will be expensive. So what choices do we have?
 
-You dont really need a lot of data. You will need the most important metrics, to be able to understand the behaviour and functionality of your systems:
+In reality we dont really need a lot of data. We will need the metrics which can help us to understand the behaviour and functionality of our systems or applications, related to:
 
-* overall system utilization and saturation
-* per device or sub component utilization and saturation
-* throughput
+* the overall system utilization and saturation
+* device or sub component utilization and saturation
+* the throughput
 * system or device errors
 
-You have already grouped somehow and clasified your data! Of course some other metrics might be needed in order to better describe and explain the functionality of your system(s). So on top of these you might need to have some aditional metrics which you can enable or disable if needed. So very clear some metrics will be very important and some not. Then you need to capture, in real-time, these performance metrics, and save them, using a simple output format, no matter of your operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics data should be done automatically, without human intervention - to help build large data sets for performance analysis and capacity planning or interactively for quick troubleshooting.
+We have already grouped and clasified the most important metrics we need. Of course we might need some other additional parameters in order to better describe and explain the functionality of our system(s). So on top of these primary categories we might need to have some aditional parameters which we can can enable or disable, if required. 
 
-To achieve all these gols, I have designed the _data recorders_ . These are light command line utilities, which can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a generic agent based software, or can be deployed and operated over the network, without any local presence. See later how a data recorder is different from a generic software agent software. 
+Then we will need to capture, in real-time, these performance metrics, and save them, using a simple output format, no matter of the operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics should be done automatically, without human intervention, to help build large data sets for performance analysis and capacity planning or interactively, for something like quick troubleshooting.
 
-The first data recorders were published during 2009, to fetch and collect performance data from various Solaris and Linux computer systems. After that, more recorders were developed to capture HTTP data from various web applications, and TCP/UDP service performance data from various enterprise services, like databases or middleware software. Same time, new recorders were created to connect to various industrial sensors and devices and fetch different data, using for example the MODBUS protocol.
+To achieve all these goals, we are introducing the _data recorders_ . Designed as light command line utilities, these recorders can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use one or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a traditional agent based software, or can be deployed and operated over the network, without any local presence. There are fundamental differences between a data recorder and software agent, see later about these differences.
 
-There are two main milestones in the evolution of data recorders, described below:
+The very first data recorders were published during 2009, mainly to fetch and collect performance data from various computer systems running Solaris and Linux operating systems. After that, more recorders were developed to capture HTTP data from various web applications, and TCP/UDP service performance data from various enterprise services, like databases or middleware software. Same time, new recorders were created to connect to various industrial sensors and devices and fetch different data, using for example the MODBUS protocol.
+
+There are two main versions describing the evolution and development of the data recorders:
 
 * [Version 1](design_ver1.md)
 * [Version 2](design_ver2.md)
 
-# What is a data recorder?
+
+# Description
+
+### What is a data recorder?
 
 A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a _software agent_. Please check the main features of a data recorder: 
 
@@ -54,6 +59,10 @@ Recorders are light software probes, which can extract data from different sourc
 **Small system footprint**
 
 Designed as [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system utilities, the data recorders are conservative in CPU and memory consumption across many system architectures, like X86 or ARM. 
+
+# Configuration
+
+# Output data
 
 
 # How does it work?
