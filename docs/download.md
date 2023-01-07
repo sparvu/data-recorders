@@ -1,5 +1,5 @@
 
-<img src="/docs/img/data-recorders-design5.jpg" />
+<img src="/docs/img/data-recorders-download.jpg" />
 
 # Installation
 
