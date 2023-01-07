@@ -17,11 +17,13 @@
 
 ### Open-source software
 
-How useful are Data Recorders for different companies and businesses? Check out some real use cases, about how and when Data Recorders were used.
 
-# Use Cases
+# Examples
+
+Check out several real use cases, how and when Data Recorders were used. These are simple examples how anyone can deploy the data recorders to capture the right data from your systems and applications or integrate them to your business.
 
 ## ICT
+Simple to capture computer system, web and enteprise performance and inventory data. Centralize different data from various systems and applications. Learn how can you build your defense strategy using all this data.
 
 ### Capture computer, web and ICT enterprise service performance data 
 ### Top 10 fast web services
@@ -30,6 +32,8 @@ How useful are Data Recorders for different companies and businesses? Check out 
 ### IT department inventory data 
 
 ## Weather & Environment
+
+Capture and consolidate meteorological data from various sensors and devices. Get the indoor air quality from several wired IAQ sensors. Keep track of the city air pollutants and weather condition from professional sensors, devices and equipment. 
 
 ### Personal home weather stations using USB WH1800
 ### Vaisala WXT Data data consolidation
