@@ -25,11 +25,12 @@ How and when to use Data Recorders. These are real use-cases how data recorders 
 ## ICT
 Simple to capture computer system, web and enteprise performance and inventory data. Centralize different data from various systems and applications. Learn how can you build your defense strategy using all this data.
 
-### Capture computer, web and ICT enterprise service performance data 
+### Get computer, web and enterprise service performance data 
+### Centralize SYSLOG data
 ### Top 10 fast web services
-### Centralize UNIX/Linux syslog data
-### Build your organisational data strategy
-### IT department inventory data 
+### Build your data strategy
+### Keep track of the inventory data
+### Operation Center Dashboards
 
 ## Weather & Environment
 
