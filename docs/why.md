@@ -42,4 +42,4 @@ Capture and consolidate meteorological data from various sensors and devices. Ge
 ### City pollution using Vaisala air quality and weather data (AQT, WXT sensors)
 ### Automatic weather stations support for Vaisala QML data loggers
 
-See [design](design.md) for more information or go back to the [main page](https://github.com/sparvu/data-recorders)
+If you want to learn more about data recorders see [design](design.md) or go back to the [main page](https://github.com/sparvu/data-recorders)
