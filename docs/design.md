@@ -5,11 +5,11 @@
 
 To really understand how our world works, we need to have the **correct performance metrics** to analyze. But how could we know what metrics we really need from our systems or applications? Well, we could try to capture as much data as possible and later start mining whatever we need. As this sounds promising we will soon find out that storage and data extraction will be expensive. So what choices do we have?
 
-In reality we dont really need a lot of data. We will need the metrics which can help us to understand the behaviour and functionality of our systems or applications, related to:
+In reality, we dont really need a lot of data. We will need the metrics which can help us to understand the behaviour and functionality of our systems or applications, related to:
 
 * overall system or device utilization and saturation
 * workload or system's throughput
-* the errors
+* and the errors
 
 This basic grouping can help us to get started and organize our metrics as Utilization, Saturation, Errors and Throughput. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
