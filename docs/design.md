@@ -7,14 +7,13 @@ To really understand how our world works, we need to have the **correct performa
 
 In reality we dont really need a lot of data. We will need the metrics which can help us to understand the behaviour and functionality of our systems or applications, related to:
 
-* the overall system utilization and saturation
-* device or sub component utilization and saturation
-* the throughput
-* system or device errors
+* overall system or device utilization and saturation
+* workload or system's throughput
+* the errors
 
-We have already grouped and clasified the most important metrics we need. Of course we might need some other additional parameters in order to better describe and explain the functionality of our system(s). So on top of these primary categories we might need to have some aditional parameters which we can can enable or disable, if required. 
+This basic grouping can help us to get started and organize our metrics as Utilization, Saturation, Errors and Throughput. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
-Then we will need to capture, in real-time, these performance metrics, and save them, using a simple output format, no matter of the operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics should be done automatically, without human intervention, to help build large data sets for performance analysis and capacity planning or interactively, for something like quick troubleshooting.
+Then we will need to capture, in real-time, these metrics, and save them, using a simple, uniform output format, no matter of the operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics should be done automatically, without human intervention, to help build large data sets for performance analysis and capacity planning or interactively, for quick troubleshooting.
 
 To achieve all these goals, we are introducing the _data recorders_ . Designed as light command line utilities, these recorders can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use one or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a traditional agent based software, or can be deployed and operated over the network, without any local presence. There are fundamental differences between a data recorder and software agent, see later about these differences.
 
