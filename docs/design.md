@@ -43,7 +43,7 @@ To help you, we have [carefully selected and analyzed](https://github.com/sparvu
 
 Data recorders are light, independent running software applications which can be deployed on several computer system configurations. Built as self running entities the data recorders do not share data between each other, and are designed to fetch and capture only the right data from various sources of data.
 
-**Supports different industries**
+**Support for different industries**
 
 A data recorder supports one or many communication protocols to fetch data from different sources and technologies: industrial equipment, ICT enterprise, weather or environment sensors, being able to collect different metrics.
 
@@ -53,7 +53,7 @@ Each data recorder will save all collected metrics and parameters under one or m
 
 **Based on a high-level programming language**
 
-Recorders are light software probes, which can extract data from different sources, able to run interactively or continuous using one or many data communication protocols with a direct system access to various metrics.
+Based on Perl/C or Rust the data recorders are developed as light software probes, which can extract data from different sources, able to run interactively or continuous using one or many data communication protocols with a direct system access to various metrics.
 
 **Small system footprint**
 
@@ -61,7 +61,11 @@ Designed as [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system u
 
 # Configuration
 
+The data recorders, keep all their settings and defintion under a simple configuration file, based on the JSON format. For version 1 not all data recorders use a configuration file. In version 2, all data reocrders will use a JSON configuration for their metrics definition. See here for more details about data recorders confguration (Coming soon)
+
 # Output data
+
+Coming soon
 
 
 # How does it work?
