@@ -20,16 +20,17 @@
 
 # Examples
 
-Check out several real use cases, how and when Data Recorders were used. These are simple examples how anyone can deploy the data recorders to capture the right data from different systems and applications or integrate them to their own business.
+How and when to use Data Recorders. These are real use-cases how data recorders were used to capture the right data from different systems and applications or integrate them to different 3rd parties solutions.
 
 ## ICT
 Simple to capture computer system, web and enteprise performance and inventory data. Centralize different data from various systems and applications. Learn how can you build your defense strategy using all this data.
 
-### Capture computer, web and ICT enterprise service performance data 
-### Top 10 fast web services
-### Centralize UNIX/Linux syslog data
-### Build your organisational data strategy
-### IT department inventory data 
+### Get computer, web and enterprise service performance data 
+### Centralize UNIX and Linux SYSLOG data
+### Top 10 fastest web services
+### Build your data strategy
+### Keep track of the inventory data
+### Operation Center Dashboards
 
 ## Weather & Environment
 
@@ -41,4 +42,4 @@ Capture and consolidate meteorological data from various sensors and devices. Ge
 ### City pollution using Vaisala air quality and weather data (AQT, WXT sensors)
 ### Automatic weather stations support for Vaisala QML data loggers
 
-See [design](design.md) for more information or go back to the [main page](https://github.com/sparvu/data-recorders)
+If you want to learn more about data recorders see [design](design.md) or go back to the [main page](https://github.com/sparvu/data-recorders)
