@@ -4,4 +4,4 @@ sub fib {
   return fib($n - 1) + fib($n - 2);
 }
 
-print fib(46)
+print fib(47)
