@@ -2,18 +2,23 @@
 
 This is benchmark suite inlcuding the test results for Apple M1 architecture. 
 
-|  | fib-rec | fib-int | matrix |  |  |
-|------:|:------:|:------:|:------:|:------:|:------:| 
-| NodeJS 19.4.0 | yes |  |  | |
-| Lua | yes |  |  | |
-| LuaJIT | yes |  | | |
-| Perl 5.36.0 | 10.50s |  |  |  |  |
-| Python 3.11.1 | 5.33s |  |  |  |  |
-| Rust 1.61.1 |  |  |  |  |  |
+|  | fib-rec | fib-int | matrix |
+|------:|:------:|:------:|:------:| 
+| NodeJS 19.4.0 |  00:27s  | 00:00.11s |  |
+|  | 37MB | 37MB | |
+| Lua | yes | | |
+|  | 37MB | 37MB |  |
+| LuaJIT | yes |  | |
+|  | 37MB | 37MB |  |
+| Perl 5.36.0 | 10:50s |  |  |
+|  | 2MB | |  |
+| Python 3.11.1 | 05:33s | 0:00.03s |  |
+|  | 9MB | 9MB |  |
+| Rust 1.61.1 |  |  |  |
 
 ### Benchmark suite
-#### fib-rec: Fibonacci Recursive
-#### fib-ite: Fibonacci Iterative
+#### fib-rec: Fibonacci Recursive method
+#### fib-ite: Fibonacci Iterative method
 #### matrix: Matrix multiplication
 
 ### Software
