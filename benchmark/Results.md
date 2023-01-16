@@ -1,9 +1,13 @@
+## Apple M1
+
+This is benchmark suite inlcuding the test results for Apple M1 architecture. 
+
 |  | fib-rec | fib-int | matrix |  |  |
 |------:|:------:|:------:|:------:|:------:|:------:| 
 | JS | yes |  |  | |
 | Lua | yes |  |  | |
 | LuaJIT | yes |  | | |
-| Perl |  |  |  |  |  |
+| Perl | 10.50s |  |  |  |  |
 | Python | 5.33s |  |  |  |  |
 | Rust |  |  |  |  |  |
 
