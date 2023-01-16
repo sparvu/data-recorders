@@ -13,10 +13,10 @@
 #### matrix: Matrix multiplication
 
 ### Software
-#### NodeJS: 19.4.0
-#### Lua:
-#### LuaJIT:
-#### Perl: 5.36.0
-#### Python: 3
-#### Rust: 1.61.1
+- NodeJS: 19.4.0
+- Lua:
+- LuaJIT:
+- Perl: 5.36.0
+- Python: 3
+- Rust: 1.61.1
 
