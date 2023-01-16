@@ -1,7 +1,14 @@
-|| JS | Lua | LuaJIT | Perl | Python | Rust |
+|  | fib-rec | fib-int | matrix |  |  |
 |------:|:------:|:------:|:------:|:------:|:------:| 
-| Operating System | yes | yes | yes | |
-| Platform Virtualization | yes | yes | yes | |
-| OS Virtualization | yes | yes | | |
-| Docker | no | yes | no |  | 2023 |
-| Kubernets | no | yes | no |  | 2023 | |
+| JS | yes |  |  | |
+| Lua | yes |  |  | |
+| LuaJIT | yes |  | | |
+| Perl |  |  |  |  |  |
+| Python |  |  |  |  |  |
+| Rust |  |  |  |  |  |
+
+
+### Benchmark suite
+#### fib-rec: Fibonacci Recursive
+#### fib-ite: Fibonacci Iterative
+#### matrix: Matrix multiplication
