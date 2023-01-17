@@ -6,9 +6,9 @@ This is benchmark suite inlcuding the test results for Apple M1 architecture.
 |------:|:------:|:------:|:------:|
 | NodeJS 19.4.0 |  0m17.014s | 0m0.045s |  |
 | | 37MB | 37MB |  |
-| Lua | 0m10.888s |  |  |
+| Lua | 0m8.707s |  |  |
 | | 1.6MB | 1.6MB |  |
-| LuaJIT | 0m8.189s |  |  |
+| LuaJIT | 0m7.908s |  |  |
 | | 37MB | | |
 | Perl 5.36.0 | 10m52.958s | 0m0.021s |  |
 | | 3MB | 3MB |  |
