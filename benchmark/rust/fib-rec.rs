@@ -6,5 +6,5 @@ fn fib(n: u64) -> u64 {
 }
 
 fn main() {
-    println!("{}", fib(7));
+    println!("{}", fib(47));
 }
