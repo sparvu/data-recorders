@@ -10,7 +10,7 @@ This is the top results for entire benchmark suite, on different computer system
   <tr>
     <th></td>
     <th>FibRec(47)</th>
-    <th>FibRat(47)</th>
+    <th>FibIter(47)</th>
     <th>Matrix</th>
     <th>Description</th>
   </tr>
@@ -71,7 +71,7 @@ This is the top results for entire benchmark suite, on different computer system
 
 ### Benchmark suite
 #### FibRec(47): calculate fibonacci(47) recursive way
-#### FibRat(47): calculate fibonacci(47) iterative way
+#### FibIter(47): calculate fibonacci(47) iterative way
 #### Matrix: perform matrix multiplication
 
 ### Software
