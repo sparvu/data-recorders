@@ -9,9 +9,9 @@ This is the top results for entire benchmark suite, on different computer system
   </tr> 
   <tr>
     <th></td>
-    <th>FibRec(47)</th>
-    <th>FibIter(47)</th>
-    <th>Matrix</th>
+    <th>fibrec(50)</th>
+    <th>fibiterative(50)</th>
+    <th>matrix</th>
     <th>Description</th>
   </tr>
   <tr>
@@ -70,8 +70,8 @@ This is the top results for entire benchmark suite, on different computer system
 
 
 ### Benchmark suite
-#### FibRec(47): calculate fibonacci(47) recursive way
-#### FibIter(47): calculate fibonacci(47) iterative way
+#### FibRec(47): calculate fibonacci(50) recursive way
+#### FibIterative(47): calculate fibonacci(50) iterative way
 #### Matrix: perform matrix multiplication
 
 ### Software
