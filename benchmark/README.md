@@ -101,9 +101,9 @@ This is the top results for entire benchmark suite, on different computer system
 
 
 ### Benchmark suite
-#### Fibonacci Recursive: Calculate Fib(47) recursive way
-#### Fibonacci Iterative: Calculte Fib(47)iterative way
-#### Matrix: Matrix multiplication
+#### Fibonacci Recursive: calculate Fib(47) recursive way
+#### Fibonacci Iterative: calculte Fib(47)iterative way
+#### Matrix: perform matrix multiplication
 
 ### Software
 - NodeJS: 19.4.0 https://nodejs.org/en/
