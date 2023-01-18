@@ -2,14 +2,15 @@
 
 This is the top results for entire benchmark suite, on different computer systems. 
 
+
 <table>
   <tr> 
     <th colspan="5">Test Results</th> 
   </tr> 
   <tr>
     <th></td>
-    <th>Fibonacci Recursive</th>
-    <th>Fibonacci Iterative</th>
+    <th>FibRec(47)</th>
+    <th>FibRat(47)</th>
     <th>Matrix</th>
     <th>Description</th>
   </tr>
@@ -18,91 +19,59 @@ This is the top results for entire benchmark suite, on different computer system
   </tr>
   
   <tr> 
-    <th rowspan="2">NodeJS</th> 
-    <td>0m17.014s</td> 
-    <td>0m0.045s</td> 
+    <th>NodeJS</th> 
+    <td>0m17.014s, 37MB</td> 
+    <td>0m0.045s, 37MB</td> 
     <td></td>
-    <td rowspan="2">19.4.0 Release</td>
-  </tr> 
-  <tr> 
-    <td>37MB</td>
-    <td>37MB</td>
-    <td></td>
+    <td>19.4.0 Release</td>
   </tr> 
   
   <tr> 
-    <th rowspan="2">Lua</th> 
-    <td>0m8.707s</td> 
+    <th>Lua</th> 
+    <td>0m8.707s, 1.6MB</td> 
     <td></td> 
     <td></td>
-    <td rowspan="2"></td>
-  </tr> 
-  <tr> 
-    <td>1.6MB</td>
-    <td>1.6MB</td>
     <td></td>
   </tr>
 
   <tr> 
-    <th rowspan="2">LuaJIT</th> 
-    <td>0m7.908s</td> 
+    <th>LuaJIT</th> 
+    <td>0m7.908s, 1.3MB</td> 
     <td></td> 
     <td></td>
-    <td rowspan="2"></td>
-  </tr> 
-  <tr> 
-    <td>1.3MB</td>
-    <td>1.3MB</td>
     <td></td>
   </tr>
 
   <tr> 
-    <th rowspan="2">Perl</th> 
-    <td>10m52.958s</td> 
-    <td>0m0.021s</td> 
+    <th>Perl</th> 
+    <td>10m52.958s, 3MB</td> 
+    <td>0m0.021s, 3MB</td> 
     <td></td>
-    <td rowspan="2"></td>
-  </tr> 
-  <tr> 
-    <td>3MB</td>
-    <td>3MB</td>
     <td></td>
   </tr>
 
-
   <tr> 
-    <th rowspan="2">Python</th> 
-    <td>5m26.112s</td> 
-    <td>0m0.055s</td> 
+    <th>Python</th> 
+    <td>5m26.112s, 9MB</td> 
+    <td>0m0.055s, 9MB</td> 
     <td></td>
-    <td rowspan="2"></td>
+    <td></td>
   </tr> 
-  <tr> 
-    <td>9MB</td>
-    <td>9MB</td>
-    <td></td>
-  </tr>
-
 
   <tr> 
     <th rowspan="2">Rust</th> 
-    <td>0m23.777s</td> 
+    <td>0m23.777s, 1MB</td> 
     <td></td> 
     <td></td>
     <td rowspan="2"></td>
   </tr> 
-  <tr> 
-    <td>1.3MB</td>
-    <td>1.3MB</td>
-    <td></td>
-  </tr>
-  
+
 </table>
 
 
 ### Benchmark suite
-#### Fibonacci Recursive: calculate Fib(47) recursive way
-#### Fibonacci Iterative: calculte Fib(47)iterative way
+#### FibRec(47): calculate fibonacci(47) recursive way
+#### FibRat(47): calculate fibonacci(47) iterative way
 #### Matrix: perform matrix multiplication
 
 ### Software
