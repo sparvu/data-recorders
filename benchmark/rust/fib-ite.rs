@@ -20,6 +20,6 @@ fn fibonacci_iterative(n: i64) -> i64 {
 }
 
 fn main() {
-    println!("{}", fibonacci_iterative(45));
+    println!("{}", fibonacci_iterative(47));
 }
 
