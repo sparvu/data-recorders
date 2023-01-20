@@ -1,6 +1,6 @@
 ## Results
 
-Check the results of the benchmark test suite on different computer systems. Includes Apple M1, M2 chips, X64 and Raspberry PI computers. 
+Check the results of the benchmark test suite on different computer systems. Includes Apple M1/M2, X64 FreeBSD and Raspberry PI computers. 
 
 <table>
   <tr> 
@@ -66,7 +66,7 @@ Check the results of the benchmark test suite on different computer systems. Inc
   </tr> 
 
   <tr>
-    <td align="left"; colspan="5">Comments: the system was connected to mains power during benchmark.</td>
+    <td align="left"; colspan="5">The system was connected to mains power during benchmark. Running MacOS 13.1</td>
   </tr>
 
 
