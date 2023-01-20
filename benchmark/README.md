@@ -1,21 +1,20 @@
 ## Results
 
-This is the top results for entire benchmark suite, on different computer systems. 
-
+Check the results of the benchmark test suite on different computer systems. Includes Apple M1, M2 chips, X64 and Raspberry PI computers. 
 
 <table>
   <tr> 
-    <th colspan="5">Test Results</th> 
+    <th colspan="5">Apple M1</th> 
   </tr> 
   <tr>
     <th></td>
-    <th>fibrec(50)</th>
-    <th>fibiterative(50)</th>
-    <th>matrix</th>
+    <th>Fibonacci-Rec</th>
+    <th>Fibonacci-Iterative</th>
+    <th>Matrix</th>
     <th>Description</th>
   </tr>
   <tr>
-    <td align="center"; colspan="5">Apple M1</td>
+    <td align="center"; colspan="5">Total elapsed time, Memory usage</td>
   </tr>
   
   <tr> 
@@ -29,7 +28,7 @@ This is the top results for entire benchmark suite, on different computer system
   <tr> 
     <th>Lua</th> 
     <td>0m8.707s, 1.6MB</td> 
-    <td></td> 
+    <td>0m0.007s, 1.6MB</td> 
     <td></td>
     <td></td>
   </tr>
@@ -37,7 +36,7 @@ This is the top results for entire benchmark suite, on different computer system
   <tr> 
     <th>LuaJIT</th> 
     <td>0m7.908s, 1.3MB</td> 
-    <td></td> 
+    <td>0m0.005s, 1.3MB</td> 
     <td></td>
     <td></td>
   </tr>
@@ -59,12 +58,17 @@ This is the top results for entire benchmark suite, on different computer system
   </tr> 
 
   <tr> 
-    <th rowspan="2">Rust</th> 
-    <td>0m23.777s, 1MB</td> 
-    <td></td> 
+    <th>Rust</th> 
+    <td>0m23.414s, 1MB</td> 
+    <td>0m0.006s, 1MB</td> 
     <td></td>
-    <td rowspan="2"></td>
+    <td></td>
   </tr> 
+
+  <tr>
+    <td align="left"; colspan="5">Comments: the system was connected to mains power during benchmark.</td>
+  </tr>
+
 
 </table>
 
