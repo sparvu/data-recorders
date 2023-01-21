@@ -8,13 +8,13 @@ Check the results of the benchmark test suite on different computer systems. Inc
   </tr> 
   <tr>
     <th></td>
-    <th>Fibonacci-Rec</th>
-    <th>Fibonacci-Iterative</th>
+    <th>Fibonacci Recursive</th>
+    <th>Fibonacci Iterative</th>
     <th>Matrix</th>
     <th>Description</th>
   </tr>
   <tr>
-    <td align="center"; colspan="5">Total elapsed time, Memory usage</td>
+    <td align="center"; colspan="5">Elapsed time, Memory usage</td>
   </tr>
   
   <tr> 
@@ -26,11 +26,11 @@ Check the results of the benchmark test suite on different computer systems. Inc
   </tr> 
   
   <tr> 
-    <th>Lua</th> 
-    <td>0m8.707s, 1.6MB</td> 
-    <td>0m0.007s, 1.6MB</td> 
+    <th>Lua</th2.1.0-beta3> 
+    <td>0m0.009s, 1.6MB</td> 
+    <td>0m0.009s, 1.6MB</td> 
     <td></td>
-    <td></td>
+    <td>5.4.4 version</td>
   </tr>
 
   <tr> 
@@ -38,7 +38,7 @@ Check the results of the benchmark test suite on different computer systems. Inc
     <td>0m7.908s, 1.3MB</td> 
     <td>0m0.005s, 1.3MB</td> 
     <td></td>
-    <td></td>
+    <td>2.1.0-beta3 version</td>
   </tr>
 
   <tr> 
@@ -46,7 +46,7 @@ Check the results of the benchmark test suite on different computer systems. Inc
     <td>10m52.958s, 3MB</td> 
     <td>0m0.021s, 3MB</td> 
     <td></td>
-    <td></td>
+    <td>5.36.0</td>
   </tr>
 
   <tr> 
@@ -54,7 +54,7 @@ Check the results of the benchmark test suite on different computer systems. Inc
     <td>5m26.112s, 9MB</td> 
     <td>0m0.055s, 9MB</td> 
     <td></td>
-    <td></td>
+    <td>3.11.1</td>
   </tr> 
 
   <tr> 
@@ -62,7 +62,7 @@ Check the results of the benchmark test suite on different computer systems. Inc
     <td>0m23.414s, 1MB</td> 
     <td>0m0.006s, 1MB</td> 
     <td></td>
-    <td></td>
+    <td>1.66.1</td>
   </tr> 
 
   <tr>
@@ -74,8 +74,8 @@ Check the results of the benchmark test suite on different computer systems. Inc
 
 
 ### Benchmark suite
-#### FibRec(47): calculate fibonacci(50) recursive way
-#### FibIterative(47): calculate fibonacci(50) iterative way
+#### Fibonacci Recursive: calculate fibonacci recursive way for 47th number
+#### Fibonacci Iterative: calculate fibonacci iterative way for 47th number
 #### Matrix: perform matrix multiplication
 
 ### Software
