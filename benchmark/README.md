@@ -84,5 +84,5 @@ Check the results of the benchmark test suite on different computer systems. Inc
 - LuaJIT: Kronometrix Data Recording https://gitlab.com/kronometrix/recording
 - Perl: 5.36.0 Kronometrix Data Recording https://gitlab.com/kronometrix/recording
 - Python: 3.11.1 Official distribution https://www.python.org/downloads/
-- Rust: 1.61.1 https://www.rust-lang.org
+- Rust: 1.66.1 https://www.rust-lang.org
 
