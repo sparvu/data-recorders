@@ -26,8 +26,8 @@ Check the results of the benchmark test suite on different computer systems. Inc
   </tr> 
   
   <tr> 
-    <th>Lua</th2.1.0-beta3> 
-    <td>0m0.009s, 1.6MB</td> 
+    <th>Lua</th> 
+    <td>3m17.771s, 1.6MB</td> 
     <td>0m0.009s, 1.6MB</td> 
     <td></td>
     <td>5.4.4 version</td>
