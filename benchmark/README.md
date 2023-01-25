@@ -43,7 +43,7 @@ Check the results of the benchmark test suite on different computer systems. Inc
 
   <tr> 
     <th>Java</th> 
-    <td>0m12.268s, 30MB</td> 
+    <td>0m7.541s, 30MB</td> 
     <td></td> 
     <td></td>
     <td>19.0.2 version</td>
