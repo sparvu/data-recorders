@@ -42,6 +42,14 @@ Check the results of the benchmark test suite on different computer systems. Inc
   </tr>
 
   <tr> 
+    <th>Java</th> 
+    <td>0m12.268s, 30MB</td> 
+    <td></td> 
+    <td></td>
+    <td>19.0.2 version</td>
+  </tr>
+
+  <tr> 
     <th>Perl</th> 
     <td>10m52.958s, 3MB</td> 
     <td>0m0.021s, 3MB</td> 
@@ -82,6 +90,7 @@ Check the results of the benchmark test suite on different computer systems. Inc
 - NodeJS: 19.4.0 https://nodejs.org/en/
 - Lua: Kronometrix Data Recording https://gitlab.com/kronometrix/recording
 - LuaJIT: Kronometrix Data Recording https://gitlab.com/kronometrix/recording
+- Java: JDK 19.0.2 Oracle JVM
 - Perl: 5.36.0 Kronometrix Data Recording https://gitlab.com/kronometrix/recording
 - Python: 3.11.1 Official distribution https://www.python.org/downloads/
 - Rust: 1.66.1 https://www.rust-lang.org
