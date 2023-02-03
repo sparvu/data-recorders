@@ -43,6 +43,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 # Supported Systems
 
+* FreeBSD 12,13
 * CentOS 7.9 x86_64
 * RHEL 8 x86_64
 * Debian 9,10,11 amd64
@@ -51,7 +52,6 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * SLES 15 x86_64
 * OpenSuse Leap 15 x86_64
 * Raspbian GNU/Linux 8+ armv8
-* FreeBSD
 * MacOS (2023)
 * Windows 7
 * Windows 8
