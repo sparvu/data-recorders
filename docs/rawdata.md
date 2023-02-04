@@ -1,34 +1,93 @@
-<img src="/docs/img/KDR-Text.png" align="left" height="74" width="325" />
-<img src="/docs/img/KDR.png" align="right" height="100" width="100" />
-<br/><br/>
-<br/><br/>
 
-[![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=1.8.3&color=success)](docs/start.md)
-[![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
+<img src="/docs/img/datarecorders-rawdata.jpg" />
 
-# Raw Data
+# Introduction
 
-All recorded observations are stored as raw data. Raw data is produced by a recorder, which fetches data from a system, device or sensor, data which has not been modified, altered or changed in any way. All collected metrics are variable measured sequentially in time, called time series. All these observations collected over fixed sampling intervals create a historical time series. To easy the access to all this set of data we store the observations
-on commodity disk drives, compressed, in text format, like CSV format. 
+To really understand how our world works, we need to have the **correct performance metrics** to analyze. But how could we know what metrics we really need from our systems or applications? Well, we could try to capture as much data as possible and later start mining whatever we need. As this sounds promising we will soon find out that storage and data extraction will be expensive. So what choices do we have?
 
-_Time series let us understand what has happened in past and look in the future, using various statistical models_
+In reality, we dont really need a lot of data. We will need the metrics which can help us to understand the behaviour and functionality of our systems or applications, related to:
 
-# Data Message
+* overall system or device utilization and saturation
+* workload or system's throughput
+* and the errors
 
-All collected metrics over time are combined as a data message. There can be many types of data messages: metrics regarding computer system utilization cpu or memory utilization, or weather data from a meteorological station, or water cubic meters per hour from an water pump. A data message is in direct relation to a data source. All these data messages are part of, the data neurons repository.
+This basic grouping can help us to get started and organize our metrics as Utilization, Saturation, Errors and Throughput. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
-# Data Source
+Then we will need to capture, in real-time, these metrics, and save them, using a simple, uniform output format, no matter of the operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics should be done automatically, without human intervention, to help build large data sets for performance analysis and capacity planning or interactively, for quick troubleshooting.
 
-A data source, is described as any system connected to a public or private network with a valid IPv4 or IPv6 address. Example: a server, a logger, a graphic workstation, an iPad or an IoT sensor capable to send and receive data. There can be many types of data sources, each having one or many of data messages:
+To achieve all these goals, we are introducing the _data recorders_ . Designed as light command line utilities, these recorders can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use one or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a traditional agent based software, or can be deployed and operated over the network, without any local presence. There are fundamental differences between a data recorder and software agent, see later about these differences.
 
-* Computer system: overall cpu utilization, disk and network IO, per device metrics (Linux, FreeBSD, Windows)
+The very first data recorders were published during 2009, mainly to fetch and collect performance data from various computer systems running Solaris and Linux operating systems. After that, more recorders were developed to capture HTTP data from various web applications, and TCP/UDP service performance data from various enterprise services, like databases or middleware software. Same time, new recorders were created to connect to various industrial sensors and devices and fetch different data, using for example the MODBUS protocol.
 
-* HTTP server: throughput and utilization along with its inventory data (Nginx, Apache, Tomcat)
+There are two main versions describing the evolution and development of the data recorders:
 
-* Enterprise service: response time performance and availability (SMTPS, IMAP, HTTP, LDAP, NTP, AD)
-
-* Automatic weather station: air temperature and pressure, humidity, wind speed and direction
+* [Version 1](design_ver1.md)
+* [Version 2](design_ver2.md)
 
 
-Go back [main page](https://gitlab.com/kronometrix/recording/)
+# Description
+
+### What is a data recorder?
+
+A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a _software agent_. Please check the main features of a data recorder: 
+
+**Time series**
+
+All recorded observations and metrics are stored as raw data. Raw data is a [simple text file](docs/rawdata.md), produced by a recorder, which fetches data from a system, device or sensor, which has not been modified or changed in any way.
+
+**Data ontology**
+
+To help you, we have [carefully selected and analyzed](https://github.com/sparvu/smart-objects), for each industry, the most needed metrics for different business cases, by grouping and classifying these metrics, to build a very efficient data analysis process. The recorder has built-in support for grouping and data classification.
+
+**Microservice architecture**
+
+Data recorders are light, independent running software applications which can be deployed on several computer system configurations. Built as self running entities the data recorders do not share data between each other, and are designed to fetch and capture only the right data from various sources of data.
+
+**Support for different industries**
+
+A data recorder supports one or many communication protocols to fetch data from different sources and technologies: industrial equipment, ICT enterprise, weather or environment sensors, being able to collect different metrics.
+
+**Raw data compatible**
+
+Each data recorder will save all collected metrics and parameters under one or many text files on disk. These files are simple, regular CSV text files, universal compatible with any software or system. If you want to know more about raw data, [please check this](docs/rawdata.md).
+
+**Based on a high-level programming language**
+
+Based on Perl/C or Rust the data recorders are developed as light software probes, which can extract data from different sources, able to run interactively or continuous using one or many data communication protocols with a direct system access to various metrics.
+
+**Small system footprint**
+
+Designed as [CLI](https://en.wikipedia.org/wiki/Command-line_interface) system utilities, the data recorders are conservative in CPU and memory consumption across many system architectures, like X86 or ARM. 
+
+# Configuration
+
+The data recorders, keep all their settings and defintion under a simple configuration file, based on the JSON format. For version 1 not all data recorders use a configuration file. In version 2, all data reocrders will use a JSON configuration for their metrics definition. See here for more details about data recorders confguration (Coming soon)
+
+# Output data
+
+Coming soon
+
+
+# How does it work?
+
+<img src="/docs/img/Arch.png" align="right" />
+
+A data recorder can run on different computer system architectures, like X64 or ARMv8. There can be more than one data recorder, for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. They do not interfere with other data recorders input and output execution. The data recorders work independently one of each other, having their own execution path and state.
+
+The recorder can operate in two modes: 
+
+  * interactively: you can manually run the recorder, using command line interface to start or stop the recorder 
+  
+  * automatic mode: you can continuously record data, without any manual interaction, for long periods of time 
+
+The interactive or automatic mode can be enabled via command line interface. The automatic mode (logging option) will allow the recorder to log continuously data without any human intervention.
+
+
+# Recorders vs Agent-based Software
+
+<div align="center">
+<img src="/docs/img/AgentsVsRecorders.jpg" height="80%" width="80%" />
+<img src="/docs/img/RecorderVsAgent.png" height="80%" width="80%" />
+</div> 
+
+Go back [main page](https://github.com/sparvu/data-recorders)
