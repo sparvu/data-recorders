@@ -1,5 +1,5 @@
 
-<img src="/docs/img/datarecorders-rawdata3.jpg" />
+<img src="/docs/img/datarecorders-rawdata5.jpg" />
 
 # Introduction
 
