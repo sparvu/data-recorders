@@ -1,15 +1,20 @@
 
-Kronometrix Data Recording
+Data Recording
+
+Check CHANGELOG for future release notes. One single release notes file will contain all changes for all platforms.
 
 Platforms
-    MacOS Monterey 12.4 M1+
-
-Defect Management System
-  https://gitlab.com/kronometrix/recording/issues 
+    MacOS Monterey 12.4 M1+, M2
 
 Releases
 
- 1.20 December 2022 Coming Soon
+2.0 Rust Release
+    port main data recorders from Perl to Rust
+    sysrec, cpurec, diskrec, nicrec, hdwrec
+    hdwrec will be renamed cfgrec
+    formal specs will be defined for main recorders
+
+1.20 December 2022 Coming Soon
     MacOS Support
     hdwrec improvements
     sysrec, cpurec new recorders
