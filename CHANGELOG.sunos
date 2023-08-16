@@ -1,16 +1,9 @@
 
-================
-SDR version 0.75
-================
-
-Release Date
-2013-08-31
+RETIRED. NOT UPDATED ANYMORE
 
 Platforms
  Solaris 10+ x64, sparcv9 64bit
  
-Compiled by: sparvu
-
 
 Recording
 =========
@@ -175,7 +168,3 @@ Notes
             
 For Solaris OS 8,9 releases make sure you download the package specific for
 those releases. Please beware certain features wont be available ! 
-
-Bugzilla:
- http://www.systemdatarecorder.org:9009/bugzilla/query.cgi
- Product: sdr
