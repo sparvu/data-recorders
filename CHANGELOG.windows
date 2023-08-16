@@ -1,5 +1,5 @@
 
-Kronometrix Data Recording (KDR)
+Data Recording
 
 Platforms
     Windows 2016 Server x64
@@ -7,10 +7,13 @@ Platforms
     Windows 2008 R2 Server x64
     Windows 7 8 10 x64
 
-Defect Management System
-  https://gitlab.com/kronometrix/recording/issues 
-
 Releases
+
+ 2.00 Rust Release
+    port main data recorders from Perl to Rust
+    sysrec, cpurec, diskrec, nicrec, hdwrec
+    hdwrec will be renamed cfgrec
+    formal specs will be defined for main recorders
 
   1.2.26 27-09-2017 Release
     transport force mode epd, dpd
