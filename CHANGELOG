@@ -1,0 +1,25 @@
+
+Data Recording
+
+Supported Platforms
+    FreeBSD 12+ amd64, aarch64
+    MacOS Monterey 12.4 M1+, M2
+    CentOS 7.9+ x86_64
+    CloudLinux 7+ x86_64
+    Debian 9+ x86_64
+    Ubuntu Server Edition 18+ x86_64
+    Raspbian GNU/Linux 8+ armv8
+    Windows 2016 Server x64
+    Windows 2012 R2 Server x64
+    Windows 2008 R2 Server x64
+    Windows 7 8 10 x64
+
+Releases
+
+ 2.00 - Rust Release 2023
+    Port all main data recorders from Perl5 to Rust
+    Main recorders: sysrec, cpurec, diskrec, nicrec, hdwrec
+    hdwrec will be renamed cfgrec
+    Transport Utility will be ported from Perl5 to Rust
+    Formal specs will be defined for main recorders
+
