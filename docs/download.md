@@ -4,9 +4,9 @@
 Get started by cloning this repository and build the data recorders or download different ready made packages. 
 
 
-## Clone
+## Build from source code
 
-Here how to clone and build the data recorders.
+Here how to clone and build the data recorders for your systems.
 
 ## Ready Packages 
 
