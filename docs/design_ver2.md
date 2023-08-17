@@ -17,14 +17,17 @@ Over time, we have received valuable feedback and we have discovered several pro
 <img src="/docs/img/cperl2rust.png" width="75%"/>
 </div> 
 
-To address all these issues, after 2020 I have started to re-think and re-design the recorders based on a different programming langauge. Rust came immediately, as a strong candidate for speed, safery and concurrency. Moving from C/Perl5 to Rust will allow to simplify the development of new data recorders, same time being able to improve the performance and security of data recorders.
+To address all these issues, after 2020 I have started to re-think and re-design the recorders based on a different programming langauge. Rust came immediately, as a strong candidate for speed, safery and concurrency. Moving from 
+C/Perl5 to Rust will allow to simplify the development of new data recorders, same time being able to improve the performance and security of data recorders.
+
+## New Architecture
+
+Based on Rust, the new data recorders, can be compiled for various operating systems and platforms, without the need of a runtime environment in place, which will improve performance, same time staying safe and secure. There can be many data recorders, designed for different tasks, available for several computer system architectures, like x64 or ARMv8. 
 
 <div align="center">
 <img src="/docs/img/DS2_HighLevel.png" height="80%" width="80%" />
 </div> 
 
-There can be many data recorders, designed for different tasks, available for several computer system architectures, like x64 or ARMv8. 
 
-TBC
 
 Go back [design page](design.md)
