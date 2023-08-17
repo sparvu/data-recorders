@@ -1,5 +1,8 @@
-<img src="/docs/img/data-recorders-features_7.jpg" />
+<img src="/docs/img/recorders-features.png" />
 
+<br/>
+These are the main features of data recorders vs other type of similar technologies and applications from ICT to IoT.
+<br/><br/>
 
 || Data Recorders | NagiosXi | Datadog | OpenTelemetry | Description |
 |------:|:------:|:------:|:------:|:------:|:------:| 
