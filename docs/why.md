@@ -10,17 +10,15 @@
 
 ### Supports metric grouping and classification
 
-### Uniform data format  
+### Uniform, standard output data format (CSV)  
 
 ### Low latency
 
-### Access to original raw data
+### Offers access to original raw data
 
 ### Small raw data size
 
-### Support for different industries 
-
-### ICT enterprise, Weather and Environment
+### Support for different industries (ICT, Weather and Environment)
 
 ### Industrial IoT readiness
 
