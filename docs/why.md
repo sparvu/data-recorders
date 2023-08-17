@@ -4,9 +4,11 @@
 
 ### Capture the right performance metrics for analysis
 
-### Easy to be used for performance modeling and prediction
+### Simple for performance modeling and prediction
 
-### Supports metrics grouping and classification
+### No need to capture all of the data 
+
+### Supports metric grouping and classification
 
 ### Uniform data format  
 
