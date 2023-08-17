@@ -16,9 +16,9 @@
 
 ### Access to original raw data
 
-### Small size raw data
+### Small raw data size
 
-### Supports different industries 
+### Support for different industries 
 
 ### ICT enterprise, Weather and Environment
 
