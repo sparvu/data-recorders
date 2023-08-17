@@ -29,7 +29,13 @@ There are two main versions describing the evolution and development of the data
 
 ### What is a data recorder?
 
-A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a _software agent_. Please check the main features of a data recorder: 
+A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a _software agent_. 
+
+
+### 
+
+
+Please check the main features of a data recorder: 
 
 **Time series**
 
@@ -65,7 +71,17 @@ The data recorders, keep all their settings and defintion under a simple configu
 
 # Output data
 
-Coming soon
+A data recorder will output its data using a simple text CSV based format. the field delimiter can be anything, which should be configurable. In version 1, data recorders used ':' as the main field delimiter. In version 2, data recorders will allow users to define and set their own delimiter.
+
+Example:
+
+```
+1692254474:0.05:0.21:399.79:0.01:0.00:0.02:0.02:99.95:0.00:0:0:0:23:23:84.69:852056.00:15.31:153976.00:1006032.00:12140.00:40316.00:800836.00:0.00:113660.00:153976.00:15.73:6.00:43.00:85.00:379.00:0:0.00:0:0.00:0.00:0.00:0.00:0:0.00:199395:49198.49:0:0:23554:1974.13:0:0:0:222949:51172.62:0.09:0.12:0.14
+
+1692254479:0.08:0.31:399.69:0.04:0.00:0.04:0.00:99.92:0.00:0:0:0:23:23:84.69:851976.00:15.31:154056.00:1006032.00:12252.00:40400.00:800840.00:0.00:113656.00:154056.00:15.74:6.00:43.00:85.00:379.00:0:0.00:0:0.00:0.00:0.00:0.00:0:0.00:4:0.25:0:0:2:0.52:0:0:0:6:0.77:0.08:0.12:0.14
+
+```
+
 
 
 # How does it work?
