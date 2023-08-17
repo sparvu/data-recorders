@@ -1,4 +1,4 @@
-<img src="/docs/img/data-recorders-ver2.0_1.jpg" />
+<img src="/docs/img/recorders-rust.png" />
 
 # Why 2.0?
 
