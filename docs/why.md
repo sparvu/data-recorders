@@ -1,19 +1,26 @@
 
 <img src="/docs/img/data-recorders-why3.jpg" />
 
-### Access to original raw data
 
-### Uniform data format across many technologies  
+### Capture the right performance metrics for analysis
+
+### Easy to be used for performance modeling and prediction
+
+### Supports metrics grouping and classification
+
+### Uniform data format  
+
+### Low latency
+
+### Access to original raw data
 
 ### Small size raw data
 
-### Metrics grouping and classification
+### Supports different industries 
 
 ### ICT enterprise, Weather and Environment
 
 ### Industrial IoT readiness
-
-### Low latency
 
 ### Open-source software
 
