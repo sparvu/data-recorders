@@ -66,13 +66,17 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 ## Information and Communications Technology
 
+### Computer system data recorders
+These are the main, basic data recorders which can run on physical or virtual computer system host. Support full and OS virtualization.
  * sysrec - Overall system performance data recorder
  * cpurec - Per CPU statistics data recorder
  * nicrec - Per NIC statistics data recorder
  * diskrec - Per disk statistics data recorder
  * hsrec - Hardware and software system inventory data recorder
-   
  * faultrec - Fault Management data recorder **(2024)**
+
+### Service, application data recorders
+
  * dockrec - Docker Performance data recorder **(2024)**
  * jvmrec - Java VM statistics data recorder
  * snmprec - SNMP equipment data recorder
