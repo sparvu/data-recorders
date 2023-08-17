@@ -1,4 +1,4 @@
-<img src="/docs/img/data-recorders-title8.png" />
+<img src="/docs/img/recorders-logo3.png" />
 
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=2.0&color=success)](docs/start.md)
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
@@ -9,7 +9,7 @@
 A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record top essential performance metrics, save original raw data  for visualization and analysis. Supports different industries: ICT enterprise, weather and environment.
 
 <!--- <div align="center">
-<img src="/docs/img/DR2.png" height="80%" width="80%" />
+<img src="/docs/img/recorders-logo.png" height="80%" width="80%" />
 </div> --->
 
 * [Design](docs/design.md)
