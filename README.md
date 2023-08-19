@@ -28,10 +28,11 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 # Features
 
-* Resource utilization
+* Resource utilization and saturation
 * Throughput performance metrics
 * Response time performance metrics
-* Operational availability
+* Errors
+* Uptime
 * Power consumption
 * Support for raw data
 * Data classification and grouping
