@@ -35,6 +35,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * Uptime
 * Power consumption
 * Support for raw data
+* Universal CSV output data format
 * Data classification and grouping
 * Industrial IoT readiness
 * Conservative in CPU and memory usage on different architectures 
