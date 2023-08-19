@@ -6,19 +6,20 @@ Since 2009, the main architecture of the data recorders was based on C and Perl5
 
 Over time, we have received valuable feedback and we have discovered several problems with the default current C/Perl implementation:
 
-* high memory usage fetching performance data from +500 web pages 
+* high memory usage fetching performance data from +1000 web sites 
 * network runtime errors handling data from multiple sensors over UDP
-* not simple to implement new data recorders or support new protocols like BACnet 
-* lack of Perl5 modules and C libraries to support new sensors and devices via MQTT
-* cant deploy with a very small CPU and memory footprint for different installations like ARM
-* lack of possibilities to run only certain data recorders without the entire C/Perl5 runtime engine
+* not simple to implement new data recorders or support new protocols, like BACnet 
+* very limited support for Perl5 libraries to support new sensors and devices over MQTT
+* difficult to deploy with a very small CPU and memory footprint, for different installations like ARM
+* monolithic design, hard to execute without the entire C/Perl5 runtime engine
 
 <div align="center">
 <img src="/docs/img/cperl2rust.png" width="75%"/>
 </div> 
 
-To address all these issues, after 2020 I have started to re-think and re-design the recorders based on a different programming langauge. Rust came immediately, as a strong candidate for speed, safery and concurrency. Moving from 
-C/Perl5 to Rust will allow to simplify the development of new data recorders, same time being able to improve the performance and security of data recorders.
+To address all these issues, after 2020, I have started to re-think the recorders based on a different design and architecture, which will allow us to execute different recorders, as efficient as possible without the need of an entire runtime engine. Same time, fast text processing and support for different network protocols, would remain paramount on the new design. 
+
+Formal specifications would also be used to write precise designs for the new recorders. This would be very critical to have as accurate as possible specs for coming architecture. Then the programming language. Rust came immediately, as a strong candidate for speed, safery and concurrency. Moving from C/Perl5 to Rust will allow to simplify the development of new data recorders, same time being able to improve the performance and security of data recorders.
 
 ## New Architecture
 
