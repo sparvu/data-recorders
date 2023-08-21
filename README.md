@@ -8,7 +8,7 @@
 
 
 # Overview
-Capture top essential performance metrics from ICT enterprise and IoT equipment. A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record top essential performance metrics, save original raw data  for visualization and analysis. Supports different industries: ICT enterprise, weather and environment.
+Capture top essential performance metrics from ICT enterprise and IoT equipment. A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record the right performance metrics from different systems and applications, save and transport original raw data for visualization and analysis. Supports different industries: ICT enterprise, weather and environment.
 
 <!--- <div align="center">
 <img src="/docs/img/recorders-logo.png" height="80%" width="80%" />
