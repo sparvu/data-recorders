@@ -1,5 +1,5 @@
 
-<img src="/docs/img/data-recorders-ver1.0_3.png" />
+<img src="/docs/img/recorders-v1.png" />
 
 
 These are the technical architecture notes for data recorders version 1.0. Based on Perl5 and C programming languages the data recorders support a number of platforms and operating systems from Intel/AMD X64 to ARM Raspberry PI computers. 
