@@ -25,7 +25,7 @@ Capture top essential performance metrics from ICT enterprise and IoT equipment.
 * SBC: Raspberry PI 3B+, 4B
 
 
-<img src="/docs/img/recorders-top2.png" />
+<img src="/docs/img/recorders-top-features5.png" />
 
 
 # Features
