@@ -2,15 +2,15 @@
 <img src="/docs/img/recorders-why2.png" />
 
 
-### Capture the right performance metrics for analysis
+### Designed to capture the right performance metrics for performance analysis
 
-### Simple for performance modeling and prediction
+### Simple to use for performance modeling and prediction
 
-### No need to capture all of the data 
+### There is no need to capture all of the data 
 
 ### Supports metric grouping and classification
 
-### Uniform, standard output data format (CSV)  
+### Uniform, standard output data format (CSV)
 
 ### Low latency
 
