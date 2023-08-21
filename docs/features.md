@@ -4,9 +4,9 @@
 These are the main features of data recorders vs other type of similar technologies and applications from ICT to IoT.
 <br/><br/>
 
-|| Data Recorders | NagiosXi | Datadog | Grafana-Agent | Description |
+|| Data Recorders | NagiosXi | Datadog-StatsD | Grafana-Agent | Description |
 |------:|:------:|:------:|:------:|:------:|:------:| 
-| Type | recorder | agent | agent StatsD |  | Own or 3rd party data recorders or agents. Datadog uses StatsD. Dynatrace uses native binaries and Java Compuware agent for Linux, Windows |
+| Type | recorder | agent | agent | agent | Own or 3rd party data recorders or agents. Datadog uses StatsD |
 | Raw data | yes | yes | no | | DataDog Agent7 takes 750MB disk space, no original raw data available  |
 | Time-series Data | yes | no | no | | Data organised as time series |
 | Data Ontology | yes | no| no | | Data Recorders has groupped and classified all recorded metrics, for a very efficient data analysis process |
