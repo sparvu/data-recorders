@@ -1,12 +1,14 @@
-<img src="/docs/img/recorders-logo2-t.png" />
+<img src="/docs/img/recorders-2.png" />
 
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=2.0&color=success)](docs/start.md)
 [![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1855/badge)](https://bestpractices.coreinfrastructure.org/projects/1855)
 
-# Overview
 
-A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record top essential performance metrics, save original raw data  for visualization and analysis. Supports different industries: ICT enterprise, weather and environment.
+
+
+# Overview
+Capture top essential performance metrics from ICT enterprise and IoT equipment. A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record the right performance metrics from different systems and applications, save and transport original raw data for visualization and analysis. Supports different industries: ICT enterprise, weather and environment.
 
 <!--- <div align="center">
 <img src="/docs/img/recorders-logo.png" height="80%" width="80%" />
