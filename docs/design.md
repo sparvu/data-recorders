@@ -1,5 +1,5 @@
 
-<img src="/docs/img/recorders-design4.png" />
+<img src="/docs/img/recorders-design.png" />
 
 To really understand how our world works, we need to have the **correct performance metrics** to analyze. But how could we know what metrics we really need from our systems or applications? Well, we could try to capture as much data as possible and later start mining whatever we need. As this sounds promising we will soon find out that storage and data extraction will be expensive. So what choices do we have?
 
