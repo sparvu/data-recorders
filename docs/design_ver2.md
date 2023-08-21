@@ -1,6 +1,6 @@
 <img src="/docs/img/recorders-v2.png" />
 
-# Why 2.0? 
+# Why 2.0?
 
 Since 2009, the main architecture of the data recorders was based on C and Perl5. Perl was a good fit for string processing combined with the speed of C language. Used by various projects, like [Kronometrix Data Analytics Platform](https://gitlab.com/kronometrix/) and others, data recorders have been able to offer data capturing capabilities, available as [ready packages](https://kronometrix.gitlab.io/packages/) for different technologies and cases.  
 
