@@ -14,7 +14,7 @@ Over time, we have received valuable feedback and we have discovered several pro
 * monolithic design, hard to execute without the entire C/Perl5 runtime engine
 
 <div align="center">
-<img src="/docs/img/cperl2rust.png" width="75%"/>
+<img src="/docs/img/perl2rust.png" width="75%"/>
 </div> 
 
 To address all these issues, after 2020, I have started to re-think the recorders based on a different design and architecture, which will allow us to execute different recorders, as efficient as possible without the need of an entire runtime engine. Same time, fast text processing and support for different network protocols, would remain paramount on the new design. 
