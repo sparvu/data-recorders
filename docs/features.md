@@ -34,8 +34,8 @@ These are the main features of data recorders vs other type of similar technolog
 | BACnet | 2024 | no | no | | 2024 |
 | Open Source | yes | yes | yes | | Datadog uses StatsD. Dynatrace uses Compuware Java agent |
 | ARM compatible | yes | yes | | | |
-| Public API | yes | yes | no | |  |
-| Based on | C/Perl | C/Python/Php | Python3 | |
+| Public API | yes | yes | no | | Yes |
+| Based on | C/Perl, Rust | C/Python/Php | Python3 | Go |
 
 The future version of data recorders will be based on Rust programming language. Check [here](https://github.com/sparvu/data-recorders/blob/master/docs/design_ver2.md) for more details.
 
