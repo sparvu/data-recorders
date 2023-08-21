@@ -29,9 +29,12 @@ There are two main versions describing the evolution and development of the data
 
 A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a _software agent_. 
 
+### What is the data transporter?
 
-### 
+The data transporter, is the delivery layer, outside the data reocrder, responsible to deliver the output raw data from one or many data recorders to different backend systems: Redis, InfluxDB, Prometheus, your own custom database or applications. Data recorders do not incorporate within the transport functionality, like for example the based agent collectors. Separating the transport functionality from the data recorder, simplifies and improves the security and performance of the data recordrs and transport utility itself (support new recorders, new data communication protocols as simle as possible, less bugs and defects, reduce complexity)
 
+
+### Main features
 
 Please check the main features of a data recorder: 
 
