@@ -11,6 +11,9 @@ In reality, we dont really need a lot of data. We will need the metrics which ca
 
 This basic grouping can help us to get started and organize our metrics as Utilization, Saturation, Errors and Throughput. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
+
+<img src="/docs/img/recorders-topfeatures.png" />
+
 Then we will need to capture, in real-time, these metrics, and save them, using a simple, uniform output format, no matter of the operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics should be done automatically, without human intervention, to help build large data sets for performance analysis and capacity planning or interactively, for quick troubleshooting.
 
 To achieve all these goals, we are introducing the _data recorders_ . Designed as light command line utilities, these recorders can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use one or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a traditional agent based software, or can be deployed and operated over the network, without any local presence. There are fundamental differences between a data recorder and software agent, see later about these differences.
@@ -27,7 +30,7 @@ There are two main versions describing the evolution and development of the data
 
 ### What is a data recorder?
 
-A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a _software agent_. 
+A data recorder, is a simple software probe, designed to connect and fetch data from one or many data sources, like: a computer systems, one or many web and enterprise applications, weather and environment sensors, or different IoT equipment, using different communication protocols, like HTTP, SNMP or MODBUS. A data recorder does not offer support for data transport capabilities, like for example a _software agent_.
 
 ### What is the data transporter?
 
@@ -98,7 +101,6 @@ The recorder can operate in two modes:
   * automatic mode: you can continuously record data, without any manual interaction, for long periods of time 
 
 The interactive or automatic mode can be enabled via command line interface. The automatic mode (logging option) will allow the recorder to log continuously data without any human intervention.
-
 
 # Recorders vs Agent-based Software
 
