@@ -1,5 +1,5 @@
 
-<img src="/docs/img/recorders-why2.png" />
+<img src="/docs/img/recorders-why.png" />
 
 
 ### Designed to capture the right performance metrics for performance analysis
