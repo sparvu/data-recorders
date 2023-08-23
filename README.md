@@ -14,7 +14,8 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * [Features](docs/features.md)
 * [Why use data recorders?](docs/why.md)
 * [Download](docs/download.md)
-
+* [License](docs/license.md)
+  
 # Requirements
 
 * Processor: Intel/AMD x64, ARMv8
