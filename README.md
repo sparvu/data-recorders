@@ -1,7 +1,7 @@
 <img src="/docs/img/recorders-logo3.png" />
 
 [![Alt-Text](https://img.shields.io/static/v1.svg?label=ver&message=2.0&color=success)](docs/start.md)
-[![](https://img.shields.io/static/v1.svg?label=license&message=GPL2&color=blue)](LICENSE)
+[![](https://img.shields.io/static/v1.svg?label=license&message=BSDv3&color=blue)](LICENSE)
 
 # Overview
 A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record the right performance metrics from different systems and applications, save and transport original raw data for visualization and analysis. Supports different industries: ICT enterprise, weather and environment.
