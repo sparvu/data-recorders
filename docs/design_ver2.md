@@ -26,7 +26,7 @@ Formal specifications would also be used to write precise designs for the new re
 Based on Rust, the new data recorders, can be compiled for various operating systems and platforms, without the need of a runtime environment in place, which will improve performance, same time staying safe and secure. There can be many data recorders, designed for different tasks, available for several computer system architectures, like x64 or ARMv8. 
 
 <div align="center">
-<img src="/docs/img/DS2_HighLevel.png" height="80%" width="80%" />
+<img src="/docs/img/recorders-arch-v2.png" height="80%" width="80%" />
 </div> 
 
 
