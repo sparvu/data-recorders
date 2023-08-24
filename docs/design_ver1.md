@@ -8,7 +8,7 @@ These are the technical architecture notes for data recorders version 1.0. Based
 # Architecture
 
 <div align="center">
-<img src="/docs/img/KDR_Stack2.png" height="80%" width="80%" />
+<img src="/docs/img/recorders-arch-v1.png" height="80%" width="80%" />
 </div> 
 
 
