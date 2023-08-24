@@ -12,7 +12,7 @@ In reality, we dont really need a lot of data. We will need the metrics which ca
 This basic grouping can help us to get started and organize our metrics as Utilization, Saturation, Errors and Throughput. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
 
-<img src="/docs/img/recorders-topgoals.png" height="95%" width="95%" />
+<img src="/docs/img/recorders-features.png" height="95%" width="95%" />
 
 Then we will need to capture, in real-time, these metrics, and save them, using a simple, uniform output format, no matter of the operating system or platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics should be done automatically, without human intervention, to help build large data sets for performance analysis and capacity planning or interactively, for quick troubleshooting.
 
