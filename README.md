@@ -26,7 +26,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * SBC: Raspberry PI 3B+, 4B
 
 
-<img src="/docs/img/recorders-top3.png" />
+<img src="/docs/img/recorders-top3.png" /> 
 
 
 # Features
