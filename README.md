@@ -37,9 +37,10 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * Errors
 * Uptime
 * Power consumption
+* Can be deployed on a system, or executed remotely
 * Support for raw data
 * Universal CSV output data format
-* Data classification and grouping
+* Built-in data classification and grouping
 * Industrial IoT readiness
 * Conservative in CPU and memory usage on different architectures 
 * Easy to configure and add new metrics to capture new data 
