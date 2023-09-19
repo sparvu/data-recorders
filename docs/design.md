@@ -11,6 +11,7 @@ In reality, we dont really need a lot of data. We will need the metrics which ca
 
 This basic grouping can help us to get started and organize our metrics as Utilization, Saturation, Errors and Throughput. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
+# Main Features
 
 <img src="/docs/img/features.png" height="95%" width="95%" />
 
