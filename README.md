@@ -4,7 +4,7 @@
 [![](https://img.shields.io/static/v1.svg?label=license&message=BSD3&color=blue)](LICENSE)
 
 # Overview
-A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record the right performance metrics from different systems and applications, save and transport original raw data for visualization and analysis. Supports different industries: ICT enterprise, weather and environment.
+A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record the right performance, availability and inventory metrics from different systems and applications, save and transport original raw data for visualization and analysis. Supports different industries: ICT enterprise, weather, environment and industrial IoT.
 
 <!--- <div align="center">
 <img src="/docs/img/recorders-logo.png" height="80%" width="80%" />
@@ -22,7 +22,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * Memory: 32 MB RAM
 * Disk space: 64MB, Raw data: 500-750KB per day / data source
 * OS: FreeBSD, RHEL, Ubuntu, Debian, Windows, MacOS*
-* Protocols: SERIAL COMMUNICATION, SNMP, MODBUS(RTU,TCP,ASCII), MQTT, HTTP, BLE, BACnet
+* Protocols: SERIAL COMMUNICATION, SNMP, MODBUS(RTU,TCP,ASCII), MQTT*, HTTP, BLE*, BACnet*
 * SBC: Raspberry PI 3B+, 4B
 
 
@@ -31,16 +31,20 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 # Features
 
+Captures
 * Resource utilization and saturation
 * Throughput performance metrics
 * Response time performance metrics
 * Errors
 * Uptime
 * Power consumption
-* Can be deployed on a system, or executed remotely
+
+Deployment
+* Can be deployed on a system, executed remotely
 * Support for raw data
 * Universal CSV output data format
 * Built-in data classification and grouping
+* Can be used as data ingestion
 * Industrial IoT readiness
 * Conservative in CPU and memory usage on different architectures 
 * Easy to configure and add new metrics to capture new data 
@@ -50,20 +54,18 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 # Supported Systems
 
-* FreeBSD 12,13
+* FreeBSD 12+
 * CentOS 7.9 x86_64
 * RHEL 8 x86_64
-* Debian 9,10,11 amd64
+* Debian 9+ amd64
 * CloudLinux 7 x86_64
 * Ubuntu Server Edition 18 amd64
 * SLES 15 x86_64
 * OpenSuse Leap 15 x86_64
 * Raspbian GNU/Linux 8+ armv8
-* MacOS (2023)
-* Windows 7
-* Windows 8
+* MacOS (2027)
 * Windows 10
-* Windows 11 (TBD)
+* Windows 11
 * Windows 2008 R2 Server x64
 * Windows 2012 R2 Server x64
 * Windows 2016 R2 Server x64
@@ -79,31 +81,32 @@ These are the main, basic data recorders which can run on physical or virtual co
  * nicrec - Per NIC statistics data recorder
  * diskrec - Per disk statistics data recorder
  * hsrec - Hardware and software system inventory data recorder
- * faultrec - Fault Management data recorder **(2024)**
+ * faultrec - Fault Management data recorder **(2027)**
 
 ### Service, application data recorders
 
- * dockrec - Docker Performance data recorder **(2024)**
+ * dockrec - Docker Performance data recorder **(2027)**
  * jvmrec - Java VM statistics data recorder
  * snmprec - SNMP equipment data recorder
  * netrec - TCP, UDP data recorder
  * httprec - HTTP server statistics: NGINX, Apache, Tomcat, PHP-FPM
- * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(2024)**
+ * dbrec - Database data recorder: MariaDB, MySQL, PostgreSQL **(2027)**
+ * saprec - SAP data recorder (TBD)
  * certrec - X.509 security certificate statistics data recorder
  * direc - Filesystem directory statistics data recorder
  * ntprec - NTP server statistics data recorder
- * smtprec - SMTP server data recorder **(2024)**
- * imaprec - IMAP/POP server data recorder **(2024)**
+ * smtprec - SMTP server data recorder **(2027)**
+ * imaprec - IMAP/POP server data recorder **(2027)**
  * svcrec - Service performance,availability: IMAP,SMTP,POP3,LDAP,DNS,TCP,Any
  * procrec - Process statistics data recorder
  * webrec - Web application performance,availability data recorder
- * wprec - Wordpress security, performance and availability data recorder **(2024)**
+ * wprec - Wordpress security, performance and availability data recorder **(2027)**
 
 ## Industrial IoT, Weather and Environment
 
  * axisrec - AXIS security and video surveillance data recorder
- * bacrec - Building management BACnet data recorder **(2025)**
- * blrec - Bluetooth Low Energy data recorder **(2025)**
+ * bacrec - Building management BACnet data recorder **(2027)**
+ * blrec - Bluetooth Low Energy data recorder **(2027)**
  * rs485rec - Industrial RS-232, RS-485, MODBUS data recorder 
  * sockrec - Network IO Socket data recorder
  * wsrec - General weather station recorder RS-232/USB
