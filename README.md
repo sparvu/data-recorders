@@ -4,7 +4,7 @@
 [![](https://img.shields.io/static/v1.svg?label=license&message=BSD3&color=blue)](LICENSE)
 
 # Overview
-A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to record the right performance, availability and inventory metrics from different systems and applications, save and transport original raw data for visualization and analysis. Supports different industries: ICT enterprise, weather, environment and industrial IoT.
+A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to capture the right performance, availability and inventory metrics from different systems and applications, save and transport original raw data for visualization and analysis. Supports different industries: ICT enterprise, weather, environment and industrial IoT.
 
 <!--- <div align="center">
 <img src="/docs/img/recorders-logo.png" height="80%" width="80%" />
