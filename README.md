@@ -4,7 +4,7 @@
 [![](https://img.shields.io/static/v1.svg?label=license&message=BSD3&color=blue)](LICENSE)
 
 # Overview
-A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to capture the right performance, availability and inventory metrics from different systems and applications, save and transport original raw data for visualization and analysis. Supports different industries: ICT enterprise, weather, environment and industrial IoT.
+A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to capture and filter the right performance, availability, inventory or other business key performance metrics from different systems or applications, save and transport original raw data for analysis and visualization. Supports different industries: ICT enterprise, weather, environment and industrial IoT.
 
 <!--- <div align="center">
 <img src="/docs/img/recorders-logo.png" height="80%" width="80%" />
@@ -31,19 +31,20 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 
 # Features
 
-Captures
+Data Ingestion
 * Resource utilization and saturation
 * Throughput performance metrics
 * Response time performance metrics
 * Errors
 * Uptime
 * Power consumption
+* Filters and transformation functions
+* Output formats: CSV (default), easy to adapt and support others 
+* Built-in data classification and grouping
 
 Deployment
 * Can be deployed on a system, executed remotely
 * Support for raw data
-* Universal CSV output data format
-* Built-in data classification and grouping
 * Can be used as data ingestion
 * Industrial IoT readiness
 * Conservative in CPU and memory usage on different architectures 
