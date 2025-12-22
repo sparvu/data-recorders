@@ -7,7 +7,7 @@
 A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to capture and filter the right performance, availability, inventory or other business key performance metrics from different systems or applications, save and transport original raw data for analysis and visualization. Supports different industries: ICT enterprise, weather, environment and industrial IoT.
 
 <!--- <div align="center">
-<img src="/docs/img/recorders-logo.png" height="80%" width="80%" />
+<img src="/docs/img/drlogo.png" height="80%" width="80%" />
 </div> --->
 
 * [Design](docs/design.md)
