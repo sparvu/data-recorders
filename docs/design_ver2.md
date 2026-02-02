@@ -2,8 +2,7 @@
 
 # Why 2.0?
 
-Since 2009, the main architecture of the data recorders was based on C and Perl5. Perl was a good fit for string processing combined with the speed of C language. Used by various projects, like [Kronometrix Data Analytics Platform](https://gitlab.com/kronometrix/) and others, data recorders have been able to offer data capturing capabilities, available as [ready packages](https://kronometrix.gitlab.io/packages/) for different technologies and cases.  
-
+Since 2009, the main architecture of the data recorders was simple designed as a monolithic stack, based on C and Perl5. Perl was a good fit for the entire string processing part, combined with the speed of C language. 
 Over time, we have received valuable feedback and we have discovered several problems with the default current C/Perl implementation:
 
 * high memory usage fetching performance data from +1000 web sites 
