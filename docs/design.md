@@ -6,9 +6,9 @@ To really understand how our world works, we need to have the **correct performa
 In reality, we dont need a lot of data. But we will need the metrics which can help us understand the behaviour and the main properties of our systems or applications, related to:
 
 * overall system and device utilization and saturation - the utilization
-* workload or system's throughput - what the system does
-* system's inventory: top system devices, sub-components - the logistic
-* and the errors - what does not work correctly
+* the workload, system's throughput - what the system does
+* system's inventory: system, devices, sub-components hierarchy - the logistic
+* failures and errors - what does not work correctly
 
 This basic grouping can help us to get started and organize our metrics as Utilization, Saturation, Throughput, Inventory and Errors. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
