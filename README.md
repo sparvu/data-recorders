@@ -13,7 +13,7 @@ A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities d
 * [Design](docs/design.md)
 * [Features](docs/features.md)
 * [Why use data recorders?](docs/why.md)
-* [Use cases](docs/users.md)
+* [Use cases](docs/usecases.md)
 * [Download](docs/download.md)
 * [License](LICENSE)
   
