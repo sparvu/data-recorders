@@ -4,7 +4,7 @@
 [![](https://img.shields.io/static/v1.svg?label=license&message=BSD3&color=blue)](LICENSE)
 
 # Overview
-A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to capture and filter the right performance, availability, inventory or other business key performance metrics from different systems or applications, save and transport original raw data for analysis and visualization. Supports different industries: ICT enterprise, weather, environment and industrial IoT.
+A set of [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utilities designed to capture and filter the right performance, availability, and inventory key performance metrics from different systems or applications, save and transport original raw data for analysis and visualization. Supports different industries: ICT enterprise, weather, environment and industrial IoT.
 
 <!--- <div align="center">
 <img src="/docs/img/drlogo.png" height="80%" width="80%" />
