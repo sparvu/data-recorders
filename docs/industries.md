@@ -22,3 +22,5 @@ Computer systems have no such data recording device, installed. Manufacturers ar
 Checking each operating system, we can see a smilar way to fetch and extract performance data using different interfaces, called differently from vendor to vendor and implemnetation: Sun Solaris KSTAT, Linux /proc, HP-UX KSTAT, IBM AIX RSTAT, Microsoft Windows WMI. So what if we could have several standard data recorders or agents, which could fetch metrics from each system interface and have them exporting this data same way, no matter of the implementation. And to make things even simpler we could use a very simple data format for the exported data, for example flat text file format, which can be used by any reporting system for future analysis and visualization.
 
 Similar to a FDR device, we could develop a simple data recording module which can be used for system troubleshooting, performance analysis, system crash analysis and it can be enabled across a large number of hosts in a data center, no matter of the operating system used.
+
+Go back [main page](https://github.com/sparvu/data-recorders)
