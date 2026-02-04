@@ -1,9 +1,14 @@
 
 <img src="/docs/img/recorders-design.png" />
 
-To really understand how our world works, we need to have the **correct performance metrics** to analyze. But how could we know what metrics we really need from our systems or applications? Well, we could try to capture as much data as possible and later start mining whatever we need. As this sounds promising we will soon find out that storage and data extraction will be expensive. So what choices do we have?
+To really understand how our world works, we need to have the **correct metrics** to analyze. And that applies to anything from computer system(s), enterprise application(s) or other industrial workloads or systems. But how could we know what we need to capture from all these systems or applications. What metrics? How often? In what format? See how IT world is different than other disciplines and engineering fiels.
 
-In reality, we dont need a lot of data. But we will need the metrics which can help us understand the behaviour and the main properties of our systems or applications, related to:
+Some use different applications developed by well established big companies to capture, sort and analyze data based on some rules more or less known. They trust the tool. However soon they discover they dont have access to the original raw data, have no flexibility changing or adding things if they want. They are locked-in. Others are capturing as much data as possible, from many data sources and save them in a SQL database or large data warehouse of some sort, to later start mining whatever is needed. As this sounds promising at start they soon find out that storage and data aggregation turns **expensive** and very **time consuming** to manage. Some others are turning building large data lakehouses, organizing data in different layers, waiting to be explored. Better, but still, yet another big data platform where you need a relatively large team to write code to extract, match and aggregate all this data. So what choices do we have?
+
+In reality, we dont need all these layers of data. We just need to move our attention from how to capture all of this data (tables, metrics other parameters) to where data originates and think at that point what we really want to do: analyze the performance, build a logistical hierarchie of some sort, evaluate and check the availability of the data source we are interested in.
+
+
+how efficient, reliable our application(s) or system(s) are working,  But we will need the metrics which can help us understand the behaviour and the main properties of our systems or applications, related to:
 
 * overall system and device utilization and saturation - the utilization
 * the workload, system's throughput - what the system does
