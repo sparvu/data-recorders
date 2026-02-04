@@ -3,23 +3,25 @@
 
 To really understand how our world works, we need to have the **correct metrics** to analyze. And that applies to anything from computer system(s), enterprise application(s) or other industrial workloads or systems. But how could we know what we need to capture from all these systems or applications. What metrics? How often? In what format? _See how IT world is different than others._ (separate link)
 
-Some use different applications developed by well established big companies to capture, sort and analyze data based on some rules more or less known. They trust the tool. However soon they discover they dont have access to the original raw data, have no flexibility changing or adding things if they want. They are locked-in. Others are capturing as much data as possible, from many data sources and save them in a SQL database or large data warehouse of some sort, to later start mining whatever is needed. As this sounds promising at start they soon find out that storage and data aggregation turns **expensive** and very **time consuming** to manage. Some others are turning building large data lakehouses, organizing data in different layers, waiting to be explored. Better, but still, yet another big data platform where you need a relatively large team to write code to extract, match and aggregate all this data. So what choices do we have?
+Some use different applications developed by well established big companies to capture, sort and analyze data based on some rules more or less known. They trust the tool. However soon they discover they dont have access to the original raw data, have no flexibility changing or adding things they want. They are locked-in. Others are capturing as much data as possible, from many data sources and save them in a SQL database or data warehouse of some sort, to start later mining whatever is needed. As this sounds promising at start they soon find out that storage and data aggregation turns **expensive** and very **time consuming** to manage. Some others are building large data lakehouses, to save and organize data in different layers, waiting for exploration. All examples, where we process a lot of data without understanding if we really need it.
+
+So what choices do we have?
 
 In reality, we dont need all these layers and layers of data. We just need **the right data**. And for that we need to move our attention from how to capture and save all of data (tables, metrics, parameters) to where data originates and think, what do we really want: 
 * understand the performance of our data source
 * check how the system is made, its inventory data
 * evaluate the availability of the data source we are interested in
 * remap data by building a logistical hierarchie from many data sources
-* check for bad and good data
-
-So, we will need few primary category metrics in place, which can help us understand the behaviour and the main properties of our systems or applications, related to:
+* or check how good or bad data we have
+  
+To get started we will need few primary metrics in place, organized within few categories, which will help us understand the behaviour and the main properties of our systems or applications:
 
 * overall system and device utilization and saturation - **the utilization**
 * the workload, what the system does - **the throughput**
 * system's inventory: system, devices, sub-components hierarchy - **the inventory**
 * failures and errors, what does not work correctly - **the errors**
 
-This basic grouping remains fundamemental no matter of the business or field application. And these will help us to get started and organize our metrics as Utilization, Saturation, Throughput, Inventory and Errors. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
+This basic grouping remains fundamemental no matter of the business or field application. And these will help us to get started and organize our metrics as **Utilization**, Saturation, **Throughput**, **Inventory** and **Errors**. Of course we might need some other parameters in order to better describe and explain the functionality or the state of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
 # Main Features
 
@@ -27,7 +29,9 @@ This basic grouping remains fundamemental no matter of the business or field app
 
 We will need to capture, in real-time or not, these metrics, organize, filter and save them, using a simple, uniform output format, no matter of the operating system or computing platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics should be done automatically, without human intervention, to help build large data sets for performance analysis and capacity planning or data analysis exploration, for quick troubleshooting or other data analysis needs.
 
-To achieve all these goals, we are introducing the idea of _data recorders_ . Designed as light command line utilities, these programs, called data recorders can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. The data recorders can use one or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a traditional agent based software, or can be deployed and operated over the network, without any local presence. There are fundamental differences between a data recorder and software agent, see later about these differences.
+To achieve all these goals, we are introducing the idea of _data recorders_ . Designed as light command line utilities, these programs, called data recorders can have capabilities to connect or wait for data from various sources and resolve the associated performance metrics in real-time. These recorders will work as close as possible to the data source to effiently capture what is required. 
+
+The data recorders can use one or many data communication protocols, for example like TCP or UDP, or something like MODBUS or BACNet. A data recorder can be installed on a computer system or an industrial equipment, more or less like a traditional agent based software, or can be deployed and operated over the network, without any local presence. There are fundamental differences between a data recorder and software agent, see later about these differences.
 
 The very first data recorders were published during 2009, mainly to fetch and collect performance data from various computer systems running Solaris and Linux operating systems. After that, more recorders were developed to capture HTTP data from various web applications, and TCP/UDP service performance data from various enterprise services, like databases or middleware software. Same time, new recorders were created to connect to various industrial sensors and devices and fetch different data, using for example the MODBUS protocol.
 
