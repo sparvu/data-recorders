@@ -20,3 +20,5 @@ Stefan Parvu - lead system engineer
 Tommi Aropalo - system engineer
 
 <img src="/docs/img/sdr-team.png" height="95%" width="95%" />
+
+Go back [main page](https://github.com/sparvu/data-recorders)
