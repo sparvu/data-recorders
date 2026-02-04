@@ -1,21 +1,25 @@
 
 <img src="/docs/img/recorders-design.png" />
 
-To really understand how our world works, we need to have the **correct metrics** to analyze. And that applies to anything from computer system(s), enterprise application(s) or other industrial workloads or systems. But how could we know what we need to capture from all these systems or applications. What metrics? How often? In what format? See how IT world is different than other disciplines and engineering fiels.
+To really understand how our world works, we need to have the **correct metrics** to analyze. And that applies to anything from computer system(s), enterprise application(s) or other industrial workloads or systems. But how could we know what we need to capture from all these systems or applications. What metrics? How often? In what format? _See how IT world is different than others._ (separate link)
 
 Some use different applications developed by well established big companies to capture, sort and analyze data based on some rules more or less known. They trust the tool. However soon they discover they dont have access to the original raw data, have no flexibility changing or adding things if they want. They are locked-in. Others are capturing as much data as possible, from many data sources and save them in a SQL database or large data warehouse of some sort, to later start mining whatever is needed. As this sounds promising at start they soon find out that storage and data aggregation turns **expensive** and very **time consuming** to manage. Some others are turning building large data lakehouses, organizing data in different layers, waiting to be explored. Better, but still, yet another big data platform where you need a relatively large team to write code to extract, match and aggregate all this data. So what choices do we have?
 
-In reality, we dont need all these layers of data. We just need to move our attention from how to capture all of this data (tables, metrics other parameters) to where data originates and think at that point what we really want to do: analyze the performance, build a logistical hierarchie of some sort, evaluate and check the availability of the data source we are interested in.
+In reality, we dont need all these layers and layers of data. We just need **the right data**. And for that we need to move our attention from how to capture and save all of data (tables, metrics, parameters) to where data originates and think, what do we really want: 
+* understand the performance of our data source
+* check how the system is made, its inventory data
+* evaluate the availability of the data source we are interested in
+* remap data by building a logistical hierarchie from many data sources
+* check for bad and good data
 
+So, we will need few primary category metrics in place, which can help us understand the behaviour and the main properties of our systems or applications, related to:
 
-how efficient, reliable our application(s) or system(s) are working,  But we will need the metrics which can help us understand the behaviour and the main properties of our systems or applications, related to:
+* overall system and device utilization and saturation - **the utilization**
+* the workload, what the system does - **the throughput**
+* system's inventory: system, devices, sub-components hierarchy - **the inventory**
+* failures and errors, what does not work correctly - **the errors**
 
-* overall system and device utilization and saturation - the utilization
-* the workload, system's throughput - what the system does
-* system's inventory: system, devices, sub-components hierarchy - the logistic
-* failures and errors - what does not work correctly
-
-This basic grouping can help us to get started and organize our metrics as Utilization, Saturation, Throughput, Inventory and Errors. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
+This basic grouping remains fundamemental no matter of the business or field application. And these will help us to get started and organize our metrics as Utilization, Saturation, Throughput, Inventory and Errors. Of course we might need some other parameters in order to better describe and explain the functionality of our system(s). So, on top of these primary categories we might need to have aditional metrics which we can can enable or disable, if required. 
 
 # Main Features
 
