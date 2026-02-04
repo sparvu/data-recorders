@@ -17,8 +17,20 @@ Shipbuilding industry
 Ships, boats or other type of vessels use some sort of recorder, called voyager data recorder VDR, used to store vessel data parameters. Similar to aerospace industry such devices are required when a certain vessel must comply with international standards, International Convention for the Safety of Life at Sea, SOLAS. Used mainly for accident investigation the VDR can serve as preventive maintenance, performance efficiency monitoring, heavy weather damage analysis and accident avoidance. This device sometimes is referred as the black box.
 Auto industry
 Automobiles use some sort of device used to store vehicle parameters, called event data recorder EDR. EDRs are not enforced by any standard organizations and are not really required by law so their usage varies from vendor to vendor. National Highway Traffic Safety Administration, NHTSA, proposed a series of changes to standardize and enforce mandatory EDR installation and usage by vendors. Around 2010 over 85% of all vehicles in US would already have some sort of EDR installed.
-IT industry
-Computer systems have no such data recording device, installed. Manufacturers are not interested in standardizing this effort since they prefer selling additional software packages which can perform such recording features for an extra cost. The lack of standardization and agreements between vendors makes computing business complex and difficult to handle performance data. Currently, there are houndreads of performance monitoring solutions.
-Checking each operating system, we can see a smilar way to fetch and extract performance data using different interfaces, called differently from vendor to vendor and implemnetation: Sun Solaris KSTAT, Linux /proc, HP-UX KSTAT, IBM AIX RSTAT, Microsoft Windows WMI. So what if we could have several standard data recorders or agents, which could fetch metrics from each system interface and have them exporting this data same way, no matter of the implementation. And to make things even simpler we could use a very simple data format for the exported data, for example flat text file format, which can be used by any reporting system for future analysis and visualization.
 
-Similar to a FDR device, we could develop a simple data recording module which can be used for system troubleshooting, performance analysis, system crash analysis and it can be enabled across a large number of hosts in a data center, no matter of the operating system used.
+IT industry
+Computer systems have no such data recording device, installed. Manufacturers are not interested in standardizing this 
+effort since they prefer selling additional software packages which can perform such recording features for an extra cost. 
+The lack of standardization and agreements between vendors makes computing business complex and difficult to handle performance data. 
+Currently, there are houndreads of performance monitoring solutions.
+
+Checking each operating system, we can see a smilar way to fetch and extract performance data using different interfaces, 
+called differently from vendor to vendor and implemnetation: Sun Solaris KSTAT, Linux /proc, HP-UX KSTAT, IBM AIX RSTAT, 
+Microsoft Windows WMI. So what if we could have several standard data recorders or agents, which could fetch metrics from each 
+system interface and have them exporting this data same way, no matter of the implementation. And to make things even simpler 
+we could use a very simple data format for the exported data, for example flat text file format, which can be used by any 
+reporting system for future analysis and visualization.
+
+Similar to a FDR device, we could develop a simple data recording module which can be used for system troubleshooting, 
+performance analysis, system crash analysis and it can be enabled across a large number of hosts in a data center, 
+no matter of the operating system used.
