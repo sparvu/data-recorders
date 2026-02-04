@@ -1,7 +1,7 @@
 
 <img src="/docs/img/recorders-design.png" />
 
-To really understand how our world works, we need to have the **correct metrics** to analyze. And that applies to anything from computer system(s), enterprise application(s) or other industrial workloads or systems. But how could we know what we need to capture from all these systems or applications. What metrics? How often? In what format? _See how IT world is different than others._ (separate link)
+To really understand how our world works, we need to have the **correct metrics** to analyze. And that applies to anything from computer system(s), enterprise application(s) or other industrial workloads or systems. But how could we know what we need to capture from all these systems or applications. What metrics? How often? In what format? _See IT world vs others._ (separate link)
 
 Some use different applications developed by well established big companies to capture, sort and analyze data based on some rules more or less known. They trust the tool. However soon they discover they dont have access to the original raw data, have no flexibility changing or adding things they want. They are locked-in. Others are capturing as much data as possible, from many data sources and save them in a SQL database or data warehouse of some sort, to start later mining whatever is needed. As this sounds promising at start they soon find out that storage and data aggregation turns **expensive** and very **time consuming** to manage. Some others are building large data lakehouses, to save and organize data in different layers, waiting for exploration. All examples, where we process a lot of data without understanding if we really need it.
 
