@@ -1,4 +1,4 @@
-# Historic
+# Industries
 
 ## Consistent data recording
 After more than 25 years of computer business we still lack of consistent performance monitoring between different operating systems, each system deploying its own type of monitoring and data collection. UNIX systems try to stay a bit close with each other since all are POSIX systems and follow similar industry standards, like The Open Group. Other systems, like Windows, use different data collection techniques.
