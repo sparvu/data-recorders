@@ -1,7 +1,7 @@
 
 <img src="/docs/img/recorders-design.png" />
 
-To really understand how our world works, we need to have the **right data** to analyze. 
+To really understand how our world works, we need the **right data** to analyze. 
 
 Like understanding why airplanes malfunction or crash sometimes, we look and analyze the data from [Flight Data Recorder-(FDR)](/docs/industries.md). Thats the right data for it. Same applies for trains too. How about Information Technology (IT), from computer systems, enterprise applications to other industrial workloads or systems. There is no such IT Data Recorder for it. In other industries there are strict regulations and rules in place, checked by different agencies to ensure things are properly defined and implemented. But not for IT. So how could we know what we need to capture from all these systems or applications. What metrics? How often? What format?
 
