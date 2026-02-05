@@ -104,9 +104,9 @@ Example:
 
 # How does it work?
 
-<img src="/docs/img/Arch.png" align="right" />
+<img src="/docs/img/Arch.png" align="right"/>
 
-A data recorder can run on different computer system architectures, like X64 or ARMv8. There can be more than one data recorder, for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. They do not interfere with other data recorders input and output execution. The data recorders work independently one of each other, having their own execution path and state.
+A data recorder can run on different computer system architectures, like X64 or ARM. There can be more than one data recorder, for different activities, like fetching performance data from a storage system, an online web application, or an industrial IoT sensor or device. They do not interfere with other data recorders input and output execution. The data recorders work independently one of each other, having their own execution path and state.
 
 The recorder can operate in two modes: 
 
