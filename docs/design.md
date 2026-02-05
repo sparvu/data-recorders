@@ -53,7 +53,6 @@ A data recorder, is a simple software probe, designed to connect and fetch data 
 
 The data transporter, is the delivery layer, outside the data reocrder, responsible to deliver the output raw data from one or many data recorders to different backend systems: Redis, InfluxDB, Prometheus, your own custom database or applications. Data recorders do not incorporate within the transport functionality, like for example agent based collectors. Separating the transport functionality from the data recorder, simplifies and improves the security and performance of the data recordrs and transport utility itself (support new recorders, new data communication protocols as simle as possible, less bugs and defects, reduce complexity)
 
-
 ### Main features
 
 Please check the main features of a data recorder: 
@@ -102,8 +101,6 @@ Example:
 1692254479:0.08:0.31:399.69:0.04:0.00:0.04:0.00:99.92:0.00:0:0:0:23:23:84.69:851976.00:15.31:154056.00:1006032.00:12252.00:40400.00:800840.00:0.00:113656.00:154056.00:15.74:6.00:43.00:85.00:379.00:0:0.00:0:0.00:0.00:0.00:0.00:0:0.00:4:0.25:0:0:2:0.52:0:0:0:6:0.77:0.08:0.12:0.14
 
 ```
-
-
 
 # How does it work?
 
