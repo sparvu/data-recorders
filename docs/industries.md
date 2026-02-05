@@ -23,4 +23,4 @@ Checking each operating system, we can see a smilar way to fetch and extract per
 
 Similar to a FDR device, we could develop a simple data recording module which can be used for system troubleshooting, performance analysis, system crash analysis and it can be enabled across a large number of hosts in a data center, no matter of the operating system used.
 
-Go back [main page](https://github.com/sparvu/data-recorders)
+Go back [design page](docs/design.md)
