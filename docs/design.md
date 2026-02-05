@@ -27,9 +27,16 @@ This basic grouping remains fundamemental no matter of the business or field app
 
 # Main Features
 
-<img src="/docs/img/features.png" height="95%" width="95%" />
+<!--<figure>
+  <img src="/docs/img/features.png" height="95%" width="95%" />
+  <figcaption>This is the caption for the image.</figcaption>
+</figure>-->
 
-![example 1{caption=Example caption - here's a picture from my recent trip to Wyoming}](/docs/img/features.png)
+
+![some alt text](/docs/img/features.png 'your caption here')
+
+
+
 
 We will need to capture, in real-time or not, these metrics, organize, filter and save them, using a simple, uniform output format, no matter of the operating system or computing platform used. The output data, the original raw data collected, should be easy to access and share with anyone, if required. And last but not least, capturing these metrics should be done automatically, without human intervention, to help build large data sets for performance analysis and capacity planning or data analysis exploration, for quick troubleshooting or other data analysis needs.
 
