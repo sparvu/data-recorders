@@ -32,8 +32,16 @@ This basic grouping remains fundamemental no matter of the business or field app
   <figcaption>This is the caption for the image.</figcaption>
 </figure>-->
 
+<p>
+    <img src="/docs/img/features.png" height="95%" width="95%" />
+</p>
 
-![some alt text](/docs/img/features.png 'your caption here')
+  <p>
+    <em><center>image_caption</center></em>
+  </p>
+
+
+<!-- ![my caption](/docs/img/features.png 'your caption here') -->
 
 
 
